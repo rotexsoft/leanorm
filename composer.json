@@ -3,7 +3,7 @@
     "type": "library",
     "description": "A Generic Data Objects implementation based on idiorm.",
     "keywords": [ "orm", "db", "pdo", "mysql", "postgresql", "sqlite", "database", "sql", "table","data", "gateway", "table data gateway"],
-    "homepage": "https://github.com/rotexsoft/HandyPhpFunctions",
+    "homepage": "https://github.com/rotexsoft/idiorm-gdao",
     "license": "MIT",
     "authors": [
         {
