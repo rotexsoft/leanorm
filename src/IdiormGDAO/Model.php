@@ -209,7 +209,7 @@ class Model extends \GDAO\Model
         if( !empty($params) && count($params) > 0 ) {
             
             if( 
-                in_array('distinct', $allowed_keys) 
+                (in_array('distinct', $allowed_keys) || count($allowed_keys) <= 0)
                 && array_key_exists('distinct', $params)
             ) {
                 //add distinct clause if specified
@@ -221,7 +221,7 @@ class Model extends \GDAO\Model
             }
             
             if( 
-                in_array('cols', $allowed_keys) 
+                (in_array('cols', $allowed_keys) || count($allowed_keys) <= 0)
                 && array_key_exists('cols', $params)
             ) {
                 //add distinct clause if specified
@@ -233,7 +233,7 @@ class Model extends \GDAO\Model
             }
             
             if( 
-                in_array('where', $allowed_keys) 
+                (in_array('where', $allowed_keys) || count($allowed_keys) <= 0)
                 && array_key_exists('where', $params)
             ) {
                 //add distinct clause if specified
@@ -523,6 +523,27 @@ $select_qry_obj
         'COUNT(foo) AS foo_count'   // embed calculations directly
     ))
     ->from('foo AS f')              // FROM these tables
+    ->where(
+"(
+	column_name_1 > 58
+	AND
+	column_name_2 > 58
+	OR
+	(
+		column_name_1 < 58
+		AND
+		column_name_2 < 58
+	)
+	AND
+	column_name_3 >= 58
+	OR
+	(
+		column_name_4 = 58
+		AND
+		column_name_5 = 58
+	)
+)"
+            )           // AND WHERE these conditions
     ->where('bar > :bar')           // AND WHERE these conditions
     ->where('zim = ?', 'zim_val')   // bind 'zim_val' to the ? placeholder
     ->orWhere('( baz < :baz AND baz > :baz )')         // OR WHERE these conditions
@@ -689,10 +710,10 @@ r($select_qry_obj->__toString());exit;
         if ( count($record) > 0 ) { //test if the record object has data
             
             $pri_key_val = $record->getPrimaryVal();
-            $cols_and_vals = array($this->_primary_col => $pri_key_val);
+            $cols_n_vals = array($this->_primary_col => $pri_key_val);
 
             $succesfully_deleted = 
-            $this->deleteRecordsMatchingSpecifiedColsNValues($cols_and_vals);
+                $this->deleteRecordsMatchingSpecifiedColsNValues($cols_n_vals);
 
             if ($succesfully_deleted) {
 

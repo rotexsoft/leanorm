@@ -24,5 +24,6 @@ vendor/
 /vendor/*/
 
 composer.lock
-
+phpunit.xml
+*.phar
 file-only-present-on-dev-pc-at-home.txt
