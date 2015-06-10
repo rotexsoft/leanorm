@@ -19,7 +19,6 @@
         "aura/sqlquery": "^2.4",
         "j4mie/idiorm": "^1.5",
         "aura/sqlschema": "^2.0",
-        "rotexsoft/handy-php-functions": "^1.0",
         "phpunit/phpunit": "^4.7"
     },
     "require-dev": {

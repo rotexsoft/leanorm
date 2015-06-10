@@ -74,11 +74,26 @@ class Model extends \GDAO\Model
         $dsn = '', 
         $username = '', 
         $passwd = '', 
-        $pdo_driver_opts = array(),
-        $extra_opts = array()
+        array $pdo_driver_opts = array(),
+        array $extra_opts = array()
     ) {
+        if(count($extra_opts) > 0){
+            
+            foreach($extra_opts as $e_opt_key => $e_opt_val) {
+  
+                if ( property_exists($this, $e_opt_key) ) {
+                    
+                    $this->$e_opt_key = $e_opt_val;
+
+                } elseif ( property_exists($this, '_'.$e_opt_key) ) {
+
+                    $this->{"_$e_opt_key"} = $e_opt_val;
+                }
+            }
+        }
+
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $extra_opts);
-        
+//r($this->toArray());exit;
         \ORM::configure($dsn);
         \ORM::configure('username', $username);
         \ORM::configure('password', $passwd);
@@ -96,10 +111,11 @@ class Model extends \GDAO\Model
             ) {
                 \ORM::configure($e_opt_key, $e_opt_val);
                 
-            } elseif(is_string($e_opt_val)) {
-
-                \ORM::configure($e_opt_val);
-            }
+            } 
+//            elseif(is_string($e_opt_val)) {
+//
+//                \ORM::configure($e_opt_val);
+//            }
         }
         
         if(!empty($this->_primary_col) && strlen($this->_primary_col) > 0) {
@@ -206,10 +222,15 @@ class Model extends \GDAO\Model
     ) {
         $select_qry_obj = (new QueryFactory('mysql'))->newSelect();
         
+        $select_qry_obj->from($this->_table_name);
+        
         if( !empty($params) && count($params) > 0 ) {
             
-            if( 
-                (in_array('distinct', $allowed_keys) || count($allowed_keys) <= 0)
+            if(
+                (
+                    in_array('distinct', $allowed_keys) 
+                    || count($allowed_keys) <= 0
+                )
                 && array_key_exists('distinct', $params)
             ) {
                 //add distinct clause if specified
@@ -223,285 +244,189 @@ class Model extends \GDAO\Model
             if( 
                 (in_array('cols', $allowed_keys) || count($allowed_keys) <= 0)
                 && array_key_exists('cols', $params)
-            ) {
-                //add distinct clause if specified
-                
+            ) {                
                 if( is_array($params['cols']) ) {
                     
                     $select_qry_obj->cols($params['cols']);
                 }
+            } else if( !array_key_exists('cols', $params) ) {
+                
+                //default to SELECT *
+                $select_qry_obj->cols(array('*'));
             }
             
             if( 
                 (in_array('where', $allowed_keys) || count($allowed_keys) <= 0)
                 && array_key_exists('where', $params)
             ) {
-                //add distinct clause if specified
-                
                 if( is_array($params['where']) ) {
                     
-                    //$select_qry_obj->cols($params['cols']);
-                    //foreach ($params['where'] as $potential_or_operator => )
+                    $this->_addWhereConditions2Query(
+                                $params['where'], $select_qry_obj
+                            );
                 }
             }
-            
-/*
-            $select_qry_obj->cols(array('COUNT(*) AS num_of_matched_records'));
-            $select_qry_obj->from($this->_table_name);
-
-            foreach ($cols_n_vals as $colname => $colval) {
-
-                if (is_array($colval)) {
-                    //quote all string values
-                    array_walk(
-                        $colval,
-                        function(&$val, $key, $pdo) {
-                            $val = (is_string($val)) ? $pdo->quote($val) : $val;
-                        },                     
-                        $this->getPDO()
-                    );
-                      
-                    $select_qry_obj->where("{$colname} IN (" . implode(',', $colval) . ") ");
-                    $del_qry_obj->where("{$colname} IN (" . implode(',', $colval) . ") ");
-                } else {
-
-                    $select_qry_obj->where("{$colname} = ?", $colval);
-                    $del_qry_obj->where("{$colname} = ?", $colval);
-                }
-            }
- */
         }
+        
         return $select_qry_obj;
     }
 
     /**
      * 
-     * @param array $where_params
+     * @param array $whr_or_hvn_parms
      * @param \Aura\SqlQuery\Common\Select $select_qry_obj
      * 
      */
-    protected function _addWhereConditions2Query( 
-        array $where_params, \Aura\SqlQuery\Common\Select $select_qry_obj
+    protected function _addWhereConditions2Query(
+        array $whr_or_hvn_parms, \Aura\SqlQuery\Common\Select $select_qry_obj
     ) {
-
-/*
- Algortithm for validating $where_params array
-
- $array = [
-    'where' =>
-      [
-         [ 'col'=>'column_name_1', 'operator'=>'>', 'val'=>58 ],
-         [ 'col'=>'column_name_2', 'operator'=>'>', 'val'=>58 ],
-         'OR'=> [
-                    [ 'col'=>'column_name_1', 'operator'=>'<', 'val'=>58 ],
-                    [ 'col'=>'column_name_2', 'operator'=>'<', 'val'=>58 ]
-                ],
-         [ 'col'=>'column_name_3', 'operator'=>'>=', 'val'=>58 ],
-         'OR#2'=> [
-                    [ 'col'=>'column_name_4', 'operator'=>'=', 'val'=>58 ],
-                    [ 'col'=>'column_name_5', 'operator'=>'=', 'val'=>58 ],
-                ]
-      ]
-];
-
-$iterator = new RecursiveIteratorIterator(
-    new RecursiveArrayIterator($array['where']),
-    RecursiveIteratorIterator::SELF_FIRST
-);
-foreach ($iterator as $key => $value) {
-
-    if(is_array($value) && count($value) > 0) {
-
-        //non-leaf node
-    	echo "****PARENT***** $key => ".print_r($value,true), PHP_EOL;
-
-    } else {
-
-    	//leaf node
-    	echo "====LEAF==== $key => $value", PHP_EOL;
-    }
-
-}
- 
-To validate the array loop through each recursive $key $value pair
-
-The first key in the first iteration of the loop must !== 'OR' and not start with 'OR#'
-
-if $key === 'col' then $value must be a string
-
-else if $key === 'operator' then $value must be in valid expected operators
-
-else if $key === 'val' must be either numeric, string or an array 
-
-else if $key === 'OR' or starts with 'OR#' then $value must be an array whose first item's key (is not 'OR' or starts with 'OR#')
-
-else if $key is numeric then $value must be an array that must be validated with the rules below:
-    if count of the $value array is 2 check for these 2 keys 'col' & 'operator' & that the operator's value is not-in / in
-    if count of the $value array is 3 check for these 3 keys 'col', 'operator' & 'val'
-    if count of the $value array is > 3 throw an exception
- 
-else if $key does not match any of the preceeding  if .. else if tests then it has an invalid value
-
-Other rules to consider
-Logic to consider when generating where clause
-===============================================
-* Any array item with a key named 'col' must have a string value
-* The operators: 'not-null' and 'is-null' do not need 'val' to be set.
-* The operators: 'in' and 'not-in' allow 'val' to be set to an array or string value. 
-	If 'val' is a string, it must be a valid
- value that a NOT IN or IN operator expects 
-	including the opening
- and closing brackets. Eg. "( 1, 2, 3 )" or "( '4', '5', '6' )".
-[ 
- '=', '>', '>=', '<', '<=', '!=',	-> 'val'=>string|number
- 'in', 'not-in',                    -> 'val'=>string|array //string in the form of (....)
- 'like', 'not-like',                -> 'val'=>string
- 'is-null', 'not-null'              -> no val needed
-]
-  
- 
-USE https://github.com/rotexsoft/HandyPhpFunctions 
-Rotexsoft\HandyPhpFunctions\recursively_copy_array($array_from, $array_to, true)
-to ensure that numeric keys in $where_params are all properly numbered after 
-validating $where_params based on the algorithm above.
-
-$arr = [];
-\Rotexsoft\HandyPhpFunctions\recursively_copy_array($where_params, $arr, true);
-r($arr);
- 
-  */        
-
-        if( !empty($where_params) && count($where_params) > 0 ) {
+        if( !empty($whr_or_hvn_parms) && count($whr_or_hvn_parms) > 0 ) {
             
-            foreach ( $where_params as $key => $value ) {
+            if($this->_validateWhereOrHavingParamsArray($whr_or_hvn_parms)) {
+
+                $sql_n_bind_params = 
+                    $this->_getWhereOrHavingClauseWithParams($whr_or_hvn_parms);
+                                
+                $select_qry_obj->where( $sql_n_bind_params[0] );
                 
-                // The exception check above guarantees that the first item in
-                // $where_params does not have a key with a value of 'OR' or
-                // prefix of 'OR#'
-                if( 
-                    $key === "OR" || substr($key, 0, 3) === "OR#"
-                ) {
+                if( count( $sql_n_bind_params[1] ) > 0 ) {
+                    
+                    $select_qry_obj->bindValues( $sql_n_bind_params[1] );
+                }
+            }
 
-                    //Treat it as a condition to be ORed
+        }
+    }
+    
+    /**
+     * 
+     * @staticvar int $bind_params_index
+     * @param array $array an array of where or having condition(s) definition as
+     *                     specified in the params documentation of the fetch* methods
+     * @param int $indent_level the number of tab characters to add to the sql clause
+     * @return array an array of two items, the first is the having or where 
+     *               clause sql string and the second item is an associative
+     *               array of parameters to bind to the query
+     * @throws ModelBadWhereParamSuppliedException
+     */
+    protected function _getWhereOrHavingClauseWithParams(array &$array, $indent_level=0) {
 
+        static $bind_params_index;
 
-                } else {
+        if( !isset($bind_params_index) ) {
 
-                    //Treat it as a condition to be ANDed
-                    if(
-                        is_array($value) 
-                        && array_key_exists( 'col', $value)
-                        && array_key_exists( 'operator', $value)
-                    ) {
-                        if(
-                            !array_key_exists(
-                                $value['operator'],
-                                static::$_where_or_having_ops_to_mysql_ops
-                            )   
-                        ) {
-                            //Badly structured where params array supplied.
-                            $msg = 'Bad where param array supplied to '
-                                    .get_class($this).'::'.__FUNCTION__.'(...) on line. '.__LINE__.PHP_EOL
-                                    ."Unsupported 'operator' value of '{$value['operator']}' supplied in ".PHP_EOL
-                                    .print_r($value, true).PHP_EOL
-                                    .' in '.PHP_EOL
-                                    .print_r($where_params, true);
+            $bind_params_index = 0;
+        }
 
-                            throw new ModelBadWhereParamSuppliedException($msg);
-                        }
-                        
-                        if(
-                            !array_key_exists( 'val', $value)
-                            && !in_array( $value['operator'], array('is-null',  'not-null') )
-                        ) {
-                            //Badly structured where params array supplied.
-                            $msg = 'Bad where param array supplied to '
-                                    .get_class($this).'::'.__FUNCTION__.'(...) on line. '.__LINE__.PHP_EOL
-                                    .'missing \'val\' key in '.PHP_EOL
-                                    .print_r($value, true).PHP_EOL
-                                    .' in '.PHP_EOL
-                                    .print_r($where_params, true);
+        $i = 0;
+        $result_sql = '';
+        $result_bind_params = array();
+        $result_sql .= str_repeat("\t", $indent_level). '('. PHP_EOL;
 
-                            throw new ModelBadWhereParamSuppliedException($msg);
-                        }
-                        
+        foreach ( $array as $key => $value ) {
+
+            if ( is_numeric($key) || $key === "OR" || substr($key, 0, 3) === "OR#" ) {
+
+                $and_or = ( is_numeric($key) ) ? 'AND' : 'OR' ;
+
+                if( $i > 0 ) {
+
+                    //not the first item
+                    $result_sql .= str_repeat("\t", ($indent_level + 1) ). $and_or. PHP_EOL;
+                }
+
+                if( is_array($value) ) {
+
+                    $has_a_val_key = 
+                        (is_array($value)) && array_key_exists('val', $value);
+
+                    $has_a_col_and_an_operator_key = 
+                        (is_array($value)) 
+                        && array_key_exists('col', $value) 
+                        && array_key_exists('operator', $value);
+
+                    if( $has_a_col_and_an_operator_key ) {
+
+                        //quote $value['col'] and $value['val'] as needed
                         $mysql_operator = 
                             static::$_where_or_having_ops_to_mysql_ops[$value['operator']];
-                        
-                        if(
-                            in_array(
-                                $value['operator'], 
-                                array('=', '!=', '>', '>=', '<', '<=', 'like', 'not-like')
-                            )
+
+                        if( 
+                            !$has_a_val_key 
+                            ||  in_array( $value['operator'], array('not-null', 'is-null') ) 
                         ) {
-                            $select_qry_obj->where(
-                                " {$value['col']} {$mysql_operator} ? ", 
-                                $value['val']
-                            );
+                            //check that operator's value is either 'is-null' or 'not-null'
+                            $result_sql .= str_repeat("\t", ($indent_level + 1) )
+                                     . "{$value['col']} $mysql_operator" . PHP_EOL;
+
+                        } else if( $has_a_val_key ) {
+
+                            //$value['val'] should not be empty
+                            //should be pdo quoted.
+                            $quoted_val = '';
                             
-                        } else if ( 
-                            in_array(
-                                $value['operator'], 
-                                array('in', 'not-in') 
-                            )
-                        ) {
-                            if ( is_array($value['val']) ) {
-                                
+                            if (is_array($value['val'])) {
+
                                 //quote all string values
                                 array_walk(
+                                        
                                     $value['val'],
+
                                     function(&$val, $key, $pdo) {
-                                        $val = (is_string($val)) ? $pdo->quote($val) : $val;
-                                    },                     
+                                        $val = 
+                                            (is_string($val)) 
+                                                ? $pdo->quote($val) : $val;
+                                    },
+
                                     $this->getPDO()
                                 );
 
-                                $select_qry_obj->where(
-                                    " {$value['col']} {$mysql_operator} (" . implode( ',', $value['val'] ) . ") "
-                                );
-
+                                $quoted_val = 
+                                    " (" . implode(',', $value['val']) . ") ";
                             } else {
 
-                                //must be a string or numeric value
-                                if( is_numeric($value['val']) ) {
-                                    
-                                    $select_qry_obj->where(" {$value['col']} {$mysql_operator} ( ? ) ", $value['val']);
-                                    
-                                } else {
-                                    
-                                    //a string in the form "(......)" expected
-                                    $select_qry_obj->where(
-                                        " {$value['col']} {$mysql_operator} " 
-                                        . $this->getPDO()->quote($value['val'])
-                                    );
-                                }
+                                $quoted_val = 
+                                    (is_string($value['val']))? 
+                                        $this->getPDO()->quote($value['val']) 
+                                                                : $value['val'];
                             }
                             
-                        } else if (
-                            in_array(
-                                $value['operator'], 
-                                array('is-null', 'not-null') 
-                            )
-                        ) {
-                            $select_qry_obj->where( 
-                                " {$value['col']} {$mysql_operator} " 
-                            );
+                            $bind_params_index++;
+                            
+                            $result_sql .= str_repeat("\t", ($indent_level + 1) )
+                                     . "{$value['col']} $mysql_operator :_{$bind_params_index}_ " 
+                                     . PHP_EOL;
+                            $result_bind_params["_{$bind_params_index}_"] = $quoted_val;
+                            
                         }
-                        
                     } else {
+                        //a sub-array of more conditions, recurse
+                        $full_result = $this->_getWhereOrHavingClauseWithParams($value, ($indent_level + 1) );
                         
-                        //Badly structured where params array supplied.
-                        //Where params array cannot have any non-array values
-                        //whose key is not any of 'col', 'operator' or 'val'. 
-                        $msg = 'Bad where param array supplied to '
-                                .get_class($this).'::'.__FUNCTION__.'(...) on line. '.__LINE__.PHP_EOL
-                                .print_r($where_params, true);
-
-                        throw new ModelBadWhereParamSuppliedException($msg);
+                        $result_sql .= $full_result[0];
+                        $result_bind_params = array_merge($result_bind_params, $full_result[1]);
                     }
-                }               
+                } else {
+                    //throw exception badly structured array
+                    $msg = "ERROR: Bad where param array having an entry with a"
+                           . " key named '$key' with a non-expected value of "
+                           . PHP_EOL . var_export($value, true) . PHP_EOL
+                           . "inside the array: "
+                           . PHP_EOL . var_export($array, true) . PHP_EOL
+                           . " passed to " 
+                           . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                           . PHP_EOL;
+
+                    throw new ModelBadWhereParamSuppliedException($msg);
+                }
             }
+            $i++;
         }
+
+        return array( 
+                    $result_sql.str_repeat("\t", $indent_level) . ')' . PHP_EOL,
+                    $result_bind_params
+               );
     }
     
     /**
@@ -509,65 +434,18 @@ r($arr);
      * {@inheritDoc}
      */
     public function fetchAll(array $params = array()) {
-        
+
         //fetch a collection of records [Eager Loading should be considered here]        
         $orm_obj = \ORM::for_table($this->_table_name);
-//*
-$select_qry_obj = (new QueryFactory('mysql'))->newSelect();
-$select_qry_obj
-    ->distinct()                    // SELECT DISTINCT
-    ->cols(array(                   // select these columns
-        'id',                       // column name
-        'name AS namecol',          // one way of aliasing
-        'col_name' => 'col_alias',  // another way of aliasing
-        'COUNT(foo) AS foo_count'   // embed calculations directly
-    ))
-    ->from('foo AS f')              // FROM these tables
-    ->where(
-"(
-	column_name_1 > 58
-	AND
-	column_name_2 > 58
-	OR
-	(
-		column_name_1 < 58
-		AND
-		column_name_2 < 58
-	)
-	AND
-	column_name_3 >= 58
-	OR
-	(
-		column_name_4 = 58
-		AND
-		column_name_5 = 58
-	)
-)"
-            )           // AND WHERE these conditions
-    ->where('bar > :bar')           // AND WHERE these conditions
-    ->where('zim = ?', 'zim_val')   // bind 'zim_val' to the ? placeholder
-    ->orWhere('( baz < :baz AND baz > :baz )')         // OR WHERE these conditions
-    ->orWhere('( baf < ? )', 'baf_val')         // OR WHERE these conditions
-    ->groupBy(array('dib'))         // GROUP BY these columns
-    ->having('foo = :foo')          // AND HAVING these conditions
-    ->having('bar > ?', 'bar_val')  // bind 'bar_val' to the ? placeholder
-    ->orHaving('baz < :baz')        // OR HAVING these conditions
-    ->orderBy(array('baz'))         // ORDER BY these columns
-    ->limit(10)                     // LIMIT 10
-    ->offset(40)                    // OFFSET 40
-    ->bindValue('foo', 'foo_val')   // bind one value to a placeholder
-    ->bindValues(array(             // bind these values to named placeholders
-        'bar' => 'bar_val',
-        'baz' => 'baz_val',
-    ));
-r($select_qry_obj->getBindValues());
-r($select_qry_obj->__toString());exit;
+
+        $query_obj = $this->_buildFetchQueryFromParams($params);
+        $fetch_sql = $query_obj->__toString();
+        $bind_params = $query_obj->getBindValues();
+/*
+r($fetch_sql);
+r($bind_params);exit;
 //*/
-        $results = $orm_obj
-                        ->where('hidden_fiscal_year', '16')
-                        ->where('deactivated', '0')
-                        ->where_null('parent_id')
-                        ->find_array();
+        $results = $orm_obj->raw_query($fetch_sql, $bind_params)->find_array();
         
         foreach ($results as $key=>$value) {
 
