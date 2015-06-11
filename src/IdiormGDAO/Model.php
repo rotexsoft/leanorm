@@ -214,27 +214,25 @@ class Model extends \GDAO\Model
     /**
      * 
      * @param array $params an array of parameters passed to a fetch*() method
-     * @param array $allowed_keys list of keys in $params to be used to build the query object 
+     * @param array $disallowed_keys list of keys in $params not to be used to build the query object 
      * @return \Aura\SqlQuery\Common\Select or any of its descendants
      */
     protected function _buildFetchQueryFromParams(
-        array $params=array(), array $allowed_keys=array()
+        array $params=array(), array $disallowed_keys=array()
     ) {
         $select_qry_obj = (new QueryFactory('mysql'))->newSelect();
-        
         $select_qry_obj->from($this->_table_name);
         
         if( !empty($params) && count($params) > 0 ) {
             
             if(
                 (
-                    in_array('distinct', $allowed_keys) 
-                    || count($allowed_keys) <= 0
+                    !in_array('distinct', $disallowed_keys) 
+                    || count($disallowed_keys) <= 0
                 )
                 && array_key_exists('distinct', $params)
             ) {
                 //add distinct clause if specified
-                
                 if( $params['distinct'] ) {
                     
                     $select_qry_obj->distinct();
@@ -242,13 +240,29 @@ class Model extends \GDAO\Model
             }
             
             if( 
-                (in_array('cols', $allowed_keys) || count($allowed_keys) <= 0)
+                (
+                    !in_array('cols', $disallowed_keys) 
+                    || count($disallowed_keys) <= 0
+                )
                 && array_key_exists('cols', $params)
-            ) {                
+            ) {
                 if( is_array($params['cols']) ) {
                     
                     $select_qry_obj->cols($params['cols']);
+                    
+                } else {
+                    //throw exception badly structured array
+                    $msg = "ERROR: Bad fetch param entry. Array expected as the"
+                         . " value of the item with the key named 'cols' in the"
+                         . " array: "
+                         . PHP_EOL . var_export($params, true) . PHP_EOL
+                         . " passed to " 
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . PHP_EOL;
+
+                    throw new ModelBadColsParamSuppliedException($msg);
                 }
+                
             } else if( !array_key_exists('cols', $params) ) {
                 
                 //default to SELECT *
@@ -256,7 +270,10 @@ class Model extends \GDAO\Model
             }
             
             if( 
-                (in_array('where', $allowed_keys) || count($allowed_keys) <= 0)
+                (
+                    !in_array('where', $disallowed_keys) 
+                    || count($disallowed_keys) <= 0
+                )
                 && array_key_exists('where', $params)
             ) {
                 if( is_array($params['where']) ) {
@@ -264,6 +281,93 @@ class Model extends \GDAO\Model
                     $this->_addWhereConditions2Query(
                                 $params['where'], $select_qry_obj
                             );
+                } else {
+                    //throw exception badly structured array
+                    $msg = "ERROR: Bad fetch param entry. Array expected as the"
+                         . " value of the item with the key named 'where' in the"
+                         . " array: "
+                         . PHP_EOL . var_export($params, true) . PHP_EOL
+                         . " passed to " 
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . PHP_EOL;
+
+                    throw new ModelBadWhereParamSuppliedException($msg);
+                }
+            }
+            
+            if( 
+                (
+                    !in_array('group', $disallowed_keys) 
+                    || count($disallowed_keys) <= 0
+                )
+                && array_key_exists('group', $params)
+            ) {
+                if( is_array($params['group']) ) {
+                    
+                    $select_qry_obj->groupBy($params['group']);
+                    
+                } else {
+                    //throw exception badly structured array
+                    $msg = "ERROR: Bad fetch param entry. Array expected as the"
+                         . " value of the item with the key named 'group' in the"
+                         . " array: "
+                         . PHP_EOL . var_export($params, true) . PHP_EOL
+                         . " passed to " 
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . PHP_EOL;
+
+                    throw new ModelBadGroupByParamSuppliedException($msg);
+                }
+            }
+            
+            if( 
+                (
+                    !in_array('having', $disallowed_keys) 
+                    || count($disallowed_keys) <= 0
+                )
+                && array_key_exists('having', $params)
+            ) {
+                if( is_array($params['having']) ) {
+                    
+                    $this->_addHavingConditions2Query(
+                                $params['having'], $select_qry_obj
+                            );
+                } else {
+                    //throw exception badly structured array
+                    $msg = "ERROR: Bad fetch param entry. Array expected as the"
+                         . " value of the item with the key named 'having' in the"
+                         . " array: "
+                         . PHP_EOL . var_export($params, true) . PHP_EOL
+                         . " passed to " 
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . PHP_EOL;
+
+                    throw new ModelBadHavingParamSuppliedException($msg);
+                }
+            }
+            
+            if( 
+                (
+                    !in_array('order', $disallowed_keys) 
+                    || count($disallowed_keys) <= 0
+                )
+                && array_key_exists('order', $params)
+            ) {
+                if( is_array($params['order']) ) {
+                    
+                    $select_qry_obj->orderBy($params['order']);
+                    
+                } else {
+                    //throw exception badly structured array
+                    $msg = "ERROR: Bad fetch param entry. Array expected as the"
+                         . " value of the item with the key named 'order' in the"
+                         . " array: "
+                         . PHP_EOL . var_export($params, true) . PHP_EOL
+                         . " passed to " 
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . PHP_EOL;
+
+                    throw new ModelBadOrderByParamSuppliedException($msg);
                 }
             }
         }
@@ -288,6 +392,33 @@ class Model extends \GDAO\Model
                     $this->_getWhereOrHavingClauseWithParams($whr_or_hvn_parms);
                                 
                 $select_qry_obj->where( $sql_n_bind_params[0] );
+                
+                if( count( $sql_n_bind_params[1] ) > 0 ) {
+                    
+                    $select_qry_obj->bindValues( $sql_n_bind_params[1] );
+                }
+            }
+
+        }
+    }
+
+    /**
+     * 
+     * @param array $whr_or_hvn_parms
+     * @param \Aura\SqlQuery\Common\Select $select_qry_obj
+     * 
+     */
+    protected function _addHavingConditions2Query(
+        array $whr_or_hvn_parms, \Aura\SqlQuery\Common\Select $select_qry_obj
+    ) {
+        if( !empty($whr_or_hvn_parms) && count($whr_or_hvn_parms) > 0 ) {
+            
+            if($this->_validateWhereOrHavingParamsArray($whr_or_hvn_parms)) {
+
+                $sql_n_bind_params = 
+                    $this->_getWhereOrHavingClauseWithParams($whr_or_hvn_parms);
+                                
+                $select_qry_obj->having( $sql_n_bind_params[0] );
                 
                 if( count( $sql_n_bind_params[1] ) > 0 ) {
                     
@@ -346,23 +477,24 @@ class Model extends \GDAO\Model
                         && array_key_exists('operator', $value);
 
                     if( $has_a_col_and_an_operator_key ) {
+                        
+                        $operator_is_in_or_not_in = 
+                            in_array($value['operator'], array('not-in', 'in'));
 
                         //quote $value['col'] and $value['val'] as needed
-                        $mysql_operator = 
+                        $db_specific_operator = 
                             static::$_where_or_having_ops_to_mysql_ops[$value['operator']];
 
                         if( 
                             !$has_a_val_key 
                             ||  in_array( $value['operator'], array('not-null', 'is-null') ) 
                         ) {
-                            //check that operator's value is either 'is-null' or 'not-null'
                             $result_sql .= str_repeat("\t", ($indent_level + 1) )
-                                     . "{$value['col']} $mysql_operator" . PHP_EOL;
+                                     . "{$value['col']} $db_specific_operator" . PHP_EOL;
 
                         } else if( $has_a_val_key ) {
 
-                            //$value['val'] should not be empty
-                            //should be pdo quoted.
+                            //$value['val'] should be pdo quoted.
                             $quoted_val = '';
                             
                             if (is_array($value['val'])) {
@@ -386,18 +518,45 @@ class Model extends \GDAO\Model
                             } else {
 
                                 $quoted_val = 
-                                    (is_string($value['val']))? 
+                                    (
+                                        !$operator_is_in_or_not_in 
+                                        && is_string($value['val'])
+                                    ) ? 
                                         $this->getPDO()->quote($value['val']) 
                                                                 : $value['val'];
+                                
+                                if($operator_is_in_or_not_in) {
+                                    
+                                    if(
+                                        is_numeric($value['val'])
+                                        ||
+                                        (
+                                            is_string($value['val'])
+                                            && strpos($value['val'], '(') === false
+                                            && strpos($value['val'], ')') === false
+                                        )
+                                    ) {
+                                        $quoted_val = "($quoted_val)";
+                                    }
+                                }
                             }
                             
                             $bind_params_index++;
                             
-                            $result_sql .= str_repeat("\t", ($indent_level + 1) )
-                                     . "{$value['col']} $mysql_operator :_{$bind_params_index}_ " 
-                                     . PHP_EOL;
-                            $result_bind_params["_{$bind_params_index}_"] = $quoted_val;
-                            
+                            if( !$operator_is_in_or_not_in ) {
+                                
+                                $result_sql .= str_repeat("\t", ($indent_level + 1) )
+                                         . "{$value['col']} $db_specific_operator :_{$bind_params_index}_ " 
+                                         . PHP_EOL;
+                                $result_bind_params["_{$bind_params_index}_"] = $quoted_val;
+                                
+                            } else {
+                                //no need for named place holder just place the
+                                //quated val directly.
+                                $result_sql .= str_repeat("\t", ($indent_level + 1) )
+                                         . "{$value['col']} $db_specific_operator $quoted_val " 
+                                         . PHP_EOL;
+                            }
                         }
                     } else {
                         //a sub-array of more conditions, recurse
@@ -435,24 +594,13 @@ class Model extends \GDAO\Model
      */
     public function fetchAll(array $params = array()) {
 
-        //fetch a collection of records [Eager Loading should be considered here]        
-        $orm_obj = \ORM::for_table($this->_table_name);
-
-        $query_obj = $this->_buildFetchQueryFromParams($params);
-        $fetch_sql = $query_obj->__toString();
-        $bind_params = $query_obj->getBindValues();
-/*
-r($fetch_sql);
-r($bind_params);exit;
-//*/
-        $results = $orm_obj->raw_query($fetch_sql, $bind_params)->find_array();
+        //fetch a collection of records [Eager Loading should be considered here]
         
-        foreach ($results as $key=>$value) {
-
-            $results[$key] = $this->createRecord($value, array('is_new'=>false) );
-        }
-        
-        return $this->createCollection( new \GDAO\Model\GDAORecordsList($results) );
+        return $this->createCollection(
+                        new \GDAO\Model\GDAORecordsList(
+                                $this->fetchAllAsArray($params)
+                            )
+                    );
     }
     
     /**
@@ -462,17 +610,18 @@ r($bind_params);exit;
     public function fetchAllAsArray(array $params = array()) {
         
         //fetch an array of records [Eager Loading should be considered here]        
+        $query_obj = $this->_buildFetchQueryFromParams($params);
+
+        $sql = $query_obj->__toString();
+        $params_2_bind_2_sql = $query_obj->getBindValues();
+//r($sql);
+//r($params_2_bind_2_sql);exit;
         $orm_obj = \ORM::for_table($this->_table_name);
-        
-        $results = $orm_obj
-                        ->where('hidden_fiscal_year', '16')
-                        ->where('deactivated', '0')
-                        ->where_null('parent_id')
-                        ->find_array();
+        $results = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
         
         foreach ($results as $key=>$value) {
 
-            $results[$key] =  $this->createRecord($value, array('is_new'=>false));
+            $results[$key] = $this->createRecord($value, array('is_new'=>false));
         }
         
         return $results;
@@ -485,13 +634,13 @@ r($bind_params);exit;
     public function fetchArray(array $params = array()) {
         
         //fetch an array of records [Eager Loading should be considered here]
+        $query_obj = $this->_buildFetchQueryFromParams($params);
+        $sql = $query_obj->__toString();
+        $params_2_bind_2_sql = $query_obj->getBindValues();
+
         $orm_obj = \ORM::for_table($this->_table_name);
+        $results = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
         
-        $results = $orm_obj
-                        ->where('hidden_fiscal_year', '16')
-                        ->where('deactivated', '0')
-                        ->where_null('parent_id')
-                        ->find_array();
         return $results;
     }
     
@@ -608,6 +757,37 @@ r($bind_params);exit;
      */
     public function fetchCol(array $params = array()) {
         
+        $col_name = '';
+        
+        if( array_key_exists('cols', $params) && count($params['cols']) > 0 ) {
+            
+            //extract the first col since only the first col will be returned
+            $params['cols'] = ( (array)$params['cols'] );
+            $col_name = array_shift($params['cols']);
+            $params['cols'] = array( $col_name );
+        
+        } else {
+            
+            //throw Exception no col specified
+            $msg = "ERROR: Bad param entry. Array expected as the value of the"
+                 . " item with the key named 'cols' OR no item with"
+                 . " a key named 'cols'  in the array: "
+                 . PHP_EOL . var_export($params, true) . PHP_EOL
+                 . " passed to " 
+                 . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL;
+
+            throw new ModelBadWhereParamSuppliedException($msg);
+        }
+
+        $query_obj = $this->_buildFetchQueryFromParams($params);
+        $sql = $query_obj->__toString();
+        $params_2_bind_2_sql = $query_obj->getBindValues();
+
+        $orm_obj = \ORM::for_table($this->_table_name);
+        $results = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
+
+        return array_column($results, $col_name);
     }
 
     /**
@@ -615,7 +795,25 @@ r($bind_params);exit;
      * {@inheritDoc}
      */
     public function fetchOne(array $params = array()) {
+
+        $param_keys_2_exclude = array('limit_offset', 'limit_size');
         
+        $query_obj = 
+            $this->_buildFetchQueryFromParams($params, $param_keys_2_exclude);
+        $query_obj->limit(1);
+        
+        $sql = $query_obj->__toString();
+        $params_2_bind_2_sql = $query_obj->getBindValues();
+
+        $orm_obj = \ORM::for_table($this->_table_name);
+        $result = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
+        
+        if( count($result) > 0 ) {
+            
+            $result = $this->createRecord(array_shift($result));
+        }
+
+        return $result;
     }
 
     /**
@@ -624,6 +822,44 @@ r($bind_params);exit;
      */
     public function fetchPairs(array $params = array()) {
         
+        $key_col_name = '';
+        $val_col_name = '';
+        
+        if( array_key_exists('cols', $params) && count($params['cols']) >=2 ) {
+            
+            //extract the first col since only the first col will be returned
+            $params['cols'] = ( (array)$params['cols'] );
+            
+            $key_col_name = array_shift( $params['cols'] );
+            $val_col_name = array_shift( $params['cols'] ) ;
+            
+            $params['cols'] = array( $key_col_name, $val_col_name);
+        
+        } else {
+            
+            //throw Exception no col specified
+            $msg = "ERROR: Bad param entry. Array (with at least two items) "
+                 . "expected as the value of the item with the key named 'cols'"
+                 . " OR no item with a key named 'cols'  in the array: "
+                 . PHP_EOL . var_export($params, true) . PHP_EOL
+                 . " passed to " 
+                 . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL;
+
+            throw new ModelBadWhereParamSuppliedException($msg);
+        }
+
+        $query_obj = $this->_buildFetchQueryFromParams($params);
+        $sql = $query_obj->__toString();
+        $params_2_bind_2_sql = $query_obj->getBindValues();
+
+        $orm_obj = \ORM::for_table($this->_table_name);
+        $results = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
+        
+        return array_combine(
+                    array_column($results, $key_col_name), 
+                    array_column($results, $val_col_name)
+                );
     }
 
     /**
@@ -632,6 +868,49 @@ r($bind_params);exit;
      */
     public function fetchValue(array $params = array()) {
         
+        $col_name = '';
+        
+        if( array_key_exists('cols', $params) && count($params['cols']) > 0 ) {
+            
+            //extract the first col since only the 1st value from the 1st col 
+            //will be returned
+            $params['cols'] = ( (array)$params['cols'] );
+            $col_name = array_shift($params['cols']);
+            $params['cols'] = array( $col_name );
+        
+        } else {
+            
+            //throw Exception no col specified
+            $msg = "ERROR: Bad param entry. Array expected as the value of the"
+                 . " item with the key named 'cols' OR no item with"
+                 . " a key named 'cols'  in the array: "
+                 . PHP_EOL . var_export($params, true) . PHP_EOL
+                 . " passed to " 
+                 . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL;
+
+            throw new ModelBadWhereParamSuppliedException($msg);
+        }
+        
+        $param_keys_2_exclude = array('limit_offset', 'limit_size');
+        
+        $query_obj = 
+            $this->_buildFetchQueryFromParams($params, $param_keys_2_exclude);
+        $query_obj->limit(1);
+        
+        $sql = $query_obj->__toString();
+        $params_2_bind_2_sql = $query_obj->getBindValues();
+
+        $orm_obj = \ORM::for_table($this->_table_name);
+        $result = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
+       
+        if( count($result) > 0 ) {
+            
+            $result = array_shift($result);
+            $result = $result[$col_name];
+        }
+
+        return $result;
     }
 
     /**
@@ -757,4 +1036,8 @@ r($bind_params);exit;
     }
 }
 
+class ModelBadColsParamSuppliedException extends \Exception{}
+class ModelBadGroupByParamSuppliedException extends \Exception{}
+class ModelBadHavingParamSuppliedException extends \Exception{}
+class ModelBadOrderByParamSuppliedException extends \Exception{}
 class ModelBadWhereParamSuppliedException extends \Exception{}
