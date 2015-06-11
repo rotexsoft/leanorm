@@ -810,7 +810,8 @@ class Model extends \GDAO\Model
         
         if( count($result) > 0 ) {
             
-            $result = $this->createRecord(array_shift($result));
+            $result = 
+                $this->createRecord(array_shift($result), array('is_new'=>false));
         }
 
         return $result;
