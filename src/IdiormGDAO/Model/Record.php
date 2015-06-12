@@ -152,10 +152,11 @@ class Record extends \GDAO\Model\Record
 
                 //insert
                 return !empty($this->_model->insert($data_2_save));
+                
             } else {
 
                 //update
-                return !empty($this->_model->updateRecordsMatchingSpecifiedColsNValues($data_2_save));
+                return !empty($this->_model->updateSpecifiedRecord($this));
             }
         } else {
             //nothing to do
