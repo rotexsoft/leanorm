@@ -840,6 +840,16 @@ class Model extends \GDAO\Model
                 if ( !in_array($key, $table_cols) ) {
                     
                     unset($col_names_n_vals[$key]);
+                    // not in the table, so no need to check for autoinc
+                    continue;
+                }
+                
+                // Code below was lifted from Solar_Sql_Model::insert()
+                // remove empty autoinc columns to soothe postgres, which won't
+                // take explicit NULLs in SERIAL cols.
+                if ( $this->_table_cols[$key]['autoinc'] && empty($val)) {
+                    
+                    unset($col_names_n_vals[$key]);
                 }
             }
             
@@ -883,8 +893,17 @@ class Model extends \GDAO\Model
                         $this->getPDO()->lastInsertId($last_insert_sequence_name);
 
                 if( empty($pk_val_4_new_record) ) {
-                     
+                    
+                    $msg = "ERROR: Could not retrieve the value for the primary"
+                         . " key field name '{$this->_primary_col}' after the "
+                         . " successful insertion of the data below: "
+                         . PHP_EOL . var_export($col_names_n_vals, true) . PHP_EOL
+                         . " into the table named '{$this->_table_name}' in the method " 
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . PHP_EOL;
+                    
                     //throw exception
+                    throw new \GDAO\ModelPrimaryColValueNotRetrievableAfterInsertException($msg);
                 } else {
                     
                     //add primary key value of the newly inserted record to the 

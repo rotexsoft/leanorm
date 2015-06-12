@@ -46,7 +46,6 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                     "sqlite:$sqlite_file", "", "", [],
                     ['primary_col'=>'ShipperID', 'table_name'=>'Shippers']
                 );
-
     }
 
     public function testToEnsureThatAddHavingConditions2QueryWorksAsExpected() {
