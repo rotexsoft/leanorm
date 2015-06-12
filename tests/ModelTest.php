@@ -14,7 +14,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         
         parent::setUp();
         
-        $sqlite_file = __DIR__.DIRECTORY_SEPARATOR.'buying_and_selling.sqlite';
+        $sqlite_file = __DIR__.DIRECTORY_SEPARATOR.'DbFiles'.DIRECTORY_SEPARATOR
+                       .'buying_and_selling.sqlite';
 
         $this->_mock_model_objs['customers'] = 
                 new \MockModelForTestingPublicAndProtectedMethods(
@@ -206,79 +207,6 @@ EOT;
         ];
 
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
-//echo ";;;".$select_qry_obj->__toString().";;;";exit;
-    }
-
-    public function testToEnsureThatGetWhereOrHavingClauseWithParamsWorksAsExpected() {
-        
-        $data = [
-            'where' => 
-                [
-                    0 => [ 'col' => 'col_1', 'operator' => '<', 'val' => 58],
-                    1 => [ 'col' => 'col_2', 'operator' => '<', 'val' => 68],
-                    [
-                        0 => [ 'col' => 'col_11', 'operator' => '>', 'val' => 581],
-                        1 => [ 'col' => 'col_21', 'operator' => '>', 'val' => 681],
-                        'OR#3' => [
-                            0 => [ 'col' => 'col_12', 'operator' => '<', 'val' => 582],
-                            1 => [ 'col' => 'col_22', 'operator' => '<', 'val' => 682]
-                        ],
-                        2 => [ 'col' => 'col_31', 'operator' => '>=', 'val' => 583],
-                        'OR#4' => [
-                            0 => [ 'col' => 'col_4', 'operator' => '=', 'val' => 584],
-                            1 => [ 'col' => 'col_5', 'operator' => '=', 'val' => 684],
-                        ]
-                    ],
-                    3 => [ 'col' => 'column_name_44', 'operator' => '<', 'val' => 777],
-                    4 => [ 'col' => 'column_name_55', 'operator' => 'is-null'],
-                ]
-        ];
-        
-        $mock_model_cust = $this->_mock_model_objs['customers'];
-                
-        $result = 
-            $mock_model_cust->getWhereOrHavingClauseWithParams($data['where']);
-        
-        $expected_sql = <<<EOT
-(
-	col_1 > :_21_ 
-	AND
-	col_2 > :_22_ 
-	AND
-	(
-		col_11 > :_23_ 
-		AND
-		col_21 > :_24_ 
-		OR
-		(
-			col_12 > :_25_ 
-			AND
-			col_22 > :_26_ 
-		)
-		AND
-		col_31 >= :_27_ 
-		OR
-		(
-			col_4 = :_28_ 
-			AND
-			col_5 = :_29_ 
-		)
-	)
-	AND
-	column_name_44 > :_30_ 
-	AND
-	column_name_55 IS NULL
-)
-EOT;
-//echo ";;;".$result[0].";;;";exit;
-        $this->assertContains($expected_sql, $result[0]);
-        
-        $expected_params = [
-            '_21_' => 58, '_22_' => 68, '_23_' => 581, '_24_' => 681, '_25_' => 582,
-            '_26_' => 682, '_27_' => 583, '_28_' => 584, '_29_' => 684, '_30_' => 777
-        ];
-
-        $this->assertEquals($expected_params, $result[1]);
 //echo ";;;".$select_qry_obj->__toString().";;;";exit;
     }
 }

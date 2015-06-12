@@ -36,10 +36,4 @@ class MockModelForTestingPublicAndProtectedMethods extends \IdiormGDAO\Model
     ) {
         return $this->_buildFetchQueryFromParams($params, $allowed_keys);
     }
-    
-    public function getWhereOrHavingClauseWithParams(
-        array &$array, $indent_level=0
-    ) {
-        return $this->_getWhereOrHavingClauseWithParams($array, $indent_level);
-    }
 }
