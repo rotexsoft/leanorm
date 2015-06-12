@@ -156,7 +156,8 @@ class Record extends \GDAO\Model\Record
             } else {
 
                 //update
-                return !empty($this->_model->updateSpecifiedRecord($this));
+                $this->loadData($data_2_save);
+                return $this->_model->updateSpecifiedRecord($this);
             }
         } else {
             //nothing to do
