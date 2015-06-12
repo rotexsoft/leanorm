@@ -44,21 +44,6 @@ class Model extends \GDAO\Model
         'logger',  //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
         'caching', // [NOT NEED: SHOULD IMPLEMENT CACHING IF NEEDED]
     );
-    
-    protected static $_where_or_having_ops_2_dbms_ops = array(
-        '='         => '=', 
-        '>'         => '>', 
-        '>='        => '>=', 
-        '<'         => '>', 
-        '<='        => '<=', 
-        'in'        => 'IN', 
-        'is-null'   => 'IS NULL', 
-        'like'      => 'LIKE', 
-        '!='        => '<>', 
-        'not-in'    => 'NOT IN',
-        'not-like'  => 'NOT LIKE', 
-        'not-null'  => 'IS NOT NULL'
-    );
 
     /**
      *
@@ -463,7 +448,6 @@ class Model extends \GDAO\Model
                     $select_qry_obj->bindValues( $sql_n_bind_params[1] );
                 }
             }
-
         }
     }
 
@@ -490,174 +474,7 @@ class Model extends \GDAO\Model
                     $select_qry_obj->bindValues( $sql_n_bind_params[1] );
                 }
             }
-
         }
-    }
-    
-    /**
-     * 
-     * Callers of this method should first validate $array via
-     * \GDAO\Model::_validateWhereOrHavingParamsArray(array $array)
-     * before calling this method.
-     * 
-     * @staticvar int $bind_params_index
-     * @param array $array an array of where or having condition(s) definition as
-     *                     specified in the params documentation of the fetch* methods
-     * @param int $indent_level the number of tab characters to add to the sql clause
-     * @return array an array of two items, the first is the having or where 
-     *               clause sql string and the second item is an associative
-     *               array of parameters to bind to the query
-     * @throws ModelBadWhereParamSuppliedException
-     * 
-     * @see \GDAO\Model::_validateWhereOrHavingParamsArray(array $array)
-     * 
-     */
-    protected function _getWhereOrHavingClauseWithParams(array &$array, $indent_level=0) {
-
-        static $bind_params_index;
-
-        if( !isset($bind_params_index) ) {
-
-            $bind_params_index = 0;
-        }
-
-        $i = 0;
-        $result_sql = '';
-        $result_bind_params = array();
-        $result_sql .= str_repeat("\t", $indent_level). '('. PHP_EOL;
-
-        foreach ( $array as $key => $value ) {
-
-            if ( is_numeric($key) || $key === "OR" || substr($key, 0, 3) === "OR#" ) {
-
-                $and_or = ( is_numeric($key) ) ? 'AND' : 'OR' ;
-
-                if( $i > 0 ) {
-
-                    //not the first item
-                    $result_sql .= str_repeat("\t", ($indent_level + 1) ). $and_or. PHP_EOL;
-                }
-
-                if( is_array($value) ) {
-
-                    $has_a_val_key = 
-                        (is_array($value)) && array_key_exists('val', $value);
-
-                    $has_a_col_and_an_operator_key = 
-                        (is_array($value)) 
-                        && array_key_exists('col', $value) 
-                        && array_key_exists('operator', $value);
-
-                    if( $has_a_col_and_an_operator_key ) {
-                        
-                        $operator_is_in_or_not_in = 
-                            in_array($value['operator'], array('not-in', 'in'));
-
-                        //quote $value['col'] and $value['val'] as needed
-                        $db_specific_operator = 
-                            static::$_where_or_having_ops_2_dbms_ops[$value['operator']];
-
-                        if( 
-                            !$has_a_val_key 
-                            ||  in_array( $value['operator'], array('not-null', 'is-null') ) 
-                        ) {
-                            $result_sql .= str_repeat("\t", ($indent_level + 1) )
-                                     . "{$value['col']} $db_specific_operator" . PHP_EOL;
-
-                        } else if( $has_a_val_key ) {
-
-                            //$value['val'] should be pdo quoted.
-                            $quoted_val = '';
-                            
-                            if (is_array($value['val'])) {
-
-                                //quote all string values
-                                array_walk(
-                                        
-                                    $value['val'],
-
-                                    function(&$val, $key, $pdo) {
-                                        $val = 
-                                            (is_string($val)) 
-                                                ? $pdo->quote($val) : $val;
-                                    },
-
-                                    $this->getPDO()
-                                );
-
-                                $quoted_val = 
-                                    " (" . implode(',', $value['val']) . ") ";
-                            } else {
-
-                                $quoted_val = 
-                                    (
-                                        !$operator_is_in_or_not_in 
-                                        && is_string($value['val'])
-                                    ) ? 
-                                        $this->getPDO()->quote($value['val']) 
-                                                                : $value['val'];
-                                
-                                if($operator_is_in_or_not_in) {
-                                    
-                                    if(
-                                        is_numeric($value['val'])
-                                        ||
-                                        (
-                                            is_string($value['val'])
-                                            && strpos($value['val'], '(') === false
-                                            && strpos($value['val'], ')') === false
-                                        )
-                                    ) {
-                                        $quoted_val = "($quoted_val)";
-                                    }
-                                }
-                            }
-                            
-                            $bind_params_index++;
-                            
-                            if( !$operator_is_in_or_not_in ) {
-                                
-                                $result_sql .= str_repeat("\t", ($indent_level + 1) )
-                                         . "{$value['col']} $db_specific_operator :_{$bind_params_index}_ " 
-                                         . PHP_EOL;
-                                $result_bind_params["_{$bind_params_index}_"] = $quoted_val;
-                                
-                            } else {
-                                //no need for named place holder just place the
-                                //quated val directly.
-                                $result_sql .= str_repeat("\t", ($indent_level + 1) )
-                                         . "{$value['col']} $db_specific_operator $quoted_val " 
-                                         . PHP_EOL;
-                            }
-                        }
-                    } else {
-                        //a sub-array of more conditions, recurse
-                        $full_result = $this->_getWhereOrHavingClauseWithParams($value, ($indent_level + 1) );
-                        
-                        $result_sql .= $full_result[0];
-                        $result_bind_params = array_merge($result_bind_params, $full_result[1]);
-                    }
-                } else {
-                    //throw exception badly structured array
-                    $msg = "ERROR: Bad where param array having an entry with a"
-                           . " key named '$key' with a non-expected value of "
-                           . PHP_EOL . var_export($value, true) . PHP_EOL
-                           . "inside the array: "
-                           . PHP_EOL . var_export($array, true) . PHP_EOL
-                           . " passed to " 
-                           . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                           . PHP_EOL;
-
-                    throw new ModelBadWhereParamSuppliedException($msg);
-                }
-            }
-            $i++;
-        }
-
-        return array( 
-                    $result_sql.str_repeat("\t", $indent_level) . ')' . PHP_EOL,
-                    $result_bind_params
-               );
     }
     
     /**
@@ -848,7 +665,7 @@ class Model extends \GDAO\Model
                  . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
-            throw new ModelBadWhereParamSuppliedException($msg);
+            throw new ModelBadFetchParamsSuppliedException($msg);
         }
 
         $query_obj = $this->_buildFetchQueryFromParams($params);
@@ -918,7 +735,7 @@ class Model extends \GDAO\Model
                  . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
-            throw new ModelBadWhereParamSuppliedException($msg);
+            throw new ModelBadFetchParamsSuppliedException($msg);
         }
 
         $query_obj = $this->_buildFetchQueryFromParams($params);
@@ -961,7 +778,7 @@ class Model extends \GDAO\Model
                  . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
-            throw new ModelBadWhereParamSuppliedException($msg);
+            throw new ModelBadFetchParamsSuppliedException($msg);
         }
         
         $param_keys_2_exclude = array('limit_offset', 'limit_size');
@@ -989,8 +806,98 @@ class Model extends \GDAO\Model
      * 
      * {@inheritDoc}
      */
-    public function insert($col_names_n_vals = array()) {
+    public function insert($col_names_n_vals = array()) {        
+
+        $result = false;
         
+        if ( 
+            !empty($col_names_n_vals) && count($col_names_n_vals) > 0 
+        ) {
+            $table_cols = $this->getTableCols();
+            $time_created_colname = $this->_created_timestamp_column_name;
+          
+            if(
+                !empty($time_created_colname) 
+                && in_array($time_created_colname, $table_cols)
+            ) {
+                //set created timestamp to now
+                $col_names_n_vals[$time_created_colname] = date('Y-m-d H:i:s');
+            }
+            
+            $last_updated_colname = $this->_updated_timestamp_column_name;
+          
+            if(
+                !empty($last_updated_colname) 
+                && in_array($last_updated_colname, $table_cols)
+            ) {
+                //set last updated timestamp to now
+                $col_names_n_vals[$last_updated_colname] = date('Y-m-d H:i:s');
+            }
+            
+            // remove non-existent table columns from the data
+            foreach ($col_names_n_vals as $key => $val) {
+                
+                if ( !in_array($key, $table_cols) ) {
+                    
+                    unset($col_names_n_vals[$key]);
+                }
+            }
+            
+            $pdo_obj = $this->getPDO();
+            
+            //Insert statement
+            $insert_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newInsert();
+            $insert_qry_obj->into($this->_table_name)->cols($col_names_n_vals);
+            
+            $pdo_statement = $pdo_obj->prepare($insert_qry_obj->__toString());
+            $insert_qry_params = $insert_qry_obj->getBindValues();
+            
+            foreach ( $insert_qry_params as $key => &$param ) {
+                
+                if (is_null($param)) {
+                    
+                    $type = \PDO::PARAM_NULL;
+                    
+                } else if (is_bool($param)) {
+                    
+                    $type = \PDO::PARAM_BOOL;
+                    
+                } else if (is_int($param)) {
+                    
+                    $type = \PDO::PARAM_INT;
+                    
+                } else {
+                    
+                    $type = \PDO::PARAM_STR;
+                }
+
+                $pdo_statement->bindParam($key, $param, $type);
+            }
+            
+            if( $pdo_statement->execute() ) {
+             
+                $last_insert_sequence_name = 
+                    $insert_qry_obj->getLastInsertIdName($this->_primary_col);
+
+                $pk_val_4_new_record = 
+                        $this->getPDO()->lastInsertId($last_insert_sequence_name);
+
+                if( empty($pk_val_4_new_record) ) {
+                     
+                    //throw exception
+                } else {
+                    
+                    //add primary key value of the newly inserted record to the 
+                    //data to be returned.
+                    $col_names_n_vals[$this->_primary_col] = $pk_val_4_new_record;
+                }
+                
+                //insert was successful
+                $result = $col_names_n_vals;
+            } 
+        }
+        
+        return $result;
     }
 
     /**
@@ -1006,14 +913,24 @@ class Model extends \GDAO\Model
         if ( 
             !empty($col_names_n_vals_2_save) && count($col_names_n_vals_2_save) > 0 
         ) {
+            $table_cols = $this->getTableCols();
             $last_updtd_colname = $this->_updated_timestamp_column_name;
           
             if(
                 !empty($last_updtd_colname) 
-                && in_array($last_updtd_colname, $this->getTableCols())
+                && in_array($last_updtd_colname, $table_cols)
             ) {
                 //set last updated timestamp to now
                 $col_names_n_vals_2_save[$last_updtd_colname] = date('Y-m-d H:i:s');
+            }
+            
+            // remove non-existent table columns from the data
+            foreach ($col_names_n_vals_2_save as $key => $val) {
+                
+                if ( !in_array($key, $table_cols) ) {
+                    
+                    unset($col_names_n_vals_2_save[$key]);
+                }
             }
             
             //select query obj will be used to execute a select count(*) query
@@ -1127,9 +1044,11 @@ class Model extends \GDAO\Model
     }
 }
 
-class ModelBadColsParamSuppliedException extends \Exception{}
-class ModelBadGroupByParamSuppliedException extends \Exception{}
-class ModelBadHavingParamSuppliedException extends \Exception{}
-class ModelBadOrderByParamSuppliedException extends \Exception{}
-class ModelBadWhereParamSuppliedException extends \Exception{}
 class ModelPropertyNotDefinedException extends \Exception{}
+class ModelBadColsParamSuppliedException extends \Exception{}
+class ModelBadWhereParamSuppliedException extends \Exception{}
+class ModelBadFetchParamsSuppliedException extends \Exception{}
+class ModelBadHavingParamSuppliedException extends \Exception{}
+class ModelBadGroupByParamSuppliedException extends \Exception{}
+class ModelBadOrderByParamSuppliedException extends \Exception{}
+class ModelBadWhereOrHavingParamSuppliedException extends \Exception{}
