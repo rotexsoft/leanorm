@@ -5,7 +5,8 @@ namespace IdiormGDAO\Model;
 /**
  * Description of Record
  *
- * @author aadegbam
+ * @author Rotimi Adegbamigbe
+ * @copyright (c) 2015, Rotimi Adegbamigbe
  */
 class Record extends \GDAO\Model\Record
 {

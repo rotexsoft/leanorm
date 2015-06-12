@@ -11,6 +11,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     protected $_mock_model_objs = [];
 
     protected function setUp() {
+        
         parent::setUp();
         
         $sqlite_file = __DIR__.DIRECTORY_SEPARATOR.'buying_and_selling.sqlite';

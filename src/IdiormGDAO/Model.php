@@ -9,7 +9,8 @@ use GDAO\GDAOModelTableNameNotSetDuringConstructionException;
  * 
  * Supported PDO drivers: mysql, pgsql, sqlite and sqlsrv
  *
- * @author aadegbam
+ * @author Rotimi Adegbamigbe
+ * @copyright (c) 2015, Rotimi Adegbamigbe
  */
 class Model extends \GDAO\Model
 {
