@@ -1,11 +1,5 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  * Description of MockModelForTestingPublicAndProtectedMethods
  *
@@ -24,6 +18,12 @@ class MockModelForTestingPublicAndProtectedMethods extends \IdiormGDAO\Model
                     );
         }
     }
+
+    public function addHavingConditions2Query(
+        array $whr_or_hvn_parms, \Aura\SqlQuery\Common\Select $select_qry_obj
+    ) {
+        $this->_addHavingConditions2Query($whr_or_hvn_parms, $select_qry_obj);
+    }
     
     public function addWhereConditions2Query( 
         array $where_params, \Aura\SqlQuery\Common\Select $select_qry_obj
@@ -34,7 +34,7 @@ class MockModelForTestingPublicAndProtectedMethods extends \IdiormGDAO\Model
     public function buildFetchQueryFromParams( 
         array $params=[], array $allowed_keys=[]
     ) {
-        $this->_buildFetchQueryFromParams($params, $allowed_keys);
+        return $this->_buildFetchQueryFromParams($params, $allowed_keys);
     }
     
     public function getWhereOrHavingClauseWithParams(

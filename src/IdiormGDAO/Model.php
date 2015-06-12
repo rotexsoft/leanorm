@@ -2,12 +2,12 @@
 namespace IdiormGDAO;
 use Aura\SqlQuery\QueryFactory;
 use Aura\SqlSchema\ColumnFactory;
-use Aura\SqlSchema\MysqlSchema;
 use GDAO\GDAOModelPrimaryColNameNotSetDuringConstructionException;
 use GDAO\GDAOModelTableNameNotSetDuringConstructionException;
 
 /**
- * Description of Model
+ * 
+ * Supported PDO drivers: mysql, pgsql, sqlite and sqlsrv
  *
  * @author aadegbam
  */
@@ -35,23 +35,16 @@ class Model extends \GDAO\Model
     // Properties declared here are specific to \IdiormGDAO\Model and its kids //
     /////////////////////////////////////////////////////////////////////////////
     protected static $_valid_extra_opts_keys_4_idiorm = array(
-        'connection_string',
-        'id_column' => 'id',
-        'id_column_overrides',
-        'error_mode',
-        'username',
-        'password',
-        'driver_options',
         'identifier_quote_character', // if this is null, will be autodetected
-        'limit_clause_style', // if this is null, will be autodetected
-        'logging',
-        'logger',
-        'caching',
-        'caching_auto_clear',
-        'return_result_sets',
+        'limit_clause_style', //[NOT REALLY NEEDED SINCE QUERIES ARE BEING BUILT
+                              //USING AURA SQL QUERY OBJECTS] 
+                              //if this is null, will be autodetected
+        'logging', //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
+        'logger',  //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
+        'caching', // [NOT NEED: SHOULD IMPLEMENT CACHING IF NEEDED]
     );
     
-    protected static $_where_or_having_ops_to_mysql_ops = array(
+    protected static $_where_or_having_ops_2_dbms_ops = array(
         '='         => '=', 
         '>'         => '>', 
         '>='        => '>=', 
@@ -67,6 +60,17 @@ class Model extends \GDAO\Model
     );
 
     /**
+     *
+     * Name of the pdo driver currently being used.
+     * It must be one of the values returned by 
+     * $this->getPDO()->getAvailableDrivers()
+     * 
+     * @var string  
+     */
+    protected $_pdo_driver_name = null;
+
+
+    /**
      * 
      * {@inheritDoc}
      */
@@ -77,8 +81,9 @@ class Model extends \GDAO\Model
         array $pdo_driver_opts = array(),
         array $extra_opts = array()
     ) {
-        if(count($extra_opts) > 0){
+        if(count($extra_opts) > 0) {
             
+            //set properties of this class specified in $extra_opts
             foreach($extra_opts as $e_opt_key => $e_opt_val) {
   
                 if ( property_exists($this, $e_opt_key) ) {
@@ -93,7 +98,7 @@ class Model extends \GDAO\Model
         }
 
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $extra_opts);
-//r($this->toArray());exit;
+
         \ORM::configure($dsn);
         \ORM::configure('username', $username);
         \ORM::configure('password', $passwd);
@@ -110,19 +115,18 @@ class Model extends \GDAO\Model
                 && in_array($e_opt_key, static::$_valid_extra_opts_keys_4_idiorm)
             ) {
                 \ORM::configure($e_opt_key, $e_opt_val);
-                
-            } 
-//            elseif(is_string($e_opt_val)) {
-//
-//                \ORM::configure($e_opt_val);
-//            }
+            }
         }
+        
+        $this->_pdo_driver_name = $this->getPDO()
+                                       ->getAttribute(\PDO::ATTR_DRIVER_NAME);
         
         if(!empty($this->_primary_col) && strlen($this->_primary_col) > 0) {
             
             \ORM::configure('id_column', $this->_primary_col);
             
         } else {
+            
             $msg = 'Primary Key Column name ($_primary_col) not set for '.get_class($this);
             throw new GDAOModelPrimaryColNameNotSetDuringConstructionException($msg);
         }
@@ -141,8 +145,11 @@ class Model extends \GDAO\Model
             // a column definition factory 
             $column_factory = new ColumnFactory();
 
-            // the schema discovery object 
-            $schema = new MysqlSchema($this->getPDO(), $column_factory);
+            $schema_class_name = '\\Aura\\SqlSchema\\' 
+                                 .ucfirst($this->_pdo_driver_name).'Schema';
+
+            // the schema discovery object
+            $schema = new $schema_class_name($this->getPDO(), $column_factory);
 
             $this->_table_cols = array();
             $schema_definitions = $schema->fetchTableCols($this->_table_name);
@@ -220,7 +227,7 @@ class Model extends \GDAO\Model
     protected function _buildFetchQueryFromParams(
         array $params=array(), array $disallowed_keys=array()
     ) {
-        $select_qry_obj = (new QueryFactory('mysql'))->newSelect();
+        $select_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newSelect();
         $select_qry_obj->from($this->_table_name);
         
         if( !empty($params) && count($params) > 0 ) {
@@ -370,8 +377,65 @@ class Model extends \GDAO\Model
                     throw new ModelBadOrderByParamSuppliedException($msg);
                 }
             }
+
+            if( 
+                (
+                    !in_array('limit_size', $disallowed_keys) 
+                    || count($disallowed_keys) <= 0
+                )
+                && array_key_exists('limit_size', $params)
+            ) {
+                if( is_numeric($params['limit_size']) ) {
+                    
+                    $select_qry_obj->limit( (int)$params['limit_size'] );
+                    
+                } else {
+                    //throw exception badly structured array
+                    $msg = "ERROR: Bad fetch param entry. Integer expected as the"
+                         . " value of the item with the key named 'limit_size'"
+                         . " in the array: "
+                         . PHP_EOL . var_export($params, true) . PHP_EOL
+                         . " passed to " 
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . PHP_EOL;
+
+                    throw new ModelBadOrderByParamSuppliedException($msg);
+                }
+            }
+            
+            if( 
+                (
+                    !in_array('limit_offset', $disallowed_keys) 
+                    || count($disallowed_keys) <= 0
+                )
+                && array_key_exists('limit_offset', $params)
+            ) {
+                if( is_numeric($params['limit_offset']) ) {
+                    
+                    $select_qry_obj->offset( (int)$params['limit_offset'] );
+                    
+                } else {
+                    //throw exception badly structured array
+                    $msg = "ERROR: Bad fetch param entry. Integer expected as the"
+                         . " value of the item with the key named 'limit_offset'"
+                         . " in the array: "
+                         . PHP_EOL . var_export($params, true) . PHP_EOL
+                         . " passed to " 
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . PHP_EOL;
+
+                    throw new ModelBadOrderByParamSuppliedException($msg);
+                }
+            }
+        } else {
+            
+            //defaults
+            $select_qry_obj->cols(array('*'));
         }
-        
+
+//r($select_qry_obj->__toString());
+//r($select_qry_obj->getBindValues());exit;
+
         return $select_qry_obj;
     }
 
@@ -431,6 +495,10 @@ class Model extends \GDAO\Model
     
     /**
      * 
+     * Callers of this method should first validate $array via
+     * \GDAO\Model::_validateWhereOrHavingParamsArray(array $array)
+     * before calling this method.
+     * 
      * @staticvar int $bind_params_index
      * @param array $array an array of where or having condition(s) definition as
      *                     specified in the params documentation of the fetch* methods
@@ -439,6 +507,9 @@ class Model extends \GDAO\Model
      *               clause sql string and the second item is an associative
      *               array of parameters to bind to the query
      * @throws ModelBadWhereParamSuppliedException
+     * 
+     * @see \GDAO\Model::_validateWhereOrHavingParamsArray(array $array)
+     * 
      */
     protected function _getWhereOrHavingClauseWithParams(array &$array, $indent_level=0) {
 
@@ -483,7 +554,7 @@ class Model extends \GDAO\Model
 
                         //quote $value['col'] and $value['val'] as needed
                         $db_specific_operator = 
-                            static::$_where_or_having_ops_to_mysql_ops[$value['operator']];
+                            static::$_where_or_having_ops_2_dbms_ops[$value['operator']];
 
                         if( 
                             !$has_a_val_key 
@@ -614,8 +685,7 @@ class Model extends \GDAO\Model
 
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
-//r($sql);
-//r($params_2_bind_2_sql);exit;
+        
         $orm_obj = \ORM::for_table($this->_table_name);
         $results = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
         
@@ -666,12 +736,12 @@ class Model extends \GDAO\Model
             //select query obj will be used to execute a select count(*) query
             //to see if the criteria specified in $col_names_n_vals_2_match
             //matches any cols
-            $select_qry_obj = (new QueryFactory('mysql'))->newSelect();
+            $select_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newSelect();
             $select_qry_obj->cols(array('COUNT(*) AS num_of_matched_records'));
             $select_qry_obj->from($this->_table_name);
             
             //delete statement
-            $del_qry_obj = (new QueryFactory('mysql'))->newDelete();
+            $del_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newDelete();
             $del_qry_obj->from($this->_table_name);
 
             foreach ($cols_n_vals as $colname => $colval) {
@@ -948,12 +1018,12 @@ class Model extends \GDAO\Model
             //select query obj will be used to execute a select count(*) query
             //to see if the criteria specified in $col_names_n_vals_2_match
             //matches any cols
-            $select_qry_obj = (new QueryFactory('mysql'))->newSelect();
+            $select_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newSelect();
             $select_qry_obj->cols(array('COUNT(*) AS num_of_matched_records'));
             $select_qry_obj->from($this->_table_name);
             
             //update statement
-            $update_qry_obj = (new QueryFactory('mysql'))->newUpdate();
+            $update_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newUpdate();
             $update_qry_obj->table($this->_table_name);
             $update_qry_obj->cols($col_names_n_vals_2_save);
             
@@ -1035,6 +1105,25 @@ class Model extends \GDAO\Model
         
         return $succesfully_updated;
     }
+    
+    public function __get($property_name) {
+        
+        if( property_exists($this, $property_name) ) {
+            
+        } else if ( property_exists($this, "_$property_name") ) {
+            
+            $property_name = "_$property_name";
+            
+        } else {
+            
+            $msg = "ERROR: The property named '$property_name' doesn't exist in "
+                  . get_class($this) . '.' . PHP_EOL;
+
+            throw new ModelPropertyNotDefinedException($msg);
+        }
+        
+        return $this->$property_name;
+    }
 }
 
 class ModelBadColsParamSuppliedException extends \Exception{}
@@ -1042,3 +1131,4 @@ class ModelBadGroupByParamSuppliedException extends \Exception{}
 class ModelBadHavingParamSuppliedException extends \Exception{}
 class ModelBadOrderByParamSuppliedException extends \Exception{}
 class ModelBadWhereParamSuppliedException extends \Exception{}
+class ModelPropertyNotDefinedException extends \Exception{}
