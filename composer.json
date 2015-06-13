@@ -1,7 +1,7 @@
 {
     "name": "rotexsoft/idiorm-gdao",
     "type": "library",
-    "description": "A Generic Data Objects implementation based on idiorm.",
+    "description": "A Generic Data Objects ( https://github.com/rotexsoft/gdao ) implementation based on idiorm.",
     "keywords": [ "orm", "db", "pdo", "mysql", "postgresql", "sqlite", "database", "sql", "table","data", "gateway", "table data gateway"],
     "homepage": "https://github.com/rotexsoft/idiorm-gdao",
     "license": "MIT",
@@ -23,6 +23,7 @@
         "ramsey/array_column": "^1.1"
     },
     "require-dev": {
+        "php": ">=5.4.0",
         "phpunit/phpunit": "^4.7",
         "devster/ubench": "^1.1",
         "digitalnature/php-ref": "^1.0"
