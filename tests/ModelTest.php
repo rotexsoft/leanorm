@@ -804,9 +804,9 @@ $model_sqlite = new \IdiormGDAO\Model(
             ['primary_col'=>'ShipperID', 'table_name'=>'Shippers']
             //['primary_col'=>'OrderID', 'table_name'=>'Orders']
         );
-$res4 = $model_sqlite->deleteRecordsMatchingSpecifiedColsNValues(['ShipperID'=>2]);
+$res4 = $model_sqlite->deleteRecordsMatchingSpecifiedColsNValues(['ShipperID2'=>2]);
 var_dump($res4);
 var_dump(pow(PHP_INT_MAX, PHP_INT_MAX));
-*/
+//*/
     }
 }

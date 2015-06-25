@@ -152,11 +152,15 @@ class Record extends \GDAO\Model\Record
         }
 
         if (!empty($data_2_save) && count($data_2_save) > 0) {
+            
+            $pri_val = $this->getPrimaryVal();
+            
+            if ( empty($pri_val) ) {
 
-            if (empty($this->getPrimaryVal())) {
-
+                $result = $this->_model->insert($data_2_save);
+                
                 //insert
-                return !empty($this->_model->insert($data_2_save));
+                return !empty($result);
                 
             } else {
 
@@ -165,6 +169,7 @@ class Record extends \GDAO\Model\Record
                 return $this->_model->updateSpecifiedRecord($this);
             }
         } else {
+            
             //nothing to do
             return null;
         }
