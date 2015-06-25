@@ -10,6 +10,11 @@ namespace IdiormGDAO\Model;
  */
 class Record extends \GDAO\Model\Record
 {
+    public function __construct(array $data = array(),
+            array $extra_opts = array()) {
+        parent::__construct($data, $extra_opts);
+    }
+    
     public function delete() {
 
         $this->_model->deleteSpecifiedRecord($this);

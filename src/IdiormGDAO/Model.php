@@ -164,11 +164,11 @@ class Model extends \GDAO\Model
         if( empty($this->_collection_class_name) ) {
          
             //default to creating new collection of type \IdiormGDAO\Model\Collection
-            $collection = new \IdiormGDAO\Model\Collection($list_of_records);
+            $collection = new \IdiormGDAO\Model\Collection($list_of_records, $extra_opts);
             
         } else {
             
-            $collection = new $this->_collection_class_name($list_of_records);
+            $collection = new $this->_collection_class_name($list_of_records, $extra_opts);
         }
         
         $collection->setModel($this);
@@ -180,26 +180,19 @@ class Model extends \GDAO\Model
      * 
      * {@inheritDoc}
      */
-    public function createRecord(array $col_names_and_values = array(), array $extra_opts=array()) {
+    public function createRecord(array $col_names_n_vals = array(), array $extra_opts=array()) {
         
         if( empty($this->_record_class_name) ) {
          
             //default to creating new record of type \IdiormGDAO\Model\Record
-            $record = new \IdiormGDAO\Model\Record($col_names_and_values);
+            $record = new \IdiormGDAO\Model\Record($col_names_n_vals, $extra_opts);
             
         } else {
             
-            $record = new $this->_record_class_name($col_names_and_values);
+            $record = new $this->_record_class_name($col_names_n_vals, $extra_opts);
         }
         
         $record->setModel($this);
-        
-        if( 
-            (array_key_exists('_is_new', $extra_opts) &&  $extra_opts['_is_new'] === false)
-            || (array_key_exists('is_new', $extra_opts) &&  $extra_opts['is_new'] === false)
-        ) {
-            $record->markAsNotNew();
-        }
         
         return $record;
     }
@@ -363,31 +356,6 @@ class Model extends \GDAO\Model
                     throw new ModelBadOrderByParamSuppliedException($msg);
                 }
             }
-
-            if( 
-                (
-                    !in_array('limit_size', $disallowed_keys) 
-                    || count($disallowed_keys) <= 0
-                )
-                && array_key_exists('limit_size', $params)
-            ) {
-                if( is_numeric($params['limit_size']) ) {
-                    
-                    $select_qry_obj->limit( (int)$params['limit_size'] );
-                    
-                } else {
-                    //throw exception badly structured array
-                    $msg = "ERROR: Bad fetch param entry. Integer expected as the"
-                         . " value of the item with the key named 'limit_size'"
-                         . " in the array: "
-                         . PHP_EOL . var_export($params, true) . PHP_EOL
-                         . " passed to " 
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . PHP_EOL;
-
-                    throw new ModelBadOrderByParamSuppliedException($msg);
-                }
-            }
             
             if( 
                 (
@@ -413,6 +381,31 @@ class Model extends \GDAO\Model
                     throw new ModelBadOrderByParamSuppliedException($msg);
                 }
             }
+
+            if( 
+                (
+                    !in_array('limit_size', $disallowed_keys) 
+                    || count($disallowed_keys) <= 0
+                )
+                && array_key_exists('limit_size', $params)
+            ) {
+                if( is_numeric($params['limit_size']) ) {
+                    
+                    $select_qry_obj->limit( (int)$params['limit_size'] );
+                    
+                } else {
+                    //throw exception badly structured array
+                    $msg = "ERROR: Bad fetch param entry. Integer expected as the"
+                         . " value of the item with the key named 'limit_size'"
+                         . " in the array: "
+                         . PHP_EOL . var_export($params, true) . PHP_EOL
+                         . " passed to " 
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . PHP_EOL;
+
+                    throw new ModelBadOrderByParamSuppliedException($msg);
+                }
+            }
         } else {
             
             //defaults
@@ -421,7 +414,6 @@ class Model extends \GDAO\Model
 
 //r($select_qry_obj->__toString());
 //r($select_qry_obj->getBindValues());exit;
-
         return $select_qry_obj;
     }
 
@@ -565,6 +557,7 @@ class Model extends \GDAO\Model
             foreach ($cols_n_vals as $colname => $colval) {
 
                 if (is_array($colval)) {
+                    
                     //quote all string values
                     array_walk(
                         $colval,
@@ -604,6 +597,11 @@ class Model extends \GDAO\Model
 //r($qry);
 //r($qry_params);
                 $result = $orm_obj->raw_execute($dlt_qry, $dlt_qry_params); 
+                
+                if( $result === true ) {
+                    
+                    $result = $num_of_matched_records;
+                }
 //echo $orm_obj->get_last_query();
             }
         }
@@ -630,13 +628,14 @@ class Model extends \GDAO\Model
             $succesfully_deleted = 
                 $this->deleteRecordsMatchingSpecifiedColsNValues($cols_n_vals);
 
-            if ($succesfully_deleted) {
+            if ( $succesfully_deleted === 1 ) {
 
                 $record->setStateToNew();
             }
         }
         
-        return $succesfully_deleted;
+        return is_numeric($succesfully_deleted)?
+                ($succesfully_deleted === 1) : $succesfully_deleted;
     }
 
     /**
@@ -861,8 +860,29 @@ class Model extends \GDAO\Model
             
             $pdo_statement = $pdo_obj->prepare($insert_qry_obj->__toString());
             $insert_qry_params = $insert_qry_obj->getBindValues();
-            
+
             foreach ( $insert_qry_params as $key => &$param ) {
+                
+                if(
+                    !is_bool($param) 
+                    && !is_null($param) 
+                    && !is_numeric($param)
+                    && !is_string($param)
+                ) {
+                    $msg = "ERROR: the value "
+                         . PHP_EOL . var_export($param, true) . PHP_EOL
+                         . " you are trying to insert into {$this->_table_name}."
+                         . "{$key} is not acceptable ('".  gettype($param) . "'"
+                         . " supplied). Boolean, NULL, numeric or string value expected."
+                         . PHP_EOL
+                         . "Data supplied to "
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . " for insertion:"
+                         . PHP_EOL . var_export($col_names_n_vals, true) . PHP_EOL
+                         . PHP_EOL;
+                    
+                    throw new \GDAO\ModelInvalidInsertValueSuppliedException($msg);
+                }
                 
                 if (is_null($param)) {
                     
@@ -944,11 +964,33 @@ class Model extends \GDAO\Model
             }
             
             // remove non-existent table columns from the data
+            // and check that existent table columns have values of  
+            // the right data type: ie. Boolean, NULL, Number or String.
             foreach ($col_names_n_vals_2_save as $key => $val) {
                 
                 if ( !in_array($key, $table_cols) ) {
                     
                     unset($col_names_n_vals_2_save[$key]);
+                    
+                } else if(
+                    !is_bool($val) 
+                    && !is_null($val) 
+                    && !is_numeric($val)
+                    && !is_string($val)
+                ) {
+                    $msg = "ERROR: the value "
+                         . PHP_EOL . var_export($val, true) . PHP_EOL
+                         . " you are trying to update {$this->_table_name}."
+                         . "{$key} with is not acceptable ('".  gettype($val) . "'"
+                         . " supplied). Boolean, NULL, numeric or string value expected."
+                         . PHP_EOL
+                         . "Data supplied to "
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . " for update:"
+                         . PHP_EOL . var_export($col_names_n_vals_2_save, true) . PHP_EOL
+                         . PHP_EOL;
+
+                    throw new \GDAO\ModelInvalidUpdateValueSuppliedException($msg);
                 }
             }
             
@@ -982,8 +1024,13 @@ class Model extends \GDAO\Model
 
                         $select_qry_obj->where("{$colname} IN (" . implode(',', $colval) . ") ");
                         $update_qry_obj->where("{$colname} IN (" . implode(',', $colval) . ") ");
+                        
                     } else {
-
+                        
+                        //NOTE: not pdo quoting $colval here because when 
+                        //$orm_obj->raw_query($slct_qry, $slct_qry_params)
+                        //and $orm_obj->raw_execute($updt_qry, $updt_qry_params)
+                        //are called, the pdo quoting gets handled by idiorm.
                         $select_qry_obj->where("{$colname} = ?", $colval);
                         $update_qry_obj->where("{$colname} = ?", $colval);
                     }
@@ -1010,7 +1057,13 @@ class Model extends \GDAO\Model
                 $updt_qry_params = $update_qry_obj->getBindValues();// print_r($query_params);
 //r($updt_qry);
 //r($updt_qry_params);
-                $result = $orm_obj->raw_execute($updt_qry, $updt_qry_params); 
+                $result = $orm_obj->raw_execute($updt_qry, $updt_qry_params);
+                
+                if( $result === true ) {
+                    
+                    //return number of matched records
+                    $result = $num_of_matched_records;
+                }
 //echo $orm_obj->get_last_query();
             }
         }
@@ -1040,7 +1093,8 @@ class Model extends \GDAO\Model
                         );
         }
         
-        return $succesfully_updated;
+        return is_numeric($succesfully_updated)? 
+                    ($succesfully_updated === 1) : $succesfully_updated ;
     }
     
     public function __get($property_name) {

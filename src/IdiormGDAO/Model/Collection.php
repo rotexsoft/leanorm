@@ -17,7 +17,7 @@ class Collection extends \GDAO\Model\Collection
      */
     public function __construct(\GDAO\Model\GDAORecordsList $data,  array $extra_opts=array()) {
 
-        $this->_data = $data->toArray();
+        parent::__construct($data, $extra_opts);
     }
     
     public function deleteAll() {
