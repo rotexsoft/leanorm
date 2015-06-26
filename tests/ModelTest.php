@@ -802,7 +802,7 @@ SQL;
                 );
         $this->assertEquals( true, ($res3 === null) );
 
-//*
+/*
 $dsn = "mysql:host=s-edm-tallis;dbname=buying_and_selling";
 $model_sqlite = new \IdiormGDAO\Model(
             $dsn,

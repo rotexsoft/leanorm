@@ -557,8 +557,7 @@ class Model extends \GDAO\Model
                         is_string($my_fetched_data->$fkey_col_in_my_table) ? 
                             $pdo->quote( $my_fetched_data->$fkey_col_in_my_table )
                                 : $my_fetched_data->$fkey_col_in_my_table
-                        )
-                     . "";
+                        );
             }
 //exit($stm);
             $sth = $pdo->prepare($stm);
@@ -628,7 +627,7 @@ class Model extends \GDAO\Model
                         if ( empty($foreign_models_collection_class_name) ) {
 
                             $foreign_models_collection_class_name =
-                                                    '\\IdiormGDAO\Model\\Collection';
+                                                '\\IdiormGDAO\Model\\Collection';
                         }
 
                         $matching_related_records = new $foreign_models_collection_class_name (
@@ -671,7 +670,8 @@ class Model extends \GDAO\Model
                             new $foreign_models_record_class_name(
                                     $rec_data, array('is_new'=>false)
                             );
-                        if(!empty($foreign_model_obj)){
+                        
+                        if( !empty($foreign_model_obj) ) {
                             
                             $matching_related_records[$key]->setModel($foreign_model_obj);
                         }
