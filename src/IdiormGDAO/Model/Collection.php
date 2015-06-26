@@ -39,9 +39,12 @@ class Collection extends \GDAO\Model\Collection
     public function getColVals($col) {
 
         $list = array();
+        
         foreach ($this->_data as $key => $record) {
+            
             $list[$key] = $record->$col;
         }
+        
         return $list;
     }
 

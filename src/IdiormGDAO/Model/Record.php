@@ -380,6 +380,11 @@ class Record extends \GDAO\Model\Record
         unset($this[$this->getPrimaryCol()]);
         $this->markAsNew();
     }
+    
+    public function setRelatedData($key, $value) {
+        
+        $this->_related_data[$key] = $value;
+    }
 }
 
 class RecordOperationNotSupportedByDriverException extends \Exception

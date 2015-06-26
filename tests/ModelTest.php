@@ -14,7 +14,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         
         parent::setUp();
         
-        $sqlite_file = __DIR__.DIRECTORY_SEPARATOR.'DbFiles'.DIRECTORY_SEPARATOR
+        $sqlite_file = __DIR__.DIRECTORY_SEPARATOR
+                       .'DbFiles'.DIRECTORY_SEPARATOR
                        .'buying_and_selling.sqlite';
 
         $this->_mock_model_objs['customers_with_specialized_collection_and_record'] = 
@@ -706,10 +707,13 @@ EOT;
 
         $coll_mock = $model_with_mock_coll_and_rec
                             ->createCollection(new \GDAO\Model\GDAORecordsList([]));
+        //exact class
         $this->assertEquals(
             'MockModelCollectionForTestingPublicAndProtectedMethods', 
             get_class($coll_mock)
         );
+        
+        //has the right parent class
         $this->assertInstanceOf('IdiormGDAO\Model\Collection', $coll_mock);
         
         ////////////////////////////////////////////////////////////////////////
@@ -719,7 +723,7 @@ EOT;
         
         $coll_generic = $model_with_idiorm_coll_and_rec
                             ->createCollection(new \GDAO\Model\GDAORecordsList([]));
-        
+        //exact class
         $this->assertEquals('IdiormGDAO\Model\Collection', get_class($coll_generic));
     }
 
@@ -730,10 +734,13 @@ EOT;
 
         $record_mock = $model_with_mock_coll_and_rec
                                         ->createRecord([], ['is_new'=>false]);
+        //exact class
         $this->assertEquals(
             'MockModelRecordForTestingPublicAndProtectedMethods', 
             get_class($record_mock)
         );
+        
+        //has the right parent class
         $this->assertInstanceOf('\\IdiormGDAO\\Model\\Record', $record_mock);
         
         ////////////////////////////////////////////////////////////////////////
@@ -743,7 +750,7 @@ EOT;
         
         $record_generic = $model_with_idiorm_coll_and_rec
                                         ->createRecord([], ['is_new'=>false]);
-        
+        //exact class
         $this->assertEquals('IdiormGDAO\Model\Record', get_class($record_generic));
     }
     
@@ -751,11 +758,12 @@ EOT;
         
         $mock_model_cust = $this->_mock_model_objs['customers'];
         
+        //access protected property
         $this->assertEquals('CustomerID', $mock_model_cust->primary_col);
         $this->assertEquals('CustomerID', $mock_model_cust->_primary_col);
         
         try {
-            
+            //access non-existent property
             $mock_model_cust->non_existent_property;
             
         } catch (Exception $ex) {
@@ -794,7 +802,7 @@ SQL;
                 );
         $this->assertEquals( true, ($res3 === null) );
 
-/*
+//*
 $dsn = "mysql:host=s-edm-tallis;dbname=buying_and_selling";
 $model_sqlite = new \IdiormGDAO\Model(
             $dsn,
