@@ -314,13 +314,19 @@ class Record extends \GDAO\Model\Record
      */
     public function __get($key) {
 
-        if (array_key_exists($key, $this->_data)) {
+        if ( array_key_exists($key, $this->_data) ) {
 
             return $this->_data[$key];
-        } else {
+            
+        } else if ( array_key_exists($key, $this->_related_data) ) {
 
-            $msg = "Property '$key' does not exist in " . get_class($this) . PHP_EOL .
-                   $this->__toString();
+            return $this->_related_data[$key];
+            
+        }  else {
+
+            $msg = "Property '$key' does not exist in " 
+                   . get_class($this) . PHP_EOL . $this->__toString();
+            
             throw new NoSuchPropertyForRecordException($msg);
         }
     }
