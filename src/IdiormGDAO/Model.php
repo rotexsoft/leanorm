@@ -643,7 +643,7 @@ class Model extends \GDAO\Model
                     );
 //eprebr($matching_related_records);
                     
-                    $this->_wrapMatchingRelatedDataIntoRecordsAndACollection(
+                    $this->_wrapRelatedDataInsideRecordsAndACollection(
                         $in_records, $matching_related_records, $foreign_models_record_class_name,
                         $foreign_model_obj, $in_collection, $foreign_models_collection_class_name
                     );
@@ -665,7 +665,7 @@ class Model extends \GDAO\Model
                 
                 $matching_related_records =& $related_data;
 
-                $this->_wrapMatchingRelatedDataIntoRecordsAndACollection(
+                $this->_wrapRelatedDataInsideRecordsAndACollection(
                     $in_records, $matching_related_records, $foreign_models_record_class_name,
                     $foreign_model_obj, $in_collection, $foreign_models_collection_class_name
                 );
@@ -675,7 +675,7 @@ class Model extends \GDAO\Model
         } // if( array_key_exists($rel_name, $this->_relations) )
     }
 
-    protected function _wrapMatchingRelatedDataIntoRecordsAndACollection(
+    protected function _wrapRelatedDataInsideRecordsAndACollection(
         $in_records, &$matching_related_records, $foreign_models_record_class_name,
         $foreign_model_obj, $in_collection, $foreign_models_collection_class_name
     ) {
