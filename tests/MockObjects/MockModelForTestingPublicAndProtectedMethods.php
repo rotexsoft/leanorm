@@ -32,8 +32,8 @@ class MockModelForTestingPublicAndProtectedMethods extends \IdiormGDAO\Model
     }
     
     public function buildFetchQueryFromParams( 
-        array $params=[], array $allowed_keys=[]
+        array $params=[], array $allowed_keys=[], $table_name=''
     ) {
-        return $this->_buildFetchQueryFromParams($params, $allowed_keys);
+        return $this->_buildFetchQueryFromParams($params, $allowed_keys, $table_name);
     }
 }

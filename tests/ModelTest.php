@@ -619,7 +619,7 @@ WHERE
     (
 	hidden_fiscal_year IN (16) 
 	AND
-	deactivated = :_22_ 
+	deactivated = :_21_ 
 	AND
 	parent_id IS NULL
 )
@@ -628,9 +628,9 @@ GROUP BY
     hidden_fiscal_year
 HAVING
     (
-	hidden_fiscal_year > :_23_ 
+	hidden_fiscal_year > :_22_ 
 	AND
-	deactivated = :_24_ 
+	deactivated = :_23_ 
 	AND
 	parent_id IS NULL
 )
@@ -641,7 +641,7 @@ LIMIT 400 OFFSET 50
 EOT;
         $this->assertContains($expected_sql, $select_qry_obj->__toString());
 
-        $expected_params = [ '_22_' => 0, '_23_' => 9, '_24_' => 0];
+        $expected_params = [ '_21_' => 0, '_22_' => 9, '_23_' => 0];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
         
 ////////////////////////////////////////////////////////////////////////////////
@@ -684,7 +684,7 @@ WHERE
     (
 	hidden_fiscal_year IN (16) 
 	AND
-	deactivated = :_26_ 
+	deactivated = :_24_ 
 	AND
 	parent_id IS NULL
 )
@@ -696,7 +696,63 @@ ORDER BY
 EOT;
         $this->assertContains($expected_sql, $select_qry_obj->__toString());
                 
-        $expected_params = ['_26_' => 0];
+        $expected_params = ['_24_' => 0];
+        $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
+        
+////////////////////////////////////////////////////////////////////////////////
+//Test with overriden table name        
+        $params = [
+            'distinct' => false,
+            'cols' => ['CustomerID', 'CompanyName', 'ContactName', 'ContactTitle', 'Address', 'City', 'State'],
+
+            'where' => [
+                [ 'col' => 'hidden_fiscal_year', 'operator' => 'in', 'val' => 16 ],
+                [ 'col' => 'deactivated', 'operator' => '=', 'val' => 0],
+                [ 'col' => 'parent_id', 'operator' => 'is-null'],
+            ],
+            'group' => ['hidden_fiscal_year'],
+            'having' => [
+                [ 'col' => 'hidden_fiscal_year', 'operator' => '>', 'val' => 9 ],
+                [ 'col' => 'deactivated', 'operator' => '=', 'val' => 0],
+                [ 'col' => 'parent_id', 'operator' => 'is-null'],
+            ],
+            'order' => ['title desc'],
+            'limit_size' => 400,
+            'limit_offset' => 0,
+        ];
+           
+        $select_qry_obj = 
+            $mock_model_cust
+                ->buildFetchQueryFromParams($params, ['having', 'limit_size'], "Customers2");
+
+        $expected_sql = <<<EOT
+SELECT
+    CustomerID,
+    CompanyName,
+    ContactName,
+    ContactTitle,
+    Address,
+    City,
+    State
+FROM
+    "Customers2"
+WHERE
+    (
+	hidden_fiscal_year IN (16) 
+	AND
+	deactivated = :_25_ 
+	AND
+	parent_id IS NULL
+)
+
+GROUP BY
+    hidden_fiscal_year
+ORDER BY
+    title desc
+EOT;
+        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+                
+        $expected_params = ['_25_' => 0];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
     }
 
