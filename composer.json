@@ -18,7 +18,6 @@
         "rotexsoft/gdao": "dev-master",
         "aura/sqlquery": "^2.4",
         "aura/sqlschema": "^2.0",
-        "phpunit/phpunit": "^4.7",
         "ramsey/array_column": "^1.1",
         "rotexsoft/handy-php-functions": "^1.0"
     },
