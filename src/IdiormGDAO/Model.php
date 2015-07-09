@@ -36,13 +36,8 @@ class Model extends \GDAO\Model
     // Properties declared here are specific to \IdiormGDAO\Model and its kids //
     /////////////////////////////////////////////////////////////////////////////
     protected static $_valid_extra_opts_keys_4_idiorm = array(
-        'identifier_quote_character', // if this is null, will be autodetected
-        'limit_clause_style', //[NOT REALLY NEEDED SINCE QUERIES ARE BEING BUILT
-                              //USING AURA SQL QUERY OBJECTS] 
-                              //if this is null, will be autodetected
         'logging', //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
         'logger',  //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
-        'caching', // [NOT NEED: SHOULD IMPLEMENT CACHING IF NEEDED]
     );
 
     /**
@@ -54,6 +49,15 @@ class Model extends \GDAO\Model
      * @var string  
      */
     protected $_pdo_driver_name = null;
+    
+    
+    /**
+     *
+     *  An object for interacting with the db
+     * 
+     * @var \IdiormGDAO\DBConnector
+     */
+    protected $_db_connector = null;
 
 
     /**
@@ -85,13 +89,13 @@ class Model extends \GDAO\Model
 
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $extra_opts);
 
-        \ORM::configure($dsn);
-        \ORM::configure('username', $username);
-        \ORM::configure('password', $passwd);
+        DBConnector::configure($dsn);
+        DBConnector::configure('username', $username);
+        DBConnector::configure('password', $passwd);
         
         if( count($pdo_driver_opts) > 0 ) {
             
-            \ORM::configure( 'driver_options', $pdo_driver_opts);
+            DBConnector::configure( 'driver_options', $pdo_driver_opts);
         }
         
         foreach ($extra_opts as $e_opt_key => $e_opt_val) {
@@ -100,24 +104,22 @@ class Model extends \GDAO\Model
                 is_string($e_opt_key) 
                 && in_array($e_opt_key, static::$_valid_extra_opts_keys_4_idiorm)
             ) {
-                \ORM::configure($e_opt_key, $e_opt_val);
+                DBConnector::configure($e_opt_key, $e_opt_val);
             }
         }
+        
+        $this->_db_connector = DBConnector::factory();
         
         $this->_pdo_driver_name = $this->getPDO()
                                        ->getAttribute(\PDO::ATTR_DRIVER_NAME);
         
-        if(!empty($this->_primary_col) && strlen($this->_primary_col) > 0) {
-            
-            \ORM::configure('id_column', $this->_primary_col);
-            
-        } else {
+        if( empty($this->_primary_col) ) {
             
             $msg = 'Primary Key Column name ($_primary_col) not set for '.get_class($this);
             throw new GDAOModelPrimaryColNameNotSetDuringConstructionException($msg);
         }
         
-        if(empty($this->_table_name)) {
+        if( empty($this->_table_name) ) {
             
             $msg = 'Table name ($_table_name) not set for '.get_class($this);
             throw new GDAOModelTableNameNotSetDuringConstructionException($msg);
@@ -428,19 +430,19 @@ class Model extends \GDAO\Model
 
     /**
      * 
-     * @param array $whr_or_hvn_parms
+     * @param array $where_params
      * @param \Aura\SqlQuery\Common\Select $select_qry_obj
      * 
      */
     protected function _addWhereConditions2Query(
-        array $whr_or_hvn_parms, \Aura\SqlQuery\Common\Select $select_qry_obj
+        array $where_params, \Aura\SqlQuery\Common\Select $select_qry_obj
     ) {
-        if( !empty($whr_or_hvn_parms) && count($whr_or_hvn_parms) > 0 ) {
+        if( !empty($where_params) && count($where_params) > 0 ) {
             
-            if($this->_validateWhereOrHavingParamsArray($whr_or_hvn_parms)) {
+            if($this->_validateWhereOrHavingParamsArray($where_params)) {
 
                 $sql_n_bind_params = 
-                    $this->_getWhereOrHavingClauseWithParams($whr_or_hvn_parms);
+                    $this->_getWhereOrHavingClauseWithParams($where_params);
                                 
                 $select_qry_obj->where( $sql_n_bind_params[0] );
                 
@@ -454,19 +456,19 @@ class Model extends \GDAO\Model
 
     /**
      * 
-     * @param array $whr_or_hvn_parms
+     * @param array $having_params
      * @param \Aura\SqlQuery\Common\Select $select_qry_obj
      * 
      */
     protected function _addHavingConditions2Query(
-        array $whr_or_hvn_parms, \Aura\SqlQuery\Common\Select $select_qry_obj
+        array $having_params, \Aura\SqlQuery\Common\Select $select_qry_obj
     ) {
-        if( !empty($whr_or_hvn_parms) && count($whr_or_hvn_parms) > 0 ) {
+        if( !empty($having_params) && count($having_params) > 0 ) {
             
-            if($this->_validateWhereOrHavingParamsArray($whr_or_hvn_parms)) {
+            if($this->_validateWhereOrHavingParamsArray($having_params)) {
 
                 $sql_n_bind_params = 
-                    $this->_getWhereOrHavingClauseWithParams($whr_or_hvn_parms);
+                    $this->_getWhereOrHavingClauseWithParams($having_params);
                                 
                 $select_qry_obj->having( $sql_n_bind_params[0] );
                 
@@ -769,9 +771,7 @@ class Model extends \GDAO\Model
 
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
-        
-        $orm_obj = \ORM::for_table($this->_table_name);
-        $results = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
+        $results = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
         
         foreach ($results as $key=>$value) {
 
@@ -799,8 +799,7 @@ class Model extends \GDAO\Model
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $orm_obj = \ORM::for_table($this->_table_name);
-        $results = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
+        $results = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
 
         if( array_key_exists('relations_to_include', $params) ) {
             
@@ -819,7 +818,7 @@ class Model extends \GDAO\Model
      */
     public function getPDO() {
         
-        return \ORM::get_db();
+        return DBConnector::get_db();
     }
 
     /**
@@ -865,13 +864,11 @@ class Model extends \GDAO\Model
                 }
             }
 
-            $orm_obj = \ORM::for_table($this->_table_name);
+            $orm_obj = $this->_db_connector;
             
             $slct_qry = $select_qry_obj->__toString();
             $slct_qry_params = $select_qry_obj->getBindValues();
-            $slct_qry_result = $orm_obj->raw_query($slct_qry, $slct_qry_params)
-                                       ->find_one()
-                                       ->as_array();
+            $slct_qry_result = $orm_obj->find_one($slct_qry, $slct_qry_params);
             $num_of_matched_records = $slct_qry_result['num_of_matched_records'];
 //r($slct_qry);
 //r($slct_qry_params);
@@ -885,7 +882,7 @@ class Model extends \GDAO\Model
                 $dlt_qry_params = $del_qry_obj->getBindValues(); //print_r($query_params);
 //r($qry);
 //r($qry_params);
-                $result = $orm_obj->raw_execute($dlt_qry, $dlt_qry_params); 
+                $result = DBConnector::raw_execute($dlt_qry, $dlt_qry_params); 
                 
                 if( $result === true ) {
                     
@@ -959,8 +956,7 @@ class Model extends \GDAO\Model
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $orm_obj = \ORM::for_table($this->_table_name);
-        $results = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
+        $results = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
 
         return array_column($results, $col_name);
     }
@@ -980,8 +976,7 @@ class Model extends \GDAO\Model
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $orm_obj = \ORM::for_table($this->_table_name);
-        $result = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
+        $result = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
         
         if( count($result) > 0 ) {
             
@@ -1037,9 +1032,8 @@ class Model extends \GDAO\Model
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $orm_obj = \ORM::for_table($this->_table_name);
-        $results = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
-        
+        $results = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
+
         return array_combine(
                     array_column($results, $key_col_name), 
                     array_column($results, $val_col_name)
@@ -1085,13 +1079,12 @@ class Model extends \GDAO\Model
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $orm_obj = \ORM::for_table($this->_table_name);
-        $result = $orm_obj->raw_query($sql, $params_2_bind_2_sql)->find_array();
+        $result = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
        
         if( count($result) > 0 ) {
             
-            $result = array_shift($result);
-            $result = $result[$col_name];
+            $record = array_shift($result);
+            $result = $record[$col_name];
         }
 
         return $result;
@@ -1220,6 +1213,7 @@ class Model extends \GDAO\Model
                     
                     //throw exception
                     throw new \GDAO\ModelPrimaryColValueNotRetrievableAfterInsertException($msg);
+                    
                 } else {
                     
                     //add primary key value of the newly inserted record to the 
@@ -1324,8 +1318,8 @@ class Model extends \GDAO\Model
                     } else {
                         
                         //NOTE: not pdo quoting $colval here because when 
-                        //$orm_obj->raw_query($slct_qry, $slct_qry_params)
-                        //and $orm_obj->raw_execute($updt_qry, $updt_qry_params)
+                        //$orm_obj->find_one($slct_qry, $slct_qry_params) and 
+                        //DBConnector::raw_execute($updt_qry, $updt_qry_params)
                         //are called, the pdo quoting gets handled by idiorm.
                         $select_qry_obj->where("{$colname} = ?", $colval);
                         $update_qry_obj->where("{$colname} = ?", $colval);
@@ -1333,13 +1327,11 @@ class Model extends \GDAO\Model
                 }
             }
            
-            $orm_obj = \ORM::for_table($this->_table_name);
+            $orm_obj = $this->_db_connector;
 
             $slct_qry = $select_qry_obj->__toString();
             $slct_qry_params = $select_qry_obj->getBindValues();
-            $slct_qry_result = $orm_obj->raw_query($slct_qry, $slct_qry_params)
-                                       ->find_one()
-                                       ->as_array();
+            $slct_qry_result = $orm_obj->find_one($slct_qry, $slct_qry_params);
             $num_of_matched_records = $slct_qry_result['num_of_matched_records'];
 //r($slct_qry);
 //r($slct_qry_params);
@@ -1353,7 +1345,7 @@ class Model extends \GDAO\Model
                 $updt_qry_params = $update_qry_obj->getBindValues();// print_r($query_params);
 //r($updt_qry);
 //r($updt_qry_params);
-                $result = $orm_obj->raw_execute($updt_qry, $updt_qry_params);
+                $result = DBConnector::raw_execute($updt_qry, $updt_qry_params);
                 
                 if( $result === true ) {
                     
