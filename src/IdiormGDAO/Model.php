@@ -108,7 +108,7 @@ class Model extends \GDAO\Model
             }
         }
         
-        $this->_db_connector = DBConnector::factory();
+        $this->_db_connector = DBConnector::create();
         
         $this->_pdo_driver_name = $this->getPDO()
                                        ->getAttribute(\PDO::ATTR_DRIVER_NAME);
@@ -480,7 +480,7 @@ class Model extends \GDAO\Model
         }
     }
     
-    protected function _loadRelationshipData($rel_name, &$my_fetched_data, $in_records=false, $in_collection=false) {
+    public function loadRelationshipData($rel_name, &$my_fetched_data, $in_records=false, $in_collection=false) {
 
         if( 
             array_key_exists($rel_name, $this->_relations) 
@@ -524,7 +524,6 @@ class Model extends \GDAO\Model
         ) {
             $array_get = '\\Rotexsoft\\HandyPhpFunctions\\array_get';
             
-            $pdo = $this->getPDO();
             $rel_info = $this->_relations[$rel_name];
 
             $foreign_table_name = $array_get($rel_info, 'foreign_models_table');
@@ -576,6 +575,8 @@ class Model extends \GDAO\Model
                 }
 
                 if( count($col_vals) > 0 ) {
+
+                    $pdo = $this->getPDO();
                     
                     foreach ( $col_vals as $key=>$val ) {
 
@@ -604,12 +605,10 @@ class Model extends \GDAO\Model
             
             $stm = $query_obj->__toString();
 //exit($stm);
-//return;
-            $sth = $pdo->prepare($stm);
-//$sth = $pdo->prepare($stm." AND hidden_fiscal_year = 16 AND deactivated ='0' AND parent_id IS NULL order by deliverable asc");
-            $sth->execute($query_obj->getBindValues());
+
             $foreign_model_obj = null;
-            $related_data = $sth->fetchAll(\PDO::FETCH_ASSOC);
+            //$stm = $stm." AND hidden_fiscal_year = 16 AND deactivated ='0' AND parent_id IS NULL order by deliverable asc";
+            $related_data = $this->_db_connector->getAllRows($stm, $query_obj->getBindValues());
 
             if(
                 !empty($foreign_models_class_name)
@@ -752,12 +751,21 @@ class Model extends \GDAO\Model
      */
     public function fetchAll(array $params = array()) {
 
-        //fetch a collection of records [Eager Loading should be considered here]
-        return $this->createCollection(
+        $results = $this->createCollection(
                         new \GDAO\Model\GDAORecordsList(
-                                $this->fetchAllAsArray($params)
+                                $this->_getData4FetchAll($params)
                             )
                     );
+
+        if( array_key_exists('relations_to_include', $params) ) {
+            
+            foreach( $params['relations_to_include'] as $rel_name ) {
+
+                $this->loadRelationshipData($rel_name, $results, true, true);
+            }
+        }
+        
+        return $results;
     }
     
     /**
@@ -766,26 +774,38 @@ class Model extends \GDAO\Model
      */
     public function fetchAllAsArray(array $params = array()) {
         
-        //fetch an array of records [Eager Loading should be considered here]        
-        $query_obj = $this->_buildFetchQueryFromParams($params);
-
-        $sql = $query_obj->__toString();
-        $params_2_bind_2_sql = $query_obj->getBindValues();
-        $results = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
-        
-        foreach ($results as $key=>$value) {
-
-            $results[$key] = $this->createRecord($value, array('is_new'=>false));
-        }
+        $results = $this->_getData4FetchAll($params);
 
         if( array_key_exists('relations_to_include', $params) ) {
             
             foreach( $params['relations_to_include'] as $rel_name ) {
 
-                $this->_loadRelationshipData($rel_name, $results, true, true);
+                $this->loadRelationshipData($rel_name, $results, true);
             }
         }
+        
         return $results;
+    }
+    
+    protected function _getData4FetchAll($params) {
+
+        $results = $this->_getData4FetchArray($params);
+        
+        foreach ($results as $key=>$value) {
+
+            $results[$key] = $this->createRecord($value, array('is_new'=>false));
+        }
+        
+        return $results;
+    }
+    
+    protected function _getData4FetchArray($params) {
+        
+        $query_obj = $this->_buildFetchQueryFromParams($params);
+        $sql = $query_obj->__toString();
+        $params_2_bind_2_sql = $query_obj->getBindValues();
+
+        return $this->_db_connector->getAllRows($sql, $params_2_bind_2_sql);
     }
     
     /**
@@ -793,19 +813,14 @@ class Model extends \GDAO\Model
      * {@inheritDoc}
      */
     public function fetchArray(array $params = array()) {
-        
-        //fetch an array of records [Eager Loading should be considered here]
-        $query_obj = $this->_buildFetchQueryFromParams($params);
-        $sql = $query_obj->__toString();
-        $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $results = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
+        $results = $this->_getData4FetchArray($params);
 
         if( array_key_exists('relations_to_include', $params) ) {
             
             foreach( $params['relations_to_include'] as $rel_name ) {
 
-                $this->_loadRelationshipData($rel_name, $results);
+                $this->loadRelationshipData($rel_name, $results);
             }
         }
         
@@ -818,7 +833,7 @@ class Model extends \GDAO\Model
      */
     public function getPDO() {
         
-        return DBConnector::get_db();
+        return DBConnector::getDb();
     }
 
     /**
@@ -868,7 +883,7 @@ class Model extends \GDAO\Model
             
             $slct_qry = $select_qry_obj->__toString();
             $slct_qry_params = $select_qry_obj->getBindValues();
-            $slct_qry_result = $orm_obj->find_one($slct_qry, $slct_qry_params);
+            $slct_qry_result = $orm_obj->getOneRow($slct_qry, $slct_qry_params);
             $num_of_matched_records = $slct_qry_result['num_of_matched_records'];
 //r($slct_qry);
 //r($slct_qry_params);
@@ -882,7 +897,7 @@ class Model extends \GDAO\Model
                 $dlt_qry_params = $del_qry_obj->getBindValues(); //print_r($query_params);
 //r($qry);
 //r($qry_params);
-                $result = DBConnector::raw_execute($dlt_qry, $dlt_qry_params); 
+                $result = DBConnector::executeQuery($dlt_qry, $dlt_qry_params); 
                 
                 if( $result === true ) {
                     
@@ -956,7 +971,7 @@ class Model extends \GDAO\Model
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $results = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
+        $results = $this->_db_connector->getAllRows($sql, $params_2_bind_2_sql);
 
         return array_column($results, $col_name);
     }
@@ -976,7 +991,7 @@ class Model extends \GDAO\Model
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $result = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
+        $result = $this->_db_connector->getAllRows($sql, $params_2_bind_2_sql);
         
         if( count($result) > 0 ) {
             
@@ -988,7 +1003,7 @@ class Model extends \GDAO\Model
             
             foreach( $params['relations_to_include'] as $rel_name ) {
 
-                $this->_loadRelationshipData($rel_name, $result, true, true);
+                $this->loadRelationshipData($rel_name, $result, true, true);
             }
         }
         
@@ -1032,7 +1047,7 @@ class Model extends \GDAO\Model
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $results = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
+        $results = $this->_db_connector->getAllRows($sql, $params_2_bind_2_sql);
 
         return array_combine(
                     array_column($results, $key_col_name), 
@@ -1079,7 +1094,7 @@ class Model extends \GDAO\Model
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $result = $this->_db_connector->raw_query($sql, $params_2_bind_2_sql);
+        $result = $this->_db_connector->getAllRows($sql, $params_2_bind_2_sql);
        
         if( count($result) > 0 ) {
             
@@ -1094,7 +1109,7 @@ class Model extends \GDAO\Model
      * 
      * {@inheritDoc}
      */
-    public function insert($col_names_n_vals = array()) {        
+    public function insert($col_names_n_vals = array()) {
 
         $result = false;
         
@@ -1141,16 +1156,14 @@ class Model extends \GDAO\Model
                 }
             }
             
-            $pdo_obj = $this->getPDO();
-            
             //Insert statement
-            $insert_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newInsert();
-            $insert_qry_obj->into($this->_table_name)->cols($col_names_n_vals);
+            $insrt_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newInsert();
+            $insrt_qry_obj->into($this->_table_name)->cols($col_names_n_vals);
             
-            $pdo_statement = $pdo_obj->prepare($insert_qry_obj->__toString());
-            $insert_qry_params = $insert_qry_obj->getBindValues();
+            $insrt_qry_sql = $insrt_qry_obj->__toString();
+            $insrt_qry_params = $insrt_qry_obj->getBindValues();
 
-            foreach ( $insert_qry_params as $key => &$param ) {
+            foreach ( $insrt_qry_params as $key => $param ) {
                 
                 if(
                     !is_bool($param) 
@@ -1172,31 +1185,12 @@ class Model extends \GDAO\Model
                     
                     throw new \GDAO\ModelInvalidInsertValueSuppliedException($msg);
                 }
-                
-                if (is_null($param)) {
-                    
-                    $type = \PDO::PARAM_NULL;
-                    
-                } else if (is_bool($param)) {
-                    
-                    $type = \PDO::PARAM_BOOL;
-                    
-                } else if (is_int($param)) {
-                    
-                    $type = \PDO::PARAM_INT;
-                    
-                } else {
-                    
-                    $type = \PDO::PARAM_STR;
-                }
-
-                $pdo_statement->bindParam($key, $param, $type);
             }
             
-            if( $pdo_statement->execute() ) {
+            if( DBConnector::executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
              
                 $last_insert_sequence_name = 
-                    $insert_qry_obj->getLastInsertIdName($this->_primary_col);
+                    $insrt_qry_obj->getLastInsertIdName($this->_primary_col);
 
                 $pk_val_4_new_record = 
                         $this->getPDO()->lastInsertId($last_insert_sequence_name);
@@ -1331,7 +1325,7 @@ class Model extends \GDAO\Model
 
             $slct_qry = $select_qry_obj->__toString();
             $slct_qry_params = $select_qry_obj->getBindValues();
-            $slct_qry_result = $orm_obj->find_one($slct_qry, $slct_qry_params);
+            $slct_qry_result = $orm_obj->getOneRow($slct_qry, $slct_qry_params);
             $num_of_matched_records = $slct_qry_result['num_of_matched_records'];
 //r($slct_qry);
 //r($slct_qry_params);
@@ -1345,7 +1339,7 @@ class Model extends \GDAO\Model
                 $updt_qry_params = $update_qry_obj->getBindValues();// print_r($query_params);
 //r($updt_qry);
 //r($updt_qry_params);
-                $result = DBConnector::raw_execute($updt_qry, $updt_qry_params);
+                $result = DBConnector::executeQuery($updt_qry, $updt_qry_params);
                 
                 if( $result === true ) {
                     
