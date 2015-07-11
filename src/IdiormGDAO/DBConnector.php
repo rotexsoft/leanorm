@@ -89,9 +89,6 @@ class DBConnector {
 //////////// --- END CLASS PROPERTIES TO KEEP --- //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-    // The raw query parameters
-    protected $_raw_parameters = array();
-
     // ---------------------- //
     // --- STATIC METHODS --- //
     // ---------------------- //
@@ -111,7 +108,7 @@ class DBConnector {
      */
     public static function configure($key, $value = null, $connection_name = self::DEFAULT_CONNECTION) {
         
-        self::_setup_db_config($connection_name); //ensures at least default config is set
+        self::_initDbConfigWithDefaultVals($connection_name); //ensures at least default config is set
 
         if (is_array($key)) {
             
@@ -138,42 +135,182 @@ class DBConnector {
     /**
      * Retrieve configuration options by key, or as whole array.
      * @param string $key
-     * @param string $connection_name Which connection to use
+     * @param string $conn_name Which connection to use or null for all connections
      */
-    public static function get_config($key = null, $connection_name = self::DEFAULT_CONNECTION) {
+    public static function getConfig($key = null, $conn_name = self::DEFAULT_CONNECTION) {
         
-        if ($key) {
+        if( $key && is_null($conn_name) ) {
             
-            return self::$_config[$connection_name][$key];
+            //get key's value for each connection
+            $conn_names = array_keys(self::$_config);
+            $val_of_key_4_each_conn_name = array_column(self::$_config, $key);
+            
+            return array_combine($conn_names, $val_of_key_4_each_conn_name);
+            
+        } else if ( $key && !is_null($conn_name) && strlen($conn_name) > 0 ) {
+            
+            //get key's value for the specified connection
+            return self::$_config[$conn_name][$key];
+            
+        } else if( !$key && is_null($conn_name) ) {
+            
+            //get all config values for all connections
+            return self::$_config;
             
         } else {
             
-            return self::$_config[$connection_name];
+            //get all config values for the specified connection
+            return self::$_config[$conn_name];
+        }
+    }
+    
+    /**
+     * 
+     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig() returns the values of all properties
+     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig('_db') will return only the value of DBConnector::$_db
+     * 
+     * @param string $prop_name name of the property (eg. 'db' or '_db') whose value is to be retrieved
+     * 
+     * @return mixed the value of the property specified or an array of all properties if $prop_name is empty or not a name of any of the properties.
+     */
+    public static function getAllStaticPropertiesExceptDefaultConfig($prop_name='') {
+        
+        switch ($prop_name) {
+            
+            case '_config':
+            case 'config':
+                
+                // Map of configuration settings
+                return self::$_config;
+            
+            case '_db':
+            case 'db':
+                
+                // Map of database connections, instances of the PDO class
+                return self::$_db;
+            
+            case '_last_query':
+            case 'last_query':
+                
+                // Last query run, only populated if logging is enabled
+                return self::$_last_query;
+            
+            case '_query_log':
+            case 'query_log':
+                
+                // Log of all queries run, mapped by connection key, only populated if logging is enabled
+                return self::$_query_log;
+            
+            case '_last_statement':
+            case 'last_statement':
+                
+                // Reference to previously used PDOStatement object to enable low-level access, if needed
+                return self::$_last_statement;
+            
+            default:
+                ///////////////////////////
+                // Return all properties //
+                ///////////////////////////
+                
+                // Map of configuration settings
+                return array (
+                    '$_config' => self::$_config,
+
+                    // Map of database connections, instances of the PDO class
+                    '$_db' => self::$_db,
+
+                    // Last query run, only populated if logging is enabled
+                    '$_last_query' => self::$_last_query,
+
+                    // Log of all queries run, mapped by connection key, only populated if logging is enabled
+                    '$_query_log' => self::$_query_log,
+
+                    // Reference to previously used PDOStatement object to enable low-level access, if needed
+                    '$_last_statement' => self::$_last_statement,
+                );
+        }
+    }
+    
+    /**
+     * 
+     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig() resets all properties
+     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig('_db') will reset only DBConnector::$_db
+     * 
+     * @param string $prop_name name of the property (eg. 'db' or '_db') whose value is to be reset. 
+     * 
+     */
+    public static function resetAllStaticPropertiesExceptDefaultConfig($prop_name='') {
+        
+        switch ($prop_name) {
+            
+            case '_config':
+            case 'config':
+                
+                // Map of configuration settings
+                self::$_config = array();
+                break;
+            
+            case '_db':
+            case 'db':
+                
+                // Map of database connections, instances of the PDO class
+                self::$_db = array();
+                break;
+            
+            case '_last_query':
+            case 'last_query':
+                
+                // Last query run, only populated if logging is enabled
+                self::$_last_query = '';
+                break;
+            
+            case '_query_log':
+            case 'query_log':
+                
+                // Log of all queries run, mapped by connection key, only populated if logging is enabled
+                self::$_query_log = array();
+                break;
+            
+            case '_last_statement':
+            case 'last_statement':
+                
+                // Reference to previously used PDOStatement object to enable low-level access, if needed
+                self::$_last_statement = null;
+                break;
+            
+            default:
+                //////////////////////////
+                // Reset all properties //
+                //////////////////////////
+                
+                // Map of configuration settings
+                self::$_config = array();
+                
+                // Map of database connections, instances of the PDO class
+                self::$_db = array();
+                
+                // Last query run, only populated if logging is enabled
+                self::$_last_query = '';
+                
+                // Log of all queries run, mapped by connection key, only populated if logging is enabled
+                self::$_query_log = array();
+                
+                // Reference to previously used PDOStatement object to enable low-level access, if needed
+                self::$_last_statement = null;
+                break;
         }
     }
 
     /**
-     * Delete all configs in _config array.
-     */
-    public static function reset_config() {
-        
-        self::$_config = array();
-    }
-
-    /**
-     * Despite its slightly odd name, this is actually the factory
-     * method used to acquire instances of the class. It is named
-     * this way for the sake of a readable interface, ie
-     * DBConnector::for_table('table_name')->find_one()-> etc. As such,
-     * this will normally be the first method called in a chain.
-     * @param string $table_name
+     * This is the factory method used to acquire instances of the class.
+     * 
      * @param string $connection_name Which connection to use
      * @return DBConnector
      */
     //rename to factory
-    public static function factory($connection_name = self::DEFAULT_CONNECTION) {
+    public static function create($connection_name = self::DEFAULT_CONNECTION) {
         
-        self::_setup_db($connection_name);
+        self::_setupDb($connection_name);
         return new self($connection_name);
     }
 
@@ -181,12 +318,12 @@ class DBConnector {
      * Set up the database connection used by the class
      * @param string $connection_name Which connection to use
      */
-    protected static function _setup_db($connection_name = self::DEFAULT_CONNECTION) {
+    protected static function _setupDb($connection_name = self::DEFAULT_CONNECTION) {
 
         if (!array_key_exists($connection_name, self::$_db) ||
             !is_object(self::$_db[$connection_name])) {
 
-            self::_setup_db_config($connection_name);
+            self::_initDbConfigWithDefaultVals($connection_name);
 
             $db = new \PDO(
                 self::$_config[$connection_name]['connection_string'],
@@ -196,7 +333,7 @@ class DBConnector {
             );
 
             $db->setAttribute(\PDO::ATTR_ERRMODE, self::$_config[$connection_name]['error_mode']);
-            self::set_db($db, $connection_name);
+            self::setDb($db, $connection_name);
         }
     }
 
@@ -204,7 +341,7 @@ class DBConnector {
     * Ensures configuration (multiple connections) is at least set to default.
     * @param string $connection_name Which connection to use
     */
-    protected static function _setup_db_config($connection_name) {
+    protected static function _initDbConfigWithDefaultVals($connection_name) {
         
         if (!array_key_exists($connection_name, self::$_config)) {
             
@@ -220,18 +357,10 @@ class DBConnector {
      * @param PDO $db
      * @param string $connection_name Which connection to use
      */
-    public static function set_db($db, $connection_name = self::DEFAULT_CONNECTION) {
+    public static function setDb($db, $connection_name = self::DEFAULT_CONNECTION) {
         
-        self::_setup_db_config($connection_name);
+        self::_initDbConfigWithDefaultVals($connection_name);
         self::$_db[$connection_name] = $db;
-    }
-
-    /**
-     * Delete all registered PDO objects in _db array.
-     */
-    public static function reset_db() {
-        
-        self::$_db = array();
     }
 
     /**
@@ -242,9 +371,9 @@ class DBConnector {
      * @param string $connection_name Which connection to use
      * @return PDO
      */
-    public static function get_db($connection_name = self::DEFAULT_CONNECTION) {
+    public static function getDb($connection_name = self::DEFAULT_CONNECTION) {
         
-        self::_setup_db($connection_name); // required in case this is called before Idiorm is instantiated
+        self::_setupDb($connection_name); // required in case this is called before Idiorm is instantiated
         return self::$_db[$connection_name];
     }
 
@@ -252,17 +381,18 @@ class DBConnector {
      * Executes a raw query as a wrapper for PDOStatement::execute.
      * Useful for queries that can't be accomplished through Idiorm,
      * particularly those using engine-specific features.
-     * @example raw_execute('SELECT `name`, AVG(`order`) FROM `customer` GROUP BY `name` HAVING AVG(`order`) > 10')
-     * @example raw_execute('INSERT OR REPLACE INTO `widget` (`id`, `name`) SELECT `id`, `name` FROM `other_table`')
+     * @example execute_query('SELECT `name`, AVG(`order`) FROM `customer` GROUP BY `name` HAVING AVG(`order`) > 10')
+     * @example execute_query('INSERT OR REPLACE INTO `widget` (`id`, `name`) SELECT `id`, `name` FROM `other_table`')
      * @param string $query The raw SQL query
      * @param array  $parameters Optional bound parameters
      * @param string $connection_name Which connection to use
-     * @return bool Success
+     * @return bool|\PDOStatement Response of \PDOStatement::execute() or the PDOStatement object 
      */
-    public static function raw_execute($query, $parameters = array(), $connection_name = self::DEFAULT_CONNECTION) {
-        
-        self::_setup_db($connection_name);
-        return self::_execute($query, $parameters, $connection_name);
+    public static function executeQuery(
+        $query, $parameters = array(), $return_pdo_statement=false, $connection_name = self::DEFAULT_CONNECTION
+    ) {    
+        self::_setupDb($connection_name);
+        return self::_execute($query, $parameters, $return_pdo_statement, $connection_name);
     }
 
     /**
@@ -270,7 +400,7 @@ class DBConnector {
      * Useful for access to PDOStatement::rowCount() or error information
      * @return PDOStatement
      */
-    public static function get_last_statement() {
+    public static function getLastStatement() {
         
         return self::$_last_statement;
     }
@@ -281,12 +411,14 @@ class DBConnector {
     * through ::get_last_statement()
     * @param string $query
     * @param array $parameters An array of parameters to be bound in to the query
+    * @param bool $return_pdo_statement true to return the \PDOStatement object used by this function or false to return the Response of \PDOStatement::execute()
     * @param string $connection_name Which connection to use
-    * @return bool Response of PDOStatement::execute()
+    * 
+    * @return bool|\PDOStatement Response of \PDOStatement::execute() or the \PDOStatement object
     */
-    protected static function _execute($query, $parameters = array(), $connection_name = self::DEFAULT_CONNECTION) {
+    protected static function _execute($query, $parameters = array(), $return_pdo_statement=false, $connection_name = self::DEFAULT_CONNECTION) {
         
-        $statement = self::get_db($connection_name)->prepare($query);
+        $statement = self::getDb($connection_name)->prepare($query);
         self::$_last_statement = $statement;
         $time = microtime(true);
 
@@ -305,7 +437,17 @@ class DBConnector {
         }
 
         $q = $statement->execute();
-        self::_log_query($query, $parameters, $connection_name, (microtime(true)-$time));
+        
+        if( $return_pdo_statement ) {
+            
+            $q = $statement;
+        }
+        
+        if ( self::$_config[$connection_name]['logging'] ) {
+            
+            // Logging is enabled, log da query
+            self::_logQuery($query, $parameters, $connection_name, (microtime(true)-$time));
+        }
 
         return $q;
     }
@@ -324,15 +466,15 @@ class DBConnector {
      * @param float $query_time Query time
      * @return bool
      */
-    protected static function _log_query($query, $parameters, $connection_name, $query_time) {
+    protected static function _logQuery( $query, $parameters, $connection_name, $query_time ) {
         
         // If logging is not enabled, do nothing
-        if (!self::$_config[$connection_name]['logging']) {
+        if ( !self::$_config[$connection_name]['logging'] ) {
             
             return false;
         }
 
-        if (!isset(self::$_query_log[$connection_name])) {
+        if ( !isset( self::$_query_log[$connection_name] ) ) {
             
             self::$_query_log[$connection_name] = array();
         }
@@ -340,24 +482,25 @@ class DBConnector {
         // Strip out any non-integer indexes from the parameters
         foreach($parameters as $key => $value) {
             
-            if (!is_int($key)) {
+            if ( !is_int($key) ) {
                 
                 unset($parameters[$key]);
             }
         }
 
-        if (count($parameters) > 0) {
+        if ( count($parameters) > 0 ) {
             
             // Escape the parameters
-            $parameters = array_map(array(self::get_db($connection_name), 'quote'), $parameters);
+            $parameters = 
+                array_map(array(self::getDb($connection_name), 'quote'), $parameters);
 
             // Avoid %format collision for vsprintf
             $query = str_replace("%", "%%", $query);
 
             // Replace placeholders in the query for vsprintf
-            if(false !== strpos($query, "'") || false !== strpos($query, '"')) {
+            if( false !== strpos($query, "'") || false !== strpos($query, '"') ) {
                 
-                $query = StringHelper::str_replace_outside_quotes("?", "%s", $query);
+                $query = StringHelper::strReplaceOutsideQuotes("?", "%s", $query);
                 
             } else {
                 
@@ -375,7 +518,7 @@ class DBConnector {
         self::$_last_query = $bound_query;
         self::$_query_log[$connection_name][] = $bound_query;
 
-        if(is_callable(self::$_config[$connection_name]['logger'])){
+        if( is_callable( self::$_config[$connection_name]['logger'] ) ) {
             
             $logger = self::$_config[$connection_name]['logger'];
             $logger($bound_query, $query_time);
@@ -392,7 +535,7 @@ class DBConnector {
      * @param null|string $connection_name Which connection to use
      * @return string
      */
-    public static function get_last_query($connection_name = null) {
+    public static function getLastQuery($connection_name = null) {
         
         if ($connection_name === null) {
             
@@ -411,13 +554,17 @@ class DBConnector {
      * specified connection up to now.
      * Only works if the 'logging' config option is
      * set to true. Otherwise, returned array will be empty.
-     * @param string $connection_name Which connection to use
+     * @param string $connection_name Which connection to use. Set it to null to get query logs for all connections.
      */
-    public static function get_query_log($connection_name = self::DEFAULT_CONNECTION) {
+    public static function getQueryLog($connection_name = self::DEFAULT_CONNECTION) {
         
-        if (isset(self::$_query_log[$connection_name])) {
+        if ( isset( self::$_query_log[$connection_name] ) ) {
             
             return self::$_query_log[$connection_name];
+            
+        } else if ( is_null($connection_name) ) {
+            
+            return self::$_query_log;
         }
         
         return array();
@@ -427,7 +574,7 @@ class DBConnector {
      * Get a list of the available connection names
      * @return array
      */
-    public static function get_connection_names() {
+    public static function getConnectionNames() {
         
         return array_keys(self::$_db);
     }
@@ -438,14 +585,23 @@ class DBConnector {
 
     /**
      * "Private" constructor; shouldn't be called directly.
-     * Use the DBConnector::for_table factory method instead.
+     * Use the DBConnector::create factory method instead.
      */
     protected function __construct($connection_name = self::DEFAULT_CONNECTION) {
 
         $this->_connection_name = $connection_name;
-        self::_setup_db_config($connection_name);
+        self::_initDbConfigWithDefaultVals($connection_name);
     }
 
+    /**
+     * Get connection name for current instance of this class.
+     * @return array
+     */
+    public function getConnectionName() {
+        
+        return $this->_connection_name;
+    }
+    
     /**
      * Tell the DBConnector that you are expecting a single result
      * back from your query, and execute it. Will return
@@ -455,9 +611,9 @@ class DBConnector {
      * to this method. This will perform a primary key
      * lookup on the table.
      */
-    public function find_one($query, $parameters) {
+    public function getOneRow($select_query,  $parameters = array()) {
 
-        $rows = $this->_run($query, $parameters);
+        $rows = $this->_run($select_query, $parameters);
 
         if (empty($rows)) {
             
@@ -466,18 +622,7 @@ class DBConnector {
 
         return $rows[0];
     }
-
-    /**
-     * Tell the DBConnector that you are expecting multiple results
-     * from your query, and execute it. Will return an array,
-     * or an empty array if no rows were returned.
-     * @return array
-     */
-    public function find_array($query, $parameters) {
-        
-        return $this->_run($query, $parameters); 
-    }
-
+    
     /**
      * Perform a raw query. The query can contain placeholders in
      * either named or question mark style. If placeholders are
@@ -485,9 +630,9 @@ class DBConnector {
      * be bound to the placeholders in the query. If this method
      * is called, all other query building methods will be ignored.
      */
-    public function raw_query($query, $parameters = array()) {
+    public function getAllRows($select_query, $parameters = array()) {
 
-        return $this->_run($query, $parameters);
+        return $this->_run($select_query, $parameters);
     }
 
     /**
@@ -496,8 +641,8 @@ class DBConnector {
      */
     protected function _run($query, $values, $pdo_fetch_type=\PDO::FETCH_ASSOC) {
 
-        self::_execute($query, $values, $this->_connection_name);
-        $statement = self::get_last_statement();
+        self::_execute($query, $values, false, $this->_connection_name);
+        $statement = self::getLastStatement();
 
         $rows = array();
 
@@ -542,9 +687,9 @@ class StringHelper {
      * @param string $subject
      * @return string
      */
-    public static function str_replace_outside_quotes($search, $replace, $subject) {
+    public static function strReplaceOutsideQuotes($search, $replace, $subject) {
         
-        return self::value($subject)->replace_outside_quotes($search, $replace);
+        return self::value($subject)->replaceOutsideQuotes($search, $replace);
     }
 
     /**
@@ -563,11 +708,11 @@ class StringHelper {
      * @param string $replace
      * @return string
      */
-    public function replace_outside_quotes($search, $replace) {
+    public function replaceOutsideQuotes($search, $replace) {
         
         $this->search = $search;
         $this->replace = $replace;
-        return $this->_str_replace_outside_quotes();
+        return $this->_strReplaceOutsideQuotes();
     }
 
     /**
@@ -577,7 +722,7 @@ class StringHelper {
      * @link http://stackoverflow.com/a/13370709/461813 StackOverflow answer
      * @return string
      */
-    protected function _str_replace_outside_quotes(){
+    protected function _strReplaceOutsideQuotes(){
         
         $re_valid = '/
             # Validate string having embedded quoted substrings.
@@ -612,7 +757,7 @@ class StringHelper {
      * @param array $matches
      * @return string
      */
-    protected function _str_replace_outside_quotes_cb($matches) {
+    protected function _strReplaceOutsideQuotesCb($matches) {
         
         // Return quoted string chunks (in group $1) unaltered.
         if ($matches[1]) {
