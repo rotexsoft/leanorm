@@ -1,5 +1,5 @@
 <?php
-namespace IdiormGDAO;
+namespace LeanOrm;
 
 /**
  * 
@@ -96,7 +96,7 @@ class DBConnector {
      * is omitted and the key is a string, the setting is
      * assumed to be the DSN string used by PDO to connect
      * to the database (often, this will be the only configuration
-     * required to use Idiorm). If you have more than one setting
+     * required to use DBConnector). If you have more than one setting
      * you wish to configure, another shortcut is to pass an array
      * of settings (and omit the second argument).
      * @param string $key
@@ -328,7 +328,7 @@ class DBConnector {
     }
 
     /**
-     * Set the PDO object used by Idiorm to communicate with the database.
+     * Set the PDO object used by DBConnector to communicate with the database.
      * This is public in case the DBConnector should use a ready-instantiated
      * PDO object as its database connection. Accepts an optional string key
      * to identify the connection if multiple connections are used.
@@ -351,16 +351,13 @@ class DBConnector {
      */
     public static function getDb($connection_name = self::DEFAULT_CONNECTION) {
         
-        static::_setupDb($connection_name); // required in case this is called before Idiorm is instantiated
+        static::_setupDb($connection_name); // required in case this is called before DBConnector is instantiated
         return static::$_db[$connection_name];
     }
 
     /**
      * Executes a raw query as a wrapper for PDOStatement::execute.
-     * Useful for queries that can't be accomplished through Idiorm,
-     * particularly those using engine-specific features.
-     * @example execute_query('SELECT `name`, AVG(`order`) FROM `customer` GROUP BY `name` HAVING AVG(`order`) > 10')
-     * @example execute_query('INSERT OR REPLACE INTO `widget` (`id`, `name`) SELECT `id`, `name` FROM `other_table`')
+     * 
      * @param string $query The raw SQL query
      * @param array  $parameters Optional bound parameters
      * @param bool $return_pdo_statement true to return the \PDOStatement object used by this function or false to return the Response of \PDOStatement::execute()
@@ -440,22 +437,29 @@ class DBConnector {
             
             return false;
         }
-
+                
         if ( !isset( static::$_query_log[$connection_name] ) ) {
             
             static::$_query_log[$connection_name] = array();
         }
+        
+        static::$_last_query = array('unbound'=>$query, 'parameters'=>$parameters);
+        
+        $parameters_with_non_int_keys = array();//holds named parameters
 
         // Strip out any non-integer indexes from the parameters
         foreach($parameters as $key => $value) {
             
             if ( !is_int($key) ) {
                 
+                $parameters_with_non_int_keys[$key] = $value;
                 unset($parameters[$key]);
             }
         }
 
-        if ( count($parameters) > 0 ) {
+        if ( count($parameters) > 0 && count($parameters_with_non_int_keys) <= 0 ) {
+            
+            //Deal with only question mark place holders
             
             // Escape the parameters
             $parameters = 
@@ -477,18 +481,61 @@ class DBConnector {
             // Replace the question marks in the query with the parameters
             $bound_query = vsprintf($query, $parameters);
             
-        } else {
+        } else if( count($parameters_with_non_int_keys) > 0 && count($parameters) <= 0 ){
             
+            //Deal with only named place holders
+            
+            // Escape the parameters
+            $parameters_with_non_int_keys = 
+                array_map(array(static::getDb($connection_name), 'quote'), $parameters_with_non_int_keys);
+
+            // Avoid %format collision for vsprintf
+            $query = str_replace("%", "%%", $query);
+            
+            $re_indexed_parameters_with_non_int_keys_for_vsprintf = array();
+            
+            foreach($parameters_with_non_int_keys as $key=>$value) {
+                              
+                $new_index = strpos($query, ":{$key}");
+                
+                if( $new_index !== false ){
+                    
+                    $re_indexed_parameters_with_non_int_keys_for_vsprintf[$new_index] = $value;
+                }
+                
+                // Replace placeholders in the query for vsprintf
+                if( false !== strpos($query, "'") || false !== strpos($query, '"') ) {
+
+                    $query = StringHelper::strReplaceOutsideQuotes(":{$key}", "%s", $query);
+
+                } else {
+
+                    $query = str_replace(":{$key}", "%s", $query);
+                }
+            }            
+
+            // Replace the named placeholders in the query with the parameters
+            $bound_query = vsprintf($query, $re_indexed_parameters_with_non_int_keys_for_vsprintf);
+            
+        }else {
+            //Either no parameters to bind to query (which is good) or there are 
+            //mixed types of parameters (ie. named and question marked in the 
+            //same query which will eventually lead to a PDO Exception).
             $bound_query = $query;
         }
 
-        static::$_last_query = $bound_query;
-        static::$_query_log[$connection_name][] = $bound_query;
+        static::$_last_query['bound'] = $bound_query;
+        static::$_query_log[$connection_name][] = static::$_last_query;
 
         if( is_callable( static::$_config[$connection_name]['logger'] ) ) {
             
             $logger = static::$_config[$connection_name]['logger'];
-            $logger($bound_query, $query_time);
+            $logger(
+                    "Bound Query:". PHP_EOL. static::$_last_query['bound'], 
+                    "Unbound Query:".PHP_EOL.static::$_last_query['unbound'], 
+                    "Query Parameters:".PHP_EOL. var_export(static::$_last_query['parameters'], true), 
+                    $query_time
+                );
         }
 
         return true;
@@ -602,10 +649,6 @@ class DBConnector {
         return $this->_executeAndReturnResults($select_query, $parameters, $pdo_fetch_type);
     }
 
-    /**
-     * 
-     */
-    
     /**
      * 
      * Execute an SQL query (Preferably a SELECT query or a query that returns data). 
@@ -724,7 +767,7 @@ class StringHelper {
             | ([^\'"\\\\]+)             # or $2: an unquoted chunk (no escapes).
             /sx';
         
-        return preg_replace_callback($re_parse, array($this, '_str_replace_outside_quotes_cb'), $this->subject);
+        return preg_replace_callback($re_parse, array($this, '_strReplaceOutsideQuotesCb'), $this->subject);
     }
 
     /**
