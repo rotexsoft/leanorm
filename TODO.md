@@ -6,3 +6,5 @@ implement functionality specific to each DBMS.
 > This is to make sure this package really works for PHP 5.3, since the short array syntax is only used in test files and not in the actual source (src) files
 
 * In the documentation state that the **'cols'** parameter in the $params array for fetchPairs should only contain column names without the table name and dot as prefix
+
+* Find a way using git hooks or something to update the year in the license during a commit, push or something.
