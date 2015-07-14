@@ -21,16 +21,26 @@ class Collection extends \GDAO\Model\Collection
     }
     
     public function deleteAll() {
-        
-        foreach ($this->_data as $record) {
-            
-            try {
-                $this->getModel()->deleteSpecifiedRecord($record);
-                
-            }  catch(\Exception $e) {
-                
-                throw $e;
+
+        try {
+            $model = $this->getModel();
+
+            if( $model instanceof \GDAO\Model ) {
+
+                $pri_col_name = $model->getPrimaryColName();
+                $pri_key_vals = $this->getColVals($pri_col_name);
+
+                if( count($pri_key_vals) > 0 ) {
+
+                    //where pri_key in (.....)
+                    $where_params = array($pri_col_name => $pri_key_vals);
+                    $model->deleteRecordsMatchingSpecifiedColsNValues($where_params);
+                }
             }
+
+        }  catch(\Exception $e) {
+
+            throw $e;
         }
         
         unset($this->_data);
