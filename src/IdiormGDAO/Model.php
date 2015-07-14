@@ -1,5 +1,5 @@
 <?php
-namespace IdiormGDAO;
+namespace LeanOrm;
 use Aura\SqlQuery\QueryFactory;
 use Aura\SqlSchema\ColumnFactory;
 
@@ -19,7 +19,7 @@ class Model extends \GDAO\Model
      * 
      * @var string 
      */
-    protected $_collection_class_name = '\\IdiormGDAO\Model\\Collection';
+    protected $_collection_class_name = '\\LeanOrm\Model\\Collection';
     
     
     /**
@@ -28,12 +28,12 @@ class Model extends \GDAO\Model
      * 
      * @var string 
      */
-    protected $_record_class_name = '\\IdiormGDAO\\Model\\Record';
+    protected $_record_class_name = '\\LeanOrm\\Model\\Record';
     
     /////////////////////////////////////////////////////////////////////////////
-    // Properties declared here are specific to \IdiormGDAO\Model and its kids //
+    // Properties declared here are specific to \LeanOrm\Model and its kids //
     /////////////////////////////////////////////////////////////////////////////
-    protected static $_valid_extra_opts_keys_4_idiorm = array(
+    protected static $_valid_extra_opts_keys_4_dbconnector = array(
         'logging', //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
         'logger',  //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
     );
@@ -53,7 +53,7 @@ class Model extends \GDAO\Model
      *
      *  An object for interacting with the db
      * 
-     * @var \IdiormGDAO\DBConnector
+     * @var \LeanOrm\DBConnector
      */
     protected $_db_connector = null;
 
@@ -84,7 +84,7 @@ class Model extends \GDAO\Model
 
             if(
                 is_string($e_opt_key) 
-                && in_array($e_opt_key, static::$_valid_extra_opts_keys_4_idiorm)
+                && in_array($e_opt_key, static::$_valid_extra_opts_keys_4_dbconnector)
             ) {
                 DBConnector::configure($e_opt_key, $e_opt_val);
             }
@@ -134,8 +134,8 @@ class Model extends \GDAO\Model
         
         if( empty($this->_collection_class_name) ) {
          
-            //default to creating new collection of type \IdiormGDAO\Model\Collection
-            $collection = new \IdiormGDAO\Model\Collection($list_of_records, $extra_opts);
+            //default to creating new collection of type \LeanOrm\Model\Collection
+            $collection = new \LeanOrm\Model\Collection($list_of_records, $extra_opts);
             
         } else {
             
@@ -155,8 +155,8 @@ class Model extends \GDAO\Model
         
         if( empty($this->_record_class_name) ) {
          
-            //default to creating new record of type \IdiormGDAO\Model\Record
-            $record = new \IdiormGDAO\Model\Record($col_names_n_vals, $extra_opts);
+            //default to creating new record of type \LeanOrm\Model\Record
+            $record = new \LeanOrm\Model\Record($col_names_n_vals, $extra_opts);
             
         } else {
             
@@ -579,13 +579,13 @@ class Model extends \GDAO\Model
                 $array_get($rel_info, 'col_in_foreign_models_table_linked_to_join_table');
             
             $foreign_models_class_name = 
-                $array_get($rel_info, 'foreign_models_class_name', '\\IdiormGDAO\\Model');
+                $array_get($rel_info, 'foreign_models_class_name', '\\LeanOrm\\Model');
             
             $foreign_models_record_class_name = 
-                $array_get($rel_info, 'foreign_models_record_class_name', '\\IdiormGDAO\\Model\\Record');
+                $array_get($rel_info, 'foreign_models_record_class_name', '\\LeanOrm\\Model\\Record');
             
             $foreign_models_collection_class_name = 
-                $array_get($rel_info, 'foreign_models_collection_class_name', '\\IdiormGDAO\Model\\Collection');
+                $array_get($rel_info, 'foreign_models_collection_class_name', '\\LeanOrm\Model\\Collection');
             
             $pri_key_col_in_foreign_models_table = 
                 $array_get($rel_info, 'primary_key_col_in_foreign_models_table');
@@ -845,13 +845,13 @@ SELECT {$foreign_table_name}.*
             $array_get($rel_info, 'foreign_key_col_in_foreign_models_table');
 
         $foreign_models_class_name = 
-            $array_get($rel_info, 'foreign_models_class_name', '\\IdiormGDAO\\Model');
+            $array_get($rel_info, 'foreign_models_class_name', '\\LeanOrm\\Model');
 
         $foreign_models_record_class_name = 
-            $array_get($rel_info, 'foreign_models_record_class_name', '\\IdiormGDAO\\Model\\Record');
+            $array_get($rel_info, 'foreign_models_record_class_name', '\\LeanOrm\\Model\\Record');
 
         $foreign_models_collection_class_name = 
-            $array_get($rel_info, 'foreign_models_collection_class_name', '\\IdiormGDAO\Model\\Collection');
+            $array_get($rel_info, 'foreign_models_collection_class_name', '\\LeanOrm\Model\\Collection');
 
         $pri_key_col_in_foreign_models_table = 
             $array_get($rel_info, 'primary_key_col_in_foreign_models_table');
@@ -1581,7 +1581,7 @@ SELECT {$foreign_table_name}.*
                         //NOTE: not pdo quoting $colval here because when 
                         //$orm_obj->find_one($slct_qry, $slct_qry_params) and 
                         //DBConnector::raw_execute($updt_qry, $updt_qry_params)
-                        //are called, the pdo quoting gets handled by idiorm.
+                        //are called, the pdo quoting gets handled by DBConnector.
                         $select_qry_obj->where("{$colname} = ?", $colval);
                         $update_qry_obj->where("{$colname} = ?", $colval);
                     }

@@ -770,17 +770,17 @@ EOT;
         );
         
         //has the right parent class
-        $this->assertInstanceOf('IdiormGDAO\Model\Collection', $coll_mock);
+        $this->assertInstanceOf('LeanOrm\Model\Collection', $coll_mock);
         
         ////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
-        $model_with_idiorm_coll_and_rec = $this->_mock_model_objs['customers'];
+        $model_with_leanorm_coll_and_rec = $this->_mock_model_objs['customers'];
         
-        $coll_generic = $model_with_idiorm_coll_and_rec
+        $coll_generic = $model_with_leanorm_coll_and_rec
                             ->createCollection(new \GDAO\Model\GDAORecordsList([]));
         //exact class
-        $this->assertEquals('IdiormGDAO\Model\Collection', get_class($coll_generic));
+        $this->assertEquals('LeanOrm\Model\Collection', get_class($coll_generic));
     }
 
     public function testCreateRecord() {
@@ -797,17 +797,17 @@ EOT;
         );
         
         //has the right parent class
-        $this->assertInstanceOf('\\IdiormGDAO\\Model\\Record', $record_mock);
+        $this->assertInstanceOf('\\LeanOrm\\Model\\Record', $record_mock);
         
         ////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
-        $model_with_idiorm_coll_and_rec = $this->_mock_model_objs['customers'];
+        $model_with_leanorm_coll_and_rec = $this->_mock_model_objs['customers'];
         
-        $record_generic = $model_with_idiorm_coll_and_rec
+        $record_generic = $model_with_leanorm_coll_and_rec
                                         ->createRecord([], ['is_new'=>false]);
         //exact class
-        $this->assertEquals('IdiormGDAO\Model\Record', get_class($record_generic));
+        $this->assertEquals('LeanOrm\Model\Record', get_class($record_generic));
     }
     
     public function test__Get() {
@@ -825,7 +825,7 @@ EOT;
         } catch (Exception $ex) {
 
             $this->assertEquals(
-                'IdiormGDAO\ModelPropertyNotDefinedException', get_class($ex)
+                'LeanOrm\ModelPropertyNotDefinedException', get_class($ex)
             );
         }
     }
@@ -860,7 +860,7 @@ SQL;
 
 /*
 $dsn = "mysql:host=s-edm-tallis;dbname=buying_and_selling";
-$model_sqlite = new \IdiormGDAO\Model(
+$model_sqlite = new \LeanOrm\Model(
             $dsn,
             "cfs_super",
             "3xtr3m3",
