@@ -5,7 +5,7 @@
  *
  * @author aadegbam
  */
-class MockModelForTestingPublicAndProtectedMethods extends \IdiormGDAO\Model
+class MockModelForTestingPublicAndProtectedMethods extends \LeanOrm\Model
 {
     public function __construct(
         $dsn = '', $username = '', $passwd = '', 

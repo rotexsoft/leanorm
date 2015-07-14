@@ -1,6 +1,6 @@
 <?php
 
-namespace IdiormGDAO\Model;
+namespace LeanOrm\Model;
 
 /**
  * Description of Record
