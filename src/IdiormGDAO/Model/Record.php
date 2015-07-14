@@ -322,7 +322,18 @@ class Record extends \GDAO\Model\Record
 
             return $this->_related_data[$key];
             
-        }  else {
+        } else if( 
+            $this->getModel() instanceof \GDAO\Model 
+            && array_key_exists($key, $this->getModel()->_relations) 
+        ) {
+            //relation name is defined in the model but the related data needs 
+            //to be loaded.
+            $this->getModel()->loadRelationshipData($key, $this, true, true);
+            
+            //return loaded data
+            return $this->_related_data[$key];
+            
+        } else {
 
             $msg = "Property '$key' does not exist in " 
                    . get_class($this) . PHP_EOL . $this->__toString();

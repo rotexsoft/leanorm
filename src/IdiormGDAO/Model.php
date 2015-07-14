@@ -15,7 +15,7 @@ class Model extends \GDAO\Model
     //overriden parent's properties
     /**
      * Name of the collection class for this model. 
-     * Must be a descendant of \IdiormGDAO\Model\Collection
+     * Must be a descendant of \GDAO\Model\Collection
      * 
      * @var string 
      */
@@ -24,7 +24,7 @@ class Model extends \GDAO\Model
     
     /**
      * Name of the record class for this model. 
-     * Must be a descendant of \IdiormGDAO\Model\Record
+     * Must be a descendant of \GDAO\Model\Record
      * 
      * @var string 
      */
@@ -175,7 +175,7 @@ class Model extends \GDAO\Model
      * @param string $table_name name of the table to select from (will default to $this->_table_name if empty)
      * @return \Aura\SqlQuery\Common\Select or any of its descendants
      */
-    protected function _buildFetchQueryFromParams(
+    protected function _buildFetchQueryObjectFromParams(
         array $params=array(), array $disallowed_keys=array(), $table_name=''
     ) {
         $select_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newSelect();
@@ -183,6 +183,7 @@ class Model extends \GDAO\Model
         if( empty($table_name) ) {
             
             $select_qry_obj->from($this->_table_name);
+            $table_name = $this->_table_name;
             
         } else {
             
@@ -232,7 +233,7 @@ class Model extends \GDAO\Model
             } else if( !array_key_exists('cols', $params) ) {
                 
                 //default to SELECT *
-                $select_qry_obj->cols(array('*'));
+                $select_qry_obj->cols(array(" {$table_name}.* "));
             }
             
             if( 
@@ -389,11 +390,9 @@ class Model extends \GDAO\Model
         } else {
             
             //defaults
-            $select_qry_obj->cols(array('*'));
+            $select_qry_obj->cols(array(" {$table_name}.* "));
         }
 
-//r($select_qry_obj->__toString());
-//r($select_qry_obj->getBindValues());exit;
         return $select_qry_obj;
     }
 
@@ -449,47 +448,126 @@ class Model extends \GDAO\Model
         }
     }
     
-    public function loadRelationshipData($rel_name, &$my_fetched_data, $in_records=false, $in_collection=false) {
+    public function loadRelationshipData($rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false) {
 
         if( 
             array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY 
+            && $this->_relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_MANY 
         ) {
-            $this->_loadHasMany($rel_name, $my_fetched_data, $in_records, $in_collection);
+            $this->_loadHasMany($rel_name, $parent_data, $wrap_each_row_in_a_record, $wrap_records_in_collection);
             
         } else if (
             array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH        
+            && $this->_relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH        
         ) {
-            $this->_loadHasManyTrough($rel_name, $my_fetched_data, $in_records, $in_collection);
+            $this->_loadHasManyTrough($rel_name, $parent_data, $wrap_each_row_in_a_record, $wrap_records_in_collection);
             
         } else if (
             array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_ONE
+            && $this->_relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_ONE
         ) {
-            $this->_loadHasOne($rel_name, $my_fetched_data, $in_records, $in_collection);
+            $this->_loadHasOne($rel_name, $parent_data, $wrap_each_row_in_a_record);
             
         } else if (
             array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_BELONGS_TO
-        ) {    
-            $this->_loadBelongsTo($rel_name, $my_fetched_data, $in_records, $in_collection);
+            && $this->_relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_BELONGS_TO
+        ) {
+            $this->_loadBelongsTo($rel_name, $parent_data, $wrap_each_row_in_a_record);
         }
     }
     
     /**
      * 
      * @param string $rel_name
-     * @return \IdiormGDAO\Model\Collection|array
+     * @return \GDAO\Model\Collection|array
      */
     protected function _loadHasMany( 
-        $rel_name, &$parent_data, $in_records=false, $in_collection=false 
+        $rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false 
     ) {
-        $related_data = array();
-        
         if( 
             array_key_exists($rel_name, $this->_relations) 
             && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY 
+        ) {
+            list(
+                $fkey_col_in_foreign_table, $foreign_models_record_class_name,
+                $foreign_models_collection_class_name, $fkey_col_in_my_table, 
+                $foreign_model_obj, $related_data
+            ) = $this->_getBelongsToOrHasOneOrHasManyData($rel_name, $parent_data);
+            
+            /*
+                -- BASIC SQL For Fetching the Related Data
+
+                -- $parent_data is a collection or array of records    
+                SELECT {$foreign_table_name}.*
+                  FROM {$foreign_table_name}
+                 WHERE {$foreign_table_name}.{$fkey_col_in_foreign_table} IN ( $fkey_col_in_my_table column values in $parent_data )
+
+                -- OR
+
+                -- $parent_data is a single record
+                SELECT {$foreign_table_name}.*
+                  FROM {$foreign_table_name}
+                 WHERE {$foreign_table_name}.{$fkey_col_in_foreign_table} = {$parent_data->$fkey_col_in_my_table}
+            */
+            
+            if ( 
+                $parent_data instanceof \GDAO\Model\Collection
+                || is_array($parent_data)
+            ) {
+                //stitch the related data to the approriate parent records
+                foreach( $parent_data as $p_rec_key => $parent_record ) {
+
+                    $matching_related_records = array();
+
+                    \Rotexsoft\HandyPhpFunctions\search_2d(
+                        $related_data,
+                        $fkey_col_in_foreign_table, 
+                        $parent_record[$fkey_col_in_my_table], 
+                        $matching_related_records
+                    );
+                    
+                    $this->_wrapRelatedDataInsideRecordsAndCollection(
+                        $wrap_each_row_in_a_record, $matching_related_records, $foreign_models_record_class_name,
+                        $foreign_model_obj, $wrap_records_in_collection, $foreign_models_collection_class_name
+                    );
+
+                    //set the related data for the current parent record
+                    if( $parent_record instanceof \GDAO\Model\Record ) {
+
+                        $parent_data[$p_rec_key]
+                            ->setRelatedData($rel_name, $matching_related_records);
+
+                    } else {
+
+                        //the current record must be an array
+                        $parent_data[$p_rec_key][$rel_name] = $matching_related_records;
+                    }
+                } //foreach( $parent_data as $p_rec_key => $parent_record )
+        
+            } else if ( $parent_data instanceof \GDAO\Model\Record ) {
+
+                $this->_wrapRelatedDataInsideRecordsAndCollection(
+                    $wrap_each_row_in_a_record, $related_data, $foreign_models_record_class_name,
+                    $foreign_model_obj, $wrap_records_in_collection, $foreign_models_collection_class_name
+                );
+                
+                //stitch the related data to the parent record
+                $parent_data->setRelatedData($rel_name, $related_data);
+            } // else if ($parent_data instanceof \GDAO\Model\Record)
+        } // if( array_key_exists($rel_name, $this->_relations) )
+    }
+    
+    /**
+     * 
+     * @param string $rel_name
+     * @return \GDAO\Model\Collection|array
+     */
+    protected function _loadHasManyTrough( 
+        $rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false 
+    ) {
+        if( 
+            array_key_exists($rel_name, $this->_relations) 
+            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH
         ) {
             $array_get = '\\Rotexsoft\\HandyPhpFunctions\\array_get';
             
@@ -498,7 +576,7 @@ class Model extends \GDAO\Model
             $foreign_table_name = $array_get($rel_info, 'foreign_models_table');
             
             $fkey_col_in_foreign_table = 
-                $array_get($rel_info, 'foreign_key_col_in_foreign_models_table');
+                $array_get($rel_info, 'col_in_foreign_models_table_linked_to_join_table');
             
             $foreign_models_class_name = 
                 $array_get($rel_info, 'foreign_models_class_name', '\\IdiormGDAO\\Model');
@@ -513,141 +591,396 @@ class Model extends \GDAO\Model
                 $array_get($rel_info, 'primary_key_col_in_foreign_models_table');
             
             $fkey_col_in_my_table = 
-                    $array_get($rel_info, 'foreign_key_col_in_my_models_table');
+                    $array_get($rel_info, 'col_in_my_models_table_linked_to_join_table');
+            
+            //join table params
+            $join_table_name = $array_get($rel_info, 'join_table_name');
+            
+            $col_in_join_table_linked_to_my_models_table = 
+                $array_get($rel_info, 'col_in_join_table_linked_to_my_models_table');
+            
+            $col_in_join_table_linked_to_foreign_models_table = 
+                $array_get($rel_info, 'col_in_join_table_linked_to_foreign_models_table');
             
             $foreign_models_table_sql_params = 
                     $array_get($rel_info, 'foreign_models_table_sql_params', array());
             
             $query_obj = 
-                $this->_buildFetchQueryFromParams(
+                $this->_buildFetchQueryObjectFromParams(
                             $foreign_models_table_sql_params, 
                             array('relations_to_include', 'limit_offset', 'limit_size'), 
                             $foreign_table_name
                         );
             
-            if(
-                $parent_data instanceof \IdiormGDAO\Model\Collection
-                || is_array($parent_data)
-            ) {
-                $col_vals = array();
+            $query_obj->cols( array(" {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} ") );
+            
+            $query_obj->innerJoin(
+                            $join_table_name, 
+                            " {$join_table_name}.{$col_in_join_table_linked_to_foreign_models_table} = {$foreign_table_name}.{$fkey_col_in_foreign_table} "
+                        );
+            
+            if ( $parent_data instanceof \GDAO\Model\Record ) {
                 
-                if ( is_array($parent_data) ) {
-                    
-                    foreach($parent_data as $data) {
-                        
-                        $col_vals[] = $data[$fkey_col_in_my_table];
-                    }
-                    
-                } else {
-                    
-                    $col_vals = $parent_data->getColVals($fkey_col_in_my_table);
-                }
-
-                if( count($col_vals) > 0 ) {
-
-                    $pdo = $this->getPDO();
-                    
-                    foreach ( $col_vals as $key=>$val ) {
-
-                        $col_vals[$key] = 
-                                    is_string($val)? $pdo->quote($val) : $val;
-                    }
-                    
-                    $where_cond = " {$foreign_table_name}.$fkey_col_in_foreign_table IN ("
-                         . implode( ',', $col_vals )
-                         . ")";
-                    
-                    $query_obj->where($where_cond);
-                }
-                
-            } else if ( $parent_data instanceof \IdiormGDAO\Model\Record ) {
-                
-                $where_cond = " {$foreign_table_name}.$fkey_col_in_foreign_table = "
+                $where_cond = " {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = "
                      . (
-                        is_string($parent_data->$fkey_col_in_my_table) ? 
-                            $pdo->quote( $parent_data->$fkey_col_in_my_table )
+                            is_string($parent_data->$fkey_col_in_my_table) ? 
+                                $this->getPDO()->quote( $parent_data->$fkey_col_in_my_table )
                                 : $parent_data->$fkey_col_in_my_table
                         );
                 
                 $query_obj->where($where_cond);
+                
+            } else {
+                
+                //assume it's a collection or array
+                $col_vals = $this->_getColValsFromArrayOrCollection(
+                                        $parent_data, $fkey_col_in_my_table
+                                    );
+
+                if( count($col_vals) > 0 ) {
+                    
+                    $where_cond = " {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} IN ("
+                                . implode( ',', $col_vals )
+                                . ")";
+                    
+                    $query_obj->where($where_cond);
+                }
             }
             
-            $foreign_model_obj = null;
+            $foreign_model_obj = $this->_createRelatedModelObject(
+                                            $foreign_models_class_name,
+                                            $pri_key_col_in_foreign_models_table,
+                                            $foreign_table_name
+                                        );
+            
             $params_2_bind_2_sql = $query_obj->getBindValues();
             $sql_2_get_related_data = $query_obj->__toString();
-            
+/*
+-- SQL For Fetching the Related Data
+
+-- $parent_data is a collection or array of records    
+SELECT {$foreign_table_name}.*,
+       {$join_table_name}.{$col_in_join_table_linked_to_my_models_table}
+  FROM {$foreign_table_name}
+  JOIN {$join_table_name} ON {$join_table_name}.{$col_in_join_table_linked_to_foreign_models_table} = {$foreign_table_name}.{$fkey_col_in_foreign_table}
+ WHERE {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} IN ( $fkey_col_in_my_table column values in $parent_data )
+
+OR
+
+-- $parent_data is a single record
+SELECT {$foreign_table_name}.*,
+       {$join_table_name}.{$col_in_join_table_linked_to_my_models_table}
+  FROM {$foreign_table_name}
+  JOIN {$join_table_name} ON {$join_table_name}.{$col_in_join_table_linked_to_foreign_models_table} = {$foreign_table_name}.{$fkey_col_in_foreign_table}
+ WHERE {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = {$parent_data->$fkey_col_in_my_table}
+*/
+            //GRAB DA RELATED DATA
             $related_data = 
                 $this->_db_connector
-                     ->getAllRows($sql_2_get_related_data, $params_2_bind_2_sql);
+                     ->fetchAllRows($sql_2_get_related_data, $params_2_bind_2_sql);
 
-            if(
-                !empty($foreign_models_class_name)
-                && !empty($pri_key_col_in_foreign_models_table)
-            ) {
-                //try to create a model object for the related data
-                $foreign_model_obj = new $foreign_models_class_name(
-                    $this->_dsn, 
-                    $this->_username, 
-                    $this->_passwd, 
-                    $this->_pdo_driver_opts,
-                    array(
-                        '_primary_col' => $pri_key_col_in_foreign_models_table,
-                        '_table_name' => $foreign_table_name
-                    )
-                );
-            }
-            
             if ( 
-                $parent_data instanceof \IdiormGDAO\Model\Collection
+                $parent_data instanceof \GDAO\Model\Collection
                 || is_array($parent_data)
             ) {
-                //stitch the related data
+                //stitch the related data to the approriate parent records
                 foreach( $parent_data as $p_rec_key => $parent_record ) {
 
                     $matching_related_records = array();
 
                     \Rotexsoft\HandyPhpFunctions\search_2d(
                         $related_data,
-                        $fkey_col_in_foreign_table, 
+                        $col_in_join_table_linked_to_my_models_table, 
                         $parent_record[$fkey_col_in_my_table], 
                         $matching_related_records
                     );
-                    
-                    $this->_wrapRelatedDataInsideRecordsAndACollection(
-                        $in_records, $matching_related_records, $foreign_models_record_class_name,
-                        $foreign_model_obj, $in_collection, $foreign_models_collection_class_name
+
+                    $this->_wrapRelatedDataInsideRecordsAndCollection(
+                        $wrap_each_row_in_a_record, $matching_related_records, $foreign_models_record_class_name,
+                        $foreign_model_obj, $wrap_records_in_collection, $foreign_models_collection_class_name
                     );
 
                     //set the related data for the current parent record
-                    if( $parent_record instanceof \IdiormGDAO\Model\Record ) {
+                    if( $parent_record instanceof \GDAO\Model\Record ) {
 
                         $parent_data[$p_rec_key]
                             ->setRelatedData($rel_name, $matching_related_records);
+                    } else {
+
+                        //the current record must be an array
+                        $parent_data[$p_rec_key][$rel_name] = $matching_related_records;
+                    }
+                } //foreach( $parent_data as $p_rec_key => $parent_record )
+        
+            } else if ( $parent_data instanceof \GDAO\Model\Record ) {
+
+                $this->_wrapRelatedDataInsideRecordsAndCollection(
+                    $wrap_each_row_in_a_record, $related_data, $foreign_models_record_class_name,
+                    $foreign_model_obj, $wrap_records_in_collection, $foreign_models_collection_class_name
+                );
+                
+                //stitch the related data to the parent record
+                $parent_data->setRelatedData($rel_name, $related_data);
+            } // else if ( $parent_data instanceof \GDAO\Model\Record )
+        } // if( array_key_exists($rel_name, $this->_relations) )
+    }
+    
+    /**
+     * 
+     * @param string $rel_name
+     * @return \GDAO\Model\Record|array
+     */
+    protected function _loadHasOne( 
+        $rel_name, &$parent_data, $wrap_row_in_a_record=false
+    ) {
+        if( 
+            array_key_exists($rel_name, $this->_relations) 
+            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_ONE
+        ) {
+            list(
+                $fkey_col_in_foreign_table, $foreign_models_record_class_name,
+                $foreign_models_collection_class_name, $fkey_col_in_my_table, 
+                $foreign_model_obj, $related_data
+            ) = $this->_getBelongsToOrHasOneOrHasManyData($rel_name, $parent_data);
+/*
+-- SQL For Fetching the Related Data
+
+-- $parent_data is a collection or array of records    
+SELECT {$foreign_table_name}.*
+  FROM {$foreign_table_name}
+ WHERE {$foreign_table_name}.{$fkey_col_in_foreign_table} IN ( $fkey_col_in_my_table column values in $parent_data )
+
+OR
+
+-- $parent_data is a single record
+SELECT {$foreign_table_name}.*
+  FROM {$foreign_table_name}
+ WHERE {$foreign_table_name}.{$fkey_col_in_foreign_table} = {$parent_data->$fkey_col_in_my_table}
+*/
+            //re-key related data on the foreign key column values
+            $related_data = 
+                array_combine(
+                    array_column($related_data, $fkey_col_in_foreign_table), 
+                    $related_data
+                );
+
+            if ( 
+                $parent_data instanceof \GDAO\Model\Collection
+                || is_array($parent_data)
+            ) {
+                //stitch the related data to the approriate parent records
+                foreach( $parent_data as $p_rec_key => $parent_record ) {
+
+                    $matching_related_record = 
+                        array($related_data[$parent_record[$fkey_col_in_my_table]]);
+                    
+                    $this->_wrapRelatedDataInsideRecordsAndCollection(
+                                $wrap_row_in_a_record, $matching_related_record, 
+                                $foreign_models_record_class_name, 
+                                $foreign_model_obj, false, ''
+                            );
+
+                    //set the related data for the current parent record
+                    if( $parent_record instanceof \GDAO\Model\Record ) {
+
+                        $parent_data[$p_rec_key]
+                            ->setRelatedData($rel_name, $matching_related_record[0]);
 
                     } else {
 
-                        //assume it's an array
-                        $parent_data[$p_rec_key][$rel_name] = $matching_related_records;
+                        //the current record must be an array
+                        $parent_data[$p_rec_key][$rel_name] = $matching_related_record[0];
                     }
-                } //foreach( $my_fetched_data as $p_rec_key => $parent_record )
+                } //foreach( $parent_data as $p_rec_key => $parent_record )
         
-            } else if ( $parent_data instanceof \IdiormGDAO\Model\Record ) {
+            } else if ( $parent_data instanceof \GDAO\Model\Record ) {
 
-                $this->_wrapRelatedDataInsideRecordsAndACollection(
-                    $in_records, $related_data, $foreign_models_record_class_name,
-                    $foreign_model_obj, $in_collection, $foreign_models_collection_class_name
-                );
+                $this->_wrapRelatedDataInsideRecordsAndCollection(
+                            $wrap_row_in_a_record, $related_data, 
+                            $foreign_models_record_class_name,
+                            $foreign_model_obj, false, ''
+                        );
                 
-                $parent_data->setRelatedData($rel_name, $related_data);
-            } // else if ($my_fetched_data instanceof \IdiormGDAO\Model\Record)
+                //stitch the related data to the parent record
+                $parent_data->setRelatedData($rel_name, array_shift($related_data));
+            } // else if ($parent_data instanceof \GDAO\Model\Record)
         } // if( array_key_exists($rel_name, $this->_relations) )
     }
+    
+    /**
+     * 
+     * @param string $rel_name
+     * @return \GDAO\Model\Record|array
+     */
+    protected function _loadBelongsTo($rel_name, &$parent_data, $wrap_row_in_a_record=false) {
+        
+        if( 
+            array_key_exists($rel_name, $this->_relations) 
+            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_BELONGS_TO
+        ) {
+            
+            //quick hack
+            $this->_relations[$rel_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
+            
+            //I really don't see the difference in the sql to fetch data for
+            //a has-one relationship and a belongs-to relationship. Hence, I
+            //have resorted to using the same code to satisfy both relationships
+            $this->_loadHasOne($rel_name, $parent_data, $wrap_row_in_a_record);
+            
+            //undo quick hack
+            $this->_relations[$rel_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
+        }
+    }
+    
+    
+    protected function _getBelongsToOrHasOneOrHasManyData($rel_name, &$parent_data) {
+        
+        $array_get = '\\Rotexsoft\\HandyPhpFunctions\\array_get';
 
-    protected function _wrapRelatedDataInsideRecordsAndACollection(
-        $in_records, &$matching_related_records, $foreign_models_record_class_name,
-        $foreign_model_obj, $in_collection, $foreign_models_collection_class_name
+        $rel_info = $this->_relations[$rel_name];
+
+        $foreign_table_name = $array_get($rel_info, 'foreign_models_table');
+
+        $fkey_col_in_foreign_table = 
+            $array_get($rel_info, 'foreign_key_col_in_foreign_models_table');
+
+        $foreign_models_class_name = 
+            $array_get($rel_info, 'foreign_models_class_name', '\\IdiormGDAO\\Model');
+
+        $foreign_models_record_class_name = 
+            $array_get($rel_info, 'foreign_models_record_class_name', '\\IdiormGDAO\\Model\\Record');
+
+        $foreign_models_collection_class_name = 
+            $array_get($rel_info, 'foreign_models_collection_class_name', '\\IdiormGDAO\Model\\Collection');
+
+        $pri_key_col_in_foreign_models_table = 
+            $array_get($rel_info, 'primary_key_col_in_foreign_models_table');
+
+        $fkey_col_in_my_table = 
+                $array_get($rel_info, 'foreign_key_col_in_my_models_table');
+
+        $foreign_models_table_sql_params = 
+                $array_get($rel_info, 'foreign_models_table_sql_params', array());
+
+        $query_obj = 
+            $this->_buildFetchQueryObjectFromParams(
+                        $foreign_models_table_sql_params, 
+                        array('relations_to_include', 'limit_offset', 'limit_size'), 
+                        $foreign_table_name
+                    );
+
+        if ( $parent_data instanceof \GDAO\Model\Record ) {
+
+            $where_cond = " {$foreign_table_name}.{$fkey_col_in_foreign_table} = "
+                        . (
+                           is_string($parent_data->$fkey_col_in_my_table) ? 
+                               $this->getPDO()
+                                    ->quote( $parent_data->$fkey_col_in_my_table )
+                                : $parent_data->$fkey_col_in_my_table
+                           );
+            $query_obj->where($where_cond);
+
+        } else {
+            //assume it's a collection or array                
+            $col_vals = $this->_getColValsFromArrayOrCollection(
+                                    $parent_data, $fkey_col_in_my_table
+                                );
+
+            if( count($col_vals) > 0 ) {
+
+                $where_cond = " {$foreign_table_name}.{$fkey_col_in_foreign_table} IN ("
+                            . implode( ',', $col_vals )
+                            . ")";
+                $query_obj->where($where_cond);
+            }
+        }
+
+        $foreign_model_obj = $this->_createRelatedModelObject(
+                                        $foreign_models_class_name,
+                                        $pri_key_col_in_foreign_models_table,
+                                        $foreign_table_name
+                                    );
+        $params_2_bind_2_sql = $query_obj->getBindValues();
+        $sql_2_get_related_data = $query_obj->__toString();
+
+        //GRAB DA RELATED DATA
+        $related_data = 
+            $this->_db_connector
+                 ->fetchAllRows($sql_2_get_related_data, $params_2_bind_2_sql);
+
+        return array(
+            $fkey_col_in_foreign_table, $foreign_models_record_class_name,
+            $foreign_models_collection_class_name, $fkey_col_in_my_table, 
+            $foreign_model_obj, $related_data
+        ); 
+    }
+
+    protected function _createRelatedModelObject(
+        $foreign_models_class_name, 
+        $pri_key_col_in_foreign_models_table, 
+        $foreign_table_name
     ) {
-        if( $in_records ) {
+        if(
+            !empty($foreign_models_class_name)
+            && !empty($pri_key_col_in_foreign_models_table)
+        ) {
+            //try to create a model object for the related data
+            return new $foreign_models_class_name(
+                $this->_dsn, 
+                $this->_username, 
+                $this->_passwd, 
+                $this->_pdo_driver_opts,
+                array(
+                    '_primary_col' => $pri_key_col_in_foreign_models_table,
+                    '_table_name' => $foreign_table_name
+                )
+            );
+        }
+        
+        return null;
+    }
+    
+    protected function _getColValsFromArrayOrCollection(
+        &$parent_data, $fkey_col_in_my_table
+    ) {
+        $col_vals = array();
+        
+        if(
+            $parent_data instanceof \GDAO\Model\Collection
+            || is_array($parent_data)
+        ) {
+            if ( is_array($parent_data) ) {
+
+                foreach($parent_data as $data) {
+
+                    $col_vals[] = $data[$fkey_col_in_my_table];
+                }
+
+            } else {
+
+                $col_vals = $parent_data->getColVals($fkey_col_in_my_table);
+            }
+
+            if( count($col_vals) > 0 ) {
+
+                $pdo = $this->getPDO();
+
+                foreach ( $col_vals as $key=>$val ) {
+
+                    $col_vals[$key] = 
+                                is_string($val)? $pdo->quote($val) : $val;
+                }
+            }
+        }
+        
+        return $col_vals;
+    }
+    
+    protected function _wrapRelatedDataInsideRecordsAndCollection(
+        $wrap_each_row_in_a_record, &$matching_related_records, $foreign_models_record_class_name,
+        $foreign_model_obj, $wrap_records_in_collection, $foreign_models_collection_class_name
+    ) {
+        if( $wrap_each_row_in_a_record ) {
 
             //wrap into records of the appropriate class
             foreach ($matching_related_records as $key=>$rec_data) {
@@ -665,7 +998,7 @@ class Model extends \GDAO\Model
             }
         }
 
-        if($in_collection) {
+        if($wrap_records_in_collection) {
 
             //wrap into a collection object
             $matching_related_records = new $foreign_models_collection_class_name (
@@ -677,39 +1010,6 @@ class Model extends \GDAO\Model
                 $matching_related_records->setModel($foreign_model_obj);
             }
         }
-    }
-    
-    /**
-     * 
-     * @param string $rel_name
-     * @return \IdiormGDAO\Model\Collection|array
-     */
-    protected function _loadHasManyTrough($rel_name, &$my_fetched_data, $in_records=false, $in_collection=false) {
-        
-        return new \IdiormGDAO\Model\Collection($data);
-        return array();
-    }
-    
-    /**
-     * 
-     * @param string $rel_name
-     * @return \IdiormGDAO\Model\Record|array
-     */
-    protected function _loadHasOne($rel_name, &$my_fetched_data, $in_records=false, $in_collection=false) {
-        
-        return new \IdiormGDAO\Model\Record([]);
-        return array();
-    }
-    
-    /**
-     * 
-     * @param string $rel_name
-     * @return \IdiormGDAO\Model\Record|array
-     */
-    protected function _loadBelongsTo($rel_name, &$my_fetched_data, $in_records=false, $in_collection=false) {
-        
-        return new \IdiormGDAO\Model\Record([]);
-        return array();
     }
     
     /**
@@ -768,11 +1068,11 @@ class Model extends \GDAO\Model
     
     protected function _getData4FetchArray($params) {
         
-        $query_obj = $this->_buildFetchQueryFromParams($params);
+        $query_obj = $this->_buildFetchQueryObjectFromParams($params);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        return $this->_db_connector->getAllRows($sql, $params_2_bind_2_sql);
+        return $this->_db_connector->fetchAllRows($sql, $params_2_bind_2_sql);
     }
     
     /**
@@ -850,7 +1150,7 @@ class Model extends \GDAO\Model
             
             $slct_qry = $select_qry_obj->__toString();
             $slct_qry_params = $select_qry_obj->getBindValues();
-            $slct_qry_result = $orm_obj->getOneRow($slct_qry, $slct_qry_params);
+            $slct_qry_result = $orm_obj->fetchOneRow($slct_qry, $slct_qry_params);
             $num_of_matched_records = $slct_qry_result['num_of_matched_records'];
 //r($slct_qry);
 //r($slct_qry_params);
@@ -864,7 +1164,7 @@ class Model extends \GDAO\Model
                 $dlt_qry_params = $del_qry_obj->getBindValues(); //print_r($query_params);
 //r($qry);
 //r($qry_params);
-                $result = DBConnector::executeQuery($dlt_qry, $dlt_qry_params); 
+                $result = $orm_obj->executeQuery($dlt_qry, $dlt_qry_params); 
                 
                 if( $result === true ) {
                     
@@ -934,11 +1234,11 @@ class Model extends \GDAO\Model
             throw new ModelBadFetchParamsSuppliedException($msg);
         }
 
-        $query_obj = $this->_buildFetchQueryFromParams($params);
+        $query_obj = $this->_buildFetchQueryObjectFromParams($params);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $results = $this->_db_connector->getAllRows($sql, $params_2_bind_2_sql);
+        $results = $this->_db_connector->fetchAllRows($sql, $params_2_bind_2_sql);
 
         return array_column($results, $col_name);
     }
@@ -952,13 +1252,13 @@ class Model extends \GDAO\Model
         $param_keys_2_exclude = array('limit_offset', 'limit_size');
         
         $query_obj = 
-            $this->_buildFetchQueryFromParams($params, $param_keys_2_exclude);
+            $this->_buildFetchQueryObjectFromParams($params, $param_keys_2_exclude);
         $query_obj->limit(1);
         
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $result = $this->_db_connector->getAllRows($sql, $params_2_bind_2_sql);
+        $result = $this->_db_connector->fetchAllRows($sql, $params_2_bind_2_sql);
         
         if( count($result) > 0 ) {
             
@@ -1010,11 +1310,11 @@ class Model extends \GDAO\Model
             throw new ModelBadFetchParamsSuppliedException($msg);
         }
 
-        $query_obj = $this->_buildFetchQueryFromParams($params);
+        $query_obj = $this->_buildFetchQueryObjectFromParams($params);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $results = $this->_db_connector->getAllRows($sql, $params_2_bind_2_sql);
+        $results = $this->_db_connector->fetchAllRows($sql, $params_2_bind_2_sql);
 
         return array_combine(
                     array_column($results, $key_col_name), 
@@ -1055,13 +1355,13 @@ class Model extends \GDAO\Model
         $param_keys_2_exclude = array('limit_offset', 'limit_size');
         
         $query_obj = 
-            $this->_buildFetchQueryFromParams($params, $param_keys_2_exclude);
+            $this->_buildFetchQueryObjectFromParams($params, $param_keys_2_exclude);
         $query_obj->limit(1);
         
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $result = $this->_db_connector->getAllRows($sql, $params_2_bind_2_sql);
+        $result = $this->_db_connector->fetchAllRows($sql, $params_2_bind_2_sql);
        
         if( count($result) > 0 ) {
             
@@ -1154,7 +1454,7 @@ class Model extends \GDAO\Model
                 }
             }
             
-            if( DBConnector::executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
+            if( $this->_db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
              
                 $last_insert_sequence_name = 
                     $insrt_qry_obj->getLastInsertIdName($this->_primary_col);
@@ -1292,7 +1592,7 @@ class Model extends \GDAO\Model
 
             $slct_qry = $select_qry_obj->__toString();
             $slct_qry_params = $select_qry_obj->getBindValues();
-            $slct_qry_result = $orm_obj->getOneRow($slct_qry, $slct_qry_params);
+            $slct_qry_result = $orm_obj->fetchOneRow($slct_qry, $slct_qry_params);
             $num_of_matched_records = $slct_qry_result['num_of_matched_records'];
 //r($slct_qry);
 //r($slct_qry_params);
@@ -1306,7 +1606,7 @@ class Model extends \GDAO\Model
                 $updt_qry_params = $update_qry_obj->getBindValues();// print_r($query_params);
 //r($updt_qry);
 //r($updt_qry_params);
-                $result = DBConnector::executeQuery($updt_qry, $updt_qry_params);
+                $result = $orm_obj->executeQuery($updt_qry, $updt_qry_params);
                 
                 if( $result === true ) {
                     

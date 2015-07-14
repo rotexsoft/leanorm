@@ -74,14 +74,11 @@ class DBConnector {
     // Log of all queries run, mapped by connection key, only populated if logging is enabled
     protected static $_query_log = array();
 
-    // Reference to previously used PDOStatement object to enable low-level access, if needed
-    protected static $_last_statement = null;
-
     // --------------------------- //
     // --- INSTANCE PROPERTIES --- //
     // --------------------------- //
 
-    // Key name of the connections in self::$_db used by this instance
+    // Key name of the connections in static::$_db used by this instance
     protected $_connection_name;
 
 ////////////////////////////////////////////////////////////////////////////////        
@@ -108,7 +105,7 @@ class DBConnector {
      */
     public static function configure($key, $value = null, $connection_name = self::DEFAULT_CONNECTION) {
         
-        self::_initDbConfigWithDefaultVals($connection_name); //ensures at least default config is set
+        static::_initDbConfigWithDefaultVals($connection_name); //ensures at least default config is set
 
         if (is_array($key)) {
             
@@ -116,7 +113,7 @@ class DBConnector {
             // assume it's an array of configuration settings
             foreach ($key as $conf_key => $conf_value) {
                 
-                self::configure($conf_key, $conf_value, $connection_name);
+                static::configure($conf_key, $conf_value, $connection_name);
             }
         } else {
             
@@ -128,7 +125,7 @@ class DBConnector {
                 $key = 'connection_string';
             }
             
-            self::$_config[$connection_name][$key] = $value;
+            static::$_config[$connection_name][$key] = $value;
         }
     }
 
@@ -142,25 +139,25 @@ class DBConnector {
         if( $key && is_null($conn_name) ) {
             
             //get key's value for each connection
-            $conn_names = array_keys(self::$_config);
-            $val_of_key_4_each_conn_name = array_column(self::$_config, $key);
+            $conn_names = array_keys(static::$_config);
+            $val_of_key_4_each_conn_name = array_column(static::$_config, $key);
             
             return array_combine($conn_names, $val_of_key_4_each_conn_name);
             
         } else if ( $key && !is_null($conn_name) && strlen($conn_name) > 0 ) {
             
             //get key's value for the specified connection
-            return self::$_config[$conn_name][$key];
+            return static::$_config[$conn_name][$key];
             
         } else if( !$key && is_null($conn_name) ) {
             
             //get all config values for all connections
-            return self::$_config;
+            return static::$_config;
             
         } else {
             
             //get all config values for the specified connection
-            return self::$_config[$conn_name];
+            return static::$_config[$conn_name];
         }
     }
     
@@ -181,31 +178,25 @@ class DBConnector {
             case 'config':
                 
                 // Map of configuration settings
-                return self::$_config;
+                return static::$_config;
             
             case '_db':
             case 'db':
                 
                 // Map of database connections, instances of the PDO class
-                return self::$_db;
+                return static::$_db;
             
             case '_last_query':
             case 'last_query':
                 
                 // Last query run, only populated if logging is enabled
-                return self::$_last_query;
+                return static::$_last_query;
             
             case '_query_log':
             case 'query_log':
                 
                 // Log of all queries run, mapped by connection key, only populated if logging is enabled
-                return self::$_query_log;
-            
-            case '_last_statement':
-            case 'last_statement':
-                
-                // Reference to previously used PDOStatement object to enable low-level access, if needed
-                return self::$_last_statement;
+                return static::$_query_log;
             
             default:
                 ///////////////////////////
@@ -214,19 +205,16 @@ class DBConnector {
                 
                 // Map of configuration settings
                 return array (
-                    '$_config' => self::$_config,
+                    '$_config' => static::$_config,
 
                     // Map of database connections, instances of the PDO class
-                    '$_db' => self::$_db,
+                    '$_db' => static::$_db,
 
                     // Last query run, only populated if logging is enabled
-                    '$_last_query' => self::$_last_query,
+                    '$_last_query' => static::$_last_query,
 
                     // Log of all queries run, mapped by connection key, only populated if logging is enabled
-                    '$_query_log' => self::$_query_log,
-
-                    // Reference to previously used PDOStatement object to enable low-level access, if needed
-                    '$_last_statement' => self::$_last_statement,
+                    '$_query_log' => static::$_query_log,
                 );
         }
     }
@@ -247,35 +235,28 @@ class DBConnector {
             case 'config':
                 
                 // Map of configuration settings
-                self::$_config = array();
+                static::$_config = array();
                 break;
             
             case '_db':
             case 'db':
                 
                 // Map of database connections, instances of the PDO class
-                self::$_db = array();
+                static::$_db = array();
                 break;
             
             case '_last_query':
             case 'last_query':
                 
                 // Last query run, only populated if logging is enabled
-                self::$_last_query = '';
+                static::$_last_query = '';
                 break;
             
             case '_query_log':
             case 'query_log':
                 
                 // Log of all queries run, mapped by connection key, only populated if logging is enabled
-                self::$_query_log = array();
-                break;
-            
-            case '_last_statement':
-            case 'last_statement':
-                
-                // Reference to previously used PDOStatement object to enable low-level access, if needed
-                self::$_last_statement = null;
+                static::$_query_log = array();
                 break;
             
             default:
@@ -284,19 +265,16 @@ class DBConnector {
                 //////////////////////////
                 
                 // Map of configuration settings
-                self::$_config = array();
+                static::$_config = array();
                 
                 // Map of database connections, instances of the PDO class
-                self::$_db = array();
+                static::$_db = array();
                 
                 // Last query run, only populated if logging is enabled
-                self::$_last_query = '';
+                static::$_last_query = '';
                 
                 // Log of all queries run, mapped by connection key, only populated if logging is enabled
-                self::$_query_log = array();
-                
-                // Reference to previously used PDOStatement object to enable low-level access, if needed
-                self::$_last_statement = null;
+                static::$_query_log = array();
                 break;
         }
     }
@@ -310,7 +288,7 @@ class DBConnector {
     //rename to factory
     public static function create($connection_name = self::DEFAULT_CONNECTION) {
         
-        self::_setupDb($connection_name);
+        static::_setupDb($connection_name);
         return new self($connection_name);
     }
 
@@ -320,20 +298,20 @@ class DBConnector {
      */
     protected static function _setupDb($connection_name = self::DEFAULT_CONNECTION) {
 
-        if (!array_key_exists($connection_name, self::$_db) ||
-            !is_object(self::$_db[$connection_name])) {
+        if (!array_key_exists($connection_name, static::$_db) ||
+            !is_object(static::$_db[$connection_name])) {
 
-            self::_initDbConfigWithDefaultVals($connection_name);
+            static::_initDbConfigWithDefaultVals($connection_name);
 
             $db = new \PDO(
-                self::$_config[$connection_name]['connection_string'],
-                self::$_config[$connection_name]['username'],
-                self::$_config[$connection_name]['password'],
-                self::$_config[$connection_name]['driver_options']
+                static::$_config[$connection_name]['connection_string'],
+                static::$_config[$connection_name]['username'],
+                static::$_config[$connection_name]['password'],
+                static::$_config[$connection_name]['driver_options']
             );
 
-            $db->setAttribute(\PDO::ATTR_ERRMODE, self::$_config[$connection_name]['error_mode']);
-            self::setDb($db, $connection_name);
+            $db->setAttribute(\PDO::ATTR_ERRMODE, static::$_config[$connection_name]['error_mode']);
+            static::setDb($db, $connection_name);
         }
     }
 
@@ -343,9 +321,9 @@ class DBConnector {
     */
     protected static function _initDbConfigWithDefaultVals($connection_name) {
         
-        if (!array_key_exists($connection_name, self::$_config)) {
+        if (!array_key_exists($connection_name, static::$_config)) {
             
-            self::$_config[$connection_name] = self::$_default_config;
+            static::$_config[$connection_name] = static::$_default_config;
         }
     }
 
@@ -359,8 +337,8 @@ class DBConnector {
      */
     public static function setDb($db, $connection_name = self::DEFAULT_CONNECTION) {
         
-        self::_initDbConfigWithDefaultVals($connection_name);
-        self::$_db[$connection_name] = $db;
+        static::_initDbConfigWithDefaultVals($connection_name);
+        static::$_db[$connection_name] = $db;
     }
 
     /**
@@ -373,8 +351,8 @@ class DBConnector {
      */
     public static function getDb($connection_name = self::DEFAULT_CONNECTION) {
         
-        self::_setupDb($connection_name); // required in case this is called before Idiorm is instantiated
-        return self::$_db[$connection_name];
+        static::_setupDb($connection_name); // required in case this is called before Idiorm is instantiated
+        return static::$_db[$connection_name];
     }
 
     /**
@@ -385,24 +363,14 @@ class DBConnector {
      * @example execute_query('INSERT OR REPLACE INTO `widget` (`id`, `name`) SELECT `id`, `name` FROM `other_table`')
      * @param string $query The raw SQL query
      * @param array  $parameters Optional bound parameters
+     * @param bool $return_pdo_statement true to return the \PDOStatement object used by this function or false to return the Response of \PDOStatement::execute()
      * @param string $connection_name Which connection to use
      * @return bool|\PDOStatement Response of \PDOStatement::execute() or the PDOStatement object 
      */
-    public static function executeQuery(
+    public function executeQuery(
         $query, $parameters = array(), $return_pdo_statement=false, $connection_name = self::DEFAULT_CONNECTION
-    ) {    
-        self::_setupDb($connection_name);
-        return self::_execute($query, $parameters, $return_pdo_statement, $connection_name);
-    }
-
-    /**
-     * Returns the PDOStatement instance last used by any connection wrapped by the DBConnector.
-     * Useful for access to PDOStatement::rowCount() or error information
-     * @return PDOStatement
-     */
-    public static function getLastStatement() {
-        
-        return self::$_last_statement;
+    ) {   
+        return static::_execute($query, $parameters, $return_pdo_statement, $connection_name);
     }
 
    /**
@@ -418,8 +386,7 @@ class DBConnector {
     */
     protected static function _execute($query, $parameters = array(), $return_pdo_statement=false, $connection_name = self::DEFAULT_CONNECTION) {
         
-        $statement = self::getDb($connection_name)->prepare($query);
-        self::$_last_statement = $statement;
+        $statement = static::getDb($connection_name)->prepare($query);
         $time = microtime(true);
 
         foreach ($parameters as $key => &$param) {
@@ -443,10 +410,10 @@ class DBConnector {
             $q = $statement;
         }
         
-        if ( self::$_config[$connection_name]['logging'] ) {
+        if ( static::$_config[$connection_name]['logging'] ) {
             
             // Logging is enabled, log da query
-            self::_logQuery($query, $parameters, $connection_name, (microtime(true)-$time));
+            static::_logQuery($query, $parameters, $connection_name, (microtime(true)-$time));
         }
 
         return $q;
@@ -469,14 +436,14 @@ class DBConnector {
     protected static function _logQuery( $query, $parameters, $connection_name, $query_time ) {
         
         // If logging is not enabled, do nothing
-        if ( !self::$_config[$connection_name]['logging'] ) {
+        if ( !static::$_config[$connection_name]['logging'] ) {
             
             return false;
         }
 
-        if ( !isset( self::$_query_log[$connection_name] ) ) {
+        if ( !isset( static::$_query_log[$connection_name] ) ) {
             
-            self::$_query_log[$connection_name] = array();
+            static::$_query_log[$connection_name] = array();
         }
 
         // Strip out any non-integer indexes from the parameters
@@ -492,7 +459,7 @@ class DBConnector {
             
             // Escape the parameters
             $parameters = 
-                array_map(array(self::getDb($connection_name), 'quote'), $parameters);
+                array_map(array(static::getDb($connection_name), 'quote'), $parameters);
 
             // Avoid %format collision for vsprintf
             $query = str_replace("%", "%%", $query);
@@ -515,12 +482,12 @@ class DBConnector {
             $bound_query = $query;
         }
 
-        self::$_last_query = $bound_query;
-        self::$_query_log[$connection_name][] = $bound_query;
+        static::$_last_query = $bound_query;
+        static::$_query_log[$connection_name][] = $bound_query;
 
-        if( is_callable( self::$_config[$connection_name]['logger'] ) ) {
+        if( is_callable( static::$_config[$connection_name]['logger'] ) ) {
             
-            $logger = self::$_config[$connection_name]['logger'];
+            $logger = static::$_config[$connection_name]['logger'];
             $logger($bound_query, $query_time);
         }
 
@@ -539,14 +506,14 @@ class DBConnector {
         
         if ($connection_name === null) {
             
-            return self::$_last_query;
+            return static::$_last_query;
         }
-        if (!isset(self::$_query_log[$connection_name])) {
+        if (!isset(static::$_query_log[$connection_name])) {
             
             return '';
         }
 
-        return end(self::$_query_log[$connection_name]);
+        return end(static::$_query_log[$connection_name]);
     }
 
     /**
@@ -558,13 +525,13 @@ class DBConnector {
      */
     public static function getQueryLog($connection_name = self::DEFAULT_CONNECTION) {
         
-        if ( isset( self::$_query_log[$connection_name] ) ) {
+        if ( isset( static::$_query_log[$connection_name] ) ) {
             
-            return self::$_query_log[$connection_name];
+            return static::$_query_log[$connection_name];
             
         } else if ( is_null($connection_name) ) {
             
-            return self::$_query_log;
+            return static::$_query_log;
         }
         
         return array();
@@ -576,7 +543,7 @@ class DBConnector {
      */
     public static function getConnectionNames() {
         
-        return array_keys(self::$_db);
+        return array_keys(static::$_db);
     }
 
     // ------------------------ //
@@ -590,7 +557,7 @@ class DBConnector {
     protected function __construct($connection_name = self::DEFAULT_CONNECTION) {
 
         $this->_connection_name = $connection_name;
-        self::_initDbConfigWithDefaultVals($connection_name);
+        static::_initDbConfigWithDefaultVals($connection_name);
     }
 
     /**
@@ -611,9 +578,9 @@ class DBConnector {
      * to this method. This will perform a primary key
      * lookup on the table.
      */
-    public function getOneRow($select_query,  $parameters = array()) {
+    public function fetchOneRow($select_query,  $parameters = array(), $pdo_fetch_type=\PDO::FETCH_ASSOC) {
 
-        $rows = $this->_run($select_query, $parameters);
+        $rows = $this->_executeAndReturnResults($select_query, $parameters, $pdo_fetch_type);
 
         if (empty($rows)) {
             
@@ -630,19 +597,30 @@ class DBConnector {
      * be bound to the placeholders in the query. If this method
      * is called, all other query building methods will be ignored.
      */
-    public function getAllRows($select_query, $parameters = array()) {
+    public function fetchAllRows($select_query, $parameters = array(), $pdo_fetch_type=\PDO::FETCH_ASSOC) {
 
-        return $this->_run($select_query, $parameters);
+        return $this->_executeAndReturnResults($select_query, $parameters, $pdo_fetch_type);
     }
 
     /**
-     * Execute the SELECT query that has been built up by chaining methods
-     * on this class. Return an array of rows as associative arrays.
+     * 
      */
-    protected function _run($query, $values, $pdo_fetch_type=\PDO::FETCH_ASSOC) {
+    
+    /**
+     * 
+     * Execute an SQL query (Preferably a SELECT query or a query that returns data). 
+     * Return an array of rows as associative arrays.
+     * 
+     * To execute an SQL query that does not return data(eg. an INSERT), call $this->executeQuery() instead.
+     * 
+     * @param string $query sql query
+     * @param array $values parameters to bind to the query
+     * @param int $pdo_fetch_type first parameter expected by \PDOStatement::fetch() eg. \PDO::FETCH_ASSOC
+     * @return array of data returned as a result of running the sql query in $query
+     */
+    protected function _executeAndReturnResults($query, $values, $pdo_fetch_type=\PDO::FETCH_ASSOC) {
 
-        self::_execute($query, $values, false, $this->_connection_name);
-        $statement = self::getLastStatement();
+        $statement = static::_execute($query, $values, true, $this->_connection_name);
 
         $rows = array();
 
@@ -689,7 +667,7 @@ class StringHelper {
      */
     public static function strReplaceOutsideQuotes($search, $replace, $subject) {
         
-        return self::value($subject)->replaceOutsideQuotes($search, $replace);
+        return static::value($subject)->replaceOutsideQuotes($search, $replace);
     }
 
     /**
