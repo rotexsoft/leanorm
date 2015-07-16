@@ -15,9 +15,17 @@ class Record extends \GDAO\Model\Record
         parent::__construct($data, $extra_opts);
     }
     
-    public function delete() {
-
-        $this->_model->deleteSpecifiedRecord($this);
+    public function delete($set_record_objects_data_to_empty_array=false) {
+        
+        $result = $this->_model->deleteSpecifiedRecord($this);
+        
+        if( $result && $set_record_objects_data_to_empty_array ) {
+            
+            $this->_related_data = $this->_initial_data = $this->_data = array();
+            
+        }
+        
+        return $result;
     }
 
     public function getPrimaryCol() {
@@ -111,13 +119,16 @@ class Record extends \GDAO\Model\Record
             if (is_array($data_2_load)) {
 
                 $this->_data = $data_2_load;
+                
             } elseif ($data_2_load instanceof \GDAO\Model\Record) {
 
                 $this->_data = $data_2_load->getData();
+                
             } else {
 
                 $this->_data = array();
             }
+            
         } else if (is_array($cols_2_load) && count($cols_2_load) > 0) {
 
             $this->_data = array();

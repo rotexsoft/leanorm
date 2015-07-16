@@ -360,9 +360,10 @@ class DBConnector {
      * 
      * @param string $query The raw SQL query
      * @param array  $parameters Optional bound parameters
-     * @param bool $return_pdo_statement true to return the \PDOStatement object used by this function or false to return the Response of \PDOStatement::execute()
+     * @param bool $return_pdo_statement true to add the \PDOStatement object used by this function to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
      * @param string $connection_name Which connection to use
-     * @return bool|\PDOStatement Response of \PDOStatement::execute() or the PDOStatement object 
+     * 
+     * @return bool|array bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
      */
     public function executeQuery(
         $query, $parameters = array(), $return_pdo_statement=false, $connection_name = self::DEFAULT_CONNECTION
@@ -376,10 +377,10 @@ class DBConnector {
     * through ::get_last_statement()
     * @param string $query
     * @param array $parameters An array of parameters to be bound in to the query
-    * @param bool $return_pdo_statement true to return the \PDOStatement object used by this function or false to return the Response of \PDOStatement::execute()
+    * @param bool $return_pdo_statement true to add the \PDOStatement object used by this function to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
     * @param string $connection_name Which connection to use
     * 
-    * @return bool|\PDOStatement Response of \PDOStatement::execute() or the \PDOStatement object
+    * @return bool|array bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
     */
     protected static function _execute($query, $parameters = array(), $return_pdo_statement=false, $connection_name = self::DEFAULT_CONNECTION) {
         
@@ -400,11 +401,12 @@ class DBConnector {
             $statement->bindParam(is_int($key) ? ++$key : $key, $param, $type);
         }
 
-        $q = $statement->execute();
+        $result = $statement->execute();
         
         if( $return_pdo_statement ) {
             
-            $q = $statement;
+            $exec_result = $result;
+            $result = array($exec_result, $statement);
         }
         
         if ( static::$_config[$connection_name]['logging'] ) {
@@ -413,7 +415,7 @@ class DBConnector {
             static::_logQuery($query, $parameters, $connection_name, (microtime(true)-$time));
         }
 
-        return $q;
+        return $result;
     }
 
     /**
@@ -625,54 +627,80 @@ class DBConnector {
      * to this method. This will perform a primary key
      * lookup on the table.
      */
-    public function fetchOneRow($select_query,  $parameters = array(), $pdo_fetch_type=\PDO::FETCH_ASSOC) {
+    public function dbFetchOne( $select_query,  $parameters = array() ) {
 
-        $rows = $this->_executeAndReturnResults($select_query, $parameters, $pdo_fetch_type);
-
-        if (empty($rows)) {
+       $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        
+        $statement = array_pop($bool_and_statement);
             
-            return false;
-        }
-
-        return $rows[0];
+        return $statement->fetch(\PDO::FETCH_ASSOC);
     }
     
     /**
      * Perform a raw query. The query can contain placeholders in
      * either named or question mark style. If placeholders are
      * used, the parameters should be an array of values which will
-     * be bound to the placeholders in the query. If this method
-     * is called, all other query building methods will be ignored.
+     * be bound to the placeholders in the query.
      */
-    public function fetchAllRows($select_query, $parameters = array(), $pdo_fetch_type=\PDO::FETCH_ASSOC) {
+    public function dbFetchAll($select_query, $parameters = array()) {
 
-        return $this->_executeAndReturnResults($select_query, $parameters, $pdo_fetch_type);
+        $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        
+        $statement = array_pop($bool_and_statement);
+            
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
-
+    
     /**
-     * 
-     * Execute an SQL query (Preferably a SELECT query or a query that returns data). 
-     * Return an array of rows as associative arrays.
-     * 
-     * To execute an SQL query that does not return data(eg. an INSERT), call $this->executeQuery() instead.
-     * 
-     * @param string $query sql query
-     * @param array $values parameters to bind to the query
-     * @param int $pdo_fetch_type first parameter expected by \PDOStatement::fetch() eg. \PDO::FETCH_ASSOC
-     * @return array of data returned as a result of running the sql query in $query
+     * Perform a raw query. The query can contain placeholders in
+     * either named or question mark style. If placeholders are
+     * used, the parameters should be an array of values which will
+     * be bound to the placeholders in the query.
      */
-    protected function _executeAndReturnResults($query, $values, $pdo_fetch_type=\PDO::FETCH_ASSOC) {
+    public function dbFetchCol($select_query, $parameters = array()) {
 
-        $statement = static::_execute($query, $values, true, $this->_connection_name);
+        $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        
+        $statement = array_pop($bool_and_statement);
+            
+        return $statement->fetchAll(\PDO::FETCH_COLUMN, 0);
+    }
+    
+    /**
+     * Perform a raw query. The query can contain placeholders in
+     * either named or question mark style. If placeholders are
+     * used, the parameters should be an array of values which will
+     * be bound to the placeholders in the query.
+     */
+    public function dbFetchPairs($select_query, $parameters = array()) {
 
-        $rows = array();
-
-        while ($row = $statement->fetch($pdo_fetch_type)) {
-
-            $rows[] = $row;
+        $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        
+        $statement = array_pop($bool_and_statement);
+        
+        $data = array();
+        
+        while ($row = $statement->fetch(\PDO::FETCH_NUM)) {
+            
+            $data[$row[0]] = $row[1];
         }
+            
+        return $data;
+    }
+    
+    /**
+     * Perform a raw query. The query can contain placeholders in
+     * either named or question mark style. If placeholders are
+     * used, the parameters should be an array of values which will
+     * be bound to the placeholders in the query.
+     */
+    public function dbFetchValue($select_query, $parameters = array()) {
 
-        return $rows;
+        $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        
+        $statement = array_pop($bool_and_statement);
+            
+        return $statement->fetchColumn(0);
     }
 }
 

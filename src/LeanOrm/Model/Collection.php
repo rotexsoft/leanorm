@@ -63,8 +63,9 @@ class Collection extends \GDAO\Model\Collection
         return empty($this->_data);
     }
 
-    public function loadData(\GDAO\Model\GDAORecordsList $data_2_load, $cols_2_load = null) {
+    public function loadData(\GDAO\Model\GDAORecordsList $data_2_load) {
         
+        $this->_data = $data_2_load->getData();
     }
 
     public function removeAll() {
@@ -73,7 +74,7 @@ class Collection extends \GDAO\Model\Collection
     }
 
     public function save() {
-        
+        //use bulk insert.
     }
 
     //Interface Methods
@@ -174,10 +175,12 @@ class Collection extends \GDAO\Model\Collection
         if (array_key_exists($key, $this->_data)) {
 
             return $this->_data[$key];
+            
         } else {
 
-            $msg = "Item with key '$key' does not exist in " . get_class($this) . PHP_EOL .
-                    $this->__toString();
+            $msg = "Item with key '$key' does not exist in " . get_class($this) 
+                   . PHP_EOL . $this->__toString();
+            
             throw new ItemNotFoundInCollectionException($msg);
         }
     }

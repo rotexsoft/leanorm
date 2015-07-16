@@ -756,13 +756,13 @@ EOT;
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
     }
 
-    public function testCreateCollection() {
+    public function testCreateNewCollection() {
         
         $model_with_mock_coll_and_rec =
             $this->_mock_model_objs['customers_with_specialized_collection_and_record'];
 
         $coll_mock = $model_with_mock_coll_and_rec
-                            ->createCollection(new \GDAO\Model\GDAORecordsList([]));
+                            ->createNewCollection(new \GDAO\Model\GDAORecordsList([]));
         //exact class
         $this->assertEquals(
             'MockModelCollectionForTestingPublicAndProtectedMethods', 
@@ -778,18 +778,18 @@ EOT;
         $model_with_leanorm_coll_and_rec = $this->_mock_model_objs['customers'];
         
         $coll_generic = $model_with_leanorm_coll_and_rec
-                            ->createCollection(new \GDAO\Model\GDAORecordsList([]));
+                            ->createNewCollection(new \GDAO\Model\GDAORecordsList([]));
         //exact class
         $this->assertEquals('LeanOrm\Model\Collection', get_class($coll_generic));
     }
 
-    public function testCreateRecord() {
+    public function testCreateNewRecord() {
         
         $model_with_mock_coll_and_rec =
             $this->_mock_model_objs['customers_with_specialized_collection_and_record'];
 
         $record_mock = $model_with_mock_coll_and_rec
-                                        ->createRecord([], ['is_new'=>false]);
+                                        ->createNewRecord([], ['is_new'=>false]);
         //exact class
         $this->assertEquals(
             'MockModelRecordForTestingPublicAndProtectedMethods', 
@@ -805,7 +805,7 @@ EOT;
         $model_with_leanorm_coll_and_rec = $this->_mock_model_objs['customers'];
         
         $record_generic = $model_with_leanorm_coll_and_rec
-                                        ->createRecord([], ['is_new'=>false]);
+                                        ->createNewRecord([], ['is_new'=>false]);
         //exact class
         $this->assertEquals('LeanOrm\Model\Record', get_class($record_generic));
     }
@@ -830,7 +830,7 @@ EOT;
         }
     }
     
-    public function testDeleteRecordsMatchingSpecifiedColsNValues() {
+    public function testDeleteMatchingDbTableRows() {
         
         $ins_sql = <<<SQL
 INSERT INTO "Shippers" VALUES(55,'USPS','1 (800) 275-8777');
@@ -843,34 +843,26 @@ SQL;
         //add the data to delete
         $mock_model_shippers->getPDO()->exec($ins_sql);
         
-        $res1 = $mock_model_shippers->deleteRecordsMatchingSpecifiedColsNValues(
+        //should return 1, 1 record deleted
+        $res1 = $mock_model_shippers->deleteMatchingDbTableRows(
                     [$mock_model_shippers->getPrimaryColName() => 55 ]
                 );
         $this->assertEquals(1, $res1);
         
-        $res2 = $mock_model_shippers->deleteRecordsMatchingSpecifiedColsNValues(
+        //should return 3, 3 records deleted
+        $res2 = $mock_model_shippers->deleteMatchingDbTableRows(
                     [$mock_model_shippers->getPrimaryColName() => [56, 57, 58]]
                 );
         $this->assertEquals(3, $res2);
         
-        $res3 = $mock_model_shippers->deleteRecordsMatchingSpecifiedColsNValues(
+        //should return 0 no records deleted
+        $res3 = $mock_model_shippers->deleteMatchingDbTableRows(
                     [$mock_model_shippers->getPrimaryColName() => 55 ]
                 );
-        $this->assertEquals( true, ($res3 === null) );
-
-/*
-$dsn = "mysql:host=s-edm-tallis;dbname=buying_and_selling";
-$model_sqlite = new \LeanOrm\Model(
-            $dsn,
-            "cfs_super",
-            "3xtr3m3",
-            [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'],
-            ['primary_col'=>'ShipperID', 'table_name'=>'Shippers']
-            //['primary_col'=>'OrderID', 'table_name'=>'Orders']
-        );
-$res4 = $model_sqlite->deleteRecordsMatchingSpecifiedColsNValues(['ShipperID2'=>2]);
-var_dump($res4);
-var_dump(pow(PHP_INT_MAX, PHP_INT_MAX));
-//*/
+        $this->assertEquals( true, ($res3 === 0) );
+        
+        //should return null no db operation happened
+        $res4 = $mock_model_shippers->deleteMatchingDbTableRows([]);
+        $this->assertEquals( true, ($res4 === null) );
     }
 }

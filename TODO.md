@@ -8,3 +8,7 @@ implement functionality specific to each DBMS.
 * In the documentation state that the **'cols'** parameter in the $params array for fetchPairs should only contain column names without the table name and dot as prefix
 
 * Find a way using git hooks or something to update the year in the license during a commit, push or something.
+
+* Add examples of how to implement validation using a 3rd party library like AuraFilter. Not adding filtering and validation in order to give consumers flexibility on how this should happen.
+
+* Test that data for Insert and Update get saved as the correct data type in the DB.

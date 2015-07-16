@@ -4,7 +4,7 @@
     "description": "A Generic Data Objects ( https://github.com/rotexsoft/gdao ) implementation based on a stripped down version of idiorm (\\LeanOrm\\DBConnector).",
     "keywords": [ "orm", "db", "pdo", "mysql", "postgresql", "sqlite", "database", "sql", "table","data", "gateway", "table data gateway"],
     "homepage": "https://github.com/rotexsoft/leanorm",
-    "license": "MIT",
+    "license": "BSD-2-Clause",
     "authors": [
         {
             "name": "Rotimi Adegbamigbe",

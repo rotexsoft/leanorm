@@ -130,7 +130,7 @@ class Model extends \GDAO\Model
      * 
      * {@inheritDoc}
      */
-    public function createCollection(\GDAO\Model\GDAORecordsList $list_of_records, array $extra_opts=array()) {
+    public function createNewCollection(\GDAO\Model\GDAORecordsList $list_of_records, array $extra_opts=array()) {
         
         if( empty($this->_collection_class_name) ) {
          
@@ -151,7 +151,7 @@ class Model extends \GDAO\Model
      * 
      * {@inheritDoc}
      */
-    public function createRecord(array $col_names_n_vals = array(), array $extra_opts=array()) {
+    public function createNewRecord(array $col_names_n_vals = array(), array $extra_opts=array()) {
         
         if( empty($this->_record_class_name) ) {
          
@@ -409,14 +409,14 @@ class Model extends \GDAO\Model
             
             if($this->_validateWhereOrHavingParamsArray($where_params)) {
 
-                $sql_n_bind_params = 
+                list($where_clause, $bind_params) = 
                     $this->_getWhereOrHavingClauseWithParams($where_params);
                                 
-                $select_qry_obj->where( $sql_n_bind_params[0] );
+                $select_qry_obj->where( $where_clause );
                 
-                if( count( $sql_n_bind_params[1] ) > 0 ) {
+                if( count( $bind_params ) > 0 ) {
                     
-                    $select_qry_obj->bindValues( $sql_n_bind_params[1] );
+                    $select_qry_obj->bindValues( $bind_params );
                 }
             }
         }
@@ -435,14 +435,14 @@ class Model extends \GDAO\Model
             
             if($this->_validateWhereOrHavingParamsArray($having_params)) {
 
-                $sql_n_bind_params = 
+                list($having_clause, $bind_params) =
                     $this->_getWhereOrHavingClauseWithParams($having_params);
-                                
-                $select_qry_obj->having( $sql_n_bind_params[0] );
                 
-                if( count( $sql_n_bind_params[1] ) > 0 ) {
+                $select_qry_obj->having( $having_clause );
+                
+                if( count( $bind_params ) > 0 ) {
                     
-                    $select_qry_obj->bindValues( $sql_n_bind_params[1] );
+                    $select_qry_obj->bindValues( $bind_params );
                 }
             }
         }
@@ -476,6 +476,41 @@ class Model extends \GDAO\Model
         }
     }
     
+    protected function _validateRelatedCollectionAndRecordClassNames($collection_class_name, $record_class_name) {
+        
+        $parent_collection_class_name = '\GDAO\Model\Collection';
+        $parent_record_class_name = '\GDAO\Model\Record';
+    
+        if( !is_subclass_of($collection_class_name, $parent_collection_class_name) ) {
+
+            //throw exception
+            $msg = "ERROR: '$collection_class_name' is not a subclass of "
+                 . "'$parent_collection_class_name'. A collection class name specified"
+                 . " for fetching related data must be the name of a class that"
+                 . " is a sub-class of '$parent_collection_class_name'"
+                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL;
+
+            throw new ModelBadCollectionClassNameForFetchingRelatedDataException($msg);
+        }
+        
+        if( !is_subclass_of($record_class_name, $parent_record_class_name)  ) {
+
+            //throw exception
+            $msg = "ERROR: '$record_class_name' is not a subclass of "
+                 . "'$parent_record_class_name'. A record class name specified for"
+                 . " fetching related data must be the name of a class that"
+                 . " is a sub-class of '$parent_record_class_name'"
+                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL;
+
+
+            throw new ModelBadRecordClassNameForFetchingRelatedDataException($msg);
+        }
+        
+        return true;
+    }
+    
     /**
      * 
      * @param string $rel_name
@@ -493,6 +528,8 @@ class Model extends \GDAO\Model
                 $foreign_models_collection_class_name, $fkey_col_in_my_table, 
                 $foreign_model_obj, $related_data
             ) = $this->_getBelongsToOrHasOneOrHasManyData($rel_name, $parent_data);
+            
+            $this->_validateRelatedCollectionAndRecordClassNames($foreign_models_collection_class_name, $foreign_models_record_class_name);
             
             /*
                 -- BASIC SQL For Fetching the Related Data
@@ -587,6 +624,8 @@ class Model extends \GDAO\Model
             $foreign_models_collection_class_name = 
                 $array_get($rel_info, 'foreign_models_collection_class_name', '\\LeanOrm\Model\\Collection');
             
+            $this->_validateRelatedCollectionAndRecordClassNames($foreign_models_collection_class_name, $foreign_models_record_class_name);
+            
             $pri_key_col_in_foreign_models_table = 
                 $array_get($rel_info, 'primary_key_col_in_foreign_models_table');
             
@@ -677,7 +716,7 @@ SELECT {$foreign_table_name}.*,
             //GRAB DA RELATED DATA
             $related_data = 
                 $this->_db_connector
-                     ->fetchAllRows($sql_2_get_related_data, $params_2_bind_2_sql);
+                     ->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql);
 
             if ( 
                 $parent_data instanceof \GDAO\Model\Collection
@@ -742,6 +781,8 @@ SELECT {$foreign_table_name}.*,
                 $foreign_models_collection_class_name, $fkey_col_in_my_table, 
                 $foreign_model_obj, $related_data
             ) = $this->_getBelongsToOrHasOneOrHasManyData($rel_name, $parent_data);
+            
+            $this->_validateRelatedCollectionAndRecordClassNames($foreign_models_collection_class_name, $foreign_models_record_class_name);
 /*
 -- SQL For Fetching the Related Data
 
@@ -845,13 +886,13 @@ SELECT {$foreign_table_name}.*
             $array_get($rel_info, 'foreign_key_col_in_foreign_models_table');
 
         $foreign_models_class_name = 
-            $array_get($rel_info, 'foreign_models_class_name', '\\LeanOrm\\Model');
+            $array_get($rel_info, 'foreign_models_class_name', "\\LeanOrm\\Model");
 
         $foreign_models_record_class_name = 
-            $array_get($rel_info, 'foreign_models_record_class_name', '\\LeanOrm\\Model\\Record');
+            $array_get($rel_info, 'foreign_models_record_class_name', "\\LeanOrm\\Model\\Record");
 
         $foreign_models_collection_class_name = 
-            $array_get($rel_info, 'foreign_models_collection_class_name', '\\LeanOrm\Model\\Collection');
+            $array_get($rel_info, 'foreign_models_collection_class_name', "\\LeanOrm\Model\\Collection");
 
         $pri_key_col_in_foreign_models_table = 
             $array_get($rel_info, 'primary_key_col_in_foreign_models_table');
@@ -906,7 +947,7 @@ SELECT {$foreign_table_name}.*
         //GRAB DA RELATED DATA
         $related_data = 
             $this->_db_connector
-                 ->fetchAllRows($sql_2_get_related_data, $params_2_bind_2_sql);
+                 ->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql);
 
         return array(
             $fkey_col_in_foreign_table, $foreign_models_record_class_name,
@@ -990,7 +1031,7 @@ SELECT {$foreign_table_name}.*
                         $rec_data, array('is_new'=>false)
                     );
 
-                if(!empty($foreign_model_obj)) {
+                if( $foreign_model_obj instanceof \GDAO\Model) {
 
                     $matching_related_records[$key]
                                     ->setModel($foreign_model_obj);
@@ -1005,7 +1046,7 @@ SELECT {$foreign_table_name}.*
                 new \GDAO\Model\GDAORecordsList( $matching_related_records )
             );
 
-            if( !empty($foreign_model_obj) ) {
+            if( $foreign_model_obj instanceof \GDAO\Model) {
 
                 $matching_related_records->setModel($foreign_model_obj);
             }
@@ -1018,7 +1059,7 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchAll(array $params = array()) {
 
-        $results = $this->createCollection(
+        $results = $this->createNewCollection(
                         new \GDAO\Model\GDAORecordsList(
                                 $this->_getData4FetchAll($params)
                             )
@@ -1060,7 +1101,7 @@ SELECT {$foreign_table_name}.*
         
         foreach ($results as $key=>$value) {
 
-            $results[$key] = $this->createRecord($value, array('is_new'=>false));
+            $results[$key] = $this->createNewRecord($value, array('is_new'=>false));
         }
         
         return $results;
@@ -1072,7 +1113,7 @@ SELECT {$foreign_table_name}.*
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        return $this->_db_connector->fetchAllRows($sql, $params_2_bind_2_sql);
+        return $this->_db_connector->dbFetchAll($sql, $params_2_bind_2_sql);
     }
     
     /**
@@ -1107,18 +1148,11 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function deleteRecordsMatchingSpecifiedColsNValues(array $cols_n_vals) {
+    public function deleteMatchingDbTableRows(array $cols_n_vals) {
         
         $result = null;
         
         if ( !empty($cols_n_vals) && count($cols_n_vals) > 0 ) {
-
-            //select query obj will be used to execute a select count(*) query
-            //to see if the criteria specified in $col_names_n_vals_2_match
-            //matches any cols
-            $select_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newSelect();
-            $select_qry_obj->cols(array('COUNT(*) AS num_of_matched_records'));
-            $select_qry_obj->from($this->_table_name);
             
             //delete statement
             $del_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newDelete();
@@ -1136,43 +1170,34 @@ SELECT {$foreign_table_name}.*
                         },                     
                         $this->getPDO()
                     );
-                      
-                    $select_qry_obj->where("{$colname} IN (" . implode(',', $colval) . ") ");
+                        
                     $del_qry_obj->where("{$colname} IN (" . implode(',', $colval) . ") ");
+                    
                 } else {
 
-                    $select_qry_obj->where("{$colname} = ?", $colval);
                     $del_qry_obj->where("{$colname} = ?", $colval);
                 }
             }
+            
+            $dlt_qry = $del_qry_obj->__toString(); //echo $query.'<br>';
+            $dlt_qry_params = $del_qry_obj->getBindValues(); //print_r($query_params);
 
-            $orm_obj = $this->_db_connector;
-            
-            $slct_qry = $select_qry_obj->__toString();
-            $slct_qry_params = $select_qry_obj->getBindValues();
-            $slct_qry_result = $orm_obj->fetchOneRow($slct_qry, $slct_qry_params);
-            $num_of_matched_records = $slct_qry_result['num_of_matched_records'];
-//r($slct_qry);
-//r($slct_qry_params);
-//r($slct_qry_result);
-//r($num_of_matched_records);
-            
-            if ( $num_of_matched_records > 0 ) {
+            $result = $this->_db_connector->executeQuery($dlt_qry, $dlt_qry_params, true); 
+
+            if( $result[0] === true ) {
                 
-                //there are some rows of data to update
-                $dlt_qry = $del_qry_obj->__toString(); //echo $query.'<br>';
-                $dlt_qry_params = $del_qry_obj->getBindValues(); //print_r($query_params);
-//r($qry);
-//r($qry_params);
-                $result = $orm_obj->executeQuery($dlt_qry, $dlt_qry_params); 
+                //return number of affected rows
+                $pdo_statement_used_for_query = $result[1];
+                $result = $pdo_statement_used_for_query->rowCount();
+
+            } else {
                 
-                if( $result === true ) {
-                    
-                    $result = $num_of_matched_records;
-                }
-//echo $orm_obj->get_last_query();
+                //return boolean result of the \PDOStatement::execute() call
+                //from $this->_db_connector->executeQuery($dlt_qry, $dlt_qry_params, true);
+                $result = $result[0];
             }
         }
+
         return $result;
     }
     
@@ -1190,10 +1215,10 @@ SELECT {$foreign_table_name}.*
         if ( count($record) > 0 ) { //test if the record object has data
             
             $pri_key_val = $record->getPrimaryVal();
-            $cols_n_vals = array($this->_primary_col => $pri_key_val);
+            $cols_n_vals = array($this->getPrimaryColName() => $pri_key_val);
 
             $succesfully_deleted = 
-                $this->deleteRecordsMatchingSpecifiedColsNValues($cols_n_vals);
+                $this->deleteMatchingDbTableRows($cols_n_vals);
 
             if ( $succesfully_deleted === 1 ) {
 
@@ -1201,8 +1226,7 @@ SELECT {$foreign_table_name}.*
             }
         }
         
-        return is_numeric($succesfully_deleted)?
-                        ((bool) $succesfully_deleted) : $succesfully_deleted;
+        return ( $succesfully_deleted === 1 )? true : $succesfully_deleted;
     }
 
     /**
@@ -1211,21 +1235,13 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchCol(array $params = array()) {
         
-        $col_name = '';
-        
-        if( array_key_exists('cols', $params) && count($params['cols']) > 0 ) {
-            
-            //extract the first col since only the first col will be returned
-            $params['cols'] = ( (array)$params['cols'] );
-            $col_name = array_shift($params['cols']);
-            $params['cols'] = array( $col_name );
-        
-        } else {
-            
-            //throw Exception no col specified
-            $msg = "ERROR: Bad param entry. Array expected as the value of the"
-                 . " item with the key named 'cols' OR no item with"
-                 . " a key named 'cols'  in the array: "
+        if( 
+            array_key_exists('cols', $params) 
+            && ( !is_array($params['cols']) || count($params['cols']) < 1 )
+        ) {
+            //throw Exception
+            $msg = "ERROR: Bad param entry. Array containing at least 1 string "
+                 . "value expected as the value of the item with the key named 'cols' ."
                  . PHP_EOL . var_export($params, true) . PHP_EOL
                  . " passed to " 
                  . get_class($this) . '::' . __FUNCTION__ . '(...).' 
@@ -1238,9 +1254,7 @@ SELECT {$foreign_table_name}.*
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $results = $this->_db_connector->fetchAllRows($sql, $params_2_bind_2_sql);
-
-        return array_column($results, $col_name);
+        return $this->_db_connector->dbFetchCol($sql, $params_2_bind_2_sql);
     }
 
     /**
@@ -1258,12 +1272,12 @@ SELECT {$foreign_table_name}.*
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $result = $this->_db_connector->fetchAllRows($sql, $params_2_bind_2_sql);
-        
+        $result = $this->_db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
+
         if( count($result) > 0 ) {
             
             $result = 
-                $this->createRecord(array_shift($result), array('is_new'=>false));
+                $this->createNewRecord($result, array('is_new'=>false));
         }
 
         if( array_key_exists('relations_to_include', $params) ) {
@@ -1282,26 +1296,15 @@ SELECT {$foreign_table_name}.*
      * {@inheritDoc}
      */
     public function fetchPairs(array $params = array()) {
-        
-        $key_col_name = '';
-        $val_col_name = '';
-        
-        if( array_key_exists('cols', $params) && count($params['cols']) >=2 ) {
-            
-            //extract the first col since only the first col will be returned
-            $params['cols'] = ( (array)$params['cols'] );
-            
-            $key_col_name = array_shift( $params['cols'] );
-            $val_col_name = array_shift( $params['cols'] ) ;
-            
-            $params['cols'] = array( $key_col_name, $val_col_name);
-        
-        } else {
-            
-            //throw Exception no col specified
+
+        if( 
+            array_key_exists('cols', $params) 
+            && ( !is_array($params['cols']) || count($params['cols']) < 2 )
+        ) {
+            //throw Exception
             $msg = "ERROR: Bad param entry. Array (with at least two items) "
                  . "expected as the value of the item with the key named 'cols'"
-                 . " OR no item with a key named 'cols'  in the array: "
+                 . " in the array: "
                  . PHP_EOL . var_export($params, true) . PHP_EOL
                  . " passed to " 
                  . get_class($this) . '::' . __FUNCTION__ . '(...).' 
@@ -1314,12 +1317,7 @@ SELECT {$foreign_table_name}.*
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $results = $this->_db_connector->fetchAllRows($sql, $params_2_bind_2_sql);
-
-        return array_combine(
-                    array_column($results, $key_col_name), 
-                    array_column($results, $val_col_name)
-                );
+        return $this->_db_connector->dbFetchPairs($sql, $params_2_bind_2_sql);
     }
 
     /**
@@ -1327,30 +1325,6 @@ SELECT {$foreign_table_name}.*
      * {@inheritDoc}
      */
     public function fetchValue(array $params = array()) {
-        
-        $col_name = '';
-        
-        if( array_key_exists('cols', $params) && count($params['cols']) > 0 ) {
-            
-            //extract the first col since only the 1st value from the 1st col 
-            //will be returned
-            $params['cols'] = ( (array)$params['cols'] );
-            $col_name = array_shift($params['cols']);
-            $params['cols'] = array( $col_name );
-        
-        } else {
-            
-            //throw Exception no col specified
-            $msg = "ERROR: Bad param entry. Array expected as the value of the"
-                 . " item with the key named 'cols' OR no item with"
-                 . " a key named 'cols'  in the array: "
-                 . PHP_EOL . var_export($params, true) . PHP_EOL
-                 . " passed to " 
-                 . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                 . PHP_EOL;
-
-            throw new ModelBadFetchParamsSuppliedException($msg);
-        }
         
         $param_keys_2_exclude = array('limit_offset', 'limit_size');
         
@@ -1361,15 +1335,7 @@ SELECT {$foreign_table_name}.*
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        $result = $this->_db_connector->fetchAllRows($sql, $params_2_bind_2_sql);
-       
-        if( count($result) > 0 ) {
-            
-            $record = array_shift($result);
-            $result = $record[$col_name];
-        }
-
-        return $result;
+        return $this->_db_connector->dbFetchValue($sql, $params_2_bind_2_sql);
     }
 
     /**
@@ -1423,6 +1389,26 @@ SELECT {$foreign_table_name}.*
                 }
             }
             
+            $has_autoinc_pkey_col = false;
+            
+            foreach($this->_table_cols as $col_info) {
+                
+                if ( $col_info['autoinc'] && $col_info['primary'] ) {
+                    
+                    $pkey_col_name = $this->getPrimaryColName();
+
+                    if(array_key_exists($pkey_col_name, $col_names_n_vals)) {
+
+                        //no need to add primary key value to the insert 
+                        //statement since the column is auto incrementing
+                        unset($col_names_n_vals[$pkey_col_name]);
+                    }
+                    
+                    $has_autoinc_pkey_col = true;
+                    break;
+                }
+            }
+            
             //Insert statement
             $insrt_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newInsert();
             $insrt_qry_obj->into($this->_table_name)->cols($col_names_n_vals);
@@ -1456,30 +1442,33 @@ SELECT {$foreign_table_name}.*
             
             if( $this->_db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
              
-                $last_insert_sequence_name = 
-                    $insrt_qry_obj->getLastInsertIdName($this->_primary_col);
+                if($has_autoinc_pkey_col) {
+                    
+                    $last_insert_sequence_name = 
+                        $insrt_qry_obj->getLastInsertIdName($this->_primary_col);
 
-                $pk_val_4_new_record = 
-                        $this->getPDO()->lastInsertId($last_insert_sequence_name);
+                    $pk_val_4_new_record = 
+                            $this->getPDO()->lastInsertId($last_insert_sequence_name);
 
-                if( empty($pk_val_4_new_record) ) {
-                    
-                    $msg = "ERROR: Could not retrieve the value for the primary"
-                         . " key field name '{$this->_primary_col}' after the "
-                         . " successful insertion of the data below: "
-                         . PHP_EOL . var_export($col_names_n_vals, true) . PHP_EOL
-                         . " into the table named '{$this->_table_name}' in the method " 
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . PHP_EOL;
-                    
-                    //throw exception
-                    throw new \GDAO\ModelPrimaryColValueNotRetrievableAfterInsertException($msg);
-                    
-                } else {
-                    
-                    //add primary key value of the newly inserted record to the 
-                    //data to be returned.
-                    $col_names_n_vals[$this->_primary_col] = $pk_val_4_new_record;
+                    if( empty($pk_val_4_new_record) ) {
+
+                        $msg = "ERROR: Could not retrieve the value for the primary"
+                             . " key field name '{$this->_primary_col}' after the "
+                             . " successful insertion of the data below: "
+                             . PHP_EOL . var_export($col_names_n_vals, true) . PHP_EOL
+                             . " into the table named '{$this->_table_name}' in the method " 
+                             . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                             . PHP_EOL;
+
+                        //throw exception
+                        throw new \GDAO\ModelPrimaryColValueNotRetrievableAfterInsertException($msg);
+
+                    } else {
+
+                        //add primary key value of the newly inserted record to the 
+                        //data to be returned.
+                        $col_names_n_vals[$this->_primary_col] = $pk_val_4_new_record;
+                    }
                 }
                 
                 //insert was successful
@@ -1494,12 +1483,12 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function updateRecordsMatchingSpecifiedColsNValues(
+    public function updateMatchingDbTableRows(
         array $col_names_n_vals_2_save = array(),
         array $col_names_n_vals_2_match = array()
     ) {
         $result = null;
-        
+
         if ( 
             !empty($col_names_n_vals_2_save) && count($col_names_n_vals_2_save) > 0 
         ) {
@@ -1512,6 +1501,15 @@ SELECT {$foreign_table_name}.*
             ) {
                 //set last updated timestamp to now
                 $col_names_n_vals_2_save[$last_updtd_colname] = date('Y-m-d H:i:s');
+            }
+            
+            
+            $pkey_col_name = $this->getPrimaryColName();
+            
+            if(array_key_exists($pkey_col_name, $col_names_n_vals_2_save)) {
+                
+                //don't update the primary key
+                unset($col_names_n_vals_2_save[$pkey_col_name]);
             }
             
             // remove non-existent table columns from the data
@@ -1544,14 +1542,7 @@ SELECT {$foreign_table_name}.*
                     throw new \GDAO\ModelInvalidUpdateValueSuppliedException($msg);
                 }
             }
-            
-            //select query obj will be used to execute a select count(*) query
-            //to see if the criteria specified in $col_names_n_vals_2_match
-            //matches any cols
-            $select_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newSelect();
-            $select_qry_obj->cols(array('COUNT(*) AS num_of_matched_records'));
-            $select_qry_obj->from($this->_table_name);
-            
+                        
             //update statement
             $update_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newUpdate();
             $update_qry_obj->table($this->_table_name);
@@ -1573,47 +1564,34 @@ SELECT {$foreign_table_name}.*
                             $this->getPDO()
                         );
 
-                        $select_qry_obj->where("{$colname} IN (" . implode(',', $colval) . ") ");
                         $update_qry_obj->where("{$colname} IN (" . implode(',', $colval) . ") ");
                         
                     } else {
                         
                         //NOTE: not pdo quoting $colval here because when 
-                        //$orm_obj->find_one($slct_qry, $slct_qry_params) and 
-                        //DBConnector::raw_execute($updt_qry, $updt_qry_params)
-                        //are called, the pdo quoting gets handled by DBConnector.
-                        $select_qry_obj->where("{$colname} = ?", $colval);
+                        //DBConnector::executeQuery($updt_qry, $updt_qry_params)
+                        //is called, the pdo quoting gets handled by DBConnector.
                         $update_qry_obj->where("{$colname} = ?", $colval);
                     }
                 }
             }
-           
-            $orm_obj = $this->_db_connector;
-
-            $slct_qry = $select_qry_obj->__toString();
-            $slct_qry_params = $select_qry_obj->getBindValues();
-            $slct_qry_result = $orm_obj->fetchOneRow($slct_qry, $slct_qry_params);
-            $num_of_matched_records = $slct_qry_result['num_of_matched_records'];
-//r($slct_qry);
-//r($slct_qry_params);
-//r($slct_qry_result);
-//r($num_of_matched_records);
             
-            if( $num_of_matched_records > 0 ) {
+            $updt_qry = $update_qry_obj->__toString();//echo $query.'<br>';
+            $updt_qry_params = $update_qry_obj->getBindValues();// print_r($query_params);
 
-                //there are some rows of data to update
-                $updt_qry = $update_qry_obj->__toString();//echo $query.'<br>';
-                $updt_qry_params = $update_qry_obj->getBindValues();// print_r($query_params);
-//r($updt_qry);
-//r($updt_qry_params);
-                $result = $orm_obj->executeQuery($updt_qry, $updt_qry_params);
+            $result = $this->_db_connector->executeQuery($updt_qry, $updt_qry_params, true);
+
+            if( $result[0] === true ) {
                 
-                if( $result === true ) {
-                    
-                    //return number of matched records
-                    $result = $num_of_matched_records;
-                }
-//echo $orm_obj->get_last_query();
+                //return number of affected rows
+                $pdo_statement_used_for_query = $result[1];
+                $result = $pdo_statement_used_for_query->rowCount();
+                
+            } else {
+                
+                //return boolean result of the \PDOStatement::execute() call
+                //from $this->_db_connector->executeQuery($updt_qry, $updt_qry_params, true);
+                $result = $result[0];
             }
         }
         
@@ -1637,7 +1615,7 @@ SELECT {$foreign_table_name}.*
             $cols_n_vals_2_match = array($this->_primary_col=>$pri_key_val);
 
             $succesfully_updated = 
-                $this->updateRecordsMatchingSpecifiedColsNValues(
+                $this->updateMatchingDbTableRows(
                             $record->getData(), $cols_n_vals_2_match
                         );
         }
@@ -1674,3 +1652,5 @@ class ModelBadHavingParamSuppliedException extends \Exception{}
 class ModelBadGroupByParamSuppliedException extends \Exception{}
 class ModelBadOrderByParamSuppliedException extends \Exception{}
 class ModelBadWhereOrHavingParamSuppliedException extends \Exception{}
+class ModelBadCollectionClassNameForFetchingRelatedDataException extends \Exception{}
+class ModelBadRecordClassNameForFetchingRelatedDataException extends \Exception{}
