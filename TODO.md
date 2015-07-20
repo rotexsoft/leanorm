@@ -12,3 +12,5 @@ implement functionality specific to each DBMS.
 * Add examples of how to implement validation using a 3rd party library like AuraFilter. Not adding filtering and validation in order to give consumers flexibility on how this should happen.
 
 * Test that data for Insert and Update get saved as the correct data type in the DB.
+
+* Add in the documentation that Records can be added to a collection via the $collection[] = $record; syntax. No need for a $collection->addRecord(record); method in the API
