@@ -11,6 +11,12 @@ desktop.ini
 build
 .idea
 
+ignore/
+/ignore/
+/ignore/*
+/ignore/*.*
+/ignore/*/
+
 nbproject/
 /nbproject/
 /nbproject/*
