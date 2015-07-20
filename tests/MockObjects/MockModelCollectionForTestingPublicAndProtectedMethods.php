@@ -7,8 +7,8 @@
  */
 class MockModelCollectionForTestingPublicAndProtectedMethods extends \LeanOrm\Model\Collection
 {
-    public function __construct(\GDAO\Model\GDAORecordsList $data, $extra_opts = []) {
+    public function __construct(\GDAO\Model\GDAORecordsList $data, \GDAO\Model $model, $extra_opts = []) {
         
-        parent::__construct($data, $extra_opts);
+        parent::__construct($data, $model, $extra_opts);
     }
 }
