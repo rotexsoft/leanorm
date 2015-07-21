@@ -125,7 +125,7 @@ class Record extends \GDAO\Model\Record
                    . " data source of type '{$datasource_type}'. An 'Array' or"
                    . " instance of '\\LeanOrm\\Model\\Record' or any of its"
                    . " subclasses are the allowed data sources acceptable by "
-                   . get_class($this).'::'.__FUNCTION__
+                   . get_class($this).'::'.__FUNCTION__.'(...)'
                    . PHP_EOL . "Unloaded Data:"
                    . PHP_EOL . var_export($data_2_load, true) . PHP_EOL;
             
