@@ -1116,8 +1116,7 @@ SELECT {$foreign_table_name}.*
         $results = $this->createNewCollection(
                         new \GDAO\Model\GDAORecordsList(
                                 $this->_getData4FetchAll($params)
-                            ), 
-                        $this
+                            )
                     );
 
         if( array_key_exists('relations_to_include', $params) ) {
