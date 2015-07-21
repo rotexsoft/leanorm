@@ -124,6 +124,26 @@ class Model extends \GDAO\Model
                 $this->_table_cols[$colname]['primary'] = $metadata_obj->primary;
             }
         }
+        
+        $table_cols = $this->getTableColNames();
+        
+        foreach($this->_relations as $relation_name=>$relation_info) {
+        
+            if( in_array($relation_name, $table_cols) ) {
+                
+                //Error trying to add a relation whose name collides with an actual
+                //name of a column in the db table associated with this model.
+                $msg = "ERROR: You cannont add a relationship with the name '$relation_name' "
+                     . " to the Model (".get_class($this)."). The database table "
+                     . " '{$this->getTableName()}' associated with the "
+                     . " model (".get_class($this).") already contains"
+                     . " a column with the same name."
+                     . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                     . PHP_EOL;
+                     
+                throw new RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
+            }
+        }
     }
     
     /**
