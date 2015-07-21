@@ -135,14 +135,12 @@ class Model extends \GDAO\Model
         if( empty($this->_collection_class_name) ) {
          
             //default to creating new collection of type \LeanOrm\Model\Collection
-            $collection = new \LeanOrm\Model\Collection($list_of_records, $extra_opts);
+            $collection = new \LeanOrm\Model\Collection($list_of_records, $this, $extra_opts);
             
         } else {
             
-            $collection = new $this->_collection_class_name($list_of_records, $extra_opts);
+            $collection = new $this->_collection_class_name($list_of_records, $this, $extra_opts);
         }
-        
-        $collection->setModel($this);
         
         return $collection;
     }
@@ -156,14 +154,12 @@ class Model extends \GDAO\Model
         if( empty($this->_record_class_name) ) {
          
             //default to creating new record of type \LeanOrm\Model\Record
-            $record = new \LeanOrm\Model\Record($col_names_n_vals, $extra_opts);
+            $record = new \LeanOrm\Model\Record($col_names_n_vals, $this, $extra_opts);
             
         } else {
             
-            $record = new $this->_record_class_name($col_names_n_vals, $extra_opts);
+            $record = new $this->_record_class_name($col_names_n_vals, $this, $extra_opts);
         }
-        
-        $record->setModel($this);
         
         return $record;
     }
@@ -503,7 +499,6 @@ class Model extends \GDAO\Model
                  . " is a sub-class of '$parent_record_class_name'"
                  . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
-
 
             throw new ModelBadRecordClassNameForFetchingRelatedDataException($msg);
         }
@@ -957,25 +952,71 @@ SELECT {$foreign_table_name}.*
     }
 
     protected function _createRelatedModelObject(
-        $foreign_models_class_name, 
-        $pri_key_col_in_foreign_models_table, 
-        $foreign_table_name
+        $f_models_class_name, 
+        $pri_key_col_in_f_models_table, 
+        $f_table_name
     ) {
+        //$foreign_models_class_name will never be empty it will default to \LeanOrm\Model
+        //$foreign_table_name will never be empty because it is needed for fetching the 
+        //related data
+        
+        if( empty($f_models_class_name) ) {
+            
+            $f_models_class_name = '\LeanOrm\Model';
+        }
+
+        //$pri_key_col_in_foreign_models_table could be empty and if it is then 
+        //we'll have to look it up via the schema
+        
+        if( empty($pri_key_col_in_f_models_table) ) {
+
+            ////////////////////////////////////////////////////////
+            //Search for the primary key column via schema meta data
+            ////////////////////////////////////////////////////////
+
+            // a column definition factory 
+            $column_factory = new ColumnFactory();
+            $schema_class_name = '\\Aura\\SqlSchema\\' 
+                                 .ucfirst($this->_pdo_driver_name).'Schema';
+
+            // the schema discovery object
+            $schema = new $schema_class_name($this->getPDO(), $column_factory);
+            $schema_definitions = $schema->fetchTableCols($f_table_name);
+
+            foreach( $schema_definitions as $colname => $metadata_obj ) {
+                
+                if( $metadata_obj->primary ) {
+                    
+                    //Yay! we found the primary key col for table $f_table_name
+                    $pri_key_col_in_f_models_table = $colname;
+                    break;
+                }
+            }
+        }
+        
         if(
-            !empty($foreign_models_class_name)
-            && !empty($pri_key_col_in_foreign_models_table)
+            !empty($pri_key_col_in_f_models_table)
         ) {
             //try to create a model object for the related data
-            return new $foreign_models_class_name(
+            return new $f_models_class_name(
                 $this->_dsn, 
                 $this->_username, 
                 $this->_passwd, 
                 $this->_pdo_driver_opts,
                 array(
-                    '_primary_col' => $pri_key_col_in_foreign_models_table,
-                    '_table_name' => $foreign_table_name
+                    '_primary_col' => $pri_key_col_in_f_models_table,
+                    '_table_name' => $f_table_name
                 )
             );
+        } else {
+            
+            $msg = "ERROR: Couldn't create foreign model of type '$f_models_class_name'."
+                 . "  No primary key supplied for the database table '$f_table_name'"
+                 . " associated with the foreign table class '$f_models_class_name'."
+                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL;
+
+            throw new ModelRelatedModelNotCreatedException($msg);
         }
         
         return null;
@@ -1028,28 +1069,21 @@ SELECT {$foreign_table_name}.*
 
                 $matching_related_records[$key] = 
                     new $foreign_models_record_class_name(
-                        $rec_data, array('is_new'=>false)
+                        $rec_data, 
+                        $foreign_model_obj, 
+                        array('is_new'=>false)
                     );
-
-                if( $foreign_model_obj instanceof \GDAO\Model) {
-
-                    $matching_related_records[$key]
-                                    ->setModel($foreign_model_obj);
-                }
             }
         }
 
         if($wrap_records_in_collection) {
 
             //wrap into a collection object
-            $matching_related_records = new $foreign_models_collection_class_name (
-                new \GDAO\Model\GDAORecordsList( $matching_related_records )
-            );
-
-            if( $foreign_model_obj instanceof \GDAO\Model) {
-
-                $matching_related_records->setModel($foreign_model_obj);
-            }
+            $matching_related_records = 
+                new $foreign_models_collection_class_name (
+                    new \GDAO\Model\GDAORecordsList( $matching_related_records ), 
+                    $foreign_model_obj
+                );
         }
     }
     
@@ -1057,12 +1091,13 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchAll(array $params = array()) {
+    public function fetchRecordsIntoCollection(array $params = array()) {
 
         $results = $this->createNewCollection(
                         new \GDAO\Model\GDAORecordsList(
                                 $this->_getData4FetchAll($params)
-                            )
+                            ), 
+                        $this
                     );
 
         if( array_key_exists('relations_to_include', $params) ) {
@@ -1080,7 +1115,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchAllAsArray(array $params = array()) {
+    public function fetchRecordsIntoArray(array $params = array()) {
         
         $results = $this->_getData4FetchAll($params);
 
@@ -1120,7 +1155,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchArray(array $params = array()) {
+    public function fetchRowsIntoArray(array $params = array()) {
 
         $results = $this->_getData4FetchArray($params);
 
@@ -1148,7 +1183,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function deleteMatchingDbTableRows(array $cols_n_vals) {
+    public function deleteMatchingDbTableRows(array $cols_n_vals=array()) {
         
         $result = null;
         
@@ -1179,8 +1214,8 @@ SELECT {$foreign_table_name}.*
                 }
             }
             
-            $dlt_qry = $del_qry_obj->__toString(); //echo $query.'<br>';
-            $dlt_qry_params = $del_qry_obj->getBindValues(); //print_r($query_params);
+            $dlt_qry = $del_qry_obj->__toString();
+            $dlt_qry_params = $del_qry_obj->getBindValues();
 
             $result = $this->_db_connector->executeQuery($dlt_qry, $dlt_qry_params, true); 
 
@@ -1261,7 +1296,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchOne(array $params = array()) {
+    public function fetchOneRecord(array $params = array()) {
 
         $param_keys_2_exclude = array('limit_offset', 'limit_size');
         
@@ -1342,40 +1377,39 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function insert($col_names_n_vals = array()) {
+    public function insert(array $data_2_insert = array()) {
 
         $result = false;
-        
+
         if ( 
-            !empty($col_names_n_vals) && count($col_names_n_vals) > 0 
+            !empty($data_2_insert) && count($data_2_insert) > 0 
         ) {
-            $table_cols = $this->getTableCols();
+            $table_cols = $this->getTableColNames();
             $time_created_colname = $this->_created_timestamp_column_name;
-          
+            $last_updated_colname = $this->_updated_timestamp_column_name;
+            
             if(
                 !empty($time_created_colname) 
                 && in_array($time_created_colname, $table_cols)
             ) {
                 //set created timestamp to now
-                $col_names_n_vals[$time_created_colname] = date('Y-m-d H:i:s');
+                $data_2_insert[$time_created_colname] = date('Y-m-d H:i:s');
             }
             
-            $last_updated_colname = $this->_updated_timestamp_column_name;
-          
             if(
                 !empty($last_updated_colname) 
                 && in_array($last_updated_colname, $table_cols)
             ) {
                 //set last updated timestamp to now
-                $col_names_n_vals[$last_updated_colname] = date('Y-m-d H:i:s');
+                $data_2_insert[$last_updated_colname] = date('Y-m-d H:i:s');
             }
             
             // remove non-existent table columns from the data
-            foreach ($col_names_n_vals as $key => $val) {
+            foreach ($data_2_insert as $key => $val) {
                 
                 if ( !in_array($key, $table_cols) ) {
                     
-                    unset($col_names_n_vals[$key]);
+                    unset($data_2_insert[$key]);
                     // not in the table, so no need to check for autoinc
                     continue;
                 }
@@ -1383,35 +1417,32 @@ SELECT {$foreign_table_name}.*
                 // Code below was lifted from Solar_Sql_Model::insert()
                 // remove empty autoinc columns to soothe postgres, which won't
                 // take explicit NULLs in SERIAL cols.
-                if ( $this->_table_cols[$key]['autoinc'] && empty($val)) {
+                if ( $this->_table_cols[$key]['autoinc'] && empty($val) ) {
                     
-                    unset($col_names_n_vals[$key]);
+                    unset($data_2_insert[$key]);
                 }
             }
             
             $has_autoinc_pkey_col = false;
             
-            foreach($this->_table_cols as $col_info) {
+            foreach($this->_table_cols as $col_name=>$col_info) {
                 
-                if ( $col_info['autoinc'] && $col_info['primary'] ) {
+                if ( $col_info['autoinc'] === true && $col_info['primary'] === true ) {
                     
-                    $pkey_col_name = $this->getPrimaryColName();
-
-                    if(array_key_exists($pkey_col_name, $col_names_n_vals)) {
+                    if(array_key_exists($col_name, $data_2_insert)) {
 
                         //no need to add primary key value to the insert 
                         //statement since the column is auto incrementing
-                        unset($col_names_n_vals[$pkey_col_name]);
+                        unset($data_2_insert[$col_name]);
                     }
                     
                     $has_autoinc_pkey_col = true;
-                    break;
                 }
             }
             
             //Insert statement
             $insrt_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newInsert();
-            $insrt_qry_obj->into($this->_table_name)->cols($col_names_n_vals);
+            $insrt_qry_obj->into($this->_table_name)->cols($data_2_insert);
             
             $insrt_qry_sql = $insrt_qry_obj->__toString();
             $insrt_qry_params = $insrt_qry_obj->getBindValues();
@@ -1433,13 +1464,13 @@ SELECT {$foreign_table_name}.*
                          . "Data supplied to "
                          . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                          . " for insertion:"
-                         . PHP_EOL . var_export($col_names_n_vals, true) . PHP_EOL
+                         . PHP_EOL . var_export($data_2_insert, true) . PHP_EOL
                          . PHP_EOL;
                     
                     throw new \GDAO\ModelInvalidInsertValueSuppliedException($msg);
                 }
             }
-            
+
             if( $this->_db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
              
                 if($has_autoinc_pkey_col) {
@@ -1455,7 +1486,7 @@ SELECT {$foreign_table_name}.*
                         $msg = "ERROR: Could not retrieve the value for the primary"
                              . " key field name '{$this->_primary_col}' after the "
                              . " successful insertion of the data below: "
-                             . PHP_EOL . var_export($col_names_n_vals, true) . PHP_EOL
+                             . PHP_EOL . var_export($data_2_insert, true) . PHP_EOL
                              . " into the table named '{$this->_table_name}' in the method " 
                              . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                              . PHP_EOL;
@@ -1467,13 +1498,162 @@ SELECT {$foreign_table_name}.*
 
                         //add primary key value of the newly inserted record to the 
                         //data to be returned.
-                        $col_names_n_vals[$this->_primary_col] = $pk_val_4_new_record;
+                        $data_2_insert[$this->_primary_col] = $pk_val_4_new_record;
                     }
                 }
                 
                 //insert was successful
-                $result = $col_names_n_vals;
+                $result = $data_2_insert;
             } 
+        }
+        return $result;
+    }
+    
+    public function insertMany(array $rows_of_data_2_insert = array()) {
+        
+        $result = false;
+        
+        if ( 
+            !empty($rows_of_data_2_insert) && count($rows_of_data_2_insert) > 0 
+        ) {
+            $table_cols = $this->getTableColNames();
+            $time_created_colname = $this->_created_timestamp_column_name;
+            $last_updated_colname = $this->_updated_timestamp_column_name;
+            
+            //if the db is sqlite 3.7.10 or prior, we can't take advantage of
+            //bulk insert, have to revert to multiple insert statements.
+            if( strtolower($this->pdo_driver_name) === 'sqlite' ) {
+                
+                $pdo_obj = $this->getPDO();
+                
+                $sqlite_version_number = 
+                            $pdo_obj->getAttribute(\PDO::ATTR_SERVER_VERSION);
+                
+                if( version_compare($sqlite_version_number, '3.7.10', '<=') ) {
+                    
+                    // start the transaction
+                    $pdo_obj->beginTransaction();
+
+                    try {
+                        
+                        foreach($rows_of_data_2_insert as $row_2_insert) {
+
+                            $result = $this->insert($row_2_insert);
+                            
+                            if ($result === false) {
+
+                                // insert for current row failed.
+                                // throw it all away.
+                                $pdo_obj->rollBack();
+                                return false;
+                            }
+                        }
+
+                        //all inserts succeeded
+                        $pdo_obj->commit();
+                        return true;
+
+                    } catch (\Exception $e) {
+
+                        // roll back and throw the exception
+                        $pdo_obj->rollBack();
+                        throw $e;
+                    }
+                }//if( $version_numbers_only <= 3710 )
+            }//if( $this->pdo_driver_name === 'sqlite' ) 
+            
+            ////////////////////////////////////////////////////////////////////
+            // Do Bulk insert for other DBMSs including Sqlite 3.7.11 and later
+            ////////////////////////////////////////////////////////////////////
+
+            foreach ($rows_of_data_2_insert as $key=>$row_2_insert) {
+                
+                if(
+                    !empty($time_created_colname) 
+                    && in_array($time_created_colname, $table_cols)
+                ) {
+                    //set created timestamp to now
+                    $rows_of_data_2_insert[$key][$time_created_colname] = date('Y-m-d H:i:s');
+                }
+
+                if(
+                    !empty($last_updated_colname) 
+                    && in_array($last_updated_colname, $table_cols)
+                ) {
+                    //set last updated timestamp to now
+                    $rows_of_data_2_insert[$key][$last_updated_colname] = date('Y-m-d H:i:s');
+                }
+
+                // remove non-existent table columns from the data
+                foreach ($row_2_insert as $col_name => $val) {
+
+                    if ( !in_array($col_name, $table_cols) ) {
+
+                        unset($rows_of_data_2_insert[$key][$col_name]);
+                        // not in the table, so no need to check for autoinc
+                        continue;
+                    }
+
+                    // Code below was lifted from Solar_Sql_Model::insert()
+                    // remove empty autoinc columns to soothe postgres, which won't
+                    // take explicit NULLs in SERIAL cols.
+                    if ( $this->_table_cols[$col_name]['autoinc'] === true && empty($val)) {
+
+                        unset($rows_of_data_2_insert[$key][$col_name]);
+                    }
+                }
+
+                foreach( $this->_table_cols as $col_name=>$col_info ) {
+
+                    if ( $col_info['autoinc'] === true && $col_info['primary'] === true ) {
+                        
+                        if(array_key_exists($col_name, $row_2_insert)) {
+
+                            //no need to add primary key value to the insert 
+                            //statement since the column is auto incrementing
+                            unset($rows_of_data_2_insert[$key][$col_name]);
+                            
+                        } // if(array_key_exists($col_name, $row_2_insert))
+                        
+                    } // if ( $col_info['autoinc'] === true && $col_info['primary'] === true )
+                    
+                } // foreach( $this->_table_cols as $col_name=>$col_info )
+
+            } // foreach ($rows_of_data_2_insert as $key=>$row_2_insert)
+            
+            //Insert statement
+            $insrt_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newInsert();
+            
+            //Batch all the data into one insert query.
+            $insrt_qry_obj->into($this->_table_name)->addRows($rows_of_data_2_insert);           
+            $insrt_qry_sql = $insrt_qry_obj->__toString();
+            $insrt_qry_params = $insrt_qry_obj->getBindValues();
+
+            foreach ( $insrt_qry_params as $key => $param ) {
+                
+                if(
+                    !is_bool($param) 
+                    && !is_null($param) 
+                    && !is_numeric($param)
+                    && !is_string($param)
+                ) {
+                    $msg = "ERROR: the value "
+                         . PHP_EOL . var_export($param, true) . PHP_EOL
+                         . " you are trying to insert into {$this->_table_name}."
+                         . "{$key} is not acceptable ('".  gettype($param) . "'"
+                         . " supplied). Boolean, NULL, numeric or string value expected."
+                         . PHP_EOL
+                         . "Data supplied to "
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . " for insertion:"
+                         . PHP_EOL . var_export($rows_of_data_2_insert, true) . PHP_EOL
+                         . PHP_EOL;
+                    
+                    throw new \GDAO\ModelInvalidInsertValueSuppliedException($msg);
+                }
+            }
+            
+            $result = $this->_db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params);
         }
         
         return $result;
@@ -1492,7 +1672,7 @@ SELECT {$foreign_table_name}.*
         if ( 
             !empty($col_names_n_vals_2_save) && count($col_names_n_vals_2_save) > 0 
         ) {
-            $table_cols = $this->getTableCols();
+            $table_cols = $this->getTableColNames();
             $last_updtd_colname = $this->_updated_timestamp_column_name;
           
             if(
@@ -1576,8 +1756,8 @@ SELECT {$foreign_table_name}.*
                 }
             }
             
-            $updt_qry = $update_qry_obj->__toString();//echo $query.'<br>';
-            $updt_qry_params = $update_qry_obj->getBindValues();// print_r($query_params);
+            $updt_qry = $update_qry_obj->__toString();
+            $updt_qry_params = $update_qry_obj->getBindValues();
 
             $result = $this->_db_connector->executeQuery($updt_qry, $updt_qry_params, true);
 
@@ -1642,6 +1822,7 @@ SELECT {$foreign_table_name}.*
         
         return $this->$property_name;
     }
+
 }
 
 class ModelPropertyNotDefinedException extends \Exception{}
@@ -1654,3 +1835,4 @@ class ModelBadOrderByParamSuppliedException extends \Exception{}
 class ModelBadWhereOrHavingParamSuppliedException extends \Exception{}
 class ModelBadCollectionClassNameForFetchingRelatedDataException extends \Exception{}
 class ModelBadRecordClassNameForFetchingRelatedDataException extends \Exception{}
+class ModelRelatedModelNotCreatedException extends \Exception{}
