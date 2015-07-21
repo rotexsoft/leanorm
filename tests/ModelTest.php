@@ -65,23 +65,23 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $data = [
             'having' => 
                 [
-                    0 => [ 'col' => 'col_1', 'operator' => '<', 'val' => 58],
-                    1 => [ 'col' => 'col_2', 'operator' => '<', 'val' => 68],
+                    0 => [ 'col' => 'col_1', 'op' => '<', 'val' => 58],
+                    1 => [ 'col' => 'col_2', 'op' => '<', 'val' => 68],
                     [
-                        0 => [ 'col' => 'col_11', 'operator' => '>', 'val' => 581],
-                        1 => [ 'col' => 'col_21', 'operator' => '>', 'val' => 681],
+                        0 => [ 'col' => 'col_11', 'op' => '>', 'val' => 581],
+                        1 => [ 'col' => 'col_21', 'op' => '>', 'val' => 681],
                         'OR#3' => [
-                            0 => [ 'col' => 'col_12', 'operator' => '<', 'val' => 582],
-                            1 => [ 'col' => 'col_22', 'operator' => '<', 'val' => 682]
+                            0 => [ 'col' => 'col_12', 'op' => '<', 'val' => 582],
+                            1 => [ 'col' => 'col_22', 'op' => '<', 'val' => 682]
                         ],
-                        2 => [ 'col' => 'col_31', 'operator' => '>=', 'val' => 583],
+                        2 => [ 'col' => 'col_31', 'op' => '>=', 'val' => 583],
                         'OR#4' => [
-                            0 => [ 'col' => 'col_4', 'operator' => '=', 'val' => 584],
-                            1 => [ 'col' => 'col_5', 'operator' => '=', 'val' => 684],
+                            0 => [ 'col' => 'col_4', 'op' => '=', 'val' => 584],
+                            1 => [ 'col' => 'col_5', 'op' => '=', 'val' => 684],
                         ]
                     ],
-                    3 => [ 'col' => 'column_name_44', 'operator' => '<', 'val' => 777],
-                    4 => [ 'col' => 'column_name_55', 'operator' => 'is-null'],
+                    3 => [ 'col' => 'column_name_44', 'op' => '<', 'val' => 777],
+                    4 => [ 'col' => 'column_name_55', 'op' => 'is-null'],
                 ]
         ];
         
@@ -145,23 +145,23 @@ EOT;
         $data = [
             'where' => 
                 [
-                    0 => [ 'col' => 'col_1', 'operator' => '<', 'val' => 58],
-                    1 => [ 'col' => 'col_2', 'operator' => '<', 'val' => 68],
+                    0 => [ 'col' => 'col_1', 'op' => '<', 'val' => 58],
+                    1 => [ 'col' => 'col_2', 'op' => '<', 'val' => 68],
                     [
-                        0 => [ 'col' => 'col_11', 'operator' => '>', 'val' => 581],
-                        1 => [ 'col' => 'col_21', 'operator' => '>', 'val' => 681],
+                        0 => [ 'col' => 'col_11', 'op' => '>', 'val' => 581],
+                        1 => [ 'col' => 'col_21', 'op' => '>', 'val' => 681],
                         'OR#3' => [
-                            0 => [ 'col' => 'col_12', 'operator' => '<', 'val' => 582],
-                            1 => [ 'col' => 'col_22', 'operator' => '<', 'val' => 682]
+                            0 => [ 'col' => 'col_12', 'op' => '<', 'val' => 582],
+                            1 => [ 'col' => 'col_22', 'op' => '<', 'val' => 682]
                         ],
-                        2 => [ 'col' => 'col_31', 'operator' => '>=', 'val' => 583],
+                        2 => [ 'col' => 'col_31', 'op' => '>=', 'val' => 583],
                         'OR#4' => [
-                            0 => [ 'col' => 'col_4', 'operator' => '=', 'val' => 584],
-                            1 => [ 'col' => 'col_5', 'operator' => '=', 'val' => 684],
+                            0 => [ 'col' => 'col_4', 'op' => '=', 'val' => 584],
+                            1 => [ 'col' => 'col_5', 'op' => '=', 'val' => 684],
                         ]
                     ],
-                    3 => [ 'col' => 'column_name_44', 'operator' => '<', 'val' => 777],
-                    4 => [ 'col' => 'column_name_55', 'operator' => 'is-null'],
+                    3 => [ 'col' => 'column_name_44', 'op' => '<', 'val' => 777],
+                    4 => [ 'col' => 'column_name_55', 'op' => 'is-null'],
                 ]
         ];
         
@@ -587,15 +587,15 @@ EOT;
             'cols' => ['CustomerID', 'CompanyName', 'ContactName', 'ContactTitle', 'Address', 'City', 'State'],
 
             'where' => [
-                [ 'col' => 'hidden_fiscal_year', 'operator' => 'in', 'val' => 16 ],
-                [ 'col' => 'deactivated', 'operator' => '=', 'val' => 0],
-                [ 'col' => 'parent_id', 'operator' => 'is-null'],
+                [ 'col' => 'hidden_fiscal_year', 'op' => 'in', 'val' => 16 ],
+                [ 'col' => 'deactivated', 'op' => '=', 'val' => 0],
+                [ 'col' => 'parent_id', 'op' => 'is-null'],
             ],
             'group' => ['hidden_fiscal_year'],
             'having' => [
-                [ 'col' => 'hidden_fiscal_year', 'operator' => '>', 'val' => 9 ],
-                [ 'col' => 'deactivated', 'operator' => '=', 'val' => 0],
-                [ 'col' => 'parent_id', 'operator' => 'is-null'],
+                [ 'col' => 'hidden_fiscal_year', 'op' => '>', 'val' => 9 ],
+                [ 'col' => 'deactivated', 'op' => '=', 'val' => 0],
+                [ 'col' => 'parent_id', 'op' => 'is-null'],
             ],
             'order' => ['title desc'],
             'limit_size' => 400,
@@ -650,15 +650,15 @@ EOT;
             'cols' => ['CustomerID', 'CompanyName', 'ContactName', 'ContactTitle', 'Address', 'City', 'State'],
 
             'where' => [
-                [ 'col' => 'hidden_fiscal_year', 'operator' => 'in', 'val' => 16 ],
-                [ 'col' => 'deactivated', 'operator' => '=', 'val' => 0],
-                [ 'col' => 'parent_id', 'operator' => 'is-null'],
+                [ 'col' => 'hidden_fiscal_year', 'op' => 'in', 'val' => 16 ],
+                [ 'col' => 'deactivated', 'op' => '=', 'val' => 0],
+                [ 'col' => 'parent_id', 'op' => 'is-null'],
             ],
             'group' => ['hidden_fiscal_year'],
             'having' => [
-                [ 'col' => 'hidden_fiscal_year', 'operator' => '>', 'val' => 9 ],
-                [ 'col' => 'deactivated', 'operator' => '=', 'val' => 0],
-                [ 'col' => 'parent_id', 'operator' => 'is-null'],
+                [ 'col' => 'hidden_fiscal_year', 'op' => '>', 'val' => 9 ],
+                [ 'col' => 'deactivated', 'op' => '=', 'val' => 0],
+                [ 'col' => 'parent_id', 'op' => 'is-null'],
             ],
             'order' => ['title desc'],
             'limit_size' => 400,
@@ -706,15 +706,15 @@ EOT;
             'cols' => ['CustomerID', 'CompanyName', 'ContactName', 'ContactTitle', 'Address', 'City', 'State'],
 
             'where' => [
-                [ 'col' => 'hidden_fiscal_year', 'operator' => 'in', 'val' => 16 ],
-                [ 'col' => 'deactivated', 'operator' => '=', 'val' => 0],
-                [ 'col' => 'parent_id', 'operator' => 'is-null'],
+                [ 'col' => 'hidden_fiscal_year', 'op' => 'in', 'val' => 16 ],
+                [ 'col' => 'deactivated', 'op' => '=', 'val' => 0],
+                [ 'col' => 'parent_id', 'op' => 'is-null'],
             ],
             'group' => ['hidden_fiscal_year'],
             'having' => [
-                [ 'col' => 'hidden_fiscal_year', 'operator' => '>', 'val' => 9 ],
-                [ 'col' => 'deactivated', 'operator' => '=', 'val' => 0],
-                [ 'col' => 'parent_id', 'operator' => 'is-null'],
+                [ 'col' => 'hidden_fiscal_year', 'op' => '>', 'val' => 9 ],
+                [ 'col' => 'deactivated', 'op' => '=', 'val' => 0],
+                [ 'col' => 'parent_id', 'op' => 'is-null'],
             ],
             'order' => ['title desc'],
             'limit_size' => 400,
