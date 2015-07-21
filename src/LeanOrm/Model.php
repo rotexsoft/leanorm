@@ -625,10 +625,10 @@ class Model extends \GDAO\Model
             
             $rel_info = $this->_relations[$rel_name];
 
-            $foreign_table_name = $array_get($rel_info, 'foreign_models_table');
+            $foreign_table_name = $array_get($rel_info, 'foreign_table');
             
             $fkey_col_in_foreign_table = 
-                $array_get($rel_info, 'col_in_foreign_models_table_linked_to_join_table');
+                $array_get($rel_info, 'col_in_foreign_table_linked_to_join_table');
             
             $foreign_models_class_name = 
                 $array_get($rel_info, 'foreign_models_class_name', '\\LeanOrm\\Model');
@@ -642,19 +642,19 @@ class Model extends \GDAO\Model
             $this->_validateRelatedCollectionAndRecordClassNames($foreign_models_collection_class_name, $foreign_models_record_class_name);
             
             $pri_key_col_in_foreign_models_table = 
-                $array_get($rel_info, 'primary_key_col_in_foreign_models_table');
+                $array_get($rel_info, 'primary_key_col_in_foreign_table');
             
             $fkey_col_in_my_table = 
-                    $array_get($rel_info, 'col_in_my_models_table_linked_to_join_table');
+                    $array_get($rel_info, 'col_in_my_table_linked_to_join_table');
             
             //join table params
-            $join_table_name = $array_get($rel_info, 'join_table_name');
+            $join_table_name = $array_get($rel_info, 'join_table');
             
             $col_in_join_table_linked_to_my_models_table = 
-                $array_get($rel_info, 'col_in_join_table_linked_to_my_models_table');
+                $array_get($rel_info, 'col_in_join_table_linked_to_my_table');
             
             $col_in_join_table_linked_to_foreign_models_table = 
-                $array_get($rel_info, 'col_in_join_table_linked_to_foreign_models_table');
+                $array_get($rel_info, 'col_in_join_table_linked_to_foreign_table');
             
             $foreign_models_table_sql_params = 
                     $array_get($rel_info, 'foreign_models_table_sql_params', array());
@@ -895,10 +895,10 @@ SELECT {$foreign_table_name}.*
 
         $rel_info = $this->_relations[$rel_name];
 
-        $foreign_table_name = $array_get($rel_info, 'foreign_models_table');
+        $foreign_table_name = $array_get($rel_info, 'foreign_table');
 
         $fkey_col_in_foreign_table = 
-            $array_get($rel_info, 'foreign_key_col_in_foreign_models_table');
+            $array_get($rel_info, 'foreign_key_col_in_foreign_table');
 
         $foreign_models_class_name = 
             $array_get($rel_info, 'foreign_models_class_name', "\\LeanOrm\\Model");
@@ -910,10 +910,10 @@ SELECT {$foreign_table_name}.*
             $array_get($rel_info, 'foreign_models_collection_class_name', "\\LeanOrm\Model\\Collection");
 
         $pri_key_col_in_foreign_models_table = 
-            $array_get($rel_info, 'primary_key_col_in_foreign_models_table');
+            $array_get($rel_info, 'primary_key_col_in_foreign_table');
 
         $fkey_col_in_my_table = 
-                $array_get($rel_info, 'foreign_key_col_in_my_models_table');
+                $array_get($rel_info, 'foreign_key_col_in_my_table');
 
         $foreign_models_table_sql_params = 
                 $array_get($rel_info, 'foreign_models_table_sql_params', array());
