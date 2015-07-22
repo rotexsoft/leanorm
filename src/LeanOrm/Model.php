@@ -529,7 +529,7 @@ class Model extends \GDAO\Model
     /**
      * 
      * @param string $rel_name
-     * @return \GDAO\Model\Collection|array
+     * @return \GDAO\Model\CollectionInterface|array
      */
     protected function _loadHasMany( 
         $rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false 
@@ -563,7 +563,7 @@ class Model extends \GDAO\Model
             */
             
             if ( 
-                $parent_data instanceof \GDAO\Model\Collection
+                $parent_data instanceof \GDAO\Model\CollectionInterface
                 || is_array($parent_data)
             ) {
                 //stitch the related data to the approriate parent records
@@ -584,7 +584,7 @@ class Model extends \GDAO\Model
                     );
 
                     //set the related data for the current parent record
-                    if( $parent_record instanceof \GDAO\Model\Record ) {
+                    if( $parent_record instanceof \GDAO\Model\RecordInterface ) {
 
                         $parent_data[$p_rec_key]
                             ->setRelatedData($rel_name, $matching_related_records);
@@ -596,8 +596,8 @@ class Model extends \GDAO\Model
                     }
                 } //foreach( $parent_data as $p_rec_key => $parent_record )
         
-            } else if ( $parent_data instanceof \GDAO\Model\Record ) {
-
+            } else if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
+                
                 $this->_wrapRelatedDataInsideRecordsAndCollection(
                     $wrap_each_row_in_a_record, $related_data, $foreign_models_record_class_name,
                     $foreign_model_obj, $wrap_records_in_collection, $foreign_models_collection_class_name
@@ -605,14 +605,14 @@ class Model extends \GDAO\Model
                 
                 //stitch the related data to the parent record
                 $parent_data->setRelatedData($rel_name, $related_data);
-            } // else if ($parent_data instanceof \GDAO\Model\Record)
+            } // else if ($parent_data instanceof \GDAO\Model\RecordInterface)
         } // if( array_key_exists($rel_name, $this->_relations) )
     }
     
     /**
      * 
      * @param string $rel_name
-     * @return \GDAO\Model\Collection|array
+     * @return \GDAO\Model\CollectionInterface|array
      */
     protected function _loadHasManyTrough( 
         $rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false 
@@ -673,7 +673,7 @@ class Model extends \GDAO\Model
                             " {$join_table_name}.{$col_in_join_table_linked_to_foreign_models_table} = {$foreign_table_name}.{$fkey_col_in_foreign_table} "
                         );
             
-            if ( $parent_data instanceof \GDAO\Model\Record ) {
+            if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
                 
                 $where_cond = " {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = "
                      . (
@@ -734,7 +734,7 @@ SELECT {$foreign_table_name}.*,
                      ->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql);
 
             if ( 
-                $parent_data instanceof \GDAO\Model\Collection
+                $parent_data instanceof \GDAO\Model\CollectionInterface
                 || is_array($parent_data)
             ) {
                 //stitch the related data to the approriate parent records
@@ -755,7 +755,7 @@ SELECT {$foreign_table_name}.*,
                     );
 
                     //set the related data for the current parent record
-                    if( $parent_record instanceof \GDAO\Model\Record ) {
+                    if( $parent_record instanceof \GDAO\Model\RecordInterface ) {
 
                         $parent_data[$p_rec_key]
                             ->setRelatedData($rel_name, $matching_related_records);
@@ -766,7 +766,7 @@ SELECT {$foreign_table_name}.*,
                     }
                 } //foreach( $parent_data as $p_rec_key => $parent_record )
         
-            } else if ( $parent_data instanceof \GDAO\Model\Record ) {
+            } else if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
                 $this->_wrapRelatedDataInsideRecordsAndCollection(
                     $wrap_each_row_in_a_record, $related_data, $foreign_models_record_class_name,
@@ -775,14 +775,14 @@ SELECT {$foreign_table_name}.*,
                 
                 //stitch the related data to the parent record
                 $parent_data->setRelatedData($rel_name, $related_data);
-            } // else if ( $parent_data instanceof \GDAO\Model\Record )
+            } // else if ( $parent_data instanceof \GDAO\Model\RecordInterface )
         } // if( array_key_exists($rel_name, $this->_relations) )
     }
     
     /**
      * 
      * @param string $rel_name
-     * @return \GDAO\Model\Record|array
+     * @return \GDAO\Model\RecordInterface|array
      */
     protected function _loadHasOne( 
         $rel_name, &$parent_data, $wrap_row_in_a_record=false
@@ -821,7 +821,7 @@ SELECT {$foreign_table_name}.*
                 );
 
             if ( 
-                $parent_data instanceof \GDAO\Model\Collection
+                $parent_data instanceof \GDAO\Model\CollectionInterface
                 || is_array($parent_data)
             ) {
                 //stitch the related data to the approriate parent records
@@ -837,7 +837,7 @@ SELECT {$foreign_table_name}.*
                             );
 
                     //set the related data for the current parent record
-                    if( $parent_record instanceof \GDAO\Model\Record ) {
+                    if( $parent_record instanceof \GDAO\Model\RecordInterface ) {
 
                         $parent_data[$p_rec_key]
                             ->setRelatedData($rel_name, $matching_related_record[0]);
@@ -849,7 +849,7 @@ SELECT {$foreign_table_name}.*
                     }
                 } //foreach( $parent_data as $p_rec_key => $parent_record )
         
-            } else if ( $parent_data instanceof \GDAO\Model\Record ) {
+            } else if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
                 $this->_wrapRelatedDataInsideRecordsAndCollection(
                             $wrap_row_in_a_record, $related_data, 
@@ -859,14 +859,14 @@ SELECT {$foreign_table_name}.*
                 
                 //stitch the related data to the parent record
                 $parent_data->setRelatedData($rel_name, array_shift($related_data));
-            } // else if ($parent_data instanceof \GDAO\Model\Record)
+            } // else if ($parent_data instanceof \GDAO\Model\RecordInterface)
         } // if( array_key_exists($rel_name, $this->_relations) )
     }
     
     /**
      * 
      * @param string $rel_name
-     * @return \GDAO\Model\Record|array
+     * @return \GDAO\Model\RecordInterface|array
      */
     protected function _loadBelongsTo($rel_name, &$parent_data, $wrap_row_in_a_record=false) {
         
@@ -925,7 +925,7 @@ SELECT {$foreign_table_name}.*
                         $foreign_table_name
                     );
 
-        if ( $parent_data instanceof \GDAO\Model\Record ) {
+        if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
             $where_cond = " {$foreign_table_name}.{$fkey_col_in_foreign_table} = "
                         . (
@@ -1048,7 +1048,7 @@ SELECT {$foreign_table_name}.*
         $col_vals = array();
         
         if(
-            $parent_data instanceof \GDAO\Model\Collection
+            $parent_data instanceof \GDAO\Model\CollectionInterface
             || is_array($parent_data)
         ) {
             if ( is_array($parent_data) ) {
@@ -1259,7 +1259,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function deleteSpecifiedRecord(\GDAO\Model\Record $record) {
+    public function deleteSpecifiedRecord(\GDAO\Model\RecordInterface $record) {
         
         //$this->_primary_col should have a valid value because a
         //GDAO\ModelPrimaryColNameNotSetDuringConstructionException
@@ -1801,7 +1801,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function updateSpecifiedRecord(\GDAO\Model\Record $record) {
+    public function updateSpecifiedRecord(\GDAO\Model\RecordInterface $record) {
         
         //$this->_primary_col should have a valid value because a
         //GDAO\ModelPrimaryColNameNotSetDuringConstructionException

@@ -771,6 +771,7 @@ EOT;
         
         //has the right parent class
         $this->assertInstanceOf('LeanOrm\Model\Collection', $coll_mock);
+        $this->assertInstanceOf('GDAO\Model\CollectionInterface', $coll_mock);
         
         ////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
@@ -798,6 +799,7 @@ EOT;
         
         //has the right parent class
         $this->assertInstanceOf('\\LeanOrm\\Model\\Record', $record_mock);
+        $this->assertInstanceOf('\\GDAO\\Model\\RecordInterface', $record_mock);
         
         ////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
