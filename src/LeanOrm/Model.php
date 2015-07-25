@@ -494,8 +494,8 @@ class Model extends \GDAO\Model
     
     protected function _validateRelatedCollectionAndRecordClassNames($collection_class_name, $record_class_name) {
         
-        $parent_collection_class_name = '\GDAO\Model\Collection';
-        $parent_record_class_name = '\GDAO\Model\Record';
+        $parent_collection_class_name = '\GDAO\Model\CollectionInterface';
+        $parent_record_class_name = '\GDAO\Model\RecordInterface';
     
         if( !is_subclass_of($collection_class_name, $parent_collection_class_name) ) {
 
@@ -657,7 +657,7 @@ class Model extends \GDAO\Model
                 $array_get($rel_info, 'col_in_join_table_linked_to_foreign_table');
             
             $foreign_models_table_sql_params = 
-                    $array_get($rel_info, 'foreign_models_table_sql_params', array());
+                    $array_get($rel_info, 'foreign_table_sql_params', array());
             
             $query_obj = 
                 $this->_buildFetchQueryObjectFromParams(
@@ -916,7 +916,7 @@ SELECT {$foreign_table_name}.*
                 $array_get($rel_info, 'foreign_key_col_in_my_table');
 
         $foreign_models_table_sql_params = 
-                $array_get($rel_info, 'foreign_models_table_sql_params', array());
+                $array_get($rel_info, 'foreign_table_sql_params', array());
 
         $query_obj = 
             $this->_buildFetchQueryObjectFromParams(
