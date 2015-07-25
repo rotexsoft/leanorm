@@ -5,7 +5,7 @@
  *
  * @author aadegbam
  */
-class MockModelForTestingPublicAndProtectedMethods extends \LeanOrm\Model
+class ModelForTestingPublicAndProtectedMethods extends \LeanOrm\Model
 {
     public function __construct(
         $dsn = '', $username = '', $passwd = '', 

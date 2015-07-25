@@ -5,7 +5,7 @@
  *
  * @author aadegbam
  */
-class MockModelRecordForTestingPublicAndProtectedMethods extends \LeanOrm\Model\Record
+class RecordForTestingPublicAndProtectedMethods extends \LeanOrm\Model\Record
 {
     public function __construct(array $data = array(), \GDAO\Model $model, array $extra_opts = []) {
         
