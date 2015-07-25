@@ -76,6 +76,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      *                    PDOException would be thrown if the deletion failed.
      * 
      * @throws \PDOException 
+     * @throws \LeanOrm\CantDeleteReadOnlyRecordFromDBException
      * 
      */
 	public function deleteAll() {
@@ -83,6 +84,17 @@ class Collection implements \GDAO\Model\CollectionInterface
         $this->_preDeleteAll();
         
         $result = true;
+        
+        foreach($this->_data as $record) {
+            
+            if( $record instanceof ReadOnlyRecord ) {
+                
+                $msg = "ERROR: Can't delete ReadOnlyRecord in Collection from"
+                     . " the database in " . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                     . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
+                throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+            }
+        }
         
         try {
             
@@ -285,6 +297,14 @@ class Collection implements \GDAO\Model\CollectionInterface
             $data_2_save_4_new_records = array();
 
             foreach ( $this->_data as $key => $record ) {
+
+                if( $record instanceof ReadOnlyRecord ) {
+
+                    $msg = "ERROR: Can't save ReadOnlyRecord in Collection to"
+                         . " the database in " . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                         . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
+                    throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+                }
                 
                 if( $record->isNew()) {
                     
@@ -493,7 +513,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             $msg = "ERROR: Item with key '$key' does not exist in " 
                    . get_class($this) .'.'. PHP_EOL . $this->__toString();
             
-            throw new ItemNotFoundInCollectionException($msg);
+            throw new \GDAO\Model\ItemNotFoundInCollectionException($msg);
         }
     }
 

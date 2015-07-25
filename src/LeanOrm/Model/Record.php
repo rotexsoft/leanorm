@@ -218,7 +218,7 @@ class Record implements \GDAO\Model\RecordInterface
                  . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
                  
-            throw new RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
+            throw new \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
         }
         
         //We're safe, set the related data.
@@ -847,6 +847,3 @@ class Record implements \GDAO\Model\RecordInterface
     }
 }
 
-class RecordOperationNotSupportedByDriverException extends \Exception { }
-
-class NoSuchPropertyForRecordException extends \Exception { }

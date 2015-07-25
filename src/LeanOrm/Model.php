@@ -141,7 +141,7 @@ class Model extends \GDAO\Model
                      . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                      . PHP_EOL;
                      
-                throw new RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
+                throw new \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
             }
         }
     }
@@ -1266,6 +1266,14 @@ SELECT {$foreign_table_name}.*
         //is thrown in $this->__construct() if $this->_primary_col is not set.
         $succesfully_deleted = null;
         
+        if( $record instanceof \LeanOrm\Model\ReadOnlyRecord ) {
+
+            $msg = "ERROR: Can't delete ReadOnlyRecord from the database in " 
+                 . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                 . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
+            throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+        }
+        
         if ( count($record) > 0 ) { //test if the record object has data
             
             $pri_key_val = $record->getPrimaryVal();
@@ -1528,6 +1536,10 @@ SELECT {$foreign_table_name}.*
         return $result;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     */
     public function insertMany(array $rows_of_data_2_insert = array()) {
         
         $result = false;
@@ -1808,6 +1820,14 @@ SELECT {$foreign_table_name}.*
         //is thrown in $this->__construct() if $this->_primary_col is not set.
         $succesfully_updated = null;
         
+        if( $record instanceof \LeanOrm\Model\ReadOnlyRecord ) {
+
+            $msg = "ERROR: Can't save a ReadOnlyRecord to the database in " 
+                 . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                 . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
+            throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+        }
+        
         if( count($record) > 0 ) { //test if the record object has data
             
             $pri_key_val = $record->getPrimaryVal();
@@ -1843,15 +1863,3 @@ SELECT {$foreign_table_name}.*
     }
 
 }
-
-class ModelPropertyNotDefinedException extends \Exception{}
-class ModelBadColsParamSuppliedException extends \Exception{}
-class ModelBadWhereParamSuppliedException extends \Exception{}
-class ModelBadFetchParamsSuppliedException extends \Exception{}
-class ModelBadHavingParamSuppliedException extends \Exception{}
-class ModelBadGroupByParamSuppliedException extends \Exception{}
-class ModelBadOrderByParamSuppliedException extends \Exception{}
-class ModelBadWhereOrHavingParamSuppliedException extends \Exception{}
-class ModelBadCollectionClassNameForFetchingRelatedDataException extends \Exception{}
-class ModelBadRecordClassNameForFetchingRelatedDataException extends \Exception{}
-class ModelRelatedModelNotCreatedException extends \Exception{}
