@@ -19,42 +19,42 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                        .'buying_and_selling.sqlite';
 
         $this->_mock_model_objs['customers_with_specialized_collection_and_record'] = 
-                new \MockModelForTestingPublicAndProtectedMethods(
+                new \ModelForTestingPublicAndProtectedMethods(
                     "sqlite:$sqlite_file", "", "", [],
                     [
                         'primary_col'=>'CustomerID', 
                         'table_name'=>'Customers',
-                        'collection_class_name'=>'MockModelCollectionForTestingPublicAndProtectedMethods', 
-                        'record_class_name'=>'MockModelRecordForTestingPublicAndProtectedMethods',
+                        'collection_class_name'=>'CollectionForTestingPublicAndProtectedMethods', 
+                        'record_class_name'=>'RecordForTestingPublicAndProtectedMethods',
                     ]
                 );
 
         $this->_mock_model_objs['customers'] = 
-                new \MockModelForTestingPublicAndProtectedMethods(
+                new \ModelForTestingPublicAndProtectedMethods(
                     "sqlite:$sqlite_file", "", "", [],
                     ['primary_col'=>'CustomerID', 'table_name'=>'Customers']
                 );
 
         $this->_mock_model_objs['employees'] = 
-                new \MockModelForTestingPublicAndProtectedMethods(
+                new \ModelForTestingPublicAndProtectedMethods(
                     "sqlite:$sqlite_file", "", "", [],
                     ['primary_col'=>'EmployeeID', 'table_name'=>'Employees']
                 );
 
         $this->_mock_model_objs['order_details'] = 
-                new \MockModelForTestingPublicAndProtectedMethods(
+                new \ModelForTestingPublicAndProtectedMethods(
                     "sqlite:$sqlite_file", "", "", [],
                     ['primary_col'=>'OrderDetailID', 'table_name'=>'OrderDetails']
                 );
 
         $this->_mock_model_objs['orders'] = 
-                new \MockModelForTestingPublicAndProtectedMethods(
+                new \ModelForTestingPublicAndProtectedMethods(
                     "sqlite:$sqlite_file", "", "", [],
                     ['primary_col'=>'OrderID', 'table_name'=>'Orders']
                 );
 
         $this->_mock_model_objs['shippers'] = 
-                new \MockModelForTestingPublicAndProtectedMethods(
+                new \ModelForTestingPublicAndProtectedMethods(
                     "sqlite:$sqlite_file", "", "", [],
                     ['primary_col'=>'ShipperID', 'table_name'=>'Shippers']
                 );
@@ -765,7 +765,7 @@ EOT;
                             ->createNewCollection(new \GDAO\Model\GDAORecordsList([]));
         //exact class
         $this->assertEquals(
-            'MockModelCollectionForTestingPublicAndProtectedMethods', 
+            'CollectionForTestingPublicAndProtectedMethods', 
             get_class($coll_mock)
         );
         
@@ -793,7 +793,7 @@ EOT;
                                         ->createNewRecord([], ['is_new'=>false]);
         //exact class
         $this->assertEquals(
-            'MockModelRecordForTestingPublicAndProtectedMethods', 
+            'RecordForTestingPublicAndProtectedMethods', 
             get_class($record_mock)
         );
         
