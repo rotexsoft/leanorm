@@ -16,3 +16,5 @@ implement functionality specific to each DBMS.
 * Add in the documentation that Records can be added to a collection via the $collection[] = $record; syntax. No need for a $collection->addRecord(record); method in the API
 
 * Figure out how to use __call(..) in the Model, Collection and Record Classes. For example __call() could be used to map method calls for each record in a collection and an array containing the return values for each call applied to each record would be returned. See what Solar_Sql and other libraries are doing.
+
+* Figure out how to improve data retrieval based on http://www.dragonbe.com/2015/07/speeding-up-database-calls-with-pdo-and.html
