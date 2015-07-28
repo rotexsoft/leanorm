@@ -38,7 +38,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      *
      * The model object that saves and reads data to and from the db on behalf 
-     * of this record
+     * of this record.
      * 
      * @var \GDAO\Model
      */
@@ -206,7 +206,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * 
      * Get the model object that saves and reads data to and from the db on 
-     * behalf of this record
+     * behalf of this record.
      * 
      * @return \GDAO\Model
      */
@@ -217,7 +217,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     
     /**
      * 
-     * @return string name of the primary-key column of the db table this record belongs to
+     * @return string name of the primary-key column of the db table this record belongs to.
      * 
      */
     public function getPrimaryCol() {
