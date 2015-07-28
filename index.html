@@ -1,25 +1,37 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="UTF-8">
-    <title>Leanorm by rotexsoft</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-  </head>
-  <body>
-    <section class="page-header">
-      <h1 class="project-name">Leanorm</h1>
-      <h2 class="project-tagline">[WARNING NOT YET PRODUCTION READY: Should be ready in September 2015] A Generic Data Objects (GDAO https://github.com/rotexsoft/gdao ) implementation based on a stripped down (really minimal) version of idiorm.</h2>
-      <a href="https://github.com/rotexsoft/leanorm" class="btn">View on GitHub</a>
-      <a href="https://github.com/rotexsoft/leanorm/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/rotexsoft/leanorm/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
+<html>
 
-    <section class="main-content">
-      <h3>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Leanorm : [WARNING NOT YET PRODUCTION READY: Should be ready in September 2015] A Generic Data Objects (GDAO https://github.com/rotexsoft/gdao ) implementation based on a stripped down (really minimal) version of idiorm.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Leanorm</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/rotexsoft/leanorm">View on GitHub</a>
+
+          <h1 id="project_title">Leanorm</h1>
+          <h2 id="project_tagline">[WARNING NOT YET PRODUCTION READY: Should be ready in September 2015] A Generic Data Objects (GDAO https://github.com/rotexsoft/gdao ) implementation based on a stripped down (really minimal) version of idiorm.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/rotexsoft/leanorm/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/rotexsoft/leanorm/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
 <a id="why-another-php-orm-object-relational-mapping-package" class="anchor" href="#why-another-php-orm-object-relational-mapping-package" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why another PHP ORM (Object-Relational Mapping) Package?</h3>
 
 <p>This package and its parent package <a href="https://github.com/rotexsoft/gdao">Generic Data Access Objects (GDAO)</a> were birthed out of my experience working with some of the existing PHP ORMs like <a href="http://solarphp.com/apidoc/package.Solar_Sql_Model">Solar_Sql_Model</a>, <a href="http://j4mie.github.io/idiormandparis/">Paris</a> and <a href="http://propelorm.org/">Propel</a>. </p>
@@ -38,9 +50,11 @@
 <p><code>composer require rotexsoft/leanorm</code></p>
 
 <h3>
-<a id="creating-pages-manually" class="anchor" href="#creating-pages-manually" aria-hidden="true"><span class="octicon octicon-link"></span></a>Creating pages manually</h3>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting Started</h3>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<p>There are two basic ways to use this package:
+1. Create Model classes for each database table in your application's database. Each of these classes must extend <strong>\LeanOrm\Model</strong>. This is the recommended approach for large applications.
+2. By creating instances of <strong>\LeanOrm\Model</strong> (one for each database table in your application's database). This approach is good for small to medium sized projects.</p>
 
 <h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
@@ -51,16 +65,18 @@
 <a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
 
 <p>Having trouble with Pages? Check out our <a href="https://help.github.com/pages">documentation</a> or <a href="https://github.com/contact">contact support</a> and we’ll help you sort it out.</p>
+      </section>
+    </div>
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/rotexsoft/leanorm">Leanorm</a> is maintained by <a href="https://github.com/rotexsoft">rotexsoft</a>.</span>
-
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Leanorm maintained by <a href="https://github.com/rotexsoft">rotexsoft</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
       </footer>
+    </div>
 
-    </section>
+    
 
-  
   </body>
 </html>
-
