@@ -56,7 +56,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @param array $extra_opts an array that may be used to pass initialization 
      *                          value(s) for protected and / or private properties
-     *                          of this class
+     *                          of this class.
      */
     public function __construct(array $data, \GDAO\Model $model, array $extra_opts=array()) {
         
