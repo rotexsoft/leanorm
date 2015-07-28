@@ -411,7 +411,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     
     /**
      * 
-     * Set the \GDAO\Model object for this record
+     * Set the \GDAO\Model object for this record.
      * 
      * @param \GDAO\Model $model
      */
