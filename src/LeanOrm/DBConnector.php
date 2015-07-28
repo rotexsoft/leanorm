@@ -820,8 +820,3 @@ class StringHelper {
         return preg_replace( $search_str, $this->replace, $matches[2]);
     }
 }
-
-/**
- * A placeholder for exceptions eminating from the StringHelper class
- */
-class StringHelperException extends \Exception {}

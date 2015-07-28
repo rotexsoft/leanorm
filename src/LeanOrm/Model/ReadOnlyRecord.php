@@ -87,7 +87,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
         $msg = "ERROR: ". get_class($this) . '::' . $function_name . '(...)' 
              . " is not supported in a ReadOnly Model. ";
 
-        throw new RecordOperationNotSupportedException($msg);
+        throw new \GDAO\Model\RecordOperationNotSupportedException($msg);
     }
 
     /**
@@ -196,7 +196,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
                  . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
                  
-            throw new RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
+            throw new \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
         }
         
         //We're safe, set the related data.
