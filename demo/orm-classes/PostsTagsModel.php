@@ -9,8 +9,8 @@ class PostsTagsModel extends \LeanOrm\Model
     protected $_collection_class_name = 'PostsTagsCollection';
     protected $_record_class_name = 'PostsTagRecord';
 
-    protected $_created_timestamp_column_name = 'm_timestamp';
-    protected $_updated_timestamp_column_name = 'date_created'; 
+    protected $_created_timestamp_column_name = 'date_created';
+    protected $_updated_timestamp_column_name = 'm_timestamp'; 
 
     protected $_primary_col = 'posts_tags_id';
     protected $_table_name = 'posts_tags';

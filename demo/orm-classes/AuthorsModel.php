@@ -9,8 +9,8 @@ class AuthorsModel extends \LeanOrm\Model
     protected $_collection_class_name = 'AuthorsCollection';
     protected $_record_class_name = 'AuthorRecord';
 
-    protected $_created_timestamp_column_name = 'm_timestamp';
-    protected $_updated_timestamp_column_name = 'date_created'; 
+    protected $_created_timestamp_column_name = 'date_created';
+    protected $_updated_timestamp_column_name = 'm_timestamp'; 
 
     protected $_primary_col = 'author_id';
     protected $_table_name = 'authors';

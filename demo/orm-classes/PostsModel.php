@@ -9,8 +9,8 @@ class PostsModel extends \LeanOrm\Model
     protected $_collection_class_name = 'PostsCollection';
     protected $_record_class_name = 'PostRecord';
 
-    protected $_created_timestamp_column_name = 'm_timestamp';
-    protected $_updated_timestamp_column_name = 'date_created'; 
+    protected $_created_timestamp_column_name = 'date_created';
+    protected $_updated_timestamp_column_name = 'm_timestamp'; 
 
     protected $_primary_col = 'post_id';
     protected $_table_name = 'posts';
