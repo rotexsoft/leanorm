@@ -41,9 +41,9 @@
      showgrid="false"
      inkscape:zoom="0.24115445"
      inkscape:cx="349.37008"
-     inkscape:cy="552.69364"
-     inkscape:window-x="1459"
-     inkscape:window-y="168"
+     inkscape:cy="489.31297"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg2" />
   <defs
@@ -591,7 +591,7 @@
   </defs>
   <g
      id="surface24122"
-     transform="matrix(1.318356,0,0,1.592538,0.32383954,-470.46101)">
+     transform="matrix(1.3356856,0,0,1.2166485,-3.3604047,-260.06727)">
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:10, 4;stroke-opacity:1"
        d="m 0.50255,72.503364 0,-72.002496"
