@@ -223,6 +223,11 @@
 
 <p>They all accept one parameter; an associative array (<strong>$params</strong>) for specifying how the data should be retrieved. Below is the specification for the structure of the array:</p>
 
+<ul>
+<li>
+<strong>"relations_to_include"</strong>: this enrty in the <strong>$params</strong> array should contain an array of relation names defined for a specific model. For example <em><strong>$params=["relations_to_include"=&gt;['posts']]</strong></em> would be a valid entry for the AuthorsModel defined earlier in this document.</li>
+</ul>
+
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"></span>
 <span class="pl-s1"></span>
