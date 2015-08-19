@@ -445,7 +445,9 @@
 </ul>
 
 <blockquote>
+<blockquote>
 <p><em><strong>$params = [ 'limit_offset' =&gt; 10, 'limit_size'=&gt;50 ];</strong></em> generates <em><strong>LIMIT 50 OFFSET 10</strong></em> for a mysql database. It would be different for MS SQLServer (ie. <em>** OFFSET $params['limit_offset'] ROWS FETCH NEXT $params['limit_size'] ROWS ONLY**</em>).</p>
+</blockquote>
 </blockquote>
 
 <h3>
