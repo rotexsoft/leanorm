@@ -65,8 +65,8 @@
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorsModel</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\</span><span class="pl-e">Model</span></span>
 <span class="pl-s1">{</span>
-<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_collection_class_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorsCollection<span class="pl-pds">'</span></span>;</span>
-<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_record_class_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorRecord<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_collection_class_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorsCollection<span class="pl-pds">'</span></span>; <span class="pl-c">//If not set, \LeanOrm\Model\Collection will be used by default </span></span>
+<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_record_class_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorRecord<span class="pl-pds">'</span></span>; <span class="pl-c">//If not set, \LeanOrm\Model\Record will be used by default </span></span>
 <span class="pl-s1"></span>
 <span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_created_timestamp_column_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>;</span>
 <span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_updated_timestamp_column_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>m_timestamp<span class="pl-pds">'</span></span>; </span>
@@ -137,14 +137,14 @@
 <span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>relations<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$rel</span>,</span>
 <span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>created_timestamp_column_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>,</span>
 <span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>updated_timestamp_column_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>m_timestamp<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>collection_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorsCollection<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>record_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorRecord<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>collection_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorsCollection<span class="pl-pds">'</span></span>, <span class="pl-c">//If not set, \LeanOrm\Model\Collection will be used by default</span></span>
+<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>record_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorRecord<span class="pl-pds">'</span></span>, <span class="pl-c">//If not set, \LeanOrm\Model\Record will be used by default </span></span>
 <span class="pl-s1">            ]</span>
 <span class="pl-s1">        );</span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 
 <blockquote>
-<p>For both methods, you can decide if you want to use the base Record and Collection classes (<strong>\LeanOrm\Model\Collection</strong>, <strong>\LeanOrm\Model\Record</strong> and optionally <strong>\LeanOrm\Model\ReadOnlyRecord</strong>) or if you want to extend the base Record and Collection classes eg:</p>
+<p>For both methods, you can decide if you want to use the base Record and Collection classes (<strong>\LeanOrm\Model\Collection</strong> and <strong>\LeanOrm\Model\Record</strong> (or <strong>\LeanOrm\Model\ReadOnlyRecord</strong> if needed) ) or if you want to extend the base Record and Collection classes eg:</p>
 </blockquote>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
