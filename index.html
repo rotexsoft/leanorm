@@ -159,6 +159,35 @@
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 
+<h4>
+<a id="creating-records--inserting-data-into-the-database" class="anchor" href="#creating-records--inserting-data-into-the-database" aria-hidden="true"><span class="octicon octicon-link"></span></a>Creating Records / Inserting Data into the Database</h4>
+
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-smi">$new_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>createNewRecord(); <span class="pl-c">//create a blank new record</span></span>
+<span class="pl-s1">    <span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>; <span class="pl-c">//set a value for the 'name' column</span></span>
+<span class="pl-s1">    <span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span>save();<span class="pl-c">//save to the database</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c">//OR</span></span>
+<span class="pl-s1">    <span class="pl-c">//create a new record and set a value for the 'name' column</span></span>
+<span class="pl-s1">    <span class="pl-smi">$new_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>createNewRecord([ <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>]); </span>
+<span class="pl-s1">    <span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span>save();<span class="pl-c">//save to the database</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c">//OR</span></span>
+<span class="pl-s1">    <span class="pl-c">//$inserted_data is an associative array of the data just inserted into the </span></span>
+<span class="pl-s1">    <span class="pl-c">//database. This data will include an auto-generated primary key value and </span></span>
+<span class="pl-s1">    <span class="pl-c">//values of the columns that keep track of the time the record was inserted </span></span>
+<span class="pl-s1">    <span class="pl-c">//and last updated (if the $_created_timestamp_column_name and </span></span>
+<span class="pl-s1">    <span class="pl-c">//$_updated_timestamp_column_name were correctly set).</span></span>
+<span class="pl-s1">    <span class="pl-smi">$inserted_data</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>insert([ <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>]);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c">//Multiple Inserts:</span></span>
+<span class="pl-s1">    <span class="pl-c">//Below is the most efficient way insert multiple rows to the database.</span></span>
+<span class="pl-s1">    <span class="pl-c">//$all_successfully_inserted will be === true if all the inserts were</span></span>
+<span class="pl-s1">    <span class="pl-c">//successful, otherwise it will be  === false which means the multiple</span></span>
+<span class="pl-s1">    <span class="pl-c">//insert was unsuccessful (nothing is saved to the DB in this case).</span></span>
+<span class="pl-s1">    <span class="pl-smi">$all_successfully_inserted</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>insertMany([ [<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>Jane Doe<span class="pl-pds">'</span></span>] ]);</span>
+<span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
+
 <h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
 
