@@ -205,26 +205,54 @@
 
 <ul>
 <li>
-<em><strong>fetchCol(array $params = array()):</strong></em>
-&gt; selects data from a single database table's column and returns an array of the column values.</li>
+<p><em><strong>fetchCol(array $params = array()):</strong></em></p>
+
+<blockquote>
+<p>selects data from a single database table's column and returns an array of the column values.</p>
+</blockquote>
+</li>
 <li>
-<em><strong>fetchOneRecord(array $params = array()):</strong></em>
-&gt; selects a single row of data from a database table and returns it as an instance of \LeanOrm\Model\Record (or any of its subclasses).</li>
+<p><em><strong>fetchOneRecord(array $params = array()):</strong></em></p>
+
+<blockquote>
+<p>selects a single row of data from a database table and returns it as an instance of \LeanOrm\Model\Record (or any of its subclasses).</p>
+</blockquote>
+</li>
 <li>
-<em><strong>fetchPairs(array $params = array()):</strong></em>
-&gt; selects data from two database table columns and returns an array whose keys are values from the first column and whose values are the values from the second column.</li>
+<p><em><strong>fetchPairs(array $params = array()):</strong></em></p>
+
+<blockquote>
+<p>selects data from two database table columns and returns an array whose keys are values from the first column and whose values are the values from the second column.</p>
+</blockquote>
+</li>
 <li>
-<em><strong>fetchRecordsIntoArray(array $params = array()):</strong></em>
-&gt; selects one or more rows of data from a database table and returns them as instances of \LeanOrm\Model\Record (or any of its subclasses) inside an array.</li>
+<p><em><strong>fetchRecordsIntoArray(array $params = array()):</strong></em></p>
+
+<blockquote>
+<p>selects one or more rows of data from a database table and returns them as instances of \LeanOrm\Model\Record (or any of its subclasses) inside an array.</p>
+</blockquote>
+</li>
 <li>
-<em><strong>fetchRecordsIntoCollection(array $params = array()):</strong></em>
-&gt; selects one or more rows of data from a database table and returns them as instances of \LeanOrm\Model\Record (or any of its subclasses) inside an instance of \LeanOrm\Model\Collection (or any of its subclasses).</li>
+<p><em><strong>fetchRecordsIntoCollection(array $params = array()):</strong></em></p>
+
+<blockquote>
+<p>selects one or more rows of data from a database table and returns them as instances of \LeanOrm\Model\Record (or any of its subclasses) inside an instance of \LeanOrm\Model\Collection (or any of its subclasses).</p>
+</blockquote>
+</li>
 <li>
-<em><strong>fetchRowsIntoArray(array $params = array()):</strong></em>
-&gt; selects one or more rows of data from a database table and returns them as associative arrays inside an array.</li>
+<p><em><strong>fetchRowsIntoArray(array $params = array()):</strong></em></p>
+
+<blockquote>
+<p>selects one or more rows of data from a database table and returns them as associative arrays inside an array.</p>
+</blockquote>
+</li>
 <li>
-<em><strong>fetchValue(array $params = array()):</strong></em>
-&gt; selects a single value from a single column of a single row of data from a database table and returns the value (eg. as a string, or an appropriate data type). </li>
+<p><em><strong>fetchValue(array $params = array()):</strong></em></p>
+
+<blockquote>
+<p>selects a single value from a single column of a single row of data from a database table and returns the value (eg. as a string, or an appropriate data type). </p>
+</blockquote>
+</li>
 </ul>
 
 <p>They all accept one parameter; an associative array (<strong>$params</strong>) for specifying how the data should be retrieved. Below is the specification for the structure of the array:</p>
