@@ -31,11 +31,16 @@
 <p>I wrote the  <a href="https://github.com/rotexsoft/gdao">Generic Data Access Objects (GDAO)</a> package as a reference package that can be used to build the kind of Orm described above. The GDAO package contains an abstract Model class with methods (abstract and non-abstract) that perform the common data manipulation tasks and two interfaces (CollectionInterface and RecordInterface) that can be used to implement classes that act as collections and records to be used in conjunction with the a concrete implementation of the abstract Model class. Leanorm implements these interfaces and also contains a Model class that is a concrete implementation of \GDAO\Model. The Leanorm code-base is small (it contains a Model class, a Collection class, two Record classes, a Database class used by the Model class for connecting to the database and executing queries and a File containing Exception class definitions) and easy to understand and also easy to extend in order to add additional functionality.</p>
 
 <h3>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
+<a id="installation--requirements" class="anchor" href="#installation--requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation &amp; Requirements</h3>
 
+<ul>
+<li>
 <p>This library requires PHP 5.3 or later. It is currently only installable via composer:</p>
 
 <p><code>composer require rotexsoft/leanorm</code></p>
+</li>
+<li><p>Each table in your database is expected to have a single auto-incrementing numeric primary key column (composite primary keys are not supported).</p></li>
+</ul>
 
 <h3>
 <a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting Started</h3>
