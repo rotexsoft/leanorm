@@ -57,90 +57,89 @@
 <p>There are two basic ways to use this package:</p>
 
 <ul>
-<li>Create Model classes for each database table in your application's database. Each of these classes must extend <strong>\LeanOrm\Model</strong>. This is the recommended approach for large applications. An example of a Model class (<em>AuthorsModel</em>) associated  with an <strong>authors</strong> table in the database:</li>
-</ul>
+<li>
+<p>Create Model classes for each database table in your application's database. Each of these classes must extend <strong>\LeanOrm\Model</strong>. This is the recommended approach for large applications. An example of a Model class (<em>AuthorsModel</em>) associated  with an <strong>authors</strong> table in the database:</p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorsModel</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\</span><span class="pl-e">Model</span></span>
 <span class="pl-s1">{</span>
-<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_collection_class_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorsCollection<span class="pl-pds">'</span></span>; <span class="pl-c">//If not set, \LeanOrm\Model\Collection will be used by default </span></span>
-<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_record_class_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorRecord<span class="pl-pds">'</span></span>; <span class="pl-c">//If not set, \LeanOrm\Model\Record will be used by default </span></span>
+<span class="pl-s1"><span class="pl-k">protected</span> <span class="pl-smi">$_collection_class_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorsCollection<span class="pl-pds">'</span></span>; <span class="pl-c">//If not set, \LeanOrm\Model\Collection will be used by default </span></span>
+<span class="pl-s1"><span class="pl-k">protected</span> <span class="pl-smi">$_record_class_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorRecord<span class="pl-pds">'</span></span>; <span class="pl-c">//If not set, \LeanOrm\Model\Record will be used by default </span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_created_timestamp_column_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>;</span>
-<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_updated_timestamp_column_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>m_timestamp<span class="pl-pds">'</span></span>; </span>
+<span class="pl-s1"><span class="pl-k">protected</span> <span class="pl-smi">$_created_timestamp_column_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s1"><span class="pl-k">protected</span> <span class="pl-smi">$_updated_timestamp_column_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>m_timestamp<span class="pl-pds">'</span></span>; </span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_primary_col</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>;</span>
-<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_table_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>authors<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s1"><span class="pl-k">protected</span> <span class="pl-smi">$_primary_col</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s1"><span class="pl-k">protected</span> <span class="pl-smi">$_table_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>authors<span class="pl-pds">'</span></span>;</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-k">protected</span> <span class="pl-smi">$_relations</span> <span class="pl-k">=</span> [</span>
-<span class="pl-s1">        <span class="pl-c">//Entry below specifies that an author can have one or more posts (ie. a has-many relationship).</span></span>
-<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>relation_type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">\LeanOrm\</span><span class="pl-c1">Model</span><span class="pl-k">::</span><span class="pl-c1">RELATION_TYPE_HAS_MANY</span>,</span>
+<span class="pl-s1"><span class="pl-k">protected</span> <span class="pl-smi">$_relations</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-c">//Entry below specifies that an author can have one or more posts (ie. a has-many relationship).</span></span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>relation_type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">\LeanOrm\</span><span class="pl-c1">Model</span><span class="pl-k">::</span><span class="pl-c1">RELATION_TYPE_HAS_MANY</span>,</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_key_col_in_my_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_key_col_in_my_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>,</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_key_col_in_foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_key_col_in_foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>,</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>primary_key_col_in_foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>post_id<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_models_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostsModel<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_models_collection_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostsCollection<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_models_record_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostRecord<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                ]</span>
-<span class="pl-s1">    ];</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>primary_key_col_in_foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>post_id<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_models_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostsModel<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_models_collection_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostsCollection<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_models_record_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostRecord<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">            ]</span>
+<span class="pl-s1">];</span>
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//create the model object</span></span>
 <span class="pl-s1"><span class="pl-smi">$authors_model</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-c1">AuthorsModel</span>(</span>
-<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">"</span>mysql:some-host-name;dbname=blog<span class="pl-pds">"</span></span>,</span>
-<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">"</span>username<span class="pl-pds">"</span></span>,</span>
-<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">"</span>password<span class="pl-pds">"</span></span>,</span>
-<span class="pl-s1">            [<span class="pl-c1">PDO</span><span class="pl-k">::</span><span class="pl-c1">MYSQL_ATTR_INIT_COMMAND</span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>SET NAMES utf8<span class="pl-pds">'</span></span>]</span>
-<span class="pl-s1">        );</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">"</span>mysql:some-host-name;dbname=blog<span class="pl-pds">"</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">"</span>username<span class="pl-pds">"</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">"</span>password<span class="pl-pds">"</span></span>,</span>
+<span class="pl-s1">        [<span class="pl-c1">PDO</span><span class="pl-k">::</span><span class="pl-c1">MYSQL_ATTR_INIT_COMMAND</span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>SET NAMES utf8<span class="pl-pds">'</span></span>]</span>
+<span class="pl-s1">    );</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 
 <p><br></p>
-
-<ul>
-<li>Or create instances of <strong>\LeanOrm\Model</strong> (one for each database table in your application's database). This approach is good for small to medium sized projects.</li>
-</ul>
+</li>
+<li>
+<p>Or create instances of <strong>\LeanOrm\Model</strong> (one for each database table in your application's database). This approach is good for small to medium sized projects.</p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$rel</span> <span class="pl-k">=</span> [</span>
-<span class="pl-s1">        <span class="pl-c">//Entry below specifies that an author can have one or more posts (ie. a has-many relationship).</span></span>
-<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>relation_type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">\LeanOrm\</span><span class="pl-c1">Model</span><span class="pl-k">::</span><span class="pl-c1">RELATION_TYPE_HAS_MANY</span>,</span>
+<span class="pl-s1">    <span class="pl-c">//Entry below specifies that an author can have one or more posts (ie. a has-many relationship).</span></span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>relation_type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">\LeanOrm\</span><span class="pl-c1">Model</span><span class="pl-k">::</span><span class="pl-c1">RELATION_TYPE_HAS_MANY</span>,</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_key_col_in_my_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_key_col_in_my_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>,</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_key_col_in_foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_key_col_in_foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>,</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>primary_key_col_in_foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>post_id<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_models_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostsModel<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_models_collection_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostsCollection<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>foreign_models_record_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostRecord<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                ]</span>
-<span class="pl-s1">    ];</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>primary_key_col_in_foreign_table<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>post_id<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_models_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostsModel<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_models_collection_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostsCollection<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>foreign_models_record_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>PostRecord<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">            ]</span>
+<span class="pl-s1">];</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$authors_model</span> <span class="pl-k">=</span> </span>
-<span class="pl-s1">        <span class="pl-k">new</span> <span class="pl-c1">\LeanOrm\</span><span class="pl-c1">Model</span>(</span>
-<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">"</span>mysql:some-host-name;dbname=blog<span class="pl-pds">"</span></span>,</span>
-<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">"</span>username<span class="pl-pds">"</span></span>,</span>
-<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">"</span>password<span class="pl-pds">"</span></span>,</span>
-<span class="pl-s1">            [<span class="pl-c1">PDO</span><span class="pl-k">::</span><span class="pl-c1">MYSQL_ATTR_INIT_COMMAND</span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>SET NAMES utf8<span class="pl-pds">'</span></span>],</span>
-<span class="pl-s1">            [</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>primary_col<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, </span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>table_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>authors<span class="pl-pds">'</span></span>, </span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>relations<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$rel</span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>created_timestamp_column_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>updated_timestamp_column_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>m_timestamp<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>collection_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorsCollection<span class="pl-pds">'</span></span>, <span class="pl-c">//If not set, \LeanOrm\Model\Collection will be used by default</span></span>
-<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>record_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorRecord<span class="pl-pds">'</span></span>, <span class="pl-c">//If not set, \LeanOrm\Model\Record will be used by default </span></span>
-<span class="pl-s1">            ]</span>
-<span class="pl-s1">        );</span>
+<span class="pl-s1">    <span class="pl-k">new</span> <span class="pl-c1">\LeanOrm\</span><span class="pl-c1">Model</span>(</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">"</span>mysql:some-host-name;dbname=blog<span class="pl-pds">"</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">"</span>username<span class="pl-pds">"</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">"</span>password<span class="pl-pds">"</span></span>,</span>
+<span class="pl-s1">        [<span class="pl-c1">PDO</span><span class="pl-k">::</span><span class="pl-c1">MYSQL_ATTR_INIT_COMMAND</span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>SET NAMES utf8<span class="pl-pds">'</span></span>],</span>
+<span class="pl-s1">        [</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>primary_col<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, </span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>table_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>authors<span class="pl-pds">'</span></span>, </span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>relations<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$rel</span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>created_timestamp_column_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>updated_timestamp_column_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>m_timestamp<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>collection_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorsCollection<span class="pl-pds">'</span></span>, <span class="pl-c">//If not set, \LeanOrm\Model\Collection will be used by default</span></span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>record_class_name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorRecord<span class="pl-pds">'</span></span>, <span class="pl-c">//If not set, \LeanOrm\Model\Record will be used by default </span></span>
+<span class="pl-s1">        ]</span>
+<span class="pl-s1">    );</span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 
 <p><br></p>
@@ -148,6 +147,8 @@
 <blockquote>
 <p>For both methods, you can decide if you want to use the base Record and Collection classes (<strong>\LeanOrm\Model\Collection</strong> and <strong>\LeanOrm\Model\Record</strong> (or <strong>\LeanOrm\Model\ReadOnlyRecord</strong> if needed) ) or if you want to extend the base Record and Collection classes eg:</p>
 </blockquote>
+</li>
+</ul>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorsCollection</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\Model\</span><span class="pl-e">Collection</span> {</span>
@@ -279,92 +280,91 @@
 <p><em><strong>$params=["cols"=&gt;['author_id', 'name']];</strong></em></p>
 </blockquote>
 </li>
-<li><p><strong>where</strong>: this entry in the <strong>$params</strong> array should contain an array of parameters for building a WHERE clause to be added to the SELECT statement that will be generated by the fetch method to fetch data. For example, the definitions below would be valid for the AuthorsModel defined earlier in this document:</p></li>
-</ul>
+<li>
+<p><strong>where</strong>: this entry in the <strong>$params</strong> array should contain an array of parameters for building a WHERE clause to be added to the SELECT statement that will be generated by the fetch method to fetch data. For example, the definitions below would be valid for the AuthorsModel defined earlier in this document:</p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
-<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> </span>
+<span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> </span>
+<span class="pl-s1">        [</span>
+<span class="pl-s1">            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ],</span>
+<span class="pl-s1">            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">        ]</span>
+<span class="pl-s1">];</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//Generates the WHERE clause below:</span></span>
+<span class="pl-s1"><span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">    WHERE</span></span>
+<span class="pl-s1"><span class="pl-c">    (</span></span>
+<span class="pl-s1"><span class="pl-c">        name = 'Joe Blow' </span></span>
+<span class="pl-s1"><span class="pl-c">        AND author_id &gt; '2' </span></span>
+<span class="pl-s1"><span class="pl-c">        AND date_created &gt;= '2015-08-19 14:24:48' </span></span>
+<span class="pl-s1"><span class="pl-c">    )</span></span>
+<span class="pl-s1"><span class="pl-c">*/</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> </span>
+<span class="pl-s1">        [</span>
 <span class="pl-s1">            [</span>
 <span class="pl-s1">                [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
 <span class="pl-s1">                [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ],</span>
-<span class="pl-s1">                [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
-<span class="pl-s1">            ]</span>
-<span class="pl-s1">    ];</span>
+<span class="pl-s1">            ],</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>OR<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                       [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>!=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">                       [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&lt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">50</span> ]</span>
+<span class="pl-s1">                   ],</span>
+<span class="pl-s1">            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>OR#2<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                        [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Jane Doe<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">                        [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>not-in<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span>[<span class="pl-c1">58</span>, <span class="pl-c1">65</span>] ],</span>
+<span class="pl-s1">                     ]</span>
+<span class="pl-s1">        ]</span>
+<span class="pl-s1">];</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">//Generates the WHERE clause below:</span></span>
-<span class="pl-s1">    <span class="pl-c">/*</span></span>
-<span class="pl-s1"><span class="pl-c">        WHERE</span></span>
+<span class="pl-s1"><span class="pl-c">//Generates the WHERE clause below:</span></span>
+<span class="pl-s1"><span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">WHERE</span></span>
+<span class="pl-s1"><span class="pl-c">    (</span></span>
 <span class="pl-s1"><span class="pl-c">        (</span></span>
 <span class="pl-s1"><span class="pl-c">            name = 'Joe Blow' </span></span>
-<span class="pl-s1"><span class="pl-c">            AND author_id &gt; '2' </span></span>
-<span class="pl-s1"><span class="pl-c">            AND date_created &gt;= '2015-08-19 14:24:48' </span></span>
+<span class="pl-s1"><span class="pl-c">            AND author_id &gt; 2 </span></span>
 <span class="pl-s1"><span class="pl-c">        )</span></span>
-<span class="pl-s1"><span class="pl-c">    */</span></span>
-<span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
-<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> </span>
-<span class="pl-s1">            [</span>
-<span class="pl-s1">                [</span>
-<span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
-<span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ],</span>
-<span class="pl-s1">                ],</span>
-<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>OR<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span> [</span>
-<span class="pl-s1">                           [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>!=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
-<span class="pl-s1">                           [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&lt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">50</span> ]</span>
-<span class="pl-s1">                       ],</span>
-<span class="pl-s1">                [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
-<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>OR#2<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span> [</span>
-<span class="pl-s1">                            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Jane Doe<span class="pl-pds">'</span></span> ],</span>
-<span class="pl-s1">                            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>not-in<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span>[<span class="pl-c1">58</span>, <span class="pl-c1">65</span>] ],</span>
-<span class="pl-s1">                         ]</span>
-<span class="pl-s1">            ]</span>
-<span class="pl-s1">    ];</span>
-<span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">//Generates the WHERE clause below:</span></span>
-<span class="pl-s1">    <span class="pl-c">/*</span></span>
-<span class="pl-s1"><span class="pl-c">    WHERE</span></span>
+<span class="pl-s1"><span class="pl-c">        OR</span></span>
 <span class="pl-s1"><span class="pl-c">        (</span></span>
-<span class="pl-s1"><span class="pl-c">            (</span></span>
-<span class="pl-s1"><span class="pl-c">                name = 'Joe Blow' </span></span>
-<span class="pl-s1"><span class="pl-c">                AND author_id &gt; 2 </span></span>
-<span class="pl-s1"><span class="pl-c">            )</span></span>
-<span class="pl-s1"><span class="pl-c">            OR</span></span>
-<span class="pl-s1"><span class="pl-c">            (</span></span>
-<span class="pl-s1"><span class="pl-c">                name &lt;&gt; 'Joe Blow' </span></span>
-<span class="pl-s1"><span class="pl-c">                AND author_id &gt; 50</span></span>
-<span class="pl-s1"><span class="pl-c">            )</span></span>
-<span class="pl-s1"><span class="pl-c">            AND date_created &gt;= '2015-08-19 14:24:48' </span></span>
-<span class="pl-s1"><span class="pl-c">            OR</span></span>
-<span class="pl-s1"><span class="pl-c">            (</span></span>
-<span class="pl-s1"><span class="pl-c">                name = 'Jane Doe' </span></span>
-<span class="pl-s1"><span class="pl-c">                AND author_id NOT IN  (58,65)  </span></span>
-<span class="pl-s1"><span class="pl-c">            )</span></span>
+<span class="pl-s1"><span class="pl-c">            name &lt;&gt; 'Joe Blow' </span></span>
+<span class="pl-s1"><span class="pl-c">            AND author_id &gt; 50</span></span>
 <span class="pl-s1"><span class="pl-c">        )</span></span>
-<span class="pl-s1"><span class="pl-c">    */</span></span>
+<span class="pl-s1"><span class="pl-c">        AND date_created &gt;= '2015-08-19 14:24:48' </span></span>
+<span class="pl-s1"><span class="pl-c">        OR</span></span>
+<span class="pl-s1"><span class="pl-c">        (</span></span>
+<span class="pl-s1"><span class="pl-c">            name = 'Jane Doe' </span></span>
+<span class="pl-s1"><span class="pl-c">            AND author_id NOT IN  (58,65)  </span></span>
+<span class="pl-s1"><span class="pl-c">        )</span></span>
+<span class="pl-s1"><span class="pl-c">    )</span></span>
+<span class="pl-s1"><span class="pl-c">*/</span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">// NOTE 1: The 'op' could be assigned any one of these values:</span></span>
-<span class="pl-s1">    <span class="pl-c">// '=', '&gt;', '&gt;=', '&lt;', '&lt;=', 'in', 'is-null', 'like', '!=', 'not-in', 'not-like', 'not-null'</span></span>
+<span class="pl-s1"><span class="pl-c">// NOTE 1: The 'op' could be assigned any one of these values:</span></span>
+<span class="pl-s1"><span class="pl-c">// '=', '&gt;', '&gt;=', '&lt;', '&lt;=', 'in', 'is-null', 'like', '!=', 'not-in', 'not-like', 'not-null'</span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">// NOTE 2: For multiple OR conditions, append a # and a unique string after </span></span>
-<span class="pl-s1">    <span class="pl-c">// the # to the OR key so that the subsequent OR condition(s) do not override  </span></span>
-<span class="pl-s1">    <span class="pl-c">// the previous ones. </span></span>
+<span class="pl-s1"><span class="pl-c">// NOTE 2: For multiple OR conditions, append a # and a unique string after </span></span>
+<span class="pl-s1"><span class="pl-c">// the # to the OR key so that the subsequent OR condition(s) do not override  </span></span>
+<span class="pl-s1"><span class="pl-c">// the previous ones. </span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">// NOTE 3: Do not to make the first key in the 'where' array or the first key </span></span>
-<span class="pl-s1">    <span class="pl-c">// in any of the array(s) inside the 'where' array an 'OR' or 'OR#...' key.</span></span>
+<span class="pl-s1"><span class="pl-c">// NOTE 3: Do not to make the first key in the 'where' array or the first key </span></span>
+<span class="pl-s1"><span class="pl-c">// in any of the array(s) inside the 'where' array an 'OR' or 'OR#...' key.</span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">// NOTE 4: For any sub-array containing an item with a key named 'op' with a </span></span>
-<span class="pl-s1">    <span class="pl-c">// value of either 'not-null' or 'is-null', there must not be any item in that </span></span>
-<span class="pl-s1">    <span class="pl-c">// sub-array with a key named 'val', but there must be a corresponding item </span></span>
-<span class="pl-s1">    <span class="pl-c">// with a key named 'col' with a string value.</span></span>
+<span class="pl-s1"><span class="pl-c">// NOTE 4: For any sub-array containing an item with a key named 'op' with a </span></span>
+<span class="pl-s1"><span class="pl-c">// value of either 'not-null' or 'is-null', there must not be any item in that </span></span>
+<span class="pl-s1"><span class="pl-c">// sub-array with a key named 'val', but there must be a corresponding item </span></span>
+<span class="pl-s1"><span class="pl-c">// with a key named 'col' with a string value.</span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">// NOTE 5: The operators: 'in' and 'not-in' allow 'val' to be set to an array </span></span>
-<span class="pl-s1">    <span class="pl-c">// or string value. If 'val' is a string, it must be a valid value that a </span></span>
-<span class="pl-s1">    <span class="pl-c">// NOT IN or IN operator expects including the opening and closing brackets. </span></span>
-<span class="pl-s1">    <span class="pl-c">// Eg. "( 1, 2, 3 )" or "( '4', '5', '6' )".</span></span>
+<span class="pl-s1"><span class="pl-c">// NOTE 5: The operators: 'in' and 'not-in' allow 'val' to be set to an array </span></span>
+<span class="pl-s1"><span class="pl-c">// or string value. If 'val' is a string, it must be a valid value that a </span></span>
+<span class="pl-s1"><span class="pl-c">// NOT IN or IN operator expects including the opening and closing brackets. </span></span>
+<span class="pl-s1"><span class="pl-c">// Eg. "( 1, 2, 3 )" or "( '4', '5', '6' )".</span></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
-
-<ul>
+</li>
 <li>
 <p><strong>group</strong>: this entry in the <strong>$params</strong> array should contain an array of the name(s) of column(s) for building a GROUP BY clause to be added to the SELECT statement that will be generated by the fetch method to fetch data. For example, the definition below would be valid for the AuthorsModel defined earlier in this document:</p>
 
@@ -372,92 +372,91 @@
 <p><em><strong>$params=['group' =&gt; ['name']];</strong></em> generates <em><strong>GROUP BY name</strong></em></p>
 </blockquote>
 </li>
-<li><p><strong>having</strong>: this entry in the <strong>$params</strong> array should contain an array of parameters for building a HAVING clause to be added to the SELECT statement that will be generated by the fetch method to fetch data. For example, the definitions below would be valid for the AuthorsModel defined earlier in this document:</p></li>
-</ul>
+<li>
+<p><strong>having</strong>: this entry in the <strong>$params</strong> array should contain an array of parameters for building a HAVING clause to be added to the SELECT statement that will be generated by the fetch method to fetch data. For example, the definitions below would be valid for the AuthorsModel defined earlier in this document:</p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
-<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>having<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> </span>
+<span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>having<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> </span>
+<span class="pl-s1">        [</span>
+<span class="pl-s1">            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ],</span>
+<span class="pl-s1">            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">        ]</span>
+<span class="pl-s1">];</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//Generates the HAVING clause below:</span></span>
+<span class="pl-s1"><span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">    HAVING</span></span>
+<span class="pl-s1"><span class="pl-c">    (</span></span>
+<span class="pl-s1"><span class="pl-c">        name = 'Joe Blow' </span></span>
+<span class="pl-s1"><span class="pl-c">        AND author_id &gt; '2' </span></span>
+<span class="pl-s1"><span class="pl-c">        AND date_created &gt;= '2015-08-19 14:24:48' </span></span>
+<span class="pl-s1"><span class="pl-c">    )</span></span>
+<span class="pl-s1"><span class="pl-c">*/</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>having<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> </span>
+<span class="pl-s1">        [</span>
 <span class="pl-s1">            [</span>
 <span class="pl-s1">                [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
 <span class="pl-s1">                [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ],</span>
-<span class="pl-s1">                [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
-<span class="pl-s1">            ]</span>
-<span class="pl-s1">    ];</span>
+<span class="pl-s1">            ],</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>OR<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                       [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>!=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">                       [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&lt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">50</span> ]</span>
+<span class="pl-s1">                   ],</span>
+<span class="pl-s1">            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>OR#2<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                        [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Jane Doe<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">                        [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>not-in<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span>[<span class="pl-c1">58</span>, <span class="pl-c1">65</span>] ],</span>
+<span class="pl-s1">                     ]</span>
+<span class="pl-s1">        ]</span>
+<span class="pl-s1">];</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">//Generates the HAVING clause below:</span></span>
-<span class="pl-s1">    <span class="pl-c">/*</span></span>
-<span class="pl-s1"><span class="pl-c">        HAVING</span></span>
+<span class="pl-s1"><span class="pl-c">//Generates the HAVING clause below:</span></span>
+<span class="pl-s1"><span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">HAVING</span></span>
+<span class="pl-s1"><span class="pl-c">    (</span></span>
 <span class="pl-s1"><span class="pl-c">        (</span></span>
 <span class="pl-s1"><span class="pl-c">            name = 'Joe Blow' </span></span>
-<span class="pl-s1"><span class="pl-c">            AND author_id &gt; '2' </span></span>
-<span class="pl-s1"><span class="pl-c">            AND date_created &gt;= '2015-08-19 14:24:48' </span></span>
+<span class="pl-s1"><span class="pl-c">            AND author_id &gt; 2 </span></span>
 <span class="pl-s1"><span class="pl-c">        )</span></span>
-<span class="pl-s1"><span class="pl-c">    */</span></span>
-<span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
-<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>having<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> </span>
-<span class="pl-s1">            [</span>
-<span class="pl-s1">                [</span>
-<span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
-<span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ],</span>
-<span class="pl-s1">                ],</span>
-<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>OR<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span> [</span>
-<span class="pl-s1">                           [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>!=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
-<span class="pl-s1">                           [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&lt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">50</span> ]</span>
-<span class="pl-s1">                       ],</span>
-<span class="pl-s1">                [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
-<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>OR#2<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span> [</span>
-<span class="pl-s1">                            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Jane Doe<span class="pl-pds">'</span></span> ],</span>
-<span class="pl-s1">                            [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>not-in<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span>[<span class="pl-c1">58</span>, <span class="pl-c1">65</span>] ],</span>
-<span class="pl-s1">                         ]</span>
-<span class="pl-s1">            ]</span>
-<span class="pl-s1">    ];</span>
-<span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">//Generates the HAVING clause below:</span></span>
-<span class="pl-s1">    <span class="pl-c">/*</span></span>
-<span class="pl-s1"><span class="pl-c">    HAVING</span></span>
+<span class="pl-s1"><span class="pl-c">        OR</span></span>
 <span class="pl-s1"><span class="pl-c">        (</span></span>
-<span class="pl-s1"><span class="pl-c">            (</span></span>
-<span class="pl-s1"><span class="pl-c">                name = 'Joe Blow' </span></span>
-<span class="pl-s1"><span class="pl-c">                AND author_id &gt; 2 </span></span>
-<span class="pl-s1"><span class="pl-c">            )</span></span>
-<span class="pl-s1"><span class="pl-c">            OR</span></span>
-<span class="pl-s1"><span class="pl-c">            (</span></span>
-<span class="pl-s1"><span class="pl-c">                name &lt;&gt; 'Joe Blow' </span></span>
-<span class="pl-s1"><span class="pl-c">                AND author_id &gt; 50</span></span>
-<span class="pl-s1"><span class="pl-c">            )</span></span>
-<span class="pl-s1"><span class="pl-c">            AND date_created &gt;= '2015-08-19 14:24:48' </span></span>
-<span class="pl-s1"><span class="pl-c">            OR</span></span>
-<span class="pl-s1"><span class="pl-c">            (</span></span>
-<span class="pl-s1"><span class="pl-c">                name = 'Jane Doe' </span></span>
-<span class="pl-s1"><span class="pl-c">                AND author_id NOT IN  (58,65)  </span></span>
-<span class="pl-s1"><span class="pl-c">            )</span></span>
+<span class="pl-s1"><span class="pl-c">            name &lt;&gt; 'Joe Blow' </span></span>
+<span class="pl-s1"><span class="pl-c">            AND author_id &gt; 50</span></span>
 <span class="pl-s1"><span class="pl-c">        )</span></span>
-<span class="pl-s1"><span class="pl-c">    */</span></span>
+<span class="pl-s1"><span class="pl-c">        AND date_created &gt;= '2015-08-19 14:24:48' </span></span>
+<span class="pl-s1"><span class="pl-c">        OR</span></span>
+<span class="pl-s1"><span class="pl-c">        (</span></span>
+<span class="pl-s1"><span class="pl-c">            name = 'Jane Doe' </span></span>
+<span class="pl-s1"><span class="pl-c">            AND author_id NOT IN  (58,65)  </span></span>
+<span class="pl-s1"><span class="pl-c">        )</span></span>
+<span class="pl-s1"><span class="pl-c">    )</span></span>
+<span class="pl-s1"><span class="pl-c">*/</span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">// NOTE 1: The 'op' could be assigned any one of these values:</span></span>
-<span class="pl-s1">    <span class="pl-c">// '=', '&gt;', '&gt;=', '&lt;', '&lt;=', 'in', 'is-null', 'like', '!=', 'not-in', 'not-like', 'not-null'</span></span>
+<span class="pl-s1"><span class="pl-c">// NOTE 1: The 'op' could be assigned any one of these values:</span></span>
+<span class="pl-s1"><span class="pl-c">// '=', '&gt;', '&gt;=', '&lt;', '&lt;=', 'in', 'is-null', 'like', '!=', 'not-in', 'not-like', 'not-null'</span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">// NOTE 2: For multiple OR conditions, append a # and a unique string after </span></span>
-<span class="pl-s1">    <span class="pl-c">// the # to the OR key so that the subsequent OR condition(s) do not override  </span></span>
-<span class="pl-s1">    <span class="pl-c">// the previous ones. </span></span>
+<span class="pl-s1"><span class="pl-c">// NOTE 2: For multiple OR conditions, append a # and a unique string after </span></span>
+<span class="pl-s1"><span class="pl-c">// the # to the OR key so that the subsequent OR condition(s) do not override  </span></span>
+<span class="pl-s1"><span class="pl-c">// the previous ones. </span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">// NOTE 3: Do not to make the first key in the 'having' array or the first key </span></span>
-<span class="pl-s1">    <span class="pl-c">// in any of the array(s) inside the 'having' array an 'OR' or 'OR#...' key.</span></span>
+<span class="pl-s1"><span class="pl-c">// NOTE 3: Do not to make the first key in the 'having' array or the first key </span></span>
+<span class="pl-s1"><span class="pl-c">// in any of the array(s) inside the 'having' array an 'OR' or 'OR#...' key.</span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">// NOTE 4: For any sub-array containing an item with a key named 'op' with a </span></span>
-<span class="pl-s1">    <span class="pl-c">// value of either 'not-null' or 'is-null', there must not be any item in that </span></span>
-<span class="pl-s1">    <span class="pl-c">// sub-array with a key named 'val', but there must be a corresponding item </span></span>
-<span class="pl-s1">    <span class="pl-c">// with a key named 'col' with a string value.</span></span>
+<span class="pl-s1"><span class="pl-c">// NOTE 4: For any sub-array containing an item with a key named 'op' with a </span></span>
+<span class="pl-s1"><span class="pl-c">// value of either 'not-null' or 'is-null', there must not be any item in that </span></span>
+<span class="pl-s1"><span class="pl-c">// sub-array with a key named 'val', but there must be a corresponding item </span></span>
+<span class="pl-s1"><span class="pl-c">// with a key named 'col' with a string value.</span></span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">// NOTE 5: The operators: 'in' and 'not-in' allow 'val' to be set to an array </span></span>
-<span class="pl-s1">    <span class="pl-c">// or string value. If 'val' is a string, it must be a valid value that a </span></span>
-<span class="pl-s1">    <span class="pl-c">// NOT IN or IN operator expects including the opening and closing brackets. </span></span>
-<span class="pl-s1">    <span class="pl-c">// Eg. "( 1, 2, 3 )" or "( '4', '5', '6' )".</span></span>
+<span class="pl-s1"><span class="pl-c">// NOTE 5: The operators: 'in' and 'not-in' allow 'val' to be set to an array </span></span>
+<span class="pl-s1"><span class="pl-c">// or string value. If 'val' is a string, it must be a valid value that a </span></span>
+<span class="pl-s1"><span class="pl-c">// NOT IN or IN operator expects including the opening and closing brackets. </span></span>
+<span class="pl-s1"><span class="pl-c">// Eg. "( 1, 2, 3 )" or "( '4', '5', '6' )".</span></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
-
-<ul>
+</li>
 <li>
 <p><strong>order</strong>: this entry in the <strong>$params</strong> array should contain an array of parameters for building an ORDER BY clause to be added to the SELECT statement that will be generated by the fetch method to fetch data. For example, the definition below would be valid for the AuthorsModel defined earlier in this document:</p>
 
@@ -492,11 +491,11 @@
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorsCollection</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\Model\</span><span class="pl-e">Collection</span> {</span>
-<span class="pl-s1">   <span class="pl-c">//some custom code for collection objects that are meant to hold records belonging to the 'authors' database table</span></span>
+<span class="pl-s1"><span class="pl-c">//some custom code for collection objects that are meant to hold records belonging to the 'authors' database table</span></span>
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorsRecord</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\Model\</span><span class="pl-e">Record</span> {</span>
-<span class="pl-s1">   <span class="pl-c">//some custom code for records belonging to the 'authors' database table</span></span>
+<span class="pl-s1"><span class="pl-c">//some custom code for records belonging to the 'authors' database table</span></span>
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
