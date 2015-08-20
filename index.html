@@ -137,8 +137,8 @@
 <span class="pl-s1">        ]</span>
 <span class="pl-s1">    );</span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
-
-<p><br></p>
+</li>
+</ul>
 
 <blockquote>
 <p>For both methods, you can decide if you want to use the base Record and Collection classes (<strong>\LeanOrm\Model\Collection</strong> and <strong>\LeanOrm\Model\Record</strong> (or <strong>\LeanOrm\Model\ReadOnlyRecord</strong> if needed) ) or if you want to extend the base Record and Collection classes eg:</p>
@@ -146,15 +146,13 @@
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorsCollection</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\Model\</span><span class="pl-e">Collection</span> {</span>
-<span class="pl-s1"><span class="pl-c">//some custom code for collection objects that are meant to hold records belonging to the 'authors' database table</span></span>
+<span class="pl-s1">   <span class="pl-c">//some custom code for collection objects that are meant to hold records belonging to the 'authors' database table</span></span>
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorsRecord</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\Model\</span><span class="pl-e">Record</span> {</span>
-<span class="pl-s1"><span class="pl-c">//some custom code for records belonging to the 'authors' database table</span></span>
+<span class="pl-s1">   <span class="pl-c">//some custom code for records belonging to the 'authors' database table</span></span>
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
-</li>
-</ul>
 
 <p><br></p>
 
