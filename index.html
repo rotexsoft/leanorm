@@ -491,12 +491,11 @@
 <span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
 <span class="pl-s1">                ],</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>order<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [<span class="pl-s"><span class="pl-pds">'</span>name DESC<span class="pl-pds">'</span></span>],</span>
-<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>limit_offset<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">10</span>,</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>limit_offset<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">0</span>,</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>limit_size<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">50</span>,</span>
-<span class="pl-s1"></span>
 <span class="pl-s1">];</span>
 <span class="pl-s1"></span>
-<span class="pl-s1"><span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchRecordsIntoCollection(<span class="pl-smi">$params</span>);</span>
+<span class="pl-s1"><span class="pl-smi">$collection_of_authors</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchRecordsIntoArray(<span class="pl-smi">$params</span>);</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//Generates the SQL Statement Below:</span></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
@@ -512,10 +511,10 @@
 <span class="pl-s1"><span class="pl-c">    GROUP BY name</span></span>
 <span class="pl-s1"><span class="pl-c">    HAVING</span></span>
 <span class="pl-s1"><span class="pl-c">        (</span></span>
-<span class="pl-s1"><span class="pl-c">            date_created &gt;= '\'2015-08-19 14:24:48\'' </span></span>
+<span class="pl-s1"><span class="pl-c">            date_created &gt;= '2015-08-19 14:24:48' </span></span>
 <span class="pl-s1"><span class="pl-c">        )</span></span>
 <span class="pl-s1"><span class="pl-c">    ORDER BY name DESC</span></span>
-<span class="pl-s1"><span class="pl-c">    LIMIT 50 OFFSET 10;</span></span>
+<span class="pl-s1"><span class="pl-c">    LIMIT 50;</span></span>
 <span class="pl-s1"><span class="pl-c">*/</span></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
