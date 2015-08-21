@@ -956,12 +956,12 @@
 <p>There are two ways to update data in the database:</p>
 
 <ol>
-<li>By fetching one or more existing records from the database into record objects, then assigning the new value(s) to each of the fetched records and then finally calling the <strong>save</strong> method on each Record object. If the records were fetched into a Collection object, then the <strong>saveAll</strong> method on the Collection object could be called instead (this will cause all the records in the collection to be saved).</li>
+<li>By fetching one or more existing records from the database into record objects, then assigning new value(s) to each of the fetched records and then finally calling the <strong>save</strong> method on each Record object. If the records were fetched into a Collection object, then the <strong>saveAll</strong> method on the Collection object could be called instead (this will cause all the records in the collection to be saved).</li>
 <li>
 <p>By calling the <strong>updateMatchingDbTableRows</strong> method on a Model object. This method does not involve the retrieval of Record objects, rather only the conditions for matching the rows of data in the db table to be updated and the new data to be used for the update need to be supplied to <strong>updateMatchingDbTableRows</strong>.</p>
 
 <blockquote>
-<p>Note: there is also an <strong>updateSpecifiedRecord</strong> in the Model class which accepts a Record object as parameter and saves it to the database. The <strong>updateSpecifiedRecord</strong> method does not really need to be called, since the <strong>save</strong> method in the Record class calls it internally when <strong>save</strong> is called on a Record object that needs to be updated.</p>
+<p>Note: there is also an <strong>updateSpecifiedRecord</strong> method in the Model class which accepts a Record object as parameter and saves it to the database. The <strong>updateSpecifiedRecord</strong> method does not really need to be called, since the <strong>save</strong> method in the Record class calls it internally when <strong>save</strong> is called on a Record object that needs to be updated.</p>
 </blockquote>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
@@ -994,7 +994,7 @@
 <span class="pl-s1"><span class="pl-c">//      to match the rows to be updated. If you need to match rows using other operators like </span></span>
 <span class="pl-s1"><span class="pl-c">//      &gt;, &lt;=, LIKE, etc. then use any of the fetch methods that return Record objects to fetch</span></span>
 <span class="pl-s1"><span class="pl-c">//      the data you want to update and either call the save method on each Record object or call</span></span>
-<span class="pl-s1"><span class="pl-c">//      the saveAll method on a Collection object containing the record object. The fetch methods </span></span>
+<span class="pl-s1"><span class="pl-c">//      the saveAll method on a Collection object containing the record objects. The fetch methods </span></span>
 <span class="pl-s1"><span class="pl-c">//      allows you to specify more complex conditions for matching rows of data than </span></span>
 <span class="pl-s1"><span class="pl-c">//      updateMatchingDbTableRows does.</span></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
@@ -1002,9 +1002,51 @@
 </ol>
 
 <h3>
-<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+<a id="deleting-data" class="anchor" href="#deleting-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Deleting Data</h3>
 
-<p>Yada Yada Yada.</p>
+<p>There are two ways of deleting data from the database:</p>
+
+<ol>
+<li>By fetching one or more existing records from the database into record objects and then calling the <strong>delete</strong> method on each Record object (NOTE: the data is deleted from the database but the Record object still contains the data and is automatically marked as new. To make sure the data is both deleted from the database and cleared out of the Record object the <strong>delete</strong> method on the Record object must be called with a boolean value of true as its first parameter). If the records were fetched into a Collection object, then the <strong>deleteAll</strong> method on the Collection object could be called instead (this will cause all the records in the collection to be deleted from the database, but the Record objects will still be in the Collection object with their data intact. <strong>removeAll</strong> should additionally be called on the Collection object to clear the Record objects and their data from the Collection object; if the Record Objects are not referenced anywhere else outside of the Collection object, then the <strong>__destruct</strong> method will be automatically called on each Record object and all the memory used by the Record objects will be released).</li>
+<li>
+<p>By calling the <strong>deleteMatchingDbTableRows</strong> method on a Model object. This method does not involve the retrieval of Record objects, rather only the conditions for matching the rows of data in the db table to be deleted needs to be supplied to <strong>deleteMatchingDbTableRows</strong>.</p>
+
+<blockquote>
+<p>Note: there is also a <strong>deleteSpecifiedRecord</strong> method in the Model class which accepts a Record object as parameter and deletes the database row associated with the Record object, sets the primary key value of the Record object to null and also sets the <strong>_is_new</strong> property of the Record object to the boolean value of true (NOTE: other data in the Record object remains). The <strong>deleteSpecifiedRecord</strong> method does not really need to be called, since the <strong>delete</strong> method in the Record class calls it internally when <strong>delete</strong> is called on a Record object that needs to be deleted.</p>
+</blockquote>
+
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//Method 1:</span></span>
+<span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [ [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ] ],</span>
+<span class="pl-s1">];</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//Fetch the first row of data with an author_id value of 2 from the authors </span></span>
+<span class="pl-s1"><span class="pl-c">//table into a Record object.</span></span>
+<span class="pl-s1"><span class="pl-smi">$author_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchOneRecord(<span class="pl-smi">$params</span>);;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//Delete the row corresponding to the Record object from the database.</span></span>
+<span class="pl-s1"><span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span>delete(); <span class="pl-c">// OR $author_record-&gt;delete(true); to both delete from the database </span></span>
+<span class="pl-s1">                          <span class="pl-c">//and set the Record object's data to an empty array internally</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//NOTE: that the steps above can be applied to the Record objects returned  </span></span>
+<span class="pl-s1"><span class="pl-c">//      by fetchRecordsIntoArray and fetchRecordsIntoCollection.</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//Method 2:</span></span>
+<span class="pl-s1"><span class="pl-c">//Delete all rows of data with an author_id value of 2 in the authors </span></span>
+<span class="pl-s1"><span class="pl-c">//table.</span></span>
+<span class="pl-s1"><span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>deleteMatchingDbTableRows([<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span>]);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//NOTE: deleteMatchingDbTableRows only supports conditions using the equality operator ('=')</span></span>
+<span class="pl-s1"><span class="pl-c">//      to match the rows to be deleted. If you need to match rows using other operators like </span></span>
+<span class="pl-s1"><span class="pl-c">//      &gt;, &lt;=, LIKE, etc. then use any of the fetch methods that return Record objects to fetch</span></span>
+<span class="pl-s1"><span class="pl-c">//      the data you want to delete and either call the delete method on each Record object or call</span></span>
+<span class="pl-s1"><span class="pl-c">//      the deleteAll method on a Collection object containing the record objects. The fetch methods </span></span>
+<span class="pl-s1"><span class="pl-c">//      allow you to specify more complex conditions for matching rows of data than </span></span>
+<span class="pl-s1"><span class="pl-c">//      deleteMatchingDbTableRows does.</span></span>
+<span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
+</li>
+</ol>
 
 <h3>
 <a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
