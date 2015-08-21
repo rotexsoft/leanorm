@@ -28,9 +28,9 @@
         "digitalnature/php-ref": "^1.0"
     },
     "autoload": {
-        "classmap": ["src/"]
+        "classmap": ["src/", "demo/"]
     },
     "autoload-dev": {
-        "classmap": ["src/", "tests/"]
+        "classmap": ["src/", "demo/", "tests/"]
     }
 }
