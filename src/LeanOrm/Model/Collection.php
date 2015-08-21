@@ -97,7 +97,6 @@ class Collection implements \GDAO\Model\CollectionInterface
         }
         
         try {
-            
             $model = $this->getModel();
 
             if( $model instanceof \GDAO\Model && $this->count() > 0 ) {
@@ -247,6 +246,7 @@ class Collection implements \GDAO\Model\CollectionInterface
         
         foreach( $keys as $key ) {
             
+            $this->_data[$key] = null;
             unset($this->_data[$key]);
         }
         
@@ -285,9 +285,9 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @throws \PDOException
      * 
      */
-    public function save($group_inserts_together=false) {
+    public function saveAll($group_inserts_together=false) {
         
-        $this->_preSave();
+        $this->_preSaveAll();
         
         $result = true;
         $keys_4_unsuccessfully_saved_records = array();
@@ -351,7 +351,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             $result = $keys_4_unsuccessfully_saved_records;
         }
         
-        $this->_postSave();
+        $this->_postSaveAll();
 
         return $result;
     }
@@ -625,7 +625,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return void
      * 
      */
-    public function _preSave() { }
+    public function _preSaveAll() { }
     
     /**
      * 
@@ -637,5 +637,5 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return void
      * 
      */
-    public function _postSave() { }
+    public function _postSaveAll() { }
 }
