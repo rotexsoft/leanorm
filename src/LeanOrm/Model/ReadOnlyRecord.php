@@ -80,6 +80,17 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
         }
     }
     
+    public function __destruct() {
+        
+        //print "Destroying Record with Primary key Value: " . $this->getPrimaryVal() . "<br>";
+        
+        unset($this->_data);
+        unset($this->_related_data);
+        
+        //Don't unset $this->_model, it may still be referenced by other 
+        //Record and / or Collection objects.
+    }
+    
     protected function _throwNotSupportedException($function_name) {
         
         $msg = "ERROR: ". get_class($this) . '::' . $function_name . '(...)' 

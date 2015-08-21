@@ -90,6 +90,19 @@ class Record implements \GDAO\Model\RecordInterface
         }
     }
     
+    public function __destruct() {
+        
+        //print "Destroying Record with Primary key Value: " . $this->getPrimaryVal() . "<br>";
+        
+        unset($this->_data);
+        unset($this->_initial_data);
+        unset($this->_is_new);
+        unset($this->_related_data);
+        
+        //Don't unset $this->_model, it may still be referenced by other 
+        //Record and / or Collection objects.
+    }
+    
     /**
      * 
      * Delete the record from the db. 
@@ -555,26 +568,6 @@ class Record implements \GDAO\Model\RecordInterface
                     $result = $this->_model->updateSpecifiedRecord($this);
                     
                     if( $result === true ) {
-                        
-                        $params = [
-                                    'where' =>  
-                                        [
-                                            [
-                                                'col'=>$this->getPrimaryCol(), 
-                                                'op'=>'=', 
-                                                'val'=>$this->getPrimaryVal()
-                                            ]
-                                        ],
-                                ];
-                        
-                        $updated_data = $this->getModel()->fetchRowsIntoArray($params);
-                        
-                        //Get the first record. There should only be one record
-                        //since we are fetching by the primary key column's value.
-                        $updated_data = array_shift($updated_data);
-                        
-                        //refresh this record with the updated data
-                        $this->loadData($updated_data);
                         
                         $this->_initial_data = $this->_data;
                     }
