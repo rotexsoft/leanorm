@@ -97,48 +97,21 @@ class Collection implements \GDAO\Model\CollectionInterface
         }
         
         try {
-            $model = $this->getModel();
 
-            if( $model instanceof \GDAO\Model && $this->count() > 0 ) {
+            if( $this->count() > 0 ) {
 
-                $pri_col_name = $model->getPrimaryColName();
-                $pri_key_vals = $this->getColVals($pri_col_name);
+                $result = array();
 
-                if( count($pri_key_vals) > 0 ) {
+                //generate list of keys of records in this collection
+                //that were not successfully saved.
 
-                    //where pri_key in (.....)
-                    $where_params = array($pri_col_name => $pri_key_vals);
-                    $result = $model->deleteMatchingDbTableRows($where_params);
-                    
-                    if( is_int($result) && $this->count() !== $result) {
-                        
-                        //records were not deleted
-                        $params = array(
-                            'cols' => array($pri_col_name),
-                            'where' => array(
-                                array( 'col' => $pri_col_name, 'op' => 'in', 'val' => $pri_key_vals ),
-                            )
-                        );
-                        
-                        $pkeys_of_recs_not_deleted = $model->fetchCol($params);
-                        
-                        $result = array();
-                        
-                        //generate list of keys of records in this collection
-                        //that were not successfully saved.
-                        
-                        foreach($pkeys_of_recs_not_deleted as $pkey) {
-                            
-                            foreach( $this->_data as $coll_key=>$record ) {
-                                
-                                if( $record->getPrimaryVal() == $pkey) {
-                                    
-                                    //record still exists in the db table
-                                    //it wasn't successfully deleted.
-                                    $result[] = $coll_key;
-                                }
-                            }
-                        }
+                foreach( $this->_data as $coll_key=>$record ) {
+
+                    if( $record->delete() !== true ) {
+
+                        //record still exists in the db table
+                        //it wasn't successfully deleted.
+                        $result[] = $coll_key;
                     }
                 }
             }
