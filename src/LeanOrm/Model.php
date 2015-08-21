@@ -429,7 +429,7 @@ class Model extends \GDAO\Model
                     $this->_getWhereOrHavingClauseWithParams($where_params);
                                 
                 $select_qry_obj->where( $where_clause );
-                
+
                 if( count( $bind_params ) > 0 ) {
                     
                     $select_qry_obj->bindValues( $bind_params );
@@ -1828,9 +1828,11 @@ SELECT {$foreign_table_name}.*
             throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
         }
         
-        if( count($record) > 0 ) { //test if the record object has data
+        $pri_key_val = $record->getPrimaryVal();
+        
+        //test if the record object has data and is not a new record
+        if( count($record) > 0 && !empty($pri_key_val) && is_numeric($pri_key_val)) {
             
-            $pri_key_val = $record->getPrimaryVal();
             $cols_n_vals_2_match = array($this->_primary_col=>$pri_key_val);
 
             $succesfully_updated = 
@@ -1840,7 +1842,7 @@ SELECT {$foreign_table_name}.*
         }
         
         return is_numeric($succesfully_updated)? 
-                    ($succesfully_updated === 1) : $succesfully_updated ;
+                        ($succesfully_updated === 1) : $succesfully_updated ;
     }
     
     public function __get($property_name) {
