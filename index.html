@@ -744,6 +744,24 @@
 <p><strong>Fetching one row of data as a Record (via fetchOneRecord):</strong></p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [</span>
+<span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ],</span>
+<span class="pl-s1">                ],</span>
+<span class="pl-s1">];</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
+<span class="pl-s1"><span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">    SELECT author_id, name, date_created</span></span>
+<span class="pl-s1"><span class="pl-c">      FROM `authors`</span></span>
+<span class="pl-s1"><span class="pl-c">     WHERE</span></span>
+<span class="pl-s1"><span class="pl-c">        (</span></span>
+<span class="pl-s1"><span class="pl-c">            author_id = 2</span></span>
+<span class="pl-s1"><span class="pl-c">        );</span></span>
+<span class="pl-s1"><span class="pl-c">*/</span></span>
+<span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//fetchOneRecord returns an instance of \LeanOrm\Model\Record from the first </span></span>
 <span class="pl-s1"><span class="pl-c">//row returned by executing the generated select query above. </span></span>
 <span class="pl-s1"><span class="pl-c">//In this case the first db table row having an author_id value of 2 is </span></span>
