@@ -192,7 +192,7 @@
 <span class="pl-s1"></span>
 <span class="pl-s1">    <span class="pl-c">//NOTE: if you have a collection (an instance of \LeanOrm\Model\Collection) </span></span>
 <span class="pl-s1">    <span class="pl-c">//      containing 2 or more records you can also efficiently save the records </span></span>
-<span class="pl-s1">    <span class="pl-c">//      by calling \LeanOrm\Model\Collection::save(true). See the documentation</span></span>
+<span class="pl-s1">    <span class="pl-c">//      by calling \LeanOrm\Model\Collection::saveAll(true). See the documentation</span></span>
 <span class="pl-s1">    <span class="pl-c">//      for Collections for more details.</span></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 
@@ -993,9 +993,10 @@
 <span class="pl-s1"><span class="pl-c">//NOTE: updateMatchingDbTableRows only supports conditions using the equality operator ('=')</span></span>
 <span class="pl-s1"><span class="pl-c">//      to match the rows to be updated. If you need to match rows using other operators like </span></span>
 <span class="pl-s1"><span class="pl-c">//      &gt;, &lt;=, LIKE, etc. then use any of the fetch methods that return Record objects to fetch</span></span>
-<span class="pl-s1"><span class="pl-c">//      the data you want to update and call the save method either on each Record object or on</span></span>
-<span class="pl-s1"><span class="pl-c">//      a collection object containing the record object. The fetch methods allows you to specify</span></span>
-<span class="pl-s1"><span class="pl-c">//      more complex conditions for matching rows of data than updateMatchingDbTableRows does.</span></span>
+<span class="pl-s1"><span class="pl-c">//      the data you want to update and either call the save method on each Record object or call</span></span>
+<span class="pl-s1"><span class="pl-c">//      the saveAll method on a Collection object containing the record object. The fetch methods </span></span>
+<span class="pl-s1"><span class="pl-c">//      allows you to specify more complex conditions for matching rows of data than </span></span>
+<span class="pl-s1"><span class="pl-c">//      updateMatchingDbTableRows does.</span></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
 </ol>
