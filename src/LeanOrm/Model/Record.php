@@ -556,6 +556,26 @@ class Record implements \GDAO\Model\RecordInterface
                     
                     if( $result === true ) {
                         
+                        $params = [
+                                    'where' =>  
+                                        [
+                                            [
+                                                'col'=>$this->getPrimaryCol(), 
+                                                'op'=>'=', 
+                                                'val'=>$this->getPrimaryVal()
+                                            ]
+                                        ],
+                                ];
+                        
+                        $updated_data = $this->getModel()->fetchRowsIntoArray($params);
+                        
+                        //Get the first record. There should only be one record
+                        //since we are fetching by the primary key column's value.
+                        $updated_data = array_shift($updated_data);
+                        
+                        //refresh this record with the updated data
+                        $this->loadData($updated_data);
+                        
                         $this->_initial_data = $this->_data;
                     }
                 }
