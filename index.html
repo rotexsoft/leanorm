@@ -475,7 +475,7 @@
 
 <ul>
 <li>
-<p><strong>Fetching data as records into a collection:</strong></p>
+<p><strong>Fetching data as Records into a Collection (via fetchRecordsIntoCollection):</strong></p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
@@ -565,11 +565,126 @@
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
 <li>
-<p><strong>Fetching data as records into an array:</strong></p>
+<p><strong>Fetching data as Records into an array (via fetchRecordsIntoArray ):</strong></p>
+
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>distinct<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">true</span>,</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [</span>
+<span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ],</span>
+<span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">                ],</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>group<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>],</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>having<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span>  [</span>
+<span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>&gt;=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>2015-08-19 14:24:48<span class="pl-pds">'</span></span> ],</span>
+<span class="pl-s1">                ],</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>order<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [<span class="pl-s"><span class="pl-pds">'</span>name DESC<span class="pl-pds">'</span></span>],</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>limit_offset<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">0</span>,</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>limit_size<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">50</span>,</span>
+<span class="pl-s1">];</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
+<span class="pl-s1"><span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">    SELECT DISTINCT author_id, name, date_created</span></span>
+<span class="pl-s1"><span class="pl-c">    FROM</span></span>
+<span class="pl-s1"><span class="pl-c">        `authors`</span></span>
+<span class="pl-s1"><span class="pl-c">    WHERE</span></span>
+<span class="pl-s1"><span class="pl-c">        (</span></span>
+<span class="pl-s1"><span class="pl-c">            name = 'Joe Blow' </span></span>
+<span class="pl-s1"><span class="pl-c">            AND author_id &gt; 2 </span></span>
+<span class="pl-s1"><span class="pl-c">            AND date_created &gt;= '2015-08-19 14:24:48'</span></span>
+<span class="pl-s1"><span class="pl-c">        )</span></span>
+<span class="pl-s1"><span class="pl-c">    GROUP BY name</span></span>
+<span class="pl-s1"><span class="pl-c">    HAVING</span></span>
+<span class="pl-s1"><span class="pl-c">        (</span></span>
+<span class="pl-s1"><span class="pl-c">            date_created &gt;= '2015-08-19 14:24:48' </span></span>
+<span class="pl-s1"><span class="pl-c">        )</span></span>
+<span class="pl-s1"><span class="pl-c">    ORDER BY name DESC</span></span>
+<span class="pl-s1"><span class="pl-c">    LIMIT 50;</span></span>
+<span class="pl-s1"><span class="pl-c">*/</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//The fetchRecordsIntoArray call below returns an array containing one or more </span></span>
+<span class="pl-s1"><span class="pl-c">//instances of \LeanOrm\Model\Record each containing a row of data from the </span></span>
+<span class="pl-s1"><span class="pl-c">//row(s) returned by executing the generated select query above.</span></span>
+<span class="pl-s1"><span class="pl-smi">$array_of_authors</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchRecordsIntoArray(<span class="pl-smi">$params</span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//You can loop through the array like so:</span></span>
+<span class="pl-s1"><span class="pl-k">foreach</span> (<span class="pl-smi">$array_of_authors</span> <span class="pl-k">as</span> <span class="pl-smi">$array_key</span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$author_record</span>) {</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">author_id</span>}, name: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span>} , date_created: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">date_created</span>} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c">//Accessing a db table columns in a record object using array syntax also works like below:</span></span>
+<span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>]}, name: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>]} , date_created: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>]} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1">}</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//To return all the rows in a db table, call fetchRecordsIntoArray with </span></span>
+<span class="pl-s1"><span class="pl-c">//no parameters. In this case fetchRecordsIntoArray will just perform a </span></span>
+<span class="pl-s1"><span class="pl-c">//"SELECT authors.* FROM `authors`" query and return all the rows of data in</span></span>
+<span class="pl-s1"><span class="pl-c">//the authors table.</span></span>
+<span class="pl-s1"><span class="pl-smi">$array_of_all_authors</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchRecordsIntoArray();</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//To return related data (if any) defined in the Model's _relations array,</span></span>
+<span class="pl-s1"><span class="pl-c">//add a 'relations_to_include' entry to the $params array defined ealier</span></span>
+<span class="pl-s1"><span class="pl-c">//above. For example, to get the posts belonging to an author (note that</span></span>
+<span class="pl-s1"><span class="pl-c">//this relationship has been defined in the AuthorsModel class earlier</span></span>
+<span class="pl-s1"><span class="pl-c">//above) modify the $params array like so:</span></span>
+<span class="pl-s1"><span class="pl-smi">$params</span>[<span class="pl-s"><span class="pl-pds">'</span>relations_to_include<span class="pl-pds">'</span></span>] <span class="pl-k">=</span> [<span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span>];</span>
+<span class="pl-s1"><span class="pl-smi">$array_of_authors_with_posts</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchRecordsIntoArray(<span class="pl-smi">$params</span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//You can loop through the array like so:</span></span>
+<span class="pl-s1"><span class="pl-k">foreach</span> (<span class="pl-smi">$array_of_authors_with_posts</span> <span class="pl-k">as</span> <span class="pl-smi">$array_key</span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$author_record</span>) {</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">author_id</span>}, name: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span>} , date_created: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">date_created</span>} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c">//Access the posts</span></span>
+<span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> Posts: &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c">//In this case, $author_record-&gt;posts will be an array.</span></span>
+<span class="pl-s1">    <span class="pl-c">//Each $post_record will be an instance of PostRecord based on the </span></span>
+<span class="pl-s1">    <span class="pl-c">//relationship definintion in the AuthorsModel class.</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">foreach</span>(<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">posts</span> <span class="pl-k">as</span> <span class="pl-smi">$post_record</span>) {</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">        <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> post_id: {<span class="pl-smi">$post_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">post_id</span>}, title: {<span class="pl-smi">$post_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">title</span>} , body: {<span class="pl-smi">$post_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">body</span>} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1">    }</span>
+<span class="pl-s1">}</span>
+<span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
+</li>
+<li>
+<p><strong>Fetching data as arrays into an array (via fetchRowsIntoArray ):</strong></p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"></span>
+<span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
+</li>
+<li>
+<p><strong>Fetching one row of data as a Record (via fetchOneRecord):</strong></p>
+
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"></span>
+<span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
+</li>
+<li>
+<p><strong>Fetching data from two db table columns into an array (via fetchPairs), where values from the first column will be the keys in the returned array and the values from the second column will be the corresponding values in the returned array:</strong></p>
+
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
+</li>
+<li>
+<p><strong>Fetching data from one db table column into an array (via fetchCol):</strong></p>
+
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
+</li>
+<li>
+<p><strong>Fetching data from a single row and column of a db table (via fetchValue):</strong></p>
+
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
