@@ -82,10 +82,8 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     
     protected function _throwNotSupportedException($function_name) {
         
-        //Error trying to add a relation whose name collides with an actual
-        //name of a column in the db table associated with this record's model.
         $msg = "ERROR: ". get_class($this) . '::' . $function_name . '(...)' 
-             . " is not supported in a ReadOnly Model. ";
+             . " is not supported in a ReadOnly Record. ";
 
         throw new \GDAO\Model\RecordOperationNotSupportedException($msg);
     }
