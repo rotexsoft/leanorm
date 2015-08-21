@@ -495,9 +495,8 @@
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>limit_size<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">50</span>,</span>
 <span class="pl-s1">];</span>
 <span class="pl-s1"></span>
-<span class="pl-s1"><span class="pl-smi">$collection_of_authors</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchRecordsIntoCollection(<span class="pl-smi">$params</span>);</span>
-<span class="pl-s1"></span>
-<span class="pl-s1"><span class="pl-c">//Generates the SQL Statement Below:</span></span>
+<span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
 <span class="pl-s1"><span class="pl-c">    SELECT DISTINCT author_id, name, date_created</span></span>
 <span class="pl-s1"><span class="pl-c">    FROM</span></span>
@@ -516,6 +515,20 @@
 <span class="pl-s1"><span class="pl-c">    ORDER BY name DESC</span></span>
 <span class="pl-s1"><span class="pl-c">    LIMIT 50;</span></span>
 <span class="pl-s1"><span class="pl-c">*/</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//The fetchRecordsIntoCollection call below returns an instance </span></span>
+<span class="pl-s1"><span class="pl-c">//of \LeanOrm\Model\Collection containing one or more instances of</span></span>
+<span class="pl-s1"><span class="pl-c">//\LeanOrm\Model\Record each containing a row of data from the row(s)</span></span>
+<span class="pl-s1"><span class="pl-c">//returned by executing the generated select query above.</span></span>
+<span class="pl-s1"><span class="pl-smi">$collection_of_authors</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchRecordsIntoCollection(<span class="pl-smi">$params</span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//You can loop through the collection like so:</span></span>
+<span class="pl-s1"><span class="pl-k">foreach</span> (<span class="pl-smi">$collection_of_authors</span> <span class="pl-k">as</span> <span class="pl-smi">$collection_key</span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$author_record</span>) {</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">author_id</span>}, name: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span>} , date_created: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">date_created</span>} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1">}</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
 </ul>
