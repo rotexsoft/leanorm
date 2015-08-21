@@ -810,7 +810,45 @@
 <p><strong>Fetching data from two db table columns into an array (via fetchPairs), where values from the first column will be the keys in the returned array and the values from the second column will be the corresponding values in the returned array:</strong></p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [</span>
+<span class="pl-s1">                    [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>in<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span>[<span class="pl-c1">1</span>,<span class="pl-c1">3</span>] ],</span>
+<span class="pl-s1">                ],</span>
+<span class="pl-s1">];</span>
 <span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
+<span class="pl-s1"><span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">    SELECT author_id, name, date_created</span></span>
+<span class="pl-s1"><span class="pl-c">      FROM `authors`</span></span>
+<span class="pl-s1"><span class="pl-c">     WHERE</span></span>
+<span class="pl-s1"><span class="pl-c">        (</span></span>
+<span class="pl-s1"><span class="pl-c">            author_id IN  (1,3)</span></span>
+<span class="pl-s1"><span class="pl-c">        );</span></span>
+<span class="pl-s1"><span class="pl-c">*/</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">    ---------------------------------------------------------------------------</span></span>
+<span class="pl-s1"><span class="pl-c">    | author_id |     name    |       m_timestamp     |   date_created        |</span></span>
+<span class="pl-s1"><span class="pl-c">    ---------------------------------------------------------------------------</span></span>
+<span class="pl-s1"><span class="pl-c">    |     1     | 'Joe Blow'  | '2015-08-19 14:24:48' | '2015-08-19 14:24:48' |</span></span>
+<span class="pl-s1"><span class="pl-c">    ---------------------------------------------------------------------------</span></span>
+<span class="pl-s1"><span class="pl-c">    |     2     | 'Jack Doe'  | '2015-08-19 14:24:48' | '2015-08-19 14:24:48' |</span></span>
+<span class="pl-s1"><span class="pl-c">    ---------------------------------------------------------------------------</span></span>
+<span class="pl-s1"><span class="pl-c">    |     3     | 'Jane Doe'  | '2015-08-19 14:24:48' | '2015-08-19 14:24:48' |</span></span>
+<span class="pl-s1"><span class="pl-c">    ---------------------------------------------------------------------------</span></span>
+<span class="pl-s1"><span class="pl-c"></span></span>
+<span class="pl-s1"><span class="pl-c">    Given an authors db table containing the data above calling fetchPairs </span></span>
+<span class="pl-s1"><span class="pl-c">    like below will return [ 1=&gt;'Joe Blow', 3=&gt;'Jane Doe']:</span></span>
+<span class="pl-s1"><span class="pl-c"> */</span></span>
+<span class="pl-s1"><span class="pl-smi">$data</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchPairs(<span class="pl-smi">$params</span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">    Given an authors db table containing the data above calling fetchPairs </span></span>
+<span class="pl-s1"><span class="pl-c">    like below will return [ 1=&gt;'Joe Blow', 2=&gt;'Jack Doe', 3=&gt;'Jane Doe']:</span></span>
+<span class="pl-s1"><span class="pl-c"> */</span></span>
+<span class="pl-s1"><span class="pl-smi">$data</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchPairs();</span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
 <li>
