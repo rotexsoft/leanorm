@@ -961,7 +961,7 @@
 <p>By calling the <strong>updateMatchingDbTableRows</strong> method on a Model object. This method does not involve the retrieval of Record objects, rather only the conditions for matching the rows of data in the db table to be updated and the new data to be used for the update need to be supplied to <strong>updateMatchingDbTableRows</strong>.</p>
 
 <blockquote>
-<p>Note: there is also an <strong>updateSpecifiedRecord</strong> in the Model class which accepts a Record object as parameter and saves it to the database. This method does not really need to be called, since the <strong>save</strong> method in the Record class calls it internally when <strong>save</strong> is called on a Record object that needs to be updated.</p>
+<p>Note: there is also an <strong>updateSpecifiedRecord</strong> in the Model class which accepts a Record object as parameter and saves it to the database. <strong>updateSpecifiedRecord</strong> method does not really need to be called, since the <strong>save</strong> method in the Record class calls it internally when <strong>save</strong> is called on a Record object that needs to be updated.</p>
 </blockquote>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
