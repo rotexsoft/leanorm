@@ -966,16 +966,36 @@
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//Method 1:</span></span>
-<span class="pl-s1"><span class="pl-smi">$new_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>createNewRecord(); <span class="pl-c">//create a blank new record</span></span>
-<span class="pl-s1"><span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>; <span class="pl-c">//set a value for the 'name' column</span></span>
-<span class="pl-s1"><span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span>save();<span class="pl-c">//save to the database</span></span>
+<span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [ [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ] ],</span>
+<span class="pl-s1">];</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//Fetch the first row of data with an author_id value of 2 from the authors </span></span>
+<span class="pl-s1"><span class="pl-c">//table into a Record object.</span></span>
+<span class="pl-s1"><span class="pl-smi">$author_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchOneRecord(<span class="pl-smi">$params</span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//Change the value of a field in the fetched record.</span></span>
+<span class="pl-s1"><span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>A new Name<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//Save the change made to the Record object to the database.</span></span>
+<span class="pl-s1"><span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span>save();</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//NOTE: that the steps above can be applied to the Record objects returned  </span></span>
+<span class="pl-s1"><span class="pl-c">//      by fetchRecordsIntoArray and fetchRecordsIntoCollection.</span></span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//Method 2:</span></span>
-<span class="pl-s1"><span class="pl-c">//create a new record and set a value for the 'name' column</span></span>
-<span class="pl-s1"><span class="pl-smi">$new_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>createNewRecord([ <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>]); </span>
-<span class="pl-s1"><span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span>save();<span class="pl-c">//save to the database</span></span>
+<span class="pl-s1"><span class="pl-c">//Update all rows of data with an author_id value of 2 in the authors </span></span>
+<span class="pl-s1"><span class="pl-c">//table, set the value of the name column in each of these rows to</span></span>
+<span class="pl-s1"><span class="pl-c">//'Another new Name'.</span></span>
+<span class="pl-s1"><span class="pl-smi">$authors_model</span></span>
+<span class="pl-s1">    <span class="pl-k">-&gt;</span>updateMatchingDbTableRows([<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>Another new Name<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span>]);</span>
 <span class="pl-s1"></span>
-<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//NOTE: updateMatchingDbTableRows only supports conditions using the equality operator ('=')</span></span>
+<span class="pl-s1"><span class="pl-c">//      to match the rows to be updated. If you need to match rows using other operators like </span></span>
+<span class="pl-s1"><span class="pl-c">//      &gt;, &lt;=, LIKE, etc. then use any of the fetch methods that return Record objects to fetch</span></span>
+<span class="pl-s1"><span class="pl-c">//      the data you want to update and call the save method either on each Record object or on</span></span>
+<span class="pl-s1"><span class="pl-c">//      a collection object containing the record object. The fetch methods allows you to specify</span></span>
+<span class="pl-s1"><span class="pl-c">//      more complex conditions for matching rows of data than updateMatchingDbTableRows does.</span></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
 </ol>
