@@ -168,6 +168,13 @@
 <span class="pl-s1">    <span class="pl-smi">$new_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>createNewRecord([ <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>]); </span>
 <span class="pl-s1">    <span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span>save();<span class="pl-c">//save to the database</span></span>
 <span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c">//NOTE: createNewRecord also accepts a second parameter, an associative array</span></span>
+<span class="pl-s1">    <span class="pl-c">//      that can be used to supply values for the properties of the record</span></span>
+<span class="pl-s1">    <span class="pl-c">//      object to be created. </span></span>
+<span class="pl-s1">    <span class="pl-c">//      Eg. $authors_model-&gt;createNewRecord([ 'name' =&gt; 'Joe Blow'], ['_is_new'=&gt;false ])</span></span>
+<span class="pl-s1">    <span class="pl-c">//      that is marked as not new by setting the _is_new property of the Record object</span></span>
+<span class="pl-s1">    <span class="pl-c">//      that was created to false.</span></span>
+<span class="pl-s1"></span>
 <span class="pl-s1">    <span class="pl-c">//Method 3:</span></span>
 <span class="pl-s1">    <span class="pl-c">//$inserted_data is an associative array of the data just inserted into the </span></span>
 <span class="pl-s1">    <span class="pl-c">//database. This data will include an auto-generated primary key value and </span></span>
