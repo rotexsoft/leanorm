@@ -29,6 +29,7 @@ vendor/
 /vendor/*.*
 /vendor/*/
 
+/demo/example.php
 composer.lock
 phpunit.xml
 *.phar

@@ -1,4 +1,7 @@
 * Add License
+
+* Strive for 100% Unit Test Coverage
+
 * Add a property to the model class called driver name eg. 'mysql', 'pgsql' or 'sqlite' which can be set by consumers of the model and can be used to 
 implement functionality specific to each DBMS.
 
@@ -17,6 +20,19 @@ implement functionality specific to each DBMS.
 
 * Figure out how to use __call(..) in the Model, Collection and Record Classes. For example __call() could be used to map method calls for each record in a collection and an array containing the return values for each call applied to each record would be returned. See what Solar_Sql and other libraries are doing.
 
-* Figure out how to improve data retrieval based on http://www.dragonbe.com/2015/07/speeding-up-database-calls-with-pdo-and.html .
+* Figure out how to improve data retrieval based on http://www.dragonbe.com/2015/07/speeding-up-database-calls-with-pdo-and.html and http://evertpot.com/switching-to-generators/.
 
 * Implement save relations at the Collection and Record Levels.
+
+* Test that the package works with views.
+
+* Look into the possibility of refactoring the Record class to have connected and disconnected records
+> Connected records will contain a reference to the Model object that created them while disconnected records will have no reference to the model that created them 
+> (they can be used separately (by supplying an array of data to their constructor), no need for a Model or Collection class). 
+> Fast Read-Only Records are another possibility (they don't need to keep track of initial data).
+
+* Write an alternative implementation of \GDAO\Model\Collection using SplFixedArray instead of a plain old php array (SplFixedArray seems to be more memory efficient than php arrays). 
+> in loadData(..) and __construct(..) add this line   
+> $this->_data = \SplFixedArray::fromArray( $data->toArray() );   
+> where $data is an instance of \GDAO\Model\GDAORecordsList expected as the first parameter to loadData(..) and __construct(..) 
+
