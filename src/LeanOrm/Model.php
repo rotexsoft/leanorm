@@ -1833,12 +1833,35 @@ SELECT {$foreign_table_name}.*
         //test if the record object has data and is not a new record
         if( count($record) > 0 && !empty($pri_key_val) && is_numeric($pri_key_val)) {
             
-            $cols_n_vals_2_match = array($this->_primary_col=>$pri_key_val);
+            $cols_n_vals_2_match = array($record->getPrimaryCol()=>$pri_key_val);
 
             $succesfully_updated = 
                 $this->updateMatchingDbTableRows(
                             $record->getData(), $cols_n_vals_2_match
                         );
+            
+            if($succesfully_updated === 1 || $succesfully_updated === true) {
+                
+                $params = [
+                            'where' =>  
+                                [
+                                    [
+                                        'col' => $record->getPrimaryCol(), 
+                                         'op' => '=', 
+                                        'val' => $record->getPrimaryVal()
+                                    ]
+                                ],
+                        ];
+
+                $updated_data = $this->fetchRowsIntoArray($params);
+
+                //Get the first record. There should only be one record
+                //since we are fetching by the primary key column's value.
+                $updated_data = array_shift($updated_data);
+
+                //refresh this record with the updated data
+                $record->loadData($updated_data);
+            }
         }
         
         return is_numeric($succesfully_updated)? 
