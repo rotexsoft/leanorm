@@ -16,6 +16,8 @@ class AuthorsModel extends \LeanOrm\Model
     protected $_table_name = 'authors';
 
     protected $_relations = [
+        
+        //Entry below specifies that an author can have one or more posts (ie. a has-many relationship).
         'posts' => [
                     'relation_type' => \LeanOrm\Model::RELATION_TYPE_HAS_MANY,
 
