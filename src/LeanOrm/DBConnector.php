@@ -388,21 +388,29 @@ class DBConnector {
         $time = microtime(true);
 
         foreach ($parameters as $key => &$param) {
+            
             if (is_null($param)) {
+                
                 $type = \PDO::PARAM_NULL;
+                
             } else if (is_bool($param)) {
+                
                 $type = \PDO::PARAM_BOOL;
+                
             } else if (is_int($param)) {
+                
                 $type = \PDO::PARAM_INT;
+                
             } else {
+
                 $type = \PDO::PARAM_STR;
             }
 
-            $statement->bindParam(is_int($key) ? ++$key : $key, $param, $type);
+            $statement->bindParam((is_int($key) ? ++$key : $key), $param, $type);
         }
 
         $result = $statement->execute();
-        
+
         if( $return_pdo_statement ) {
             
             $exec_result = $result;
