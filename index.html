@@ -535,7 +535,7 @@
 <span class="pl-s1"><span class="pl-c">//no parameters. In this case fetchRecordsIntoCollection will just perform a </span></span>
 <span class="pl-s1"><span class="pl-c">//"SELECT authors.* FROM `authors`" query and return all the rows of data in</span></span>
 <span class="pl-s1"><span class="pl-c">//the authors table.</span></span>
-<span class="pl-s1"><span class="pl-smi">$collection_of_authors</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchRecordsIntoCollection();</span>
+<span class="pl-s1"><span class="pl-smi">$collection_of_all_authors</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchRecordsIntoCollection();</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//To return related data (if any) defined in the Model's _relations array,</span></span>
 <span class="pl-s1"><span class="pl-c">//add a 'relations_to_include' entry to the $params array defined ealier</span></span>
@@ -562,7 +562,6 @@
 <span class="pl-s1">        <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> post_id: {<span class="pl-smi">$post_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">post_id</span>}, title: {<span class="pl-smi">$post_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">title</span>} , body: {<span class="pl-smi">$post_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">body</span>} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
 <span class="pl-s1">    }</span>
 <span class="pl-s1">}</span>
-<span class="pl-s1"></span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
 <li>
