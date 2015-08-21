@@ -22,7 +22,7 @@ class Record implements \GDAO\Model\RecordInterface
     
     /**
      *
-     * Copy of the initial data loaded into this record.
+     * Copy of the initial data loaded into this record or data for this record immediately after an insert or update.
      * 
      * @var array 
      */
@@ -445,8 +445,16 @@ class Record implements \GDAO\Model\RecordInterface
         }// else if ( is_array($cols_2_load) && count($cols_2_load) > 0 )
 
         if ($this->_initial_data === -1) {
+             
+            $initial_data = array();
 
-            $this->_initial_data = $this->_data;
+            foreach($table_col_names_4_my_model as $col_name) {
+
+                $initial_data[$col_name] = 
+                    array_key_exists($col_name, $this->_data)? $this->_data[$col_name] : '';
+            }
+            
+            $this->_initial_data = $initial_data;
         }
     }
     
@@ -520,17 +528,36 @@ class Record implements \GDAO\Model\RecordInterface
             if ( empty($pri_val) ) {
 
                 //insert
-                $result = ($this->_model->insert($data_2_save) !== false);
+                $inserted_data = $this->_model->insert($data_2_save);
+                $result = ($inserted_data !== false);
+                
+                if( $result === true && is_array($inserted_data) && count($inserted_data) > 0 ) {
+                    
+                    //update the record with the newly inserted data
+                    $this->loadData($inserted_data);
+                    
+                    //update initial data
+                    $this->_initial_data = $inserted_data;
+                    
+                    //record has now been saved to the DB, 
+                    //it is no longer a new record (it now exists in the DB).
+                    $this->markAsNotNew();
+                }
                 
             } else {
 
                 //load data into the record
                 $this->loadData($data_2_save);
                 
-                if($this->isChanged()) {
+                if( $this->isChanged() ) {
                     
                     //update
                     $result = $this->_model->updateSpecifiedRecord($this);
+                    
+                    if( $result === true ) {
+                        
+                        $this->_initial_data = $this->_data;
+                    }
                 }
             }
         }
@@ -541,15 +568,17 @@ class Record implements \GDAO\Model\RecordInterface
     /**
      * 
      * Save the specified or already existing data for this record to the db.
-     * Since this record can only talk to the db via its model property (_model)
-     * the save operation will actually be done via $this->_model.
-     * This save operation shoould be gaurded by the PDO transaction mechanism
-     * if available or another transaction mechanism. If the save operation 
-     * fails all changes should be rolled back. If there is not transaction
-     * mechanism available an Exception must be thrown alerting the caller to
-     * use the save method instead.
+     * 
+     * This save operation is gaurded by the PDO transaction mechanism. 
+     * If the save operation fails all changes are rolled back.
+     * 
+     * If there is no transaction mechanism available a 
+     * \LeanOrm\Model\RecordOperationNotSupportedByDriverException Exception is 
+     * thrown.
      * 
      * @param \GDAO\Model\RecordInterface|array $data_2_save
+     * 
+     * @throws \LeanOrm\Model\RecordOperationNotSupportedByDriverException
      * 
      * @return bool true for a successful save, false for failed save, null: no changed data to save
      * 
