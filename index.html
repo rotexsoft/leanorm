@@ -951,6 +951,31 @@
 </ul>
 
 <h3>
+<a id="updating-data" class="anchor" href="#updating-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Updating Data</h3>
+
+<p>There are two ways to update data in the database:
+1. By fetching one or more existing records from the database into record objects, then assigning the new value(s) to each of the fetched records and then finally calling the <strong>save</strong> method on each Record object. If the records were fetched into a Collection object, then the <strong>save</strong> method on the Collection object could be called instead (this will cause all the records in the collection to be saved).
+2. By calling the <strong>updateMatchingDbTableRows</strong> method on a Model object. This method does not involve the retrieval of Record objects, rather only the conditions for matching the rows of data in the db table to be updated and the new data to be used for the update need to be supplied to <strong>updateMatchingDbTableRows</strong>.</p>
+
+<blockquote>
+<p>Note: there is also an <strong>updateSpecifiedRecord</strong> in the Model class which accepts a Record object as parameter and saves it to the database. This method does not really need to be called, since the <strong>save</strong> method in the Record class calls it internally when <strong>save</strong> is called on a Record object that needs to be updated.</p>
+</blockquote>
+
+<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c">//Method 1:</span></span>
+<span class="pl-s1">    <span class="pl-smi">$new_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>createNewRecord(); <span class="pl-c">//create a blank new record</span></span>
+<span class="pl-s1">    <span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>; <span class="pl-c">//set a value for the 'name' column</span></span>
+<span class="pl-s1">    <span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span>save();<span class="pl-c">//save to the database</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c">//Method 2:</span></span>
+<span class="pl-s1">    <span class="pl-c">//create a new record and set a value for the 'name' column</span></span>
+<span class="pl-s1">    <span class="pl-smi">$new_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>createNewRecord([ <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>]); </span>
+<span class="pl-s1">    <span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span>save();<span class="pl-c">//save to the database</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
+
+<h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
 
 <p>Yada Yada Yada.</p>
