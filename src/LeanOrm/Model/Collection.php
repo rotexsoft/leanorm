@@ -391,11 +391,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * ArrayAccess: set a key value; appends to the array when using []
      * notation.
-     * 
-     * NOTE: Implementers of this class must make sure that $val is an instance 
-     *       of \GDAO\Model\RecordInterface else throw a 
-     *       \GDAO\Model\CollectionCanOnlyContainGDAORecordsException exception.
-     * 
+     *  
      * @param string $key The requested key.
      * 
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
@@ -406,6 +402,16 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      */
     public function offsetSet($key, $val) {
+
+        if( !($val instanceof RecordInterface) ) {
+            
+            $msg = "ERROR: Only instances of \\GDAO\\Model\\RecordInterface or its"
+                   . " sub-classes can be added to a Collection. You tried to"
+                   . " insert the following item: " 
+                   . PHP_EOL . var_export($val, true) . PHP_EOL;
+            
+            throw new \GDAO\Model\CollectionCanOnlyContainGDAORecordsException($msg);
+        }
         
         if ($key === null) {
             
@@ -508,30 +514,15 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * Set a key value.
      * 
-     * NOTE: Implementers of this class must make sure that $val is an instance 
-     *       of \GDAO\Model\RecordInterface else throw a 
-     *       \GDAO\Model\CollectionCanOnlyContainGDAORecordsException exception.
      * 
      * @param string $key The requested key.
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
      * 
      * @return void
-     * 
-     * @throws \GDAO\Model\CollectionCanOnlyContainGDAORecordsException
-     * 
+     *  
      */
     public function __set($key, \GDAO\Model\RecordInterface $val) {
-        
-        if( !($val instanceof RecordInterface) ) {
-            
-            $msg = "ERROR: Only instances of \\GDAO\\Model\\RecordInterface or its"
-                   . " sub-classes can be added to a Collection. You tried to"
-                   . " insert the following item: " 
-                   . PHP_EOL . var_export($val, true) . PHP_EOL;
-            
-            throw new \GDAO\Model\CollectionCanOnlyContainGDAORecordsException($msg);
-        }
-        
+       
         // set the value
         $this->_data[$key] = $val;
     }

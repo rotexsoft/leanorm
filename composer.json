@@ -1,7 +1,7 @@
 {
     "name": "rotexsoft/leanorm",
     "type": "library",
-    "description": "A Generic Data Objects ( https://github.com/rotexsoft/gdao ) implementation based on a stripped down version of idiorm (\\LeanOrm\\DBConnector).",
+    "description": "A Generic Data Objects ( https://github.com/rotexsoft/gdao ) implementation based on a stripped down version of idiorm (\\LeanOrm\\DBConnector). Light-weight, highly performant php data access library.",
     "keywords": [ "orm", "lean", "lean orm", "lean database", "lean db", "db", "pdo", "mysql", "postgresql", "sqlite", "database", "sql", "table","data", "gateway", "table data gateway"],
     "homepage": "https://github.com/rotexsoft/leanorm",
     "license": "BSD-2-Clause",
