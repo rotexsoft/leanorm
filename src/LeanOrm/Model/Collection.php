@@ -520,7 +520,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @throws \GDAO\Model\CollectionCanOnlyContainGDAORecordsException
      * 
      */
-    public function __set($key, $val) {
+    public function __set($key, \GDAO\Model\RecordInterface $val) {
         
         if( !($val instanceof RecordInterface) ) {
             

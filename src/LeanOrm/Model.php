@@ -69,8 +69,19 @@ class Model extends \GDAO\Model
         array $pdo_driver_opts = array(),
         array $extra_opts = array()
     ) {
-        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $extra_opts);
-
+        $pri_col_not_set_exception = null;
+        
+        try {
+            
+            parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $extra_opts);
+            
+        } catch (\GDAO\ModelPrimaryColNameNotSetDuringConstructionException $e) {
+            
+            //$this->_primary_col (primary key colun has not yet been set)
+            //hold this exception for later if necessary
+            $pri_col_not_set_exception = $e;
+        }
+            
         DBConnector::configure($dsn);
         DBConnector::configure('username', $username);
         DBConnector::configure('password', $passwd);
@@ -122,7 +133,19 @@ class Model extends \GDAO\Model
                 $this->_table_cols[$colname]['default'] = $metadata_obj->default;
                 $this->_table_cols[$colname]['autoinc'] = $metadata_obj->autoinc;
                 $this->_table_cols[$colname]['primary'] = $metadata_obj->primary;
+                
+                if( is_null($this->_primary_col) && $metadata_obj->primary ) {
+                    
+                    //this is a primary column
+                    $this->_primary_col = $metadata_obj->name;
+                }
             }
+        }
+
+        //if $this->_primary_col is still null at this point, throw an exception.
+        if( is_null($this->_primary_col) ) {
+            
+            throw $pri_col_not_set_exception;
         }
         
         $table_cols = $this->getTableColNames();
