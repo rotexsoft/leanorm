@@ -1910,4 +1910,29 @@ SELECT {$foreign_table_name}.*
         return $this->$property_name;
     }
 
+    public function getCurrentConnectionInfo() {
+
+        $attributes = array(
+			'database_server_info' => 'SERVER_INFO',
+			'driver_name' => 'DRIVER_NAME',
+			'pdo_client_version' => 'CLIENT_VERSION',
+			'database_server_version' => 'SERVER_VERSION',
+			'connection_status' => 'CONNECTION_STATUS',
+			'connection_is_persistent' => 'PERSISTENT',
+		);
+
+        $pdo_obj = $this->getPDO();
+        
+		foreach ($attributes as $key => $value)
+		{
+			$attributes[ $key ] = $pdo_obj->getAttribute(constant('PDO::ATTR_' . $value));
+            
+            if( $value === 'PERSISTENT' ) {
+                
+                $attributes[ $key ] = var_export($attributes[ $key ], true);
+            }
+		}
+
+		return $attributes;
+	}
 }
