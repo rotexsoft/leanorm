@@ -34,3 +34,5 @@
 > $this->_data = \SplFixedArray::fromArray( $data->toArray() );   
 > where $data is an instance of \GDAO\Model\GDAORecordsList expected as the first parameter to loadData(..) and __construct(..) 
 
+* Move Model::getCurrentConnectionInfo() to the GDAO\Model class and write unit test for it.
+

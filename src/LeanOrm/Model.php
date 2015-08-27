@@ -1136,20 +1136,21 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchRecordsIntoCollection(array $params = array()) {
 
-        $results = $this->createNewCollection(
-                        new \GDAO\Model\GDAORecordsList(
-                                $this->_getData4FetchAll($params)
-                            )
-                    );
-
-        if( array_key_exists('relations_to_include', $params) ) {
-            
-            foreach( $params['relations_to_include'] as $rel_name ) {
-
-                $this->loadRelationshipData($rel_name, $results, true, true);
-            }
-        }
+        $results = false;
+        $data = $this->_getArrayOfRecordObjects($params);
         
+        if($data !== false && is_array($data) && count($data) > 0 ) {
+        
+            $results = $this->createNewCollection(new \GDAO\Model\GDAORecordsList($data));
+
+            if( array_key_exists('relations_to_include', $params) ) {
+
+                foreach( $params['relations_to_include'] as $rel_name ) {
+
+                    $this->loadRelationshipData($rel_name, $results, true, true);
+                }
+            }
+        } 
         return $results;
     }
     
@@ -1159,32 +1160,38 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchRecordsIntoArray(array $params = array()) {
         
-        $results = $this->_getData4FetchAll($params);
+        $results = $this->_getArrayOfRecordObjects($params);
 
-        if( array_key_exists('relations_to_include', $params) ) {
+        if( $results !== false && is_array($results) && count($results) > 0 ) {
             
-            foreach( $params['relations_to_include'] as $rel_name ) {
+            if( array_key_exists('relations_to_include', $params) ) {
 
-                $this->loadRelationshipData($rel_name, $results, true);
+                foreach( $params['relations_to_include'] as $rel_name ) {
+
+                    $this->loadRelationshipData($rel_name, $results, true);
+                }
             }
         }
         
         return $results;
     }
     
-    protected function _getData4FetchAll($params) {
+    protected function _getArrayOfRecordObjects($params) {
 
-        $results = $this->_getData4FetchArray($params);
+        $results = $this->_getArrayOfDbRows($params);
         
-        foreach ($results as $key=>$value) {
+        if( $results !== false && is_array($results) ) {
+         
+            foreach ($results as $key=>$value) {
 
-            $results[$key] = $this->createNewRecord($value, array('is_new'=>false));
+                $results[$key] = $this->createNewRecord($value, array('is_new'=>false));
+            }
         }
         
         return $results;
     }
     
-    protected function _getData4FetchArray($params) {
+    protected function _getArrayOfDbRows($params) {
         
         $query_obj = $this->_buildFetchQueryObjectFromParams($params);
         $sql = $query_obj->__toString();
@@ -1199,13 +1206,16 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchRowsIntoArray(array $params = array()) {
 
-        $results = $this->_getData4FetchArray($params);
+        $results = $this->_getArrayOfDbRows($params);
 
-        if( array_key_exists('relations_to_include', $params) ) {
+        if( $results !== false && is_array($results) && count($results) > 0 ) {
             
-            foreach( $params['relations_to_include'] as $rel_name ) {
+            if( array_key_exists('relations_to_include', $params) ) {
 
-                $this->loadRelationshipData($rel_name, $results);
+                foreach( $params['relations_to_include'] as $rel_name ) {
+
+                    $this->loadRelationshipData($rel_name, $results);
+                }
             }
         }
         
@@ -1359,17 +1369,16 @@ SELECT {$foreign_table_name}.*
 
         $result = $this->_db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
 
-        if( count($result) > 0 ) {
+        if( $result !== false && is_array($result) && count($result) > 0 ) {
             
-            $result = 
-                $this->createNewRecord($result, array('is_new'=>false));
-        }
-
-        if( array_key_exists('relations_to_include', $params) ) {
+            $result = $this->createNewRecord($result, array('is_new'=>false));
             
-            foreach( $params['relations_to_include'] as $rel_name ) {
+            if( array_key_exists('relations_to_include', $params) ) {
 
-                $this->loadRelationshipData($rel_name, $result, true, true);
+                foreach( $params['relations_to_include'] as $rel_name ) {
+
+                    $this->loadRelationshipData($rel_name, $result, true, true);
+                }
             }
         }
         
@@ -1420,7 +1429,20 @@ SELECT {$foreign_table_name}.*
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
-        return $this->_db_connector->dbFetchValue($sql, $params_2_bind_2_sql);
+        $result = $this->_db_connector->dbFetchValue($sql, $params_2_bind_2_sql);
+        
+        //need to issue a second query to get the number of matching rows
+        $params['cols'] = array(' COUNT(*) AS num_rows');
+        $query_obj_4_num_matching_rows =
+                $this->_buildFetchQueryObjectFromParams($params, $param_keys_2_exclude);
+        
+        $sql = $query_obj_4_num_matching_rows->__toString();
+        $params_2_bind_2_sql = $query_obj_4_num_matching_rows->getBindValues();
+        
+        $num_matching_rows = $this->_db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
+        
+        //return null if there wasn't any matching row
+        return ( intval($num_matching_rows['num_rows']) > 0)? $result : null;
     }
 
     /**
