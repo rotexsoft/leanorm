@@ -187,7 +187,7 @@
 <span class="pl-s1">    <span class="pl-c">//Below is the most efficient way insert multiple rows to the database.</span></span>
 <span class="pl-s1">    <span class="pl-c">//$all_successfully_inserted will be === true if all the inserts were</span></span>
 <span class="pl-s1">    <span class="pl-c">//successful, otherwise it will be  === false which means the multiple</span></span>
-<span class="pl-s1">    <span class="pl-c">//insert was unsuccessful (nothing is saved to the db in this case).</span></span>
+<span class="pl-s1">    <span class="pl-c">//insert was unsuccessful (nothing is saved to the database in this case).</span></span>
 <span class="pl-s1">    <span class="pl-smi">$all_successfully_inserted</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>insertMany([ [<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>], [<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>Jane Doe<span class="pl-pds">'</span></span>] ]);</span>
 <span class="pl-s1"></span>
 <span class="pl-s1">    <span class="pl-c">//NOTE: if you have a collection (an instance of \LeanOrm\Model\Collection) </span></span>
@@ -503,7 +503,7 @@
 <span class="pl-s1">];</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
-<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the database):</span></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
 <span class="pl-s1"><span class="pl-c">    SELECT DISTINCT author_id, name, date_created</span></span>
 <span class="pl-s1"><span class="pl-c">    FROM</span></span>
@@ -534,11 +534,11 @@
 <span class="pl-s1"></span>
 <span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">author_id</span>}, name: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span>} , date_created: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">date_created</span>} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">//Accessing a db table columns in a record object using array syntax also works like below:</span></span>
+<span class="pl-s1">    <span class="pl-c">//Accessing a database table's columns in a record object using array syntax also works like below:</span></span>
 <span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>]}, name: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>]} , date_created: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>]} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span>
-<span class="pl-s1"><span class="pl-c">//To return all the rows in a db table, call fetchRecordsIntoCollection with </span></span>
+<span class="pl-s1"><span class="pl-c">//To return all the rows in a database table, call fetchRecordsIntoCollection with </span></span>
 <span class="pl-s1"><span class="pl-c">//no parameters. In this case fetchRecordsIntoCollection will just perform a </span></span>
 <span class="pl-s1"><span class="pl-c">//"SELECT authors.* FROM `authors`" query and return all the rows of data in</span></span>
 <span class="pl-s1"><span class="pl-c">//the authors table.</span></span>
@@ -593,7 +593,7 @@
 <span class="pl-s1">];</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
-<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the database):</span></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
 <span class="pl-s1"><span class="pl-c">    SELECT DISTINCT author_id, name, date_created</span></span>
 <span class="pl-s1"><span class="pl-c">    FROM</span></span>
@@ -623,11 +623,11 @@
 <span class="pl-s1"></span>
 <span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">author_id</span>}, name: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span>} , date_created: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">date_created</span>} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
 <span class="pl-s1"></span>
-<span class="pl-s1">    <span class="pl-c">//Accessing a db table columns in a record object using array syntax also works like below:</span></span>
+<span class="pl-s1">    <span class="pl-c">//Accessing a database table's columns in a record object using array syntax also works like below:</span></span>
 <span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>]}, name: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>]} , date_created: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>]} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span>
-<span class="pl-s1"><span class="pl-c">//To return all the rows in a db table, call fetchRecordsIntoArray with </span></span>
+<span class="pl-s1"><span class="pl-c">//To return all the rows in a database table, call fetchRecordsIntoArray with </span></span>
 <span class="pl-s1"><span class="pl-c">//no parameters. In this case fetchRecordsIntoArray will just perform a </span></span>
 <span class="pl-s1"><span class="pl-c">//"SELECT authors.* FROM `authors`" query and return all the rows of data in</span></span>
 <span class="pl-s1"><span class="pl-c">//the authors table.</span></span>
@@ -682,7 +682,7 @@
 <span class="pl-s1">];</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
-<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the database):</span></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
 <span class="pl-s1"><span class="pl-c">    SELECT DISTINCT author_id, name, date_created</span></span>
 <span class="pl-s1"><span class="pl-c">    FROM</span></span>
@@ -713,7 +713,7 @@
 <span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$array_of_author_data</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>]}, name: {<span class="pl-smi">$array_of_author_data</span>[<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>]} , date_created: {<span class="pl-smi">$array_of_author_data</span>[<span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>]} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span>
-<span class="pl-s1"><span class="pl-c">//To return all the rows in a db table, call fetchRowsIntoArray with </span></span>
+<span class="pl-s1"><span class="pl-c">//To return all the rows in a database table, call fetchRowsIntoArray with </span></span>
 <span class="pl-s1"><span class="pl-c">//no parameters. In this case fetchRowsIntoArray will just perform a </span></span>
 <span class="pl-s1"><span class="pl-c">//"SELECT authors.* FROM `authors`" query and return all the rows of data in</span></span>
 <span class="pl-s1"><span class="pl-c">//the authors table.</span></span>
@@ -737,7 +737,7 @@
 <span class="pl-s1"></span>
 <span class="pl-s1">    <span class="pl-c">//In this case, $array_of_author_data['posts'] will be an array.</span></span>
 <span class="pl-s1">    <span class="pl-c">//Each $post_record will be an array containing a row of data from the</span></span>
-<span class="pl-s1">    <span class="pl-c">//posts db table. The related data is retrieved based on the relationship </span></span>
+<span class="pl-s1">    <span class="pl-c">//posts database table. The related data is retrieved based on the relationship </span></span>
 <span class="pl-s1">    <span class="pl-c">//definintion in the AuthorsModel class.</span></span>
 <span class="pl-s1"></span>
 <span class="pl-s1">    <span class="pl-k">foreach</span>(<span class="pl-smi">$array_of_author_data</span>[<span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span>] <span class="pl-k">as</span> <span class="pl-smi">$post_record</span>) {</span>
@@ -759,7 +759,7 @@
 <span class="pl-s1">];</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
-<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the database):</span></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
 <span class="pl-s1"><span class="pl-c">    SELECT author_id, name, date_created</span></span>
 <span class="pl-s1"><span class="pl-c">      FROM `authors`</span></span>
@@ -771,7 +771,7 @@
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//fetchOneRecord returns an instance of \LeanOrm\Model\Record from the first </span></span>
 <span class="pl-s1"><span class="pl-c">//row returned by executing the generated select query above. </span></span>
-<span class="pl-s1"><span class="pl-c">//In this case the first db table row having an author_id value of 2 is </span></span>
+<span class="pl-s1"><span class="pl-c">//In this case the first database table row having an author_id value of 2 is </span></span>
 <span class="pl-s1"><span class="pl-c">//returned as an instance of AuthorRecord which is a sub-class of</span></span>
 <span class="pl-s1"><span class="pl-c">//\LeanOrm\Model\Record because the _record_class_name property of the</span></span>
 <span class="pl-s1"><span class="pl-c">//AuthorsModel class was set to 'AuthorRecord'.</span></span>
@@ -814,7 +814,7 @@
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
 <li>
-<p><strong>Fetching data from two db table columns into an array (via fetchPairs), where values from the first column will be the keys in the returned array and the values from the second column will be the corresponding values in the returned array:</strong></p>
+<p><strong>Fetching data from two database table columns into an array (via fetchPairs), where values from the first column will be the keys in the returned array and the values from the second column will be the corresponding values in the returned array:</strong></p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
@@ -825,7 +825,7 @@
 <span class="pl-s1">];</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
-<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the database):</span></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
 <span class="pl-s1"><span class="pl-c">    SELECT author_id, name, date_created</span></span>
 <span class="pl-s1"><span class="pl-c">      FROM `authors`</span></span>
@@ -844,14 +844,14 @@
 <span class="pl-s1"><span class="pl-c">    |     3     | 'Jane Doe'  | '2015-08-19 14:24:48' | '2015-08-19 14:24:48' |</span></span>
 <span class="pl-s1"><span class="pl-c">    ---------------------------------------------------------------------------</span></span>
 <span class="pl-s1"><span class="pl-c"></span></span>
-<span class="pl-s1"><span class="pl-c">    Given an authors db table containing the data above calling fetchPairs </span></span>
+<span class="pl-s1"><span class="pl-c">    Given an authors database table containing the data above calling fetchPairs </span></span>
 <span class="pl-s1"><span class="pl-c">    like below will return [ 1=&gt;'Joe Blow', 3=&gt;'Jane Doe'] </span></span>
 <span class="pl-s1"><span class="pl-c">    (NOTE: it uses the first two columns in $params['cols']):</span></span>
 <span class="pl-s1"><span class="pl-c"> */</span></span>
 <span class="pl-s1"><span class="pl-smi">$data</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchPairs(<span class="pl-smi">$params</span>);</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
-<span class="pl-s1"><span class="pl-c">    Given an authors db table containing the data above calling fetchPairs </span></span>
+<span class="pl-s1"><span class="pl-c">    Given an authors database table containing the data above calling fetchPairs </span></span>
 <span class="pl-s1"><span class="pl-c">    like below will return [ 1=&gt;'Joe Blow', 2=&gt;'Jack Doe', 3=&gt;'Jane Doe'] </span></span>
 <span class="pl-s1"><span class="pl-c">    (NOTE: it uses the first two columns in the authors table; ie. author_id and name):</span></span>
 <span class="pl-s1"><span class="pl-c"> */</span></span>
@@ -859,7 +859,7 @@
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
 <li>
-<p><strong>Fetching data from one db table column into an array (via fetchCol):</strong></p>
+<p><strong>Fetching data from one database table column into an array (via fetchCol):</strong></p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
@@ -870,7 +870,7 @@
 <span class="pl-s1">];</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
-<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the database):</span></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
 <span class="pl-s1"><span class="pl-c">    SELECT name, date_created</span></span>
 <span class="pl-s1"><span class="pl-c">      FROM `authors`</span></span>
@@ -889,14 +889,14 @@
 <span class="pl-s1"><span class="pl-c">    |     3     | 'Jane Doe'  | '2015-08-19 14:24:48' | '2015-08-19 14:24:48' |</span></span>
 <span class="pl-s1"><span class="pl-c">    ---------------------------------------------------------------------------</span></span>
 <span class="pl-s1"><span class="pl-c"></span></span>
-<span class="pl-s1"><span class="pl-c">    Given an authors db table containing the data above calling fetchCol </span></span>
+<span class="pl-s1"><span class="pl-c">    Given an authors database table containing the data above calling fetchCol </span></span>
 <span class="pl-s1"><span class="pl-c">    like below will return ['Joe Blow', 'Jane Doe'] </span></span>
 <span class="pl-s1"><span class="pl-c">    (NOTE: it uses the first column in $params['cols']):</span></span>
 <span class="pl-s1"><span class="pl-c"> */</span></span>
 <span class="pl-s1"><span class="pl-smi">$data</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchCol(<span class="pl-smi">$params</span>);</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
-<span class="pl-s1"><span class="pl-c">    Given an authors db table containing the data above calling fetchCol </span></span>
+<span class="pl-s1"><span class="pl-c">    Given an authors database table containing the data above calling fetchCol </span></span>
 <span class="pl-s1"><span class="pl-c">    like below will return [ 1, 2, 3] </span></span>
 <span class="pl-s1"><span class="pl-c">    (NOTE: it uses the first column in the authors table; ie. author_id):</span></span>
 <span class="pl-s1"><span class="pl-c"> */</span></span>
@@ -904,7 +904,7 @@
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
 <li>
-<p><strong>Fetching data from a single row and column of a db table (via fetchValue):</strong></p>
+<p><strong>Fetching data from a single row and column of a database table (via fetchValue):</strong></p>
 
 <div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
@@ -915,7 +915,7 @@
 <span class="pl-s1">];</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//The $params array above causes any of the fetch* methods to generate the SQL </span></span>
-<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the DB):</span></span>
+<span class="pl-s1"><span class="pl-c">//statement below (which would be used by the fetch* method to retrieve data from the database):</span></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
 <span class="pl-s1"><span class="pl-c">    SELECT name, date_created</span></span>
 <span class="pl-s1"><span class="pl-c">      FROM `authors`</span></span>
@@ -934,14 +934,14 @@
 <span class="pl-s1"><span class="pl-c">    |     3     | 'Jane Doe'  | '2015-08-19 14:24:48' | '2015-08-19 14:24:48' |</span></span>
 <span class="pl-s1"><span class="pl-c">    ---------------------------------------------------------------------------</span></span>
 <span class="pl-s1"><span class="pl-c"></span></span>
-<span class="pl-s1"><span class="pl-c">    Given an authors db table containing the data above calling fetchValue </span></span>
+<span class="pl-s1"><span class="pl-c">    Given an authors database table containing the data above calling fetchValue </span></span>
 <span class="pl-s1"><span class="pl-c">    like below will return 'Joe Blow'</span></span>
 <span class="pl-s1"><span class="pl-c">    (NOTE: it uses the value of first column in $params['cols'] in the first row of data returned):</span></span>
 <span class="pl-s1"><span class="pl-c"> */</span></span>
 <span class="pl-s1"><span class="pl-smi">$data</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetchValue(<span class="pl-smi">$params</span>);</span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">/*</span></span>
-<span class="pl-s1"><span class="pl-c">    Given an authors db table containing the data above calling fetchValue </span></span>
+<span class="pl-s1"><span class="pl-c">    Given an authors database table containing the data above calling fetchValue </span></span>
 <span class="pl-s1"><span class="pl-c">    like below will return 1</span></span>
 <span class="pl-s1"><span class="pl-c">    (NOTE: it uses the value of first column in the authors table (ie. author_id) in the first row of data returned):</span></span>
 <span class="pl-s1"><span class="pl-c"> */</span></span>
@@ -958,7 +958,7 @@
 <ol>
 <li>By fetching one or more existing records from the database into record objects, then assigning new value(s) to each of the fetched records and then finally calling the <strong>save</strong> method on each Record object. If the records were fetched into a Collection object, then the <strong>saveAll</strong> method on the Collection object could be called instead (this will cause all the records in the collection to be saved).</li>
 <li>
-<p>By calling the <strong>updateMatchingDbTableRows</strong> method on a Model object. This method does not involve the retrieval of Record objects, rather only the conditions for matching the rows of data in the db table to be updated and the new data to be used for the update need to be supplied to <strong>updateMatchingDbTableRows</strong>.</p>
+<p>By calling the <strong>updateMatchingDbTableRows</strong> method on a Model object. This method does not involve the retrieval of Record objects, rather only the conditions for matching the rows of data in the database table to be updated and the new data to be used for the update need to be supplied to <strong>updateMatchingDbTableRows</strong>.</p>
 
 <blockquote>
 <p>Note: there is also an <strong>updateSpecifiedRecord</strong> method in the Model class which accepts a Record object as parameter and saves it to the database. The <strong>updateSpecifiedRecord</strong> method does not really need to be called, since the <strong>save</strong> method in the Record class calls it internally when <strong>save</strong> is called on a Record object that needs to be updated.</p>
@@ -1009,7 +1009,7 @@
 <ol>
 <li>By fetching one or more existing records from the database into record objects and then calling the <strong>delete</strong> method on each Record object (NOTE: the data is deleted from the database but the Record object still contains the data and is automatically marked as new. To make sure the data is both deleted from the database and cleared out of the Record object the <strong>delete</strong> method on the Record object must be called with a boolean value of true as its first parameter). If the records were fetched into a Collection object, then the <strong>deleteAll</strong> method on the Collection object could be called instead (this will cause all the records in the collection to be deleted from the database, but the Record objects will still be in the Collection object with their data intact. <strong>removeAll</strong> should additionally be called on the Collection object to clear the Record objects and their data from the Collection object; if the Record Objects are not referenced anywhere else outside of the Collection object, then the <strong>__destruct</strong> method will be automatically called on each Record object and all the memory used by the Record objects will be released).</li>
 <li>
-<p>By calling the <strong>deleteMatchingDbTableRows</strong> method on a Model object. This method does not involve the retrieval of Record objects, rather only the conditions for matching the rows of data in the db table to be deleted needs to be supplied to <strong>deleteMatchingDbTableRows</strong>.</p>
+<p>By calling the <strong>deleteMatchingDbTableRows</strong> method on a Model object. This method does not involve the retrieval of Record objects, rather only the conditions for matching the rows of data in the database table to be deleted needs to be supplied to <strong>deleteMatchingDbTableRows</strong>.</p>
 
 <blockquote>
 <p>Note: there is also a <strong>deleteSpecifiedRecord</strong> method in the Model class which accepts a Record object as parameter and deletes the database row associated with the Record object, sets the primary key value of the Record object to null and also sets the <strong>_is_new</strong> property of the Record object to the boolean value of true (NOTE: other data in the Record object remains). The <strong>deleteSpecifiedRecord</strong> method does not really need to be called, since the <strong>delete</strong> method in the Record class calls it internally when <strong>delete</strong> is called on a Record object that needs to be deleted.</p>
@@ -1047,6 +1047,11 @@
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
 </li>
 </ol>
+
+<h3>
+<a id="running-tests" class="anchor" href="#running-tests" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running tests</h3>
+
+<p><code>./vendor/bin/phpunit --coverage-text</code></p>
 
 <h3>
 <a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
