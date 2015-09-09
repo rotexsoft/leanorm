@@ -710,7 +710,7 @@ class Model extends \GDAO\Model
             } else {
                 
                 //assume it's a collection or array
-                $col_vals = $this->_getColValsFromArrayOrCollection(
+                $col_vals = $this->_getPdoQuotedColValsFromArrayOrCollection(
                                         $parent_data, $fkey_col_in_my_table
                                     );
 
@@ -961,7 +961,7 @@ SELECT {$foreign_table_name}.*
 
         } else {
             //assume it's a collection or array                
-            $col_vals = $this->_getColValsFromArrayOrCollection(
+            $col_vals = $this->_getPdoQuotedColValsFromArrayOrCollection(
                                     $parent_data, $fkey_col_in_my_table
                                 );
 
@@ -1065,7 +1065,7 @@ SELECT {$foreign_table_name}.*
         return null;
     }
     
-    protected function _getColValsFromArrayOrCollection(
+    protected function _getPdoQuotedColValsFromArrayOrCollection(
         &$parent_data, $fkey_col_in_my_table
     ) {
         $col_vals = array();

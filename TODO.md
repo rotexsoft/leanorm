@@ -2,7 +2,7 @@
 
 * Strive for 100% Unit Test Coverage
 
-* Add magic methods like fetchOneRecordByCol1AndCol2($col1_val, $col2_val)
+* Add magic methods like fetchOneRecordByCol1AndCol2($col1_val, $col2_val) as code snippets in documentation
 
 * Lower testing requirement to allow for PHP 5.3 (the only downside is the loss of the convenient use of the short array syntax)
 > This is to make sure this package really works for PHP 5.3, since the short array syntax is only used in test files and not in the actual source (src) files
