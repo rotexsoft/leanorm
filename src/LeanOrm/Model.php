@@ -1132,6 +1132,114 @@ SELECT {$foreign_table_name}.*
     
     /**
      * 
+     * Fetches a record or collection by primary key value(s).
+     * 
+     * If $ids holds a single int value, always return the db row whose primary
+     * key value matches the int value.
+     * 
+     * If $ids is an array of int values:
+     * 
+     *      # `$use_collections === true`: return a \LeanOrm\Model\Collection of 
+     *        \LeanOrm\Model\Record records each matching the values in $ids
+     * 
+     *      # `$use_collections === false`:
+     * 
+     *          - `$use_records === true`: return an array of \LeanOrm\Model\Record 
+     *            records each matching the values in $ids
+     * 
+     *          - `$use_records === false`: return an array of rows (each row being
+     *            an associative array) each matching the values in $ids
+     * 
+     * @param int|array $ids Int value of the primary key field of a single db 
+     *                       record to be fetched or an array of int values of
+     *                       the primary key field of db rows to be fetched
+     * 
+     * @param array $params see documentation of fetchRecordsIntoCollection for 
+     *                      the description of the structure of this parameter 
+     * 
+     * @param bool $use_records true if each matched db row should be wrapped in 
+     *                          an instance of \LeanOrm\Model\Record; false if 
+     *                          rows should be returned as associative php 
+     *                          arrays
+     * 
+     * @param bool $use_collections true if each matched db row should be wrapped
+     *                              in an instance of \LeanOrm\Model\Record and 
+     *                              all the records wrapped in an instance of
+     *                              \LeanOrm\Model\Collection; false if all 
+     *                              matched db rows should be returned in a
+     *                              php array
+     * 
+     * @return array|\LeanOrm\Model\Record|\LeanOrm\Model\Collection Description
+     * 
+     * @throws \LeanOrm\BadPriKeyIdValuesForFetchException
+     * 
+     */
+    public function fetch($ids, array $params=array(), $use_records=false, $use_collections=false) {
+            
+        $params = (!is_array($params))? array() : $params;
+        
+        if( !array_key_exists('where', $params) ) {
+            
+            $params['where'] = array();
+        }
+        
+        if( is_int($ids) ) {
+            
+            $params['where'][] = 
+                array( 'col'=>$this->getPrimaryColName(), 'op'=>'=', 'val'=>$ids );
+
+            return $this->fetchOneRecord($params);
+            
+        } else if ( is_array($ids) ) {
+            
+            foreach ($ids as $id) {
+                
+                if( !is_int($id) ) {
+                    
+                    $msg = "ERROR: Bad id parameter supplied. An integer or an array of "
+                         . "integers expected."
+                         . PHP_EOL . 'Instead, ' . var_export($params, true) . PHP_EOL
+                         . " passed to " 
+                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . PHP_EOL;
+                    
+                    throw new BadPriKeyIdValuesForFetchException($msg);
+                }
+            }
+            
+            $params['where'][] = 
+                array( 'col'=>$this->getPrimaryColName(), 'op'=>'in', 'val'=>$ids );
+            
+            if( $use_collections ) {
+                
+                return $this->fetchRecordsIntoCollection($params);
+                
+            } else {
+                
+                if( $use_records ) {
+                    
+                    return $this->fetchRecordsIntoArray($params);
+                }
+                
+                //default
+                return $this->fetchRowsIntoArray($params);
+            }
+            
+        } else {
+
+            $msg = "ERROR: Bad id parameter supplied. An integer or an array of "
+                 . "integers expected."
+                 . PHP_EOL . 'Instead, ' . var_export($params, true) . PHP_EOL
+                 . " passed to " 
+                 . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL;
+            
+            throw new BadPriKeyIdValuesForFetchException($msg);
+        }
+    }
+    
+    /**
+     * 
      * {@inheritDoc}
      */
     public function fetchRecordsIntoCollection(array $params = array()) {
