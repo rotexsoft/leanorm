@@ -82,7 +82,7 @@
 <li>
 <p>Create Model classes for each database table in your application's database. Each of these classes must extend <strong>\LeanOrm\Model</strong>. This is the recommended approach for large applications. An example of a Model class (<strong>AuthorsModel</strong>) associated  with an <strong>authors</strong> table in the database:</p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorsModel</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\</span><span class="pl-e">Model</span></span>
 <span class="pl-s1">{</span>
 <span class="pl-s1"><span class="pl-k">protected</span> <span class="pl-smi">$_collection_class_name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>AuthorsCollection<span class="pl-pds">'</span></span>; <span class="pl-c">//If not set, \LeanOrm\Model\Collection will be used by default </span></span>
@@ -125,7 +125,7 @@
 <li>
 <p>Or create instances of <strong>\LeanOrm\Model</strong> (one for each database table in your application's database). This approach is good for small to medium sized projects.</p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$rel</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-c">//Entry below specifies that an author can have one or more posts (ie. a has-many relationship).</span></span>
@@ -168,12 +168,12 @@
 <p>For both methods, you can decide if you want to use the base Record and Collection classes (<strong>\LeanOrm\Model\Collection</strong> and <strong>\LeanOrm\Model\Record</strong> (or <strong>\LeanOrm\Model\ReadOnlyRecord</strong> if needed) ) or if you want to extend the base Record and Collection classes eg:</p>
 </blockquote>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorsCollection</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\Model\</span><span class="pl-e">Collection</span> {</span>
 <span class="pl-s1">   <span class="pl-c">//some custom code for collection objects that are meant to hold records belonging to the 'authors' database table</span></span>
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span>
-<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorsRecord</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\Model\</span><span class="pl-e">Record</span> {</span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">AuthorRecord</span> <span class="pl-k">extends</span> <span class="pl-c1">\LeanOrm\Model\</span><span class="pl-e">Record</span> {</span>
 <span class="pl-s1">   <span class="pl-c">//some custom code for records belonging to the 'authors' database table</span></span>
 <span class="pl-s1">}</span>
 <span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
@@ -181,7 +181,7 @@
 <h3>
 <a id="creating-records--inserting-data-into-the-database" class="anchor" href="#creating-records--inserting-data-into-the-database" aria-hidden="true"><span class="octicon octicon-link"></span></a>Creating Records &amp; Inserting Data into the Database</h3>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1">    <span class="pl-c">//Method 1:</span></span>
 <span class="pl-s1">    <span class="pl-smi">$new_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>createNewRecord(); <span class="pl-c">//create a blank new record</span></span>
 <span class="pl-s1">    <span class="pl-smi">$new_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>Joe Blow<span class="pl-pds">'</span></span>; <span class="pl-c">//set a value for the 'name' column</span></span>
@@ -248,6 +248,13 @@
 </blockquote>
 </li>
 <li>
+<p><em><strong>fetch($ids, array $params=array(), $use_records=false, $use_collections=false):</strong></em></p>
+
+<blockquote>
+<p>selects one row of data from a database table if <code>$ids</code> contains an integer value matching the primary key value of a row in the database table (returns it as an instance of \LeanOrm\Model\Record). Selects one or more rows of data from a database table if <code>$ids</code> is an array of integer values matching the primary key values of one or more rows of data from a database table and returns them as instances of \LeanOrm\Model\Record (or any of its subclasses) inside an array or an instance of \LeanOrm\Model\Collection (or any of its subclasses) or returns them as an array of arrays.</p>
+</blockquote>
+</li>
+<li>
 <p><em><strong>fetchRecordsIntoArray(array $params = array()):</strong></em></p>
 
 <blockquote>
@@ -304,7 +311,7 @@
 <li>
 <p><strong>where</strong>: this entry in the <strong>$params</strong> array should contain an array of parameters for building a WHERE clause to be added to the SELECT statement that will be generated by the fetch method to fetch data. For example, the definitions below would be valid for the AuthorsModel defined earlier in this document:</p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> </span>
 <span class="pl-s1">        [</span>
@@ -396,7 +403,7 @@
 <li>
 <p><strong>having</strong>: this entry in the <strong>$params</strong> array should contain an array of parameters for building a HAVING clause to be added to the SELECT statement that will be generated by the fetch method to fetch data. For example, the definitions below would be valid for the AuthorsModel defined earlier in this document:</p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>having<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> </span>
 <span class="pl-s1">        [</span>
@@ -506,9 +513,74 @@
 
 <ul>
 <li>
+<p><strong>Fetching one or more rows of data (via fetch):</strong></p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
+<span class="pl-s1">];</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//The $params array above causes $authors_model-&gt;fetch(2, $params) to generate the SQL </span></span>
+<span class="pl-s1"><span class="pl-c">//statement below:</span></span>
+<span class="pl-s1"><span class="pl-c">/*</span></span>
+<span class="pl-s1"><span class="pl-c">    SELECT author_id, name, date_created</span></span>
+<span class="pl-s1"><span class="pl-c">      FROM `authors`</span></span>
+<span class="pl-s1"><span class="pl-c">     WHERE</span></span>
+<span class="pl-s1"><span class="pl-c">        (</span></span>
+<span class="pl-s1"><span class="pl-c">            author_id = 2</span></span>
+<span class="pl-s1"><span class="pl-c">        );</span></span>
+<span class="pl-s1"><span class="pl-c">*/</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//The call below fetches a database table row having an author_id value of 2 </span></span>
+<span class="pl-s1"><span class="pl-c">//into an instance of AuthorRecord which is a sub-class of \LeanOrm\Model\Record.</span></span>
+<span class="pl-s1"><span class="pl-smi">$author_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetch(<span class="pl-c1">2</span>, <span class="pl-smi">$params</span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//You can access the fetched data like so using object notation:</span></span>
+<span class="pl-s1"><span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">author_id</span>}, name: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span>} , date_created: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">date_created</span>} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//You can access the fetched data like so using array syntax:</span></span>
+<span class="pl-s1"><span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>]}, name: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>]} , date_created: {<span class="pl-smi">$author_record</span>[<span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>]} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//To return related data (if any) defined in the Model's _relations array,</span></span>
+<span class="pl-s1"><span class="pl-c">//add a 'relations_to_include' entry to the $params array defined ealier</span></span>
+<span class="pl-s1"><span class="pl-c">//above. For example, to get the posts belonging to an author (note that</span></span>
+<span class="pl-s1"><span class="pl-c">//this relationship has been defined in the AuthorsModel class earlier</span></span>
+<span class="pl-s1"><span class="pl-c">//above) modify the $params array like so:</span></span>
+<span class="pl-s1"><span class="pl-smi">$params</span>[<span class="pl-s"><span class="pl-pds">'</span>relations_to_include<span class="pl-pds">'</span></span>] <span class="pl-k">=</span> [<span class="pl-s"><span class="pl-pds">'</span>posts<span class="pl-pds">'</span></span>];</span>
+<span class="pl-s1"><span class="pl-smi">$author_record</span> <span class="pl-k">=</span> <span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetch(<span class="pl-c1">2</span>, <span class="pl-smi">$params</span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//You can access the fetched data like so using object notation:</span></span>
+<span class="pl-s1"><span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> author_id: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">author_id</span>}, name: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">name</span>} , date_created: {<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">date_created</span>} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//Access the posts</span></span>
+<span class="pl-s1"><span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> Posts: &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//In this case, $author_record-&gt;posts will be an instance of PostsCollection</span></span>
+<span class="pl-s1"><span class="pl-c">//and each $post_record will be an instance of PostRecord based on the </span></span>
+<span class="pl-s1"><span class="pl-c">//relationship definintion in the AuthorsModel class.</span></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">foreach</span>(<span class="pl-smi">$author_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">posts</span> <span class="pl-k">as</span> <span class="pl-smi">$post_record</span>) {</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-c1">echo</span> <span class="pl-s"><span class="pl-pds">"</span> post_id: {<span class="pl-smi">$post_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">post_id</span>}, title: {<span class="pl-smi">$post_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">title</span>} , body: {<span class="pl-smi">$post_record</span><span class="pl-k">-&gt;</span><span class="pl-smi">body</span>} &lt;br&gt;<span class="pl-pds">"</span></span>;</span>
+<span class="pl-s1">}</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//You can fetch a collection of AuthorRecord(s) with author_id values of 1, 2 and 3 via </span></span>
+<span class="pl-s1"><span class="pl-c">//the call below:</span></span>
+<span class="pl-s1"><span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetch( [<span class="pl-c1">1</span>, <span class="pl-c1">2</span>, <span class="pl-c1">3</span>], <span class="pl-smi">$params</span>, <span class="pl-c1">true</span>, <span class="pl-c1">true</span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//You can fetch an array of AuthorRecord(s) with author_id values of 1, 2 and 3 via </span></span>
+<span class="pl-s1"><span class="pl-c">//the call below:</span></span>
+<span class="pl-s1"><span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetch( [<span class="pl-c1">1</span>, <span class="pl-c1">2</span>, <span class="pl-c1">3</span>], <span class="pl-smi">$params</span>, <span class="pl-c1">true</span>, <span class="pl-c1">false</span>);</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">//You can fetch an array of rows in the authors table with author_id values of 1, 2 and 3 via </span></span>
+<span class="pl-s1"><span class="pl-c">//the call below:</span></span>
+<span class="pl-s1"><span class="pl-smi">$authors_model</span><span class="pl-k">-&gt;</span>fetch( [<span class="pl-c1">1</span>, <span class="pl-c1">2</span>, <span class="pl-c1">3</span>], <span class="pl-smi">$params</span>, <span class="pl-c1">false</span>, <span class="pl-c1">false</span>);</span>
+<span class="pl-s1"></span><span class="pl-pse"><span class="pl-s1">?</span>&gt;</span></pre></div>
+</li>
+<li>
 <p><strong>Fetching data as Records into a Collection (via fetchRecordsIntoCollection):</strong></p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>distinct<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">true</span>,</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
@@ -598,7 +670,7 @@
 <li>
 <p><strong>Fetching data as Records into an array (via fetchRecordsIntoArray ):</strong> Use this method if you don't need to call any of the Collection methods on the returned data. <strong>fetchRecordsIntoArray</strong> executes slightly faster than <strong>fetchRecordsIntoCollection</strong> and is also slightly more memory efficient than <strong>fetchRecordsIntoCollection</strong>.</p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>distinct<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">true</span>,</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
@@ -687,7 +759,7 @@
 <li>
 <p><strong>Fetching data as arrays into an array (via fetchRowsIntoArray ):</strong> Use this method if you don't need to call any of the Collection or Record methods on the returned data. <strong>fetchRowsIntoArray</strong> executes faster than <strong>fetchRecordsIntoArray</strong> and <strong>fetchRecordsIntoCollection</strong> and is also more memory efficient than <strong>fetchRecordsIntoArray</strong> and <strong>fetchRecordsIntoCollection</strong>.</p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>distinct<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">true</span>,</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
@@ -774,7 +846,7 @@
 <li>
 <p><strong>Fetching one row of data as a Record (via fetchOneRecord):</strong></p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [</span>
@@ -840,7 +912,7 @@
 <li>
 <p><strong>Fetching data from two database table columns into an array (via fetchPairs), where values from the first column will be the keys in the returned array and the values from the second column will be the corresponding values in the returned array:</strong></p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [</span>
@@ -885,7 +957,7 @@
 <li>
 <p><strong>Fetching data from one database table column into an array (via fetchCol):</strong></p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [</span>
@@ -930,7 +1002,7 @@
 <li>
 <p><strong>Fetching data from a single row and column of a database table (via fetchValue):</strong></p>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>cols<span class="pl-pds">"</span></span><span class="pl-k">=&gt;</span>[<span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>date_created<span class="pl-pds">'</span></span>],</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [</span>
@@ -988,7 +1060,7 @@
 <p>Note: there is also an <strong>updateSpecifiedRecord</strong> method in the Model class which accepts a Record object as parameter and saves it to the database. The <strong>updateSpecifiedRecord</strong> method does not really need to be called, since the <strong>save</strong> method in the Record class calls it internally when <strong>save</strong> is called on a Record object that needs to be updated.</p>
 </blockquote>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//Method 1:</span></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [ [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ] ],</span>
@@ -1039,7 +1111,7 @@
 <p>Note: there is also a <strong>deleteSpecifiedRecord</strong> method in the Model class which accepts a Record object as parameter and deletes the database row associated with the Record object, sets the primary key value of the Record object to null and also sets the <strong>_is_new</strong> property of the Record object to the boolean value of true (NOTE: other data in the Record object remains). The <strong>deleteSpecifiedRecord</strong> method does not really need to be called, since the <strong>delete</strong> method in the Record class calls it internally when <strong>delete</strong> is called on a Record object that needs to be deleted.</p>
 </blockquote>
 
-<div class="highlight highlight-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
 <span class="pl-s1"><span class="pl-c">//Method 1:</span></span>
 <span class="pl-s1"><span class="pl-smi">$params</span> <span class="pl-k">=</span> [</span>
 <span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>where<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span>  [ [ <span class="pl-s"><span class="pl-pds">'</span>col<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>author_id<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>op<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-s"><span class="pl-pds">'</span>=<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>val<span class="pl-pds">'</span></span><span class="pl-k">=&gt;</span><span class="pl-c1">2</span> ] ],</span>
