@@ -1336,7 +1336,8 @@ SELECT {$foreign_table_name}.*
      */
     public function getPDO() {
         
-        return DBConnector::getDb();
+        return DBConnector::getDb($this->_dsn); //return pdo object associated with
+                                                //the current dsn
     }
 
     /**
