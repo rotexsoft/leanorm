@@ -82,13 +82,13 @@ class Model extends \GDAO\Model
             $pri_col_not_set_exception = $e;
         }
             
-        DBConnector::configure($dsn);
-        DBConnector::configure('username', $username);
-        DBConnector::configure('password', $passwd);
+        DBConnector::configure($dsn, null, $dsn);//use $dsn as connection name in 3rd parameter
+        DBConnector::configure('username', $username, $dsn);//use $dsn as connection name in 3rd parameter
+        DBConnector::configure('password', $passwd, $dsn);//use $dsn as connection name in 3rd parameter
         
         if( count($pdo_driver_opts) > 0 ) {
             
-            DBConnector::configure( 'driver_options', $pdo_driver_opts);
+            DBConnector::configure( 'driver_options', $pdo_driver_opts, $dsn);//use $dsn as connection name in 3rd parameter
         }
         
         foreach ($extra_opts as $e_opt_key => $e_opt_val) {
@@ -97,7 +97,7 @@ class Model extends \GDAO\Model
                 is_string($e_opt_key) 
                 && in_array($e_opt_key, static::$_valid_extra_opts_keys_4_dbconnector)
             ) {
-                DBConnector::configure($e_opt_key, $e_opt_val);
+                DBConnector::configure($e_opt_key, $e_opt_val, $dsn);//use $dsn as connection name in 3rd parameter
             }
         }
         
