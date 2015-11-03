@@ -12,7 +12,7 @@
   <body>
     <section class="page-header">
       <h1 class="project-name">Leanorm</h1>
-      <h2 class="project-tagline">[WARNING NOT YET PRODUCTION READY: Should be ready in November 2015] A Generic Data Objects (GDAO https://github.com/rotexsoft/gdao ) implementation based on a stripped down (really minimal) version of idiorm.</h2>
+      <h2 class="project-tagline">[WARNING NOT YET PRODUCTION READY: Should be ready in December 2015] A Generic Data Objects (GDAO https://github.com/rotexsoft/gdao ) implementation based on a stripped down (really minimal) version of idiorm.</h2>
       <a href="https://github.com/rotexsoft/leanorm" class="btn">View on GitHub</a>
       <a href="https://github.com/rotexsoft/leanorm/zipball/master" class="btn">Download .zip</a>
       <a href="https://github.com/rotexsoft/leanorm/tarball/master" class="btn">Download .tar.gz</a>
@@ -22,15 +22,26 @@
       <h2>
 <a id="why-another-php-orm-object-relational-mapping-package" class="anchor" href="#why-another-php-orm-object-relational-mapping-package" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why another PHP ORM (Object-Relational Mapping) Package?</h2>
 
-<p>This package and its parent package <a href="https://github.com/rotexsoft/gdao">Generic Data Access Objects (GDAO)</a> were birthed out of my experience working with some of the existing PHP ORMs like <a href="http://solarphp.com/apidoc/package.Solar_Sql_Model">Solar_Sql_Model</a>, <a href="http://j4mie.github.io/idiormandparis/">Paris</a> and <a href="http://propelorm.org/">Propel</a>. </p>
+<p>This package aims to provide only the commonly used data access and manipulation features that most PHP applications need. ORM packages like <a href="http://propelorm.org/">Propel</a>, <a href="http://www.doctrine-project.org/projects/orm.html">Doctrine ORM</a>, <a href="http://laravel.com/docs/5.1/eloquent">Eloquent</a> etc, also provide these features and more features which may never be needed in most PHP applications. LeanOrm's code base is designed to be compact (one Model class, two Record classes (Read-Only and Read-Write), a Collection class, a DBConnector class (that talks to the database via PDO) and a File containing Exception class definitions), easily comprehensible and extensible (via inheritance or composition). For the most part, users of this package will only be interacting with the Model class, one or both of the two Record classes and the Collection class. </p>
 
-<p>I have been working on a web-app that has been in existence since 2007 and re-written to use the SolarPHP framework in late 2009. The Model layer for this application is powered by the Solar_Sql_Model ORM package. The TableDataGateway and DataMapper patterns implemented in the Solar_Sql_Model package have worked really well for this web-app especially with regards to organizing the code in the <strong>Model</strong> layer of the application (having Model classes (one per database table) that talk to the database, Record classes that hold each row of data retrieved from database tables and Collection classes that hold one or more instances of Record classes containing data associated with a database table). I began to run into some performance problems over time and I started looking for a more performant PHP ORM package to replace the Solar_Sql_Model package in the application. In addition, the Solar_Sql_Model package is part of the Solar PHP framework and cannot be used outside of the Solar PHP framework. I looked at the Paris ORM, which is actually more lightweight and performant than the Solar_Sql_Model package but was difficult to adapt to the existing Model layer architecture of my application, since Paris is based on the <strong>Active Record</strong> pattern (where records contain data, data access &amp; manipulation logic and business logic). Laravel's Eloquent ORM was also out of the question; since it's also an <strong>Active Record</strong> implementation. Propel and Doctrine were too heavy for my needs (lots of functionality in their code-bases that I may never use).</p>
+<p>LeanOrm is an implementation of the <a href="https://github.com/rotexsoft/gdao">Generic Data Objects (GDAO)</a> package (a package containing an abstract Model class, two interfaces (CollectionInterface and RecordInterface), a RecordList class (a collection data structure that stores only instances of RecordInterface) and a File containing Exception class definitions). The GDAO package was also designed to be compact, easily comprehensible and extensible.</p>
 
-<p>I decided to write an ORM that handles the common tasks of Inserting, Updating, Retrieving and Deleting data from a database and also supports relationships between database tables (ie. has-one, has-many, has-many-through and belongs-to) using the same pattern in the Solar_Sql_Model package, but without all the database schema management functionality (eg. auto-creation of database tables from PHP source code, altering table schema and the likes). The goal is to have the ORM layer as thin as possible and very close to the PDO layer in PHP (ie. very little overhead added by the ORM when compared to using pure PDO for data access).</p>
+<p><a href="http://j4mie.github.io/idiormandparis/">Paris</a> is another PHP ORM that adheres to some of the same principles (a compact code-base and easy comprehensibility) as LeanORM. However, the <strong>Active Record</strong> pattern (where records contain data, data access &amp; manipulation logic and business logic) implemented in the Paris package leads to tight coupling of database access and application / business logic. </p>
 
-<p>I wrote the  <a href="https://github.com/rotexsoft/gdao">Generic Data Access Objects (GDAO)</a> package as a reference package that can be used to build the kind of ORM described above. The GDAO package contains an abstract Model class with methods (abstract and non-abstract) that perform the common data manipulation tasks and two interfaces (CollectionInterface and RecordInterface) that can be used to implement classes that act as collections and records to be used in conjunction with the a concrete implementation of the abstract Model class. Leanorm implements these interfaces and also contains a Model class that is a concrete implementation of \GDAO\Model. The Leanorm code-base is small (it contains a Model class, a Collection class, two Record classes and a Database class used by the Model class for connecting to the database and executing queries and a File containing Exception class definitions) and easy to understand and also easy to extend in order to add additional functionality.</p>
+<p>LeanOrm implements the (Table Data Gateway)[<a href="https://en.wikipedia.org/wiki/Table_data_gateway">https://en.wikipedia.org/wiki/Table_data_gateway</a>] and (Data Mapper)[<a href="https://en.wikipedia.org/wiki/Data_mapper_pattern">https://en.wikipedia.org/wiki/Data_mapper_pattern</a>] patterns. This allows for very loose coupling. Business logic dealing with a single row of data in a database table can be put in the Record class for the table in question, business logic dealing with multiple rows of data in a database table can be put in the Collection class for the table in question while database access logic remains in the Model class for the table in question.</p>
 
-<p>Code snippets illustrating how to implement some of the deliberately omitted features below will be included in this documentation:</p>
+<p>The Model class generates all the SQL for accessing and manipulating data in the database; it uses the DBConnector class to execute the SQL statements. The Model class together with the DBConnector class act as a Table Data Gateway.</p>
+
+<p>The Model class also acts as a Data Mapper by being able to map: </p>
+
+<ul>
+<li>a row of data in a database table to a Record object </li>
+<li>rows of data in a database table in to a Collection object containing one or more Record objects</li>
+<li>foreign key relationships between database tables into atrribute(s) of a record object (an instance of a record per Has-One or Belongs-To relationship and an instance of a collection per Has-Many or Has-Many-Through relationship)</li>
+</ul>
+
+<h3>
+<a id="deliberately-omitted-features" class="anchor" href="#deliberately-omitted-features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Deliberately Omitted Features</h3>
 
 <ul>
 <li>
@@ -48,6 +59,8 @@
 <li>
 <em>migration</em> (packages like <a href="https://github.com/davedevelopment/phpmig">PHPMig</a> , <a href="https://github.com/robmorgan/phinx">Phinx</a> , <a href="https://github.com/icomefromthenet/Migrations">Migrations</a> , etc. can be used)</li>
 </ul>
+
+<p>Code snippets illustrating how to implement some of the deliberately omitted features below will be included in this documentation.</p>
 
 <h3>
 <a id="installation--requirements" class="anchor" href="#installation--requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation &amp; Requirements</h3>
