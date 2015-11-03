@@ -22,7 +22,15 @@
       <h2>
 <a id="why-another-php-orm-object-relational-mapping-package" class="anchor" href="#why-another-php-orm-object-relational-mapping-package" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why another PHP ORM (Object-Relational Mapping) Package?</h2>
 
-<p>This package aims to provide only the commonly used data access and manipulation features that most PHP applications need. ORM packages like <a href="http://propelorm.org/">Propel</a>, <a href="http://www.doctrine-project.org/projects/orm.html">Doctrine ORM</a>, <a href="http://laravel.com/docs/5.1/eloquent">Eloquent</a> etc, also provide these features and more features which may never be needed in most PHP applications. LeanOrm's code base is designed to be compact (one Model class, two Record classes (Read-Only and Read-Write), a Collection class, a DBConnector class (that talks to the database via PDO) and a File containing Exception class definitions), easily comprehensible and extensible (via inheritance or composition). For the most part, users of this package will only be interacting with the Model class, one or both of the two Record classes and the Collection class. </p>
+<p>This package aims to provide only the commonly used data access and manipulation features that most PHP applications need. ORM packages like <a href="http://propelorm.org/">Propel</a>, <a href="http://www.doctrine-project.org/projects/orm.html">Doctrine ORM</a>, <a href="http://laravel.com/docs/5.1/eloquent">Eloquent</a>, etc also provide these features and more features which may never be needed in many PHP applications. LeanOrm's code base is designed to be </p>
+
+<ul>
+<li>easily comprehensible </li>
+<li>easily extensible (via inheritance or composition) and</li>
+<li>compact (with one Model class, two Record classes (Read-Only and Read-Write), a Collection class, a DBConnector class (that talks to the database via PDO) and a File containing Exception class definitions). </li>
+</ul>
+
+<p>For the most part, users of this package will only be interacting with the Model class, one or both of the two Record classes and the Collection class. </p>
 
 <p>LeanOrm is an implementation of the <a href="https://github.com/rotexsoft/gdao">Generic Data Objects (GDAO)</a> package (a package containing an abstract Model class, two interfaces (CollectionInterface and RecordInterface), a RecordList class (a collection data structure that stores only instances of RecordInterface) and a File containing Exception class definitions). The GDAO package was also designed to be compact, easily comprehensible and extensible.</p>
 
@@ -60,7 +68,7 @@
 <em>migration</em> (packages like <a href="https://github.com/davedevelopment/phpmig">PHPMig</a> , <a href="https://github.com/robmorgan/phinx">Phinx</a> , <a href="https://github.com/icomefromthenet/Migrations">Migrations</a> , etc. can be used)</li>
 </ul>
 
-<p>Code snippets illustrating how to implement some of the deliberately omitted features below will be included in this documentation.</p>
+<p>Code snippets illustrating how to implement some of the deliberately omitted features will be included in this documentation.</p>
 
 <h3>
 <a id="installation--requirements" class="anchor" href="#installation--requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation &amp; Requirements</h3>
