@@ -101,7 +101,7 @@ class Model extends \GDAO\Model
             }
         }
         
-        $this->_db_connector = DBConnector::create();
+        $this->_db_connector = DBConnector::create($dsn);//use $dsn as connection name
         $this->_pdo_driver_name = $this->getPDO()
                                        ->getAttribute(\PDO::ATTR_DRIVER_NAME);
         
