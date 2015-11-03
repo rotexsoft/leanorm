@@ -173,7 +173,7 @@ class Model extends \GDAO\Model
      * 
      * {@inheritDoc}
      */
-    public function createNewCollection(\GDAO\Model\GDAORecordsList $list_of_records, array $extra_opts=array()) {
+    public function createNewCollection(\GDAO\Model\RecordsList $list_of_records, array $extra_opts=array()) {
         
         if( empty($this->_collection_class_name) ) {
          
@@ -1124,7 +1124,7 @@ SELECT {$foreign_table_name}.*
             //wrap into a collection object
             $matching_related_records = 
                 new $foreign_models_collection_class_name (
-                    new \GDAO\Model\GDAORecordsList( $matching_related_records ), 
+                    new \GDAO\Model\RecordsList( $matching_related_records ), 
                     $foreign_model_obj
                 );
         }
@@ -1249,7 +1249,7 @@ SELECT {$foreign_table_name}.*
         
         if($data !== false && is_array($data) && count($data) > 0 ) {
         
-            $results = $this->createNewCollection(new \GDAO\Model\GDAORecordsList($data));
+            $results = $this->createNewCollection(new \GDAO\Model\RecordsList($data));
 
             if( array_key_exists('relations_to_include', $params) ) {
 

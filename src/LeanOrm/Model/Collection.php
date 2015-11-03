@@ -27,21 +27,21 @@ class Collection implements \GDAO\Model\CollectionInterface
     
     /**
      * 
-     * \GDAO\Model\GDAORecordsList is only used to enforce strict typing.
+     * \GDAO\Model\RecordsList is only used to enforce strict typing.
      * Ie. all the records in the collection are of type \GDAO\Model\RecordInterface
      * or any of its sub-classes.
      * 
      * $this->_data should be assigned the value of 
-     * \GDAO\Model\GDAORecordsList->toArray(). In this case $data->toArray().
+     * \GDAO\Model\RecordsList->toArray(). In this case $data->toArray().
      * 
-     * @param \GDAO\Model\GDAORecordsList $data list of instances of \GDAO\Model\RecordInterface
+     * @param \GDAO\Model\RecordsList $data list of instances of \GDAO\Model\RecordInterface
      * @param \GDAO\Model $model The model object that transfers data between the db and this collection.
      * @param array $extra_opts an array that may be used to pass initialization 
      *                          value(s) for protected and / or private properties
      *                          of this class
      */
     public function __construct(
-        \GDAO\Model\GDAORecordsList $data, \GDAO\Model $model, array $extra_opts=array()
+        \GDAO\Model\RecordsList $data, \GDAO\Model $model, array $extra_opts=array()
     ) {
         $this->setModel($model);
         $this->_data = $data->toArray();
@@ -189,17 +189,17 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * Load the collection with a list of records.
      * 
-     * \GDAO\Model\GDAORecordsList is used instead of an array because
-     * \GDAO\Model\GDAORecordsList can only contain instances of \GDAO\Model\RecordInterface
+     * \GDAO\Model\RecordsList is used instead of an array because
+     * \GDAO\Model\RecordsList can only contain instances of \GDAO\Model\RecordInterface
      * or its descendants. We only ever want instances of \GDAO\Model\RecordInterface or
      * its descendants inside a collection.
      * 
-     * @param \GDAO\Model\GDAORecordsList $data_2_load
+     * @param \GDAO\Model\RecordsList $data_2_load
      * 
      * @return void
      * 
      */
-	public function loadData(\GDAO\Model\GDAORecordsList $data_2_load){
+	public function loadData(\GDAO\Model\RecordsList $data_2_load){
         
         $this->_data = $data_2_load->getData();
     }

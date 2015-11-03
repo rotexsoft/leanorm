@@ -32,7 +32,7 @@
 * Write an alternative implementation of \GDAO\Model\Collection using SplFixedArray instead of a plain old php array (SplFixedArray seems to be more memory efficient than php arrays). 
 > in loadData(..) and __construct(..) add this line   
 > $this->_data = \SplFixedArray::fromArray( $data->toArray() );   
-> where $data is an instance of \GDAO\Model\GDAORecordsList expected as the first parameter to loadData(..) and __construct(..) 
+> where $data is an instance of \GDAO\Model\RecordsList expected as the first parameter to loadData(..) and __construct(..) 
 
 * Move Model::getCurrentConnectionInfo() to the GDAO\Model class and write unit test for it.
 

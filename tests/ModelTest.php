@@ -762,7 +762,7 @@ EOT;
             $this->_mock_model_objs['customers_with_specialized_collection_and_record'];
 
         $coll_mock = $model_with_mock_coll_and_rec
-                            ->createNewCollection(new \GDAO\Model\GDAORecordsList([]));
+                            ->createNewCollection(new \GDAO\Model\RecordsList([]));
         //exact class
         $this->assertEquals(
             'CollectionForTestingPublicAndProtectedMethods', 
@@ -779,7 +779,7 @@ EOT;
         $model_with_leanorm_coll_and_rec = $this->_mock_model_objs['customers'];
         
         $coll_generic = $model_with_leanorm_coll_and_rec
-                            ->createNewCollection(new \GDAO\Model\GDAORecordsList([]));
+                            ->createNewCollection(new \GDAO\Model\RecordsList([]));
         //exact class
         $this->assertEquals('LeanOrm\Model\Collection', get_class($coll_generic));
     }
