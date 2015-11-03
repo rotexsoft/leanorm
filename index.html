@@ -90,6 +90,8 @@
 <h3>
 <a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting Started</h3>
 
+<p>LeanOrm will create only one connection to a specific database (ie. one connection per unique dsn string). Creating one or more Model objects for one or more tables with the same dsn string will lead to the creation of only one connection to the database; that one connection will be shared amongst all model instances created with that same dsn string. If you use two different dsn strings, two connections to the database(s) will be created by LeanOrm. Consequently, using three different dsn strings will lead to the creation of three different database connections, and so on for four or more different dsn strings.</p>
+
 <p>All examples are based on the schema below:</p>
 
 <p><img src="non-autogen-assets/images/blog-db.svg?raw=true" alt="Sample Blog Database Schema"></p>
