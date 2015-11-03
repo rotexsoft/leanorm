@@ -361,14 +361,12 @@ class DBConnector {
      * @param string $query The raw SQL query
      * @param array  $parameters Optional bound parameters
      * @param bool $return_pdo_statement true to add the \PDOStatement object used by this function to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
-     * @param string $connection_name Which connection to use
      * 
      * @return bool|array bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
      */
-    public function executeQuery(
-        $query, $parameters = array(), $return_pdo_statement=false, $connection_name = self::DEFAULT_CONNECTION
-    ) {   
-        return static::_execute($query, $parameters, $return_pdo_statement, $connection_name);
+    public function executeQuery( $query, $parameters=array(), $return_pdo_statement=false ) {
+        
+        return static::_execute($query, $parameters, $return_pdo_statement, $this->_connection_name);
     }
 
    /**
