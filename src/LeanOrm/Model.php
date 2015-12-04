@@ -1134,10 +1134,10 @@ SELECT {$foreign_table_name}.*
      * 
      * Fetches a record or collection by primary key value(s).
      * 
-     * If $ids holds a single int value, always return the db row whose primary
-     * key value matches the int value.
+     * If $ids holds a single scalar value, always return the db row whose primary
+     * key value matches the scalar value.
      * 
-     * If $ids is an array of int values:
+     * If $ids is an array of scalar values:
      * 
      *      # `$use_collections === true`: return a \LeanOrm\Model\Collection of 
      *        \LeanOrm\Model\Record records each matching the values in $ids
@@ -1150,9 +1150,9 @@ SELECT {$foreign_table_name}.*
      *          - `$use_records === false`: return an array of rows (each row being
      *            an associative array) each matching the values in $ids
      * 
-     * @param int|array $ids Int value of the primary key field of a single db 
-     *                       record to be fetched or an array of int values of
-     *                       the primary key field of db rows to be fetched
+     * @param mixed|array $ids scalar primary key field value of a single db 
+     *                       record to be fetched or an array of scalar values 
+     *                       of the primary key field of db rows to be fetched
      * 
      * @param array $params see documentation of fetchRecordsIntoCollection for 
      *                      the description of the structure of this parameter 
@@ -1175,37 +1175,13 @@ SELECT {$foreign_table_name}.*
      * 
      */
     public function fetch($ids, array $params=array(), $use_records=false, $use_collections=false) {
-            
-        $params = (!is_array($params))? array() : $params;
-        
+                
         if( !array_key_exists('where', $params) ) {
             
             $params['where'] = array();
         }
         
-        if( is_int($ids) ) {
-            
-            $params['where'][] = 
-                array( 'col'=>$this->getPrimaryColName(), 'op'=>'=', 'val'=>$ids );
-
-            return $this->fetchOneRecord($params);
-            
-        } else if ( is_array($ids) ) {
-            
-            foreach ($ids as $id) {
-                
-                if( !is_int($id) ) {
-                    
-                    $msg = "ERROR: Bad id parameter supplied. An integer or an array of "
-                         . "integers expected."
-                         . PHP_EOL . 'Instead, ' . var_export($params, true) . PHP_EOL
-                         . " passed to " 
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . PHP_EOL;
-                    
-                    throw new BadPriKeyIdValuesForFetchException($msg);
-                }
-            }
+        if( is_array($ids) ) {
             
             $params['where'][] = 
                 array( 'col'=>$this->getPrimaryColName(), 'op'=>'in', 'val'=>$ids );
@@ -1226,15 +1202,14 @@ SELECT {$foreign_table_name}.*
             }
             
         } else {
-
-            $msg = "ERROR: Bad id parameter supplied. An integer or an array of "
-                 . "integers expected."
-                 . PHP_EOL . 'Instead, ' . var_export($params, true) . PHP_EOL
-                 . " passed to " 
-                 . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                 . PHP_EOL;
             
-            throw new BadPriKeyIdValuesForFetchException($msg);
+            //assume it's a scalar value, string, int , etc
+            
+            $params['where'][] = 
+                array( 'col'=>$this->getPrimaryColName(), 'op'=>'=', 'val'=>$ids );
+
+            return $this->fetchOneRecord($params);
+            
         }
     }
     
