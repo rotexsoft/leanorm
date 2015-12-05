@@ -36,3 +36,4 @@
 
 * Move Model::getCurrentConnectionInfo() to the GDAO\Model class and write unit test for it.
 
+* Update documentation for fetch method on the github page to reflect change that allows the use of scalars
