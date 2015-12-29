@@ -813,6 +813,9 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function __isset($key) {
         
+        try { $this->$key;  } //access the property first to make sure the data is loaded
+        catch ( \Exception $ex ) {  } //do nothing if exception was thrown
+        
         return array_key_exists($key, $this->_data) || array_key_exists($key, $this->_related_data);
     }
 
