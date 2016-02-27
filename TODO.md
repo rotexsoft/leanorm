@@ -37,3 +37,5 @@
 * Move Model::getCurrentConnectionInfo() to the GDAO\Model class and write unit test for it.
 
 * Update documentation for fetch method on the github page to reflect change that allows the use of scalars
+
+* Aim to meet the coding standards by http://thephpleague.com/#quality and hopefully see if this project can become a league package http://thephpleague.com/#contribute see https://github.com/thephpleague/skeleton
