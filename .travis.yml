@@ -24,3 +24,8 @@ after_script:
 matrix:
   allow_failures:
     - php: hhvm
+
+after_success:
+  # - travis_retry php vendor/bin/coveralls
+  # or enable logging
+  - travis_retry php vendor/bin/coveralls -v

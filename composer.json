@@ -22,10 +22,10 @@
         "rotexsoft/handy-php-functions": "^1.0"
     },
     "require-dev": {
-        "php": ">=5.4.0",
         "phpunit/phpunit": "^4.7",
         "devster/ubench": "^1.1",
-        "digitalnature/php-ref": "^1.0"
+        "digitalnature/php-ref": "^1.0",
+        "satooshi/php-coveralls": "^1.0"
     },
     "autoload": {
         "classmap": ["src/", "demo/"]
