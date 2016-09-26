@@ -682,6 +682,9 @@ class Model extends \GDAO\Model
             $foreign_models_table_sql_params = 
                     $array_get($rel_info, 'foreign_table_sql_params', array());
             
+            $extra_opts_for_foreign_model = 
+                    $array_get($rel_info, 'extra_opts_for_foreign_model', array());
+            
             $query_obj = 
                 $this->_buildFetchQueryObjectFromParams(
                             $foreign_models_table_sql_params, 
@@ -727,7 +730,8 @@ class Model extends \GDAO\Model
             $foreign_model_obj = $this->_createRelatedModelObject(
                                             $foreign_models_class_name,
                                             $pri_key_col_in_foreign_models_table,
-                                            $foreign_table_name
+                                            $foreign_table_name,
+                                            $extra_opts_for_foreign_model
                                         );
             
             $params_2_bind_2_sql = $query_obj->getBindValues();
@@ -941,6 +945,9 @@ SELECT {$foreign_table_name}.*
         $foreign_models_table_sql_params = 
                 $array_get($rel_info, 'foreign_table_sql_params', array());
 
+        $extra_opts_for_foreign_model = 
+                $array_get($rel_info, 'extra_opts_for_foreign_model', array());
+
         $query_obj = 
             $this->_buildFetchQueryObjectFromParams(
                         $foreign_models_table_sql_params, 
@@ -977,7 +984,8 @@ SELECT {$foreign_table_name}.*
         $foreign_model_obj = $this->_createRelatedModelObject(
                                         $foreign_models_class_name,
                                         $pri_key_col_in_foreign_models_table,
-                                        $foreign_table_name
+                                        $foreign_table_name,
+                                        $extra_opts_for_foreign_model
                                     );
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $sql_2_get_related_data = $query_obj->__toString();
@@ -997,7 +1005,8 @@ SELECT {$foreign_table_name}.*
     protected function _createRelatedModelObject(
         $f_models_class_name, 
         $pri_key_col_in_f_models_table, 
-        $f_table_name
+        $f_table_name,
+        $extra_opts_for_foreign_model
     ) {
         //$foreign_models_class_name will never be empty it will default to \LeanOrm\Model
         //$foreign_table_name will never be empty because it is needed for fetching the 
@@ -1037,6 +1046,14 @@ SELECT {$foreign_table_name}.*
             }
         }
         
+        $merged_extra_opts = array_merge(
+            array(
+                '_primary_col' => $pri_key_col_in_f_models_table,
+                '_table_name' => $f_table_name
+            ),
+            $extra_opts_for_foreign_model
+        );
+        
         if(
             !empty($pri_key_col_in_f_models_table)
         ) {
@@ -1046,10 +1063,7 @@ SELECT {$foreign_table_name}.*
                 $this->_username, 
                 $this->_passwd, 
                 $this->_pdo_driver_opts,
-                array(
-                    '_primary_col' => $pri_key_col_in_f_models_table,
-                    '_table_name' => $f_table_name
-                )
+                $merged_extra_opts
             );
         } else {
             
