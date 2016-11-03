@@ -56,7 +56,7 @@ class Model extends \GDAO\Model
      * @var \LeanOrm\DBConnector
      */
     protected $_db_connector = null;
-
+    
 
     /**
      * 
@@ -433,6 +433,21 @@ class Model extends \GDAO\Model
         }
 
         return $select_qry_obj;
+    }
+    
+    public function getDefaultColVals() {
+        
+        $default_colvals = array();
+        
+        if( !empty($this->_table_cols) && count($this->_table_cols) > 0 ) {
+                        
+            foreach($this->_table_cols as $col_name => $col_metadata) {
+                
+                $default_colvals[$col_name] = $col_metadata['default'];
+            }
+        }
+        
+        return $default_colvals;
     }
 
     /**
