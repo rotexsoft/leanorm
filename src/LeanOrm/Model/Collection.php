@@ -114,6 +114,11 @@ class Collection implements \GDAO\Model\CollectionInterface
                         $result[] = $coll_key;
                     }
                 }
+                
+                if( count($result) <= 0 ) {
+                    
+                    $result = true;
+                }
             }
 
         }  catch(\Exception $e) {
