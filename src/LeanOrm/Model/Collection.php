@@ -265,7 +265,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function saveAll($group_inserts_together=false) {
         
-        $this->_preSaveAll();
+        $this->_preSaveAll($group_inserts_together);
         
         $result = true;
         $keys_4_unsuccessfully_saved_records = array();
@@ -329,7 +329,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             $result = $keys_4_unsuccessfully_saved_records;
         }
         
-        $this->_postSaveAll();
+        $this->_postSaveAll($result, $group_inserts_together);
 
         return $result;
     }
@@ -594,7 +594,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return void
      * 
      */
-    public function _preSaveAll() { }
+    public function _preSaveAll($group_inserts_together=false) { }
     
     /**
      * 
@@ -606,5 +606,5 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return void
      * 
      */
-    public function _postSaveAll() { }
+    public function _postSaveAll($save_all_result, $group_inserts_together=false) { }
 }
