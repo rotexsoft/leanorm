@@ -41,3 +41,7 @@
 * Update documentation for fetch method on the github page to reflect change that allows the use of scalars
 
 * Aim to meet the coding standards by http://thephpleague.com/#quality and hopefully see if this project can become a league package http://thephpleague.com/#contribute see https://github.com/thephpleague/skeleton
+
+* Add a $fillables property to the Model class to contain a list of column names that can be set on each Record belonging to a Model like in Laravel
+    - Add a property called $enforce_fillables that will enforce the fillable logic when loading data into a record
+    - Optionally add another property called $throw_fillable_violation_exception to allow throwing an exception when $enforce_fillables === true and the user tries to load data into a field not listed in the $fillables array
