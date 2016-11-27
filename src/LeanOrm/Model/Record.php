@@ -301,7 +301,10 @@ class Record implements \GDAO\Model\RecordInterface
 
         // if no column specified, check if the record as a whole has changed
         if ($col === null) {
-            foreach ($this->_initial_data as $col => $val) {
+            
+            $cols = $this->_model->getTableColNames();
+            
+            foreach ($cols as $col) {
                 if ($this->isChanged($col)) {
                     return true;
                 }
@@ -310,32 +313,53 @@ class Record implements \GDAO\Model\RecordInterface
         }
 
         // col needs to exist in the initial array
-        if (!array_key_exists($col, $this->_initial_data)) {
-            return null;
-        }
-
-        // track changes to or from null
-        $from_null = $this->_initial_data[$col] === null &&
-                $this->_data[$col] !== null;
-
-        $to_null = $this->_initial_data[$col] !== null &&
-                $this->_data[$col] === null;
-
-        if ($from_null || $to_null) {
+        if (
+            (    
+                !array_key_exists($col, $this->_initial_data)
+                && array_key_exists($col, $this->_data)
+            )
+            ||
+            (    
+                array_key_exists($col, $this->_initial_data)
+                && !array_key_exists($col, $this->_data)
+            )                    
+        ) {
             return true;
+            
+        } else if(
+            !array_key_exists($col, $this->_initial_data)
+            && !array_key_exists($col, $this->_data)
+        ) {
+            return null;
+            
+        } else {
+            // array_key_exists($col, $this->_initial_data)
+            // && array_key_exists($col, $this->_data)
+
+            // track changes to or from null
+            $from_null = $this->_initial_data[$col] === null &&
+                    $this->_data[$col] !== null;
+
+            $to_null = $this->_initial_data[$col] !== null &&
+                    $this->_data[$col] === null;
+
+            if ($from_null || $to_null) {
+                
+                return true;
+            }
+
+            // track numeric changes
+            $both_numeric = is_numeric($this->_initial_data[$col]) &&
+                    is_numeric($this->_data[$col]);
+
+            if ($both_numeric) {
+                // use normal inequality
+                return $this->_initial_data[$col] != (string) $this->_data[$col];
+            }
+
+            // use strict inequality
+            return $this->_initial_data[$col] !== $this->_data[$col];
         }
-
-        // track numeric changes
-        $both_numeric = is_numeric($this->_initial_data[$col]) &&
-                is_numeric($this->_data[$col]);
-
-        if ($both_numeric) {
-            // use normal inequality
-            return $this->_initial_data[$col] != (string) $this->_data[$col];
-        }
-
-        // use strict inequality
-        return $this->_initial_data[$col] !== $this->_data[$col];
     }
     
     /**
