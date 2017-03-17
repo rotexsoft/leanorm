@@ -2,6 +2,8 @@
 
 * Strive for 100% Unit Test Coverage
 
+* Take a look at https://github.com/usmanhalalit/pixie for inspiration on how to implement a fluent interface for querying Models. The current fetch*() methods are not very user-friendly with regards to specifying 'where' params
+
 * Add magic methods like fetchOneRecordByCol1AndCol2($col1_val, $col2_val) as code snippets in documentation
 
 * Lower testing requirement to allow for PHP 5.3 (the only downside is the loss of the convenient use of the short array syntax)
