@@ -206,7 +206,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
 	public function loadData(\GDAO\Model\RecordsList $data_2_load){
         
-        $this->_data = $data_2_load->getData();
+        $this->_data = $data_2_load->toArray();
     }
     
     
