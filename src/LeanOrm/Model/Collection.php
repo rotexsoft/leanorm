@@ -408,7 +408,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function offsetSet($key, $val) {
 
-        if( !($val instanceof RecordInterface) ) {
+        if( !($val instanceof \GDAO\Model\RecordInterface) ) {
             
             $msg = "ERROR: Only instances of \\GDAO\\Model\\RecordInterface or its"
                    . " sub-classes can be added to a Collection. You tried to"
