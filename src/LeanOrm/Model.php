@@ -1118,6 +1118,7 @@ SELECT {$foreign_table_name}.*
             if( count($col_vals) > 0 ) {
 
                 $pdo = $this->getPDO();
+                $col_vals = array_unique($col_vals);
 
                 foreach ( $col_vals as $key=>$val ) {
 
@@ -1361,6 +1362,8 @@ SELECT {$foreign_table_name}.*
             foreach ($cols_n_vals as $colname => $colval) {
 
                 if (is_array($colval)) {
+                    
+                    $colval = array_unique($colval);
                     
                     //quote all string values
                     array_walk(
@@ -1924,6 +1927,9 @@ SELECT {$foreign_table_name}.*
                 foreach ($col_names_n_vals_2_match as $colname => $colval) {
 
                     if (is_array($colval)) {
+                        
+                        $colval = array_unique($colval);
+                        
                         //quote all string values
                         array_walk(
                             $colval,
