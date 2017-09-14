@@ -18,6 +18,7 @@ namespace LeanOrm {
     class ModelBadRecordClassNameForFetchingRelatedDataException extends \Exception{}
     class ModelRelatedModelNotCreatedException extends \Exception{}
     class CantDeleteReadOnlyRecordFromDBException extends \Exception{}
+    class KeyingFetchResultsByPrimaryKeyFailedException extends \Exception{}
     //class BadPriKeyIdValuesForFetchException extends \Exception{}
 
 }

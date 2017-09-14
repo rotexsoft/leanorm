@@ -1201,10 +1201,8 @@ SELECT {$foreign_table_name}.*
      * 
      * @return array|\LeanOrm\Model\Record|\LeanOrm\Model\Collection Description
      * 
-     * @throws \LeanOrm\BadPriKeyIdValuesForFetchException
-     * 
      */
-    public function fetch($ids, array $params=array(), $use_records=false, $use_collections=false) {
+    public function fetch($ids, array $params=array(), $use_records=false, $use_collections=false, $use_p_k_val_as_key=false) {
                 
         if( !array_key_exists('where', $params) ) {
             
@@ -1218,28 +1216,32 @@ SELECT {$foreign_table_name}.*
             
             if( $use_collections ) {
                 
-                return $this->fetchRecordsIntoCollection($params);
+                return ($use_p_k_val_as_key) 
+                            ? $this->fetchRecordsIntoCollectionKeyedOnPkVal($params) 
+                            : $this->fetchRecordsIntoCollection($params);
                 
             } else {
                 
                 if( $use_records ) {
                     
-                    return $this->fetchRecordsIntoArray($params);
+                    return ($use_p_k_val_as_key) 
+                            ? $this->fetchRecordsIntoArrayKeyedOnPkVal($params) 
+                            : $this->fetchRecordsIntoArray($params);
                 }
                 
                 //default
-                return $this->fetchRowsIntoArray($params);
+                return ($use_p_k_val_as_key) 
+                            ? $this->fetchRowsIntoArrayKeyedOnPkVal($params) 
+                            : $this->fetchRowsIntoArray($params);
             }
             
         } else {
             
             //assume it's a scalar value, string, int , etc
-            
             $params['where'][] = 
                 array( 'col'=>$this->getPrimaryColName(), 'op'=>'=', 'val'=>$ids );
 
             return $this->fetchOneRecord($params);
-            
         }
     }
     
@@ -1249,8 +1251,18 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchRecordsIntoCollection(array $params = array()) {
 
+        return $this->doFetchRecordsIntoCollection($params);
+    }
+    
+    public function fetchRecordsIntoCollectionKeyedOnPkVal(array $params = array()) {
+
+        return $this->doFetchRecordsIntoCollection($params, true);
+    }
+    
+    protected function doFetchRecordsIntoCollection(array $params = array(), $use_p_k_val_as_key=false) {
+        
         $results = false;
-        $data = $this->_getArrayOfRecordObjects($params);
+        $data = $this->_getArrayOfRecordObjects($params, $use_p_k_val_as_key);
         
         if($data !== false && is_array($data) && count($data) > 0 ) {
         
@@ -1263,7 +1275,8 @@ SELECT {$foreign_table_name}.*
                     $this->loadRelationshipData($rel_name, $results, true, true);
                 }
             }
-        } 
+        }
+        
         return $results;
     }
     
@@ -1273,7 +1286,17 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchRecordsIntoArray(array $params = array()) {
         
-        $results = $this->_getArrayOfRecordObjects($params);
+        return $this->doFetchRecordsIntoArray($params);
+    }
+    
+    public function fetchRecordsIntoArrayKeyedOnPkVal(array $params = array()) {
+        
+        return $this->doFetchRecordsIntoArray($params, true);
+    }
+    
+    protected function doFetchRecordsIntoArray(array $params = array(), $use_p_k_val_as_key=false) {
+        
+        $results = $this->_getArrayOfRecordObjects($params, $use_p_k_val_as_key);
 
         if( $results !== false && is_array($results) && count($results) > 0 ) {
             
@@ -1289,9 +1312,9 @@ SELECT {$foreign_table_name}.*
         return $results;
     }
     
-    protected function _getArrayOfRecordObjects($params) {
+    protected function _getArrayOfRecordObjects($params, $use_p_k_val_as_key=false) {
 
-        $results = $this->_getArrayOfDbRows($params);
+        $results = $this->_getArrayOfDbRows($params, $use_p_k_val_as_key);
         
         if( $results !== false && is_array($results) ) {
          
@@ -1304,13 +1327,39 @@ SELECT {$foreign_table_name}.*
         return $results;
     }
     
-    protected function _getArrayOfDbRows($params) {
+    protected function _getArrayOfDbRows($params, $use_p_k_val_as_key=false) {
         
         $query_obj = $this->_buildFetchQueryObjectFromParams($params);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
+        
+        $results = $this->_db_connector->dbFetchAll($sql, $params_2_bind_2_sql);
+        
+        if( $use_p_k_val_as_key && is_array($results) && count($results) > 0 && !empty($this->_primary_col) ) {
+            
+            $results_keyed_by_pk = [];
+            
+            foreach( $results as $result ) {
+                
+                if( !array_key_exists($this->_primary_col, $result) ) {
+                    
+                    $msg = "ERROR: Can't key fetch results by Primary Key value."
+                         . PHP_EOL . " One or more result rows has no Primary Key field (`{$this->_primary_col}`)" 
+                         . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                         . PHP_EOL . 'Fetch Results:' . PHP_EOL . var_export($results, true) . PHP_EOL
+                         . PHP_EOL . "Row without Primary Key field (`{$this->_primary_col}`):" . PHP_EOL . var_export($result, true) . PHP_EOL;
+                    
+                    throw new \LeanOrm\KeyingFetchResultsByPrimaryKeyFailedException($msg);
+                }
+                
+                // key on primary key value
+                $results_keyed_by_pk[$result[$this->_primary_col]] = $result;
+            }
+            
+            $results = $results_keyed_by_pk;
+        }
 
-        return $this->_db_connector->dbFetchAll($sql, $params_2_bind_2_sql);
+        return $results;
     }
     
     /**
@@ -1319,7 +1368,17 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchRowsIntoArray(array $params = array()) {
 
-        $results = $this->_getArrayOfDbRows($params);
+        return $this->doFetchRowsIntoArray($params);
+    }
+    
+    public function fetchRowsIntoArrayKeyedOnPkVal(array $params = array()) {
+
+        return $this->doFetchRowsIntoArray($params, true);
+    }
+    
+    protected function doFetchRowsIntoArray(array $params = array(), $use_p_k_val_as_key=false) {
+        
+        $results = $this->_getArrayOfDbRows($params, $use_p_k_val_as_key);
 
         if( $results !== false && is_array($results) && count($results) > 0 ) {
             

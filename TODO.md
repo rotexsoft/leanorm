@@ -47,3 +47,8 @@
 * Add a $fillables property to the Model class to contain a list of column names that can be set on each Record belonging to a Model like in Laravel
     - Add a property called $enforce_fillables that will enforce the fillable logic when loading data into a record
     - Optionally add another property called $throw_fillable_violation_exception to allow throwing an exception when $enforce_fillables === true and the user tries to load data into a field not listed in the $fillables array
+
+* Look into making sure Records and Collections can be serialized (the pdo object associated with the model connected to a record / collection may be problematic when (un)serializing)
+    - look at creating disconnected records and collection classes
+        - seems like a cleaner approach since stuff can be serialized and unserialized without caring about the existence of a pdo connection to re-create a collection or record object
+    - or use __sleep() and __wakeup() to select what gets serialized and unserialized
