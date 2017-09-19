@@ -109,18 +109,37 @@ class Model extends \GDAO\Model
         //Get and Set Table Schema Meta Data if Not Already Set
         ////////////////////////////////////////////////////////
         if ( empty($this->_table_cols) || count($this->_table_cols) <= 0 ) {
+            
+            static $dsn_n_tname_to_schema_def_map;
+            
+            if( !$dsn_n_tname_to_schema_def_map ) {
+                
+                $dsn_n_tname_to_schema_def_map = [];
+            }
+            
+            $schema_definitions = [];
+            
+            if( array_key_exists($dsn.$this->_table_name, $dsn_n_tname_to_schema_def_map) ) {
+                
+                // use cached schema definition for the dsn and table name combo
+                $schema_definitions = $dsn_n_tname_to_schema_def_map[$dsn.$this->_table_name];
+                
+            } else {
+                // a column definition factory 
+                $column_factory = new ColumnFactory();
 
-            // a column definition factory 
-            $column_factory = new ColumnFactory();
+                $schema_class_name = '\\Aura\\SqlSchema\\' 
+                                     .ucfirst($this->_pdo_driver_name).'Schema';
 
-            $schema_class_name = '\\Aura\\SqlSchema\\' 
-                                 .ucfirst($this->_pdo_driver_name).'Schema';
+                // the schema discovery object
+                $schema = new $schema_class_name($this->getPDO(), $column_factory);
 
-            // the schema discovery object
-            $schema = new $schema_class_name($this->getPDO(), $column_factory);
-
-            $this->_table_cols = array();
-            $schema_definitions = $schema->fetchTableCols($this->_table_name);
+                $this->_table_cols = array();
+                $schema_definitions = $schema->fetchTableCols($this->_table_name);
+                
+                // cache schema definition for the current dsn and table combo
+                $dsn_n_tname_to_schema_def_map[$dsn.$this->_table_name] = $schema_definitions;
+            }
 
             foreach( $schema_definitions as $colname => $metadata_obj ) {
 
