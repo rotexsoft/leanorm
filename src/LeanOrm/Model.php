@@ -736,11 +736,7 @@ class Model extends \GDAO\Model
             if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
                 
                 $where_cond = " {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = "
-                     . (
-                            is_string($parent_data->$fkey_col_in_my_table) ? 
-                                $this->getPDO()->quote( $parent_data->$fkey_col_in_my_table )
-                                : $parent_data->$fkey_col_in_my_table
-                        );
+                     . Utils::quoteStrForQuery($this->getPDO(), $parent_data->$fkey_col_in_my_table);
                 
                 $query_obj->where($where_cond);
                 
@@ -992,12 +988,7 @@ SELECT {$foreign_table_name}.*
         if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
             $where_cond = " {$foreign_table_name}.{$fkey_col_in_foreign_table} = "
-                        . (
-                           is_string($parent_data->$fkey_col_in_my_table) ? 
-                               $this->getPDO()
-                                    ->quote( $parent_data->$fkey_col_in_my_table )
-                                : $parent_data->$fkey_col_in_my_table
-                           );
+                        . Utils::quoteStrForQuery($this->getPDO(), $parent_data->$fkey_col_in_my_table);
             $query_obj->where($where_cond);
 
         } else {
@@ -1141,8 +1132,7 @@ SELECT {$foreign_table_name}.*
 
                 foreach ( $col_vals as $key=>$val ) {
 
-                    $col_vals[$key] = 
-                                is_string($val)? $pdo->quote($val) : $val;
+                    $col_vals[$key] = \LeanOrm\Utils::quoteStrForQuery($pdo, $val);
                 }
             }
         }
@@ -1447,7 +1437,7 @@ SELECT {$foreign_table_name}.*
                     array_walk(
                         $colval,
                         function(&$val, $key, $pdo) {
-                            $val = (is_string($val)) ? $pdo->quote($val) : $val;
+                            $val = \LeanOrm\Utils::quoteStrForQuery($pdo, $val);
                         },                     
                         $this->getPDO()
                     );
@@ -2012,7 +2002,7 @@ SELECT {$foreign_table_name}.*
                         array_walk(
                             $colval,
                             function(&$val, $key, $pdo) {
-                                $val = (is_string($val)) ? $pdo->quote($val) : $val;
+                                $val = \LeanOrm\Utils::quoteStrForQuery($pdo, $val);
                             },                     
                             $this->getPDO()
                         );
