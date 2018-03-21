@@ -884,25 +884,27 @@ SELECT {$foreign_table_name}.*
                 //stitch the related data to the approriate parent records
                 foreach( $parent_data as $p_rec_key => $parent_record ) {
 
-                    $matching_related_record = 
-                        array($related_data[$parent_record[$fkey_col_in_my_table]]);
-                    
-                    $this->_wrapRelatedDataInsideRecordsAndCollection(
-                                $wrap_row_in_a_record, $matching_related_record, 
-                                $foreign_models_record_class_name, 
-                                $foreign_model_obj, false, ''
-                            );
+                    if( isset($related_data[$parent_record[$fkey_col_in_my_table]]) ) {
+                        $matching_related_record = 
+                            array($related_data[$parent_record[$fkey_col_in_my_table]]);
 
-                    //set the related data for the current parent record
-                    if( $parent_record instanceof \GDAO\Model\RecordInterface ) {
+                        $this->_wrapRelatedDataInsideRecordsAndCollection(
+                                    $wrap_row_in_a_record, $matching_related_record, 
+                                    $foreign_models_record_class_name, 
+                                    $foreign_model_obj, false, ''
+                                );
 
-                        $parent_data[$p_rec_key]
-                            ->setRelatedData($rel_name, $matching_related_record[0]);
+                        //set the related data for the current parent record
+                        if( $parent_record instanceof \GDAO\Model\RecordInterface ) {
 
-                    } else {
+                            $parent_data[$p_rec_key]
+                                ->setRelatedData($rel_name, $matching_related_record[0]);
 
-                        //the current record must be an array
-                        $parent_data[$p_rec_key][$rel_name] = $matching_related_record[0];
+                        } else {
+
+                            //the current record must be an array
+                            $parent_data[$p_rec_key][$rel_name] = $matching_related_record[0];
+                        }
                     }
                 } //foreach( $parent_data as $p_rec_key => $parent_record )
         
