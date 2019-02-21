@@ -15,9 +15,9 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "rotexsoft/gdao": "dev-master",
+        "rotexsoft/gdao": "1.0.0-RC2",
         "aura/sqlquery": "^2.4",
-        "aura/sqlschema": "^2.0",
+        "aura/sqlschema": "^2.0",dev-master
         "ramsey/array_column": "^1.1",
         "rotexsoft/handy-php-functions": "^1.0"
     },
