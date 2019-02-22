@@ -35,3 +35,5 @@ phpunit.xml
 *.phar
 file-only-present-on-dev-pc-at-home.txt
 index.php
+
+.phpunit.result.cache

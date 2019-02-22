@@ -1,5 +1,8 @@
-##### A Generic Data Objects ( https://github.com/rotexsoft/gdao ) implementation based on a stripped down version of idiorm (\\LeanOrm\\DBConnector). A light-weight, highly performant PHP data access library. https://travis-ci.org/rotexsoft/leanorm/builds ![Build Status](https://travis-ci.org/rotexsoft/leanorm.svg?branch=master)
-
-WILL RESUME ACTIVE DEVELOPMENT IN JULY 2016.
+##### A Generic Data Objects ( https://github.com/rotexsoft/gdao ) implementation based on a stripped down version of idiorm (\\LeanOrm\\DBConnector). A light-weight, highly performant PHP data access library. [![Build Status](https://img.shields.io/travis/rotexsoft/leanorm/master.png?style=flat-square)](https://travis-ci.org/rotexsoft/leanorm) 
 
 See http://rotexsoft.github.io/leanorm/ for documentation.
+
+## Dev Notes
+
+ * Old versions have branches corresponding to their version numbers (e.g. 1.X) 
+while the most current / actively being developed version is on the master branch

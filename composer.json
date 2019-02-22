@@ -14,18 +14,17 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
-        "rotexsoft/gdao": "1.0.0-RC2",
+        "php": ">=7.2",
+        "rotexsoft/gdao": "dev-master",
         "aura/sqlquery": "^2.4",
         "aura/sqlschema": "^2.0",
-        "ramsey/array_column": "^1.1",
         "rotexsoft/handy-php-functions": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.7",
+        "phpunit/phpunit": "^8.0",
         "devster/ubench": "^1.1",
         "digitalnature/php-ref": "^1.0",
-        "satooshi/php-coveralls": "^1.0"
+        "php-coveralls/php-coveralls": "^2.0"
     },
     "autoload": {
         "classmap": ["src/", "demo/"]

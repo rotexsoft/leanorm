@@ -6,11 +6,11 @@ use Aura\SqlQuery\QueryFactory;
  *
  * @author Rotimi Adegbamigbe
  */
-class ModelTest extends \PHPUnit_Framework_TestCase
+class ModelTest extends \PHPUnit\Framework\TestCase
 {
     protected $_mock_model_objs = [];
 
-    protected function setUp() {
+    protected function setUp(): void {
         
         parent::setUp();
         
@@ -130,7 +130,7 @@ HAVING
 	column_name_55 IS NULL
 )
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
 //print_r( $select_qry_obj->getBindValues());exit;
         
         $expected_params = [
@@ -210,7 +210,7 @@ WHERE
 	column_name_55 IS NULL
 )
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
         $expected_params = [
             '_11_' => 58, '_12_' => 68, '_13_' => 581, '_14_' => 681, '_15_' => 582,
@@ -239,7 +239,7 @@ SELECT DISTINCT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
 ////////////////////////////////////////////////////////////////////////////////        
         $params = [
@@ -256,7 +256,7 @@ SELECT DISTINCT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
                 
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -277,7 +277,7 @@ SELECT DISTINCT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
                 
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -299,7 +299,7 @@ SELECT DISTINCT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
                 
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -322,7 +322,7 @@ SELECT DISTINCT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -346,7 +346,7 @@ SELECT DISTINCT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
                 
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -370,7 +370,7 @@ SELECT DISTINCT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
        
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -395,7 +395,7 @@ SELECT DISTINCT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -417,7 +417,7 @@ SELECT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -437,7 +437,7 @@ SELECT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
                 
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -458,7 +458,7 @@ SELECT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -480,7 +480,7 @@ SELECT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -503,7 +503,7 @@ SELECT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -527,7 +527,7 @@ SELECT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -551,7 +551,7 @@ SELECT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -576,7 +576,7 @@ SELECT
 FROM
     "Customers"
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
         
         $expected_params = [];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -639,7 +639,7 @@ ORDER BY
     title desc
 LIMIT 400 OFFSET 50
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
 
         $expected_params = [ '_21_' => 0, '_22_' => 9, '_23_' => 0];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -694,7 +694,7 @@ GROUP BY
 ORDER BY
     title desc
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
                 
         $expected_params = ['_24_' => 0];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
@@ -750,7 +750,7 @@ GROUP BY
 ORDER BY
     title desc
 EOT;
-        $this->assertContains($expected_sql, $select_qry_obj->__toString());
+        $this->assertStringContainsString($expected_sql, $select_qry_obj->__toString());
                 
         $expected_params = ['_25_' => 0];
         $this->assertEquals($expected_params, $select_qry_obj->getBindValues());
