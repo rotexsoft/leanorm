@@ -79,7 +79,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @throws \LeanOrm\CantDeleteReadOnlyRecordFromDBException
      * 
      */
-	public function deleteAll() {
+    public function deleteAll() {
         
         $this->_preDeleteAll();
         
@@ -106,12 +106,14 @@ class Collection implements \GDAO\Model\CollectionInterface
                 //that were not successfully saved.
 
                 foreach( $this->_data as $coll_key=>$record ) {
-
+                    
+                    $primary_key = $record->getPrimaryVal();
+                    
                     if( $record->delete() !== true ) {
 
                         //record still exists in the db table
                         //it wasn't successfully deleted.
-                        $result[] = $coll_key;
+                        $result[] = $primary_key;
                     }
                 }
                 
