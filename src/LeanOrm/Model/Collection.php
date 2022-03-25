@@ -375,6 +375,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return bool
      * 
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($key) {
         
         return $this->__isset($key);
@@ -389,6 +390,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return mixed
      * 
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($key) {
         
         return $this->__get($key);
@@ -445,6 +447,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return void
      * 
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($key) {
         
         $this->__unset($key);
@@ -457,6 +460,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return int
      * 
      */
+    #[\ReturnTypeWillChange]
     public function count() {
         
         return count($this->_data);
@@ -469,6 +473,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return \Iterator an Iterator eg. an instance of \ArrayIterator
      * 
      */
+    #[\ReturnTypeWillChange]
     public function getIterator() {
         
         return new \ArrayIterator($this->_data);

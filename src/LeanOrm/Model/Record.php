@@ -739,6 +739,7 @@ class Record implements \GDAO\Model\RecordInterface
      * @return bool
      * 
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($key) {
 
         return $this->__isset($key);
@@ -753,6 +754,7 @@ class Record implements \GDAO\Model\RecordInterface
      * @return mixed
      * 
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($key) {
 
         return $this->__get($key);
@@ -769,6 +771,7 @@ class Record implements \GDAO\Model\RecordInterface
      * @return void
      * 
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($key, $val) {
 
         $this->__set($key, $val);
@@ -783,6 +786,7 @@ class Record implements \GDAO\Model\RecordInterface
      * @return void
      * 
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($key) {
 
         $this->__unset($key);
@@ -795,6 +799,7 @@ class Record implements \GDAO\Model\RecordInterface
      * @return int
      * 
      */
+    #[\ReturnTypeWillChange]
     public function count() {
 
         return count($this->_data);
@@ -806,6 +811,7 @@ class Record implements \GDAO\Model\RecordInterface
      * @return \ArrayIterator
      * 
      */
+    #[\ReturnTypeWillChange]
     public function getIterator() {
 
         return new \ArrayIterator($this->_data + $this->_related_data + $this->_non_table_col_and_non_related_data);
