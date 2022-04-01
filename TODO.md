@@ -1,4 +1,4 @@
-* Add License
+Add them to https://github.com/rotexsoft/leanorm/issues moving forward. 
 
 * Strive for 100% Unit Test Coverage
 
