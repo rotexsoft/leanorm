@@ -52,3 +52,5 @@ Add them to https://github.com/rotexsoft/leanorm/issues moving forward.
     - look at creating disconnected records and collection classes
         - seems like a cleaner approach since stuff can be serialized and unserialized without caring about the existence of a pdo connection to re-create a collection or record object
     - or use __sleep() and __wakeup() to select what gets serialized and unserialized
+
+* https://github.com/morris/lessql & https://github.com/paragonie/easydb see tests & try to get inspiration
