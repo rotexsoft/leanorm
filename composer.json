@@ -14,7 +14,7 @@
         }
     ],
     "require": {
-        "php": ">=7.2",
+        "php": ">=7.4",
         "rotexsoft/gdao": "dev-master",
         "aura/sqlquery": "^2.4",
         "aura/sqlschema": "^2.0",
@@ -24,7 +24,9 @@
         "phpunit/phpunit": "^9.0",
         "devster/ubench": "^1.1",
         "digitalnature/php-ref": "^1.0",
-        "php-coveralls/php-coveralls": "^2.0"
+        "php-coveralls/php-coveralls": "^2.0",
+        "vimeo/psalm": "^4.3",
+        "rector/rector": "^0.14.0"
     },
     "autoload": {
         "classmap": ["src/", "demo/"]
@@ -33,6 +35,9 @@
         "classmap": ["src/", "demo/", "tests/"]
     },
     "scripts": {
-        "test": "vendor/bin/phpunit --coverage-text"
+        "test": "vendor/bin/phpunit --coverage-text",
+        "rector": "vendor/bin/rector process src --dry-run -vvv",
+        "psalm": "vendor/bin/psalm",
+        "qa": "composer test && composer rector && composer psalm"
     }
 }
