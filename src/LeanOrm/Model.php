@@ -951,7 +951,9 @@ SELECT {$foreign_table_name}.*
      * @param bool $use_records true if each matched db row should be wrapped in 
      *                          an instance of \LeanOrm\Model\Record; false if 
      *                          rows should be returned as associative php 
-     *                          arrays
+     *                          arrays. If $use_collections === true, records
+     *                          will be returned inside a collection regardless
+     *                          of the value of $use_records
      * 
      * @param bool $use_collections true if each matched db row should be wrapped
      *                              in an instance of \LeanOrm\Model\Record and 

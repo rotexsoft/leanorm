@@ -23,7 +23,10 @@
         "phpunit/phpunit": "^9.0",
         "php-coveralls/php-coveralls": "^2.0",
         "vimeo/psalm": "^4.3",
-        "rector/rector": "^0.14.0"
+        "rector/rector": "^0.14.0",
+        "symfony/polyfill-php80": "^1.26",
+        "symfony/polyfill-php81": "^1.26",
+        "symfony/polyfill-php82": "^1.26"
     },
     "autoload": {
         "classmap": ["src/"]
