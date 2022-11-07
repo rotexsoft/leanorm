@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace LeanOrm\Model;
 
 use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
@@ -14,7 +14,7 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
  * instances of this class.
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2015, Rotimi Adegbamigbe
+ * @copyright (c) 2022, Rotexsoft
  */
 class ReadOnlyRecord implements \GDAO\Model\RecordInterface
 {
@@ -22,35 +22,31 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * Data for this record ([to be saved to the db] or [as read from the db]).
      *
-     * @var array 
      */
-    protected $_data = array();
+    protected array $_data = [];
     
     /**
      * 
      * Data for this record (not to be saved to the db i.e. not from any actual db column and not related data).
      *
-     * @var array 
      */
-    protected $_non_table_col_and_non_related_data = array();
+    protected array $_non_table_col_and_non_related_data = [];
     
     /**
      * 
      * Holds relationship data retrieved based on definitions in the array below.
      * \GDAO\Model::$_relations
-     *
-     * @var array 
+     * 
      */
-    protected $_related_data = array();
+    protected array $_related_data = [];
 
     /**
      *
      * The model object that saves and reads data to and from the db on behalf 
      * of this record.
      * 
-     * @var \GDAO\Model
      */
-    protected $_model;
+    protected \GDAO\Model $_model;
 
     /**
      * 
@@ -66,7 +62,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      *                          value(s) for protected and / or private properties
      *                          of this class.
      */
-    public function __construct(array $data, \GDAO\Model $model, array $extra_opts=array()) {
+    public function __construct(array $data, \GDAO\Model $model, array $extra_opts=[]) {
         
         $this->setModel($model);
         $this->loadData($data);
@@ -113,7 +109,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * Not Supported, not overridable.
      * 
      */
-    public final function delete($set_record_objects_data_to_empty_array=false){
+    public final function delete($set_record_objects_data_to_empty_array=false): bool{
         
         $this->_throwNotSupportedException(__FUNCTION__);
     }
@@ -125,7 +121,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @return array a copy of the current data for this record
      */
-    public function getData() {
+    public function getData(): array {
         
         return $this->_data;
     }
@@ -135,9 +131,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * Not Supported, not overridable.
      * 
      */
-    public final function getInitialData() {
+    public final function getInitialData():array {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        return [];
     }
     
     
@@ -148,7 +144,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @return array a reference to all the related data loaded into this record.
      */
-    public function getRelatedData() {
+    public function getRelatedData(): array {
         
         return $this->_related_data;
     }
@@ -159,7 +155,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @return array Data for this record (not to be saved to the db i.e. not from any actual db column and not related data).
      */
-    public function getNonTableColAndNonRelatedData() {
+    public function getNonTableColAndNonRelatedData(): array {
         
         return $this->_non_table_col_and_non_related_data;
     }
@@ -171,7 +167,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @return array a reference to the current data for this record.
      */
-    public function &getDataByRef() {
+    public function &getDataByRef(): array {
         
         return $this->_data;
     }
@@ -181,9 +177,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * Not Supported, not overridable.
      * 
      */
-    public final function &getInitialDataByRef() {
+    public final function &getInitialDataByRef(): array {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        return [];
     }
     
     /**
@@ -193,7 +189,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @return array a reference to all the related data loaded into this record.
      */
-    public function &getRelatedDataByRef() {
+    public function &getRelatedDataByRef(): array {
         
         return $this->_related_data;
     }
@@ -204,7 +200,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @return array reference to the data for this record (not from any actual db column and not related data).
      */
-    public function &getNonTableColAndNonRelatedDataByRef() {
+    public function &getNonTableColAndNonRelatedDataByRef(): array {
         
         return $this->_non_table_col_and_non_related_data;
     }
@@ -219,7 +215,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * @throws \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException
      * 
      */
-    public function setRelatedData($key, $value) {
+    public function setRelatedData($key, $value): self {
         
         $my_model = $this->getModel();
         $table_cols = $my_model->getTableColNames();
@@ -241,16 +237,16 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
         
         //We're safe, set the related data.
         $this->_related_data[$key] = $value;
+        
+        return $this;
     }
     
     /**
      * 
      * Get the model object that saves and reads data to and from the db on 
      * behalf of this record.
-     * 
-     * @return \GDAO\Model
      */
-    public function getModel() {
+    public function getModel(): \GDAO\Model {
         
         return $this->_model;
     }
@@ -260,7 +256,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * @return string name of the primary-key column of the db table this record belongs to.
      * 
      */
-    public function getPrimaryCol() {
+    public function getPrimaryCol(): string {
 
         return $this->_model->getPrimaryColName();
     }
@@ -277,22 +273,22 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
 
     /**
      * 
-     * Not Supported, not overridable.
+     * Not overridable.
      *  
      */
-    public final function isChanged($col = null) {
+    public final function isChanged($col = null): ?bool {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        return false;
     }
     
     /**
      * 
-     * Not Supported, not overridable.
+     * Cannot be a new record, not overridable.
      * 
      */
-    public final function isNew() {
+    public final function isNew(): bool {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        return false;
     }
     
     /**
@@ -317,7 +313,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      * 
      */
-    public function loadData($data_2_load, array $cols_2_load = array()) {
+    public function loadData($data_2_load, array $cols_2_load = []): self {
 
         if(
             !is_array($data_2_load) 
@@ -405,6 +401,8 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
                 }
             } // foreach ( $cols_2_load as $col_name )
         }// else if ( is_array($cols_2_load) && count($cols_2_load) > 0 )
+        
+        return $this;
     }
 
     /**
@@ -412,9 +410,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * Not Supported, not overridable.
      * 
      */
-    public final function markAsNew() {
+    public final function markAsNew(): self {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        return $this;
     }
     
     /**
@@ -422,9 +420,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * Not Supported, not overridable.
      * 
      */
-    public final function markAsNotNew() {
+    public final function markAsNotNew(): self {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        return $this;
     }
     
     /**
@@ -432,9 +430,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * Not Supported, not overridable.
      * 
      */
-    public final function setStateToNew() {
+    public final function setStateToNew(): self {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        return $this;
     }
 
     /**
@@ -442,9 +440,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * Not Supported, not overridable.
      * 
      */
-    public final function save($data_2_save = null) {
+    public final function save($data_2_save = null): ?bool {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        return null;
     }
     
     /**
@@ -452,9 +450,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * Not Supported, not overridable.
      * 
      */
-    public final function saveInTransaction($data_2_save = null) {
+    public final function saveInTransaction($data_2_save = null): ?bool {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        return null;
     }
     
     /**
@@ -463,9 +461,11 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @param \GDAO\Model $model
      */
-    public function setModel(\GDAO\Model $model){
+    public function setModel(\GDAO\Model $model): self{
         
         $this->_model = $model;
+        
+        return $this;
     }
     
     /**
@@ -475,7 +475,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * @return array of all data & property (name & value pairs) for this record.
      * 
      */
-    public function toArray() {
+    public function toArray(): array {
 
         return get_object_vars($this);
     }
@@ -488,10 +488,8 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @param string $key The requested key.
      * 
-     * @return bool
-     * 
      */
-    public function offsetExists($key) {
+    public function offsetExists($key): bool {
 
         return $this->__isset($key);
     }
@@ -517,11 +515,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * @param string $key The requested key.
      * 
      * @param string $val The value to set it to.
-     * 
-     * @return void
-     * 
+     *  
      */
-    public final function offsetSet($key, $val) {
+    public final function offsetSet($key, $val): void {
 
         $this->__set($key, $val);
     }
@@ -532,32 +528,18 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @param string $key The requested key.
      * 
-     * @return void
-     * 
      */
-    public final function offsetUnset($key) {
+    public final function offsetUnset($key): void {
 
         $this->__unset($key);
     }
 
-    /**
-     * 
-     * Countable: how many keys are there?
-     * 
-     * @return int
-     * 
-     */
-    public function count() {
+    public function count(): int {
 
         return count($this->_data);
     }
 
-    /**
-     * 
-     * @return \ArrayIterator
-     * 
-     */
-    public function getIterator() {
+    public function getIterator(): \ArrayIterator {
 
         return new \ArrayIterator($this->_data + $this->_related_data + $this->_non_table_col_and_non_related_data);
     }
@@ -627,11 +609,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * say the key is set, even if the key value is null or otherwise empty.
      * 
      * @param string $key The requested data key.
-     * 
-     * @return void
-     * 
+     *  
      */
-    public function __isset($key) {
+    public function __isset($key): bool {
         
         try { $this->$key;  } //access the property first to make sure the data is loaded
         catch ( \Exception $ex ) {  } //do nothing if exception was thrown
@@ -649,10 +629,8 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @param mixed $val The value to set the data to.
      * 
-     * @return void
-     * 
      */
-    public final function __set($key, $val) {
+    public final function __set($key, $val): void {
         
         $this->_throwNotSupportedException(__FUNCTION__);
     }
@@ -663,10 +641,8 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @param string $key The requested data key.
      * 
-     * @return void
-     * 
      */
-    public final function __unset($key) {
+    public final function __unset($key): void {
         
         $this->_throwNotSupportedException(__FUNCTION__);
     }
@@ -680,7 +656,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      *                (name & value pairs) for this record.
      * 
      */
-    public function __toString() {
+    public function __toString(): string {
         
         return var_export($this->toArray(), true);
     }

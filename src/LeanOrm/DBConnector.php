@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace LeanOrm;
 
 /**
@@ -11,7 +12,7 @@ namespace LeanOrm;
  *      executing the statement in one single method. 
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2015, Rotimi Adegbamigbe
+ * @copyright (c) 2022, Rotexsoft
  * 
  * BSD Licensed.
  *
@@ -52,7 +53,7 @@ class DBConnector {
 //////////// --- CLASS PROPERTIES TO KEEP --- //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
     // Class configuration
-    protected static $_default_config = array(
+    protected static $_default_config = [
         'connection_string' => 'sqlite::memory:',
         'error_mode' => \PDO::ERRMODE_EXCEPTION,
         'username' => null,
@@ -60,19 +61,19 @@ class DBConnector {
         'driver_options' => null,
         'logging' => false,
         'logger' => null,
-    );
+    ];
 
     // Map of configuration settings
-    protected static $_config = array();
+    protected static $_config = [];
 
     // Map of database connections, instances of the PDO class
-    protected static $_db = array();
+    protected static $_db = [];
 
     // Last query run, only populated if logging is enabled
     protected static $_last_query;
 
     // Log of all queries run, mapped by connection key, only populated if logging is enabled
-    protected static $_query_log = array();
+    protected static $_query_log = [];
 
     // --------------------------- //
     // --- INSTANCE PROPERTIES --- //
@@ -204,7 +205,7 @@ class DBConnector {
                 ///////////////////////////
                 
                 // Map of configuration settings
-                return array (
+                return [
                     '$_config' => static::$_config,
 
                     // Map of database connections, instances of the PDO class
@@ -215,7 +216,7 @@ class DBConnector {
 
                     // Log of all queries run, mapped by connection key, only populated if logging is enabled
                     '$_query_log' => static::$_query_log,
-                );
+                ];
         }
     }
     
@@ -235,14 +236,14 @@ class DBConnector {
             case 'config':
                 
                 // Map of configuration settings
-                static::$_config = array();
+                static::$_config = [];
                 break;
             
             case '_db':
             case 'db':
                 
                 // Map of database connections, instances of the PDO class
-                static::$_db = array();
+                static::$_db = [];
                 break;
             
             case '_last_query':
@@ -256,7 +257,7 @@ class DBConnector {
             case 'query_log':
                 
                 // Log of all queries run, mapped by connection key, only populated if logging is enabled
-                static::$_query_log = array();
+                static::$_query_log = [];
                 break;
             
             default:
@@ -265,16 +266,16 @@ class DBConnector {
                 //////////////////////////
                 
                 // Map of configuration settings
-                static::$_config = array();
+                static::$_config = [];
                 
                 // Map of database connections, instances of the PDO class
-                static::$_db = array();
+                static::$_db = [];
                 
                 // Last query run, only populated if logging is enabled
                 static::$_last_query = '';
                 
                 // Log of all queries run, mapped by connection key, only populated if logging is enabled
-                static::$_query_log = array();
+                static::$_query_log = [];
                 break;
         }
     }
@@ -364,7 +365,7 @@ class DBConnector {
      * 
      * @return bool|array bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
      */
-    public function executeQuery( $query, $parameters=array(), $return_pdo_statement=false ) {
+    public function executeQuery( $query, $parameters=[], $return_pdo_statement=false ) {
         
         return static::_execute($query, $parameters, $return_pdo_statement, $this->_connection_name);
     }
@@ -380,7 +381,7 @@ class DBConnector {
     * 
     * @return bool|array bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
     */
-    protected static function _execute($query, $parameters = array(), $return_pdo_statement=false, $connection_name = self::DEFAULT_CONNECTION) {
+    protected static function _execute($query, $parameters = [], $return_pdo_statement=false, $connection_name = self::DEFAULT_CONNECTION) {
         
         $statement = static::getDb($connection_name)->prepare($query);
         $time = microtime(true);
@@ -412,7 +413,7 @@ class DBConnector {
         if( $return_pdo_statement ) {
             
             $exec_result = $result;
-            $result = array($exec_result, $statement);
+            $result = [$exec_result, $statement];
         }
         
         if ( static::$_config[$connection_name]['logging'] ) {
@@ -448,12 +449,12 @@ class DBConnector {
                 
         if ( !isset( static::$_query_log[$connection_name] ) ) {
             
-            static::$_query_log[$connection_name] = array();
+            static::$_query_log[$connection_name] = [];
         }
         
-        static::$_last_query = array('unbound'=>$query, 'parameters'=>$parameters);
+        static::$_last_query = ['unbound'=>$query, 'parameters'=>$parameters];
         
-        $parameters_with_non_int_keys = array();//holds named parameters
+        $parameters_with_non_int_keys = [];//holds named parameters
 
         // Strip out any non-integer indexes from the parameters
         foreach($parameters as $key => $value) {
@@ -471,7 +472,7 @@ class DBConnector {
             
             // Escape the parameters
             $parameters = 
-                array_map(array(static::getDb($connection_name), 'quote'), $parameters);
+                array_map([static::getDb($connection_name), 'quote'], $parameters);
 
             // Avoid %format collision for vsprintf
             $query = str_replace("%", "%%", $query);
@@ -495,12 +496,12 @@ class DBConnector {
             
             // Escape the parameters
             $parameters_with_non_int_keys = 
-                array_map(array(static::getDb($connection_name), 'quote'), $parameters_with_non_int_keys);
+                array_map([static::getDb($connection_name), 'quote'], $parameters_with_non_int_keys);
 
             // Avoid %format collision for vsprintf
             $query = str_replace("%", "%%", $query);
             
-            $re_indexed_parameters_with_non_int_keys_for_vsprintf = array();
+            $re_indexed_parameters_with_non_int_keys_for_vsprintf = [];
             
             foreach($parameters_with_non_int_keys as $key=>$value) {
                               
@@ -589,7 +590,7 @@ class DBConnector {
             return static::$_query_log;
         }
         
-        return array();
+        return [];
     }
 
     /**
@@ -633,7 +634,7 @@ class DBConnector {
      * to this method. This will perform a primary key
      * lookup on the table.
      */
-    public function dbFetchOne( $select_query,  $parameters = array() ) {
+    public function dbFetchOne( $select_query,  $parameters = [] ) {
 
        $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
         
@@ -648,7 +649,7 @@ class DBConnector {
      * used, the parameters should be an array of values which will
      * be bound to the placeholders in the query.
      */
-    public function dbFetchAll($select_query, $parameters = array()) {
+    public function dbFetchAll($select_query, $parameters = []) {
 
         $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
         
@@ -663,7 +664,7 @@ class DBConnector {
      * used, the parameters should be an array of values which will
      * be bound to the placeholders in the query.
      */
-    public function dbFetchCol($select_query, $parameters = array()) {
+    public function dbFetchCol($select_query, $parameters = []) {
 
         $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
         
@@ -678,13 +679,13 @@ class DBConnector {
      * used, the parameters should be an array of values which will
      * be bound to the placeholders in the query.
      */
-    public function dbFetchPairs($select_query, $parameters = array()) {
+    public function dbFetchPairs($select_query, $parameters = []) {
 
         $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
         
         $statement = array_pop($bool_and_statement);
         
-        $data = array();
+        $data = [];
         
         while ($row = $statement->fetch(\PDO::FETCH_NUM)) {
             
@@ -700,7 +701,7 @@ class DBConnector {
      * used, the parameters should be an array of values which will
      * be bound to the placeholders in the query.
      */
-    public function dbFetchValue($select_query, $parameters = array()) {
+    public function dbFetchValue($select_query, $parameters = []) {
 
         $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
         
@@ -801,7 +802,7 @@ class StringHelper {
             | ([^\'"\\\\]+)             # or $2: an unquoted chunk (no escapes).
             /sx';
         
-        return preg_replace_callback($re_parse, array($this, '_strReplaceOutsideQuotesCb'), $this->subject);
+        return preg_replace_callback($re_parse, [$this, '_strReplaceOutsideQuotesCb'], $this->subject);
     }
 
     /**

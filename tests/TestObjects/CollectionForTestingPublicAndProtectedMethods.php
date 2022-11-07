@@ -7,8 +7,8 @@
  */
 class CollectionForTestingPublicAndProtectedMethods extends \LeanOrm\Model\Collection
 {
-    public function __construct(\GDAO\Model\RecordsList $data, \GDAO\Model $model, array $extra_opts = []) {
+    public function __construct(\GDAO\Model $model, array $extra_opts=[], \GDAO\Model\RecordInterface ...$data) {
         
-        parent::__construct($data, $model, $extra_opts);
+        parent::__construct($model, $extra_opts, ...$data);
     }
 }

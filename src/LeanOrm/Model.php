@@ -1,14 +1,16 @@
 <?php
+declare(strict_types=1);
 namespace LeanOrm;
 use Aura\SqlQuery\QueryFactory;
 use Aura\SqlSchema\ColumnFactory;
+use LeanOrm\Utils;
 
 /**
  * 
  * Supported PDO drivers: mysql, pgsql, sqlite and sqlsrv
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2015, Rotimi Adegbamigbe
+ * @copyright (c) 2022, Rotexsoft
  */
 class Model extends \GDAO\Model
 {
@@ -17,57 +19,52 @@ class Model extends \GDAO\Model
      * Name of the collection class for this model. 
      * Must be a descendant of \GDAO\Model\Collection
      * 
-     * @var string 
      */
-    protected $_collection_class_name = '\\LeanOrm\Model\\Collection';
+    protected ?string $_collection_class_name = \LeanOrm\Model\Collection::class;
     
     
     /**
      * Name of the record class for this model. 
      * Must be a descendant of \GDAO\Model\Record
      * 
-     * @var string 
      */
-    protected $_record_class_name = '\\LeanOrm\\Model\\Record';
+    protected ?string $_record_class_name = \LeanOrm\Model\Record::class;
     
     /////////////////////////////////////////////////////////////////////////////
     // Properties declared here are specific to \LeanOrm\Model and its kids //
     /////////////////////////////////////////////////////////////////////////////
-    protected static $_valid_extra_opts_keys_4_dbconnector = array(
+    protected static array $_valid_extra_opts_keys_4_dbconnector = [
         'logging', //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
         'logger',  //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
-    );
+    ];
 
     /**
      *
      * Name of the pdo driver currently being used.
      * It must be one of the values returned by 
      * $this->getPDO()->getAvailableDrivers()
-     * 
-     * @var string  
+     *  
      */
-    protected $_pdo_driver_name = null;
+    protected string $_pdo_driver_name = '';
     
     
     /**
      *
      *  An object for interacting with the db
      * 
-     * @var \LeanOrm\DBConnector
      */
-    protected $_db_connector = null;
-    
+    protected ?\LeanOrm\DBConnector $_db_connector = null;
 
     /**
      * 
      * {@inheritDoc}
      */
     public function __construct(
-        $dsn = '', 
-        $username = '', 
-        $passwd = '', 
-        array $pdo_driver_opts = array(),
-        array $extra_opts = array()
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [],
+        array $extra_opts = []
     ) {
         $pri_col_not_set_exception = null;
         
@@ -134,7 +131,7 @@ class Model extends \GDAO\Model
                 // the schema discovery object
                 $schema = new $schema_class_name($this->getPDO(), $column_factory);
 
-                $this->_table_cols = array();
+                $this->_table_cols = [];
                 $schema_definitions = $schema->fetchTableCols($this->_table_name);
                 
                 // cache schema definition for the current dsn and table combo
@@ -143,7 +140,7 @@ class Model extends \GDAO\Model
 
             foreach( $schema_definitions as $colname => $metadata_obj ) {
 
-                $this->_table_cols[$colname] = array();
+                $this->_table_cols[$colname] = [];
                 $this->_table_cols[$colname]['name'] = $metadata_obj->name;
                 $this->_table_cols[$colname]['type'] = $metadata_obj->type;
                 $this->_table_cols[$colname]['size'] = $metadata_obj->size;
@@ -153,7 +150,7 @@ class Model extends \GDAO\Model
                 $this->_table_cols[$colname]['autoinc'] = $metadata_obj->autoinc;
                 $this->_table_cols[$colname]['primary'] = $metadata_obj->primary;
                 
-                if( is_null($this->_primary_col) && $metadata_obj->primary ) {
+                if( $this->_primary_col === '' && $metadata_obj->primary ) {
                     
                     //this is a primary column
                     $this->_primary_col = $metadata_obj->name;
@@ -162,7 +159,7 @@ class Model extends \GDAO\Model
         }
 
         //if $this->_primary_col is still null at this point, throw an exception.
-        if( is_null($this->_primary_col) ) {
+        if( $this->_primary_col === '' ) {
             
             throw $pri_col_not_set_exception;
         }
@@ -188,20 +185,26 @@ class Model extends \GDAO\Model
         }
     }
     
+    public function getSelect(): \Aura\SqlQuery\Common\Select {
+        
+        return (new QueryFactory($this->_pdo_driver_name))->newSelect();
+    }
+
+
     /**
      * 
      * {@inheritDoc}
      */
-    public function createNewCollection(\GDAO\Model\RecordsList $list_of_records, array $extra_opts=array()) {
+    public function createNewCollection(array $extra_opts=[], \GDAO\Model\RecordInterface ...$list_of_records): \GDAO\Model\CollectionInterface {
         
         if( empty($this->_collection_class_name) ) {
          
             //default to creating new collection of type \LeanOrm\Model\Collection
-            $collection = new \LeanOrm\Model\Collection($list_of_records, $this, $extra_opts);
+            $collection = new \LeanOrm\Model\Collection($this, $extra_opts, ...$list_of_records);
             
         } else {
             
-            $collection = new $this->_collection_class_name($list_of_records, $this, $extra_opts);
+            $collection = new $this->_collection_class_name($this, $extra_opts, ...$list_of_records);
         }
         
         return $collection;
@@ -211,7 +214,7 @@ class Model extends \GDAO\Model
      * 
      * {@inheritDoc}
      */
-    public function createNewRecord(array $col_names_n_vals = array(), array $extra_opts=array()) {
+    public function createNewRecord(array $col_names_n_vals = [], array $extra_opts=[]): \GDAO\Model\RecordInterface {
         
         if( empty($this->_record_class_name) ) {
          
@@ -233,230 +236,32 @@ class Model extends \GDAO\Model
      * @param string $table_name name of the table to select from (will default to $this->_table_name if empty)
      * @return \Aura\SqlQuery\Common\Select or any of its descendants
      */
-    protected function _buildFetchQueryObjectFromParams(
-        array $params=array(), array $disallowed_keys=array(), $table_name=''
-    ) {
-        $select_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newSelect();
+    protected function _buildDefaultFetchQueryObjectIfNeeded(?\Aura\SqlQuery\Common\Select $select_obj=null, $table_name='') {
         
-        if( empty($table_name) ) {
+        if( $select_obj === null ) {
             
-            $select_qry_obj->from($this->_table_name);
-            $table_name = $this->_table_name;
+            $select_obj = $this->getSelect();
             
-        } else {
-            
-            $select_qry_obj->from($table_name);
-        }
-        
-        if( !empty($params) && count($params) > 0 ) {
-            
-            if(
-                (
-                    !in_array('distinct', $disallowed_keys) 
-                    || count($disallowed_keys) <= 0
-                )
-                && array_key_exists('distinct', $params)
-            ) {
-                //add distinct clause if specified
-                if( $params['distinct'] ) {
-                    
-                    $select_qry_obj->distinct();
-                }
-            }
-            
-            if( 
-                (
-                    !in_array('cols', $disallowed_keys) 
-                    || count($disallowed_keys) <= 0
-                )
-                && array_key_exists('cols', $params)
-            ) {
-                if( is_array($params['cols']) ) {
-                    
-                    $select_qry_obj->cols($params['cols']);
-                    
-                } else {
-                    //throw exception badly structured array
-                    $msg = "ERROR: Bad fetch param entry. Array expected as the"
-                         . " value of the item with the key named 'cols' in the"
-                         . " array: "
-                         . PHP_EOL . var_export($params, true) . PHP_EOL
-                         . " passed to " 
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . PHP_EOL;
+            if( empty($table_name) ) {
 
-                    throw new ModelBadColsParamSuppliedException($msg);
-                }
-                
-            } else if( !array_key_exists('cols', $params) ) {
-                
-                //default to SELECT *
-                $select_qry_obj->cols(array(" {$table_name}.* "));
-            }
-            
-            if( 
-                (
-                    !in_array('where', $disallowed_keys) 
-                    || count($disallowed_keys) <= 0
-                )
-                && array_key_exists('where', $params)
-            ) {
-                if( is_array($params['where']) ) {
-                    
-                    $this->_addWhereConditions2Query(
-                                $params['where'], $select_qry_obj
-                            );
-                } else {
-                    //throw exception badly structured array
-                    $msg = "ERROR: Bad fetch param entry. Array expected as the"
-                         . " value of the item with the key named 'where' in the"
-                         . " array: "
-                         . PHP_EOL . var_export($params, true) . PHP_EOL
-                         . " passed to " 
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . PHP_EOL;
+                $select_obj->from($this->_table_name);
+                $table_name = $this->_table_name;
 
-                    throw new ModelBadWhereParamSuppliedException($msg);
-                }
-            }
-            
-            if( 
-                (
-                    !in_array('group', $disallowed_keys) 
-                    || count($disallowed_keys) <= 0
-                )
-                && array_key_exists('group', $params)
-            ) {
-                if( is_array($params['group']) ) {
-                    
-                    $select_qry_obj->groupBy($params['group']);
-                    
-                } else {
-                    //throw exception badly structured array
-                    $msg = "ERROR: Bad fetch param entry. Array expected as the"
-                         . " value of the item with the key named 'group' in the"
-                         . " array: "
-                         . PHP_EOL . var_export($params, true) . PHP_EOL
-                         . " passed to " 
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . PHP_EOL;
+            } else {
 
-                    throw new ModelBadGroupByParamSuppliedException($msg);
-                }
+                $select_obj->from($table_name);
             }
-            
-            if( 
-                (
-                    !in_array('having', $disallowed_keys) 
-                    || count($disallowed_keys) <= 0
-                )
-                && array_key_exists('having', $params)
-            ) {
-                if( is_array($params['having']) ) {
-                    
-                    $this->_addHavingConditions2Query(
-                                $params['having'], $select_qry_obj
-                            );
-                } else {
-                    //throw exception badly structured array
-                    $msg = "ERROR: Bad fetch param entry. Array expected as the"
-                         . " value of the item with the key named 'having' in the"
-                         . " array: "
-                         . PHP_EOL . var_export($params, true) . PHP_EOL
-                         . " passed to " 
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . PHP_EOL;
-
-                    throw new ModelBadHavingParamSuppliedException($msg);
-                }
-            }
-            
-            if( 
-                (
-                    !in_array('order', $disallowed_keys) 
-                    || count($disallowed_keys) <= 0
-                )
-                && array_key_exists('order', $params)
-            ) {
-                if( is_array($params['order']) ) {
-                    
-                    $select_qry_obj->orderBy($params['order']);
-                    
-                } else {
-                    //throw exception badly structured array
-                    $msg = "ERROR: Bad fetch param entry. Array expected as the"
-                         . " value of the item with the key named 'order' in the"
-                         . " array: "
-                         . PHP_EOL . var_export($params, true) . PHP_EOL
-                         . " passed to " 
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . PHP_EOL;
-
-                    throw new ModelBadOrderByParamSuppliedException($msg);
-                }
-            }
-            
-            if( 
-                (
-                    !in_array('limit_offset', $disallowed_keys) 
-                    || count($disallowed_keys) <= 0
-                )
-                && array_key_exists('limit_offset', $params)
-            ) {
-                if( is_numeric($params['limit_offset']) ) {
-                    
-                    $select_qry_obj->offset( (int)$params['limit_offset'] );
-                    
-                } else {
-                    //throw exception badly structured array
-                    $msg = "ERROR: Bad fetch param entry. Integer expected as the"
-                         . " value of the item with the key named 'limit_offset'"
-                         . " in the array: "
-                         . PHP_EOL . var_export($params, true) . PHP_EOL
-                         . " passed to " 
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . PHP_EOL;
-
-                    throw new ModelBadOrderByParamSuppliedException($msg);
-                }
-            }
-
-            if( 
-                (
-                    !in_array('limit_size', $disallowed_keys) 
-                    || count($disallowed_keys) <= 0
-                )
-                && array_key_exists('limit_size', $params)
-            ) {
-                if( is_numeric($params['limit_size']) ) {
-                    
-                    $select_qry_obj->limit( (int)$params['limit_size'] );
-                    
-                } else {
-                    //throw exception badly structured array
-                    $msg = "ERROR: Bad fetch param entry. Integer expected as the"
-                         . " value of the item with the key named 'limit_size'"
-                         . " in the array: "
-                         . PHP_EOL . var_export($params, true) . PHP_EOL
-                         . " passed to " 
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . PHP_EOL;
-
-                    throw new ModelBadOrderByParamSuppliedException($msg);
-                }
-            }
-        } else {
             
             //defaults
-            $select_qry_obj->cols(array(" {$table_name}.* "));
+            $select_obj->cols([" {$table_name}.* "]);
         }
-
-        return $select_qry_obj;
+        
+        return $select_obj;
     }
     
-    public function getDefaultColVals() {
+    public function getDefaultColVals(): array {
         
-        $default_colvals = array();
+        $default_colvals = [];
         
         if( !empty($this->_table_cols) && count($this->_table_cols) > 0 ) {
                         
@@ -468,60 +273,8 @@ class Model extends \GDAO\Model
         
         return $default_colvals;
     }
-
-    /**
-     * 
-     * @param array $where_params
-     * @param \Aura\SqlQuery\Common\Select $select_qry_obj
-     * 
-     */
-    protected function _addWhereConditions2Query(
-        array $where_params, \Aura\SqlQuery\Common\Select $select_qry_obj
-    ) {
-        if( !empty($where_params) && count($where_params) > 0 ) {
-            
-            if($this->_validateWhereOrHavingParamsArray($where_params)) {
-
-                list($where_clause, $bind_params) = 
-                    $this->_getWhereOrHavingClauseWithParams($where_params);
-                                
-                $select_qry_obj->where( $where_clause );
-
-                if( count( $bind_params ) > 0 ) {
-                    
-                    $select_qry_obj->bindValues( $bind_params );
-                }
-            }
-        }
-    }
-
-    /**
-     * 
-     * @param array $having_params
-     * @param \Aura\SqlQuery\Common\Select $select_qry_obj
-     * 
-     */
-    protected function _addHavingConditions2Query(
-        array $having_params, \Aura\SqlQuery\Common\Select $select_qry_obj
-    ) {
-        if( !empty($having_params) && count($having_params) > 0 ) {
-            
-            if($this->_validateWhereOrHavingParamsArray($having_params)) {
-
-                list($having_clause, $bind_params) =
-                    $this->_getWhereOrHavingClauseWithParams($having_params);
-                
-                $select_qry_obj->having( $having_clause );
-                
-                if( count( $bind_params ) > 0 ) {
-                    
-                    $select_qry_obj->bindValues( $bind_params );
-                }
-            }
-        }
-    }
     
-    public function loadRelationshipData($rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false) {
+    public function loadRelationshipData($rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false): self {
 
         if( 
             array_key_exists($rel_name, $this->_relations) 
@@ -547,12 +300,14 @@ class Model extends \GDAO\Model
         ) {
             $this->_loadBelongsTo($rel_name, $parent_data, $wrap_each_row_in_a_record);
         }
+        
+        return $this;
     }
     
     protected function _validateRelatedCollectionAndRecordClassNames($collection_class_name, $record_class_name) {
         
-        $parent_collection_class_name = '\GDAO\Model\CollectionInterface';
-        $parent_record_class_name = '\GDAO\Model\RecordInterface';
+        $parent_collection_class_name = \GDAO\Model\CollectionInterface::class;
+        $parent_record_class_name = \GDAO\Model\RecordInterface::class;
     
         if( !is_subclass_of($collection_class_name, $parent_collection_class_name) ) {
 
@@ -626,9 +381,9 @@ class Model extends \GDAO\Model
                 //stitch the related data to the approriate parent records
                 foreach( $parent_data as $p_rec_key => $parent_record ) {
 
-                    $matching_related_records = array();
+                    $matching_related_records = [];
 
-                    \Rotexsoft\HandyPhpFunctions\search_2d(
+                    Utils::search2D(
                         $related_data,
                         $fkey_col_in_foreign_table, 
                         $parent_record[$fkey_col_in_my_table], 
@@ -678,53 +433,47 @@ class Model extends \GDAO\Model
             array_key_exists($rel_name, $this->_relations) 
             && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH
         ) {
-            $array_get = '\\Rotexsoft\\HandyPhpFunctions\\array_get';
-            
             $rel_info = $this->_relations[$rel_name];
 
-            $foreign_table_name = $array_get($rel_info, 'foreign_table');
+            $foreign_table_name = Utils::arrayGet($rel_info, 'foreign_table');
             
             $fkey_col_in_foreign_table = 
-                $array_get($rel_info, 'col_in_foreign_table_linked_to_join_table');
+                Utils::arrayGet($rel_info, 'col_in_foreign_table_linked_to_join_table');
             
             $foreign_models_class_name = 
-                $array_get($rel_info, 'foreign_models_class_name', '\\LeanOrm\\Model');
+                Utils::arrayGet($rel_info, 'foreign_models_class_name', \LeanOrm\Model::class);
             
             $foreign_models_record_class_name = 
-                $array_get($rel_info, 'foreign_models_record_class_name', '\\LeanOrm\\Model\\Record');
+                Utils::arrayGet($rel_info, 'foreign_models_record_class_name', \LeanOrm\Model\Record::class);
             
             $foreign_models_collection_class_name = 
-                $array_get($rel_info, 'foreign_models_collection_class_name', '\\LeanOrm\Model\\Collection');
+                Utils::arrayGet($rel_info, 'foreign_models_collection_class_name', \LeanOrm\Model\Collection::class);
             
             $this->_validateRelatedCollectionAndRecordClassNames($foreign_models_collection_class_name, $foreign_models_record_class_name);
             
             $pri_key_col_in_foreign_models_table = 
-                $array_get($rel_info, 'primary_key_col_in_foreign_table');
+                Utils::arrayGet($rel_info, 'primary_key_col_in_foreign_table');
             
             $fkey_col_in_my_table = 
-                    $array_get($rel_info, 'col_in_my_table_linked_to_join_table');
+                    Utils::arrayGet($rel_info, 'col_in_my_table_linked_to_join_table');
             
             //join table params
-            $join_table_name = $array_get($rel_info, 'join_table');
+            $join_table_name = Utils::arrayGet($rel_info, 'join_table');
             
             $col_in_join_table_linked_to_my_models_table = 
-                $array_get($rel_info, 'col_in_join_table_linked_to_my_table');
+                Utils::arrayGet($rel_info, 'col_in_join_table_linked_to_my_table');
             
             $col_in_join_table_linked_to_foreign_models_table = 
-                $array_get($rel_info, 'col_in_join_table_linked_to_foreign_table');
+                Utils::arrayGet($rel_info, 'col_in_join_table_linked_to_foreign_table');
             
-            $foreign_models_table_sql_params = 
-                    $array_get($rel_info, 'foreign_table_sql_params', array());
+            $sql_query_modifier = 
+                    Utils::arrayGet($rel_info, 'sql_query_modifier', null);
             
             $extra_opts_for_foreign_model = 
-                    $array_get($rel_info, 'extra_opts_for_foreign_model', array());
+                    Utils::arrayGet($rel_info, 'extra_opts_for_foreign_model', []);
             
             $query_obj = 
-                $this->_buildFetchQueryObjectFromParams(
-                            $foreign_models_table_sql_params, 
-                            array('relations_to_include', 'limit_offset', 'limit_size'), 
-                            $foreign_table_name
-                        );
+                $this->_buildDefaultFetchQueryObjectIfNeeded(null, $foreign_table_name);
             
             $query_obj->cols( array(" {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} ") );
             
@@ -764,6 +513,12 @@ class Model extends \GDAO\Model
                                             $extra_opts_for_foreign_model
                                         );
             
+            if(\is_callable($sql_query_modifier)) {
+
+                // modify the query object before executing the query 
+                $query_obj = $sql_query_modifier($query_obj);
+            }
+            
             $params_2_bind_2_sql = $query_obj->getBindValues();
             $sql_2_get_related_data = $query_obj->__toString();
 /*
@@ -797,9 +552,9 @@ SELECT {$foreign_table_name}.*,
                 //stitch the related data to the approriate parent records
                 foreach( $parent_data as $p_rec_key => $parent_record ) {
 
-                    $matching_related_records = array();
+                    $matching_related_records = [];
 
-                    \Rotexsoft\HandyPhpFunctions\search_2d(
+                    Utils::search2D(
                         $related_data,
                         $col_in_join_table_linked_to_my_models_table, 
                         $parent_record[$fkey_col_in_my_table], 
@@ -950,42 +705,36 @@ SELECT {$foreign_table_name}.*
     
     protected function _getBelongsToOrHasOneOrHasManyData($rel_name, &$parent_data) {
         
-        $array_get = '\\Rotexsoft\\HandyPhpFunctions\\array_get';
-
         $rel_info = $this->_relations[$rel_name];
 
-        $foreign_table_name = $array_get($rel_info, 'foreign_table');
+        $foreign_table_name = Utils::arrayGet($rel_info, 'foreign_table');
 
         $fkey_col_in_foreign_table = 
-            $array_get($rel_info, 'foreign_key_col_in_foreign_table');
+            Utils::arrayGet($rel_info, 'foreign_key_col_in_foreign_table');
 
         $foreign_models_class_name = 
-            $array_get($rel_info, 'foreign_models_class_name', "\\LeanOrm\\Model");
+            Utils::arrayGet($rel_info, 'foreign_models_class_name', \LeanOrm\Model::class);
 
         $foreign_models_record_class_name = 
-            $array_get($rel_info, 'foreign_models_record_class_name', "\\LeanOrm\\Model\\Record");
+            Utils::arrayGet($rel_info, 'foreign_models_record_class_name', \LeanOrm\Model\Record::class);
 
         $foreign_models_collection_class_name = 
-            $array_get($rel_info, 'foreign_models_collection_class_name', "\\LeanOrm\Model\\Collection");
+            Utils::arrayGet($rel_info, 'foreign_models_collection_class_name', \LeanOrm\Model\Collection::class);
 
         $pri_key_col_in_foreign_models_table = 
-            $array_get($rel_info, 'primary_key_col_in_foreign_table');
+            Utils::arrayGet($rel_info, 'primary_key_col_in_foreign_table');
 
         $fkey_col_in_my_table = 
-                $array_get($rel_info, 'foreign_key_col_in_my_table');
+                Utils::arrayGet($rel_info, 'foreign_key_col_in_my_table');
 
-        $foreign_models_table_sql_params = 
-                $array_get($rel_info, 'foreign_table_sql_params', array());
+        $sql_query_modifier = 
+                Utils::arrayGet($rel_info, 'sql_query_modifier', null);
 
         $extra_opts_for_foreign_model = 
-                $array_get($rel_info, 'extra_opts_for_foreign_model', array());
+                Utils::arrayGet($rel_info, 'extra_opts_for_foreign_model', []);
 
         $query_obj = 
-            $this->_buildFetchQueryObjectFromParams(
-                        $foreign_models_table_sql_params, 
-                        array('relations_to_include', 'limit_offset', 'limit_size'), 
-                        $foreign_table_name
-                    );
+            $this->_buildDefaultFetchQueryObjectIfNeeded( null, $foreign_table_name);
 
         if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
@@ -1014,6 +763,13 @@ SELECT {$foreign_table_name}.*
                                         $foreign_table_name,
                                         $extra_opts_for_foreign_model
                                     );
+        
+        if(\is_callable($sql_query_modifier)) {
+            
+            // modify the query object before executing the query 
+            $query_obj = $sql_query_modifier($query_obj);
+        }
+        
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $sql_2_get_related_data = $query_obj->__toString();
 
@@ -1041,7 +797,7 @@ SELECT {$foreign_table_name}.*
         
         if( empty($f_models_class_name) ) {
             
-            $f_models_class_name = '\LeanOrm\Model';
+            $f_models_class_name = \LeanOrm\Model::class;
         }
 
         //$pri_key_col_in_foreign_models_table could be empty and if it is then 
@@ -1074,10 +830,10 @@ SELECT {$foreign_table_name}.*
         }
         
         $merged_extra_opts = array_merge(
-            array(
+            [
                 '_primary_col' => $pri_key_col_in_f_models_table,
                 '_table_name' => $f_table_name
-            ),
+            ],
             $extra_opts_for_foreign_model
         );
         
@@ -1109,7 +865,7 @@ SELECT {$foreign_table_name}.*
     protected function _getPdoQuotedColValsFromArrayOrCollection(
         &$parent_data, $fkey_col_in_my_table
     ) {
-        $col_vals = array();
+        $col_vals = [];
         
         if(
             $parent_data instanceof \GDAO\Model\CollectionInterface
@@ -1195,9 +951,6 @@ SELECT {$foreign_table_name}.*
      *                       record to be fetched or an array of scalar values 
      *                       of the primary key field of db rows to be fetched
      * 
-     * @param array $params see documentation of fetchRecordsIntoCollection for 
-     *                      the description of the structure of this parameter 
-     * 
      * @param bool $use_records true if each matched db row should be wrapped in 
      *                          an instance of \LeanOrm\Model\Record; false if 
      *                          rows should be returned as associative php 
@@ -1213,46 +966,54 @@ SELECT {$foreign_table_name}.*
      * @return array|\LeanOrm\Model\Record|\LeanOrm\Model\Collection Description
      * 
      */
-    public function fetch($ids, array $params=array(), $use_records=false, $use_collections=false, $use_p_k_val_as_key=false) {
-                
-        if( !array_key_exists('where', $params) ) {
+    public function fetch(
+        $ids, 
+        ?\Aura\SqlQuery\Common\Select $select_obj=null, 
+        array $relations_to_include=[], 
+        bool $use_records=false, 
+        bool $use_collections=false, 
+        bool $use_p_k_val_as_key=false
+    ) {
+        if($select_obj === null) {
             
-            $params['where'] = array();
+            //defaults
+            $select_obj = $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj, $this->_table_name);
         }
         
         if( is_array($ids) ) {
             
-            $params['where'][] = 
-                array( 'col'=>$this->getPrimaryColName(), 'op'=>'in', 'val'=>$ids );
+            $select_obj->where(
+                $this->getPrimaryColName() . ' IN (:pkvals)', 
+                ['pkvals' => $ids]
+            );
             
             if( $use_collections ) {
                 
                 return ($use_p_k_val_as_key) 
-                            ? $this->fetchRecordsIntoCollectionKeyedOnPkVal($params) 
-                            : $this->fetchRecordsIntoCollection($params);
+                            ? $this->fetchRecordsIntoCollectionKeyedOnPkVal($select_obj, $relations_to_include) 
+                            : $this->fetchRecordsIntoCollection($select_obj, $relations_to_include);
                 
             } else {
                 
                 if( $use_records ) {
                     
                     return ($use_p_k_val_as_key) 
-                            ? $this->fetchRecordsIntoArrayKeyedOnPkVal($params) 
-                            : $this->fetchRecordsIntoArray($params);
+                            ? $this->fetchRecordsIntoArrayKeyedOnPkVal($select_obj, $relations_to_include) 
+                            : $this->fetchRecordsIntoArray($select_obj, $relations_to_include);
                 }
                 
                 //default
                 return ($use_p_k_val_as_key) 
-                            ? $this->fetchRowsIntoArrayKeyedOnPkVal($params) 
-                            : $this->fetchRowsIntoArray($params);
+                            ? $this->fetchRowsIntoArrayKeyedOnPkVal($select_obj, $relations_to_include) 
+                            : $this->fetchRowsIntoArray($select_obj, $relations_to_include);
             }
             
         } else {
             
             //assume it's a scalar value, string, int , etc
-            $params['where'][] = 
-                array( 'col'=>$this->getPrimaryColName(), 'op'=>'=', 'val'=>$ids );
-
-            return $this->fetchOneRecord($params);
+            $select_obj->where($this->getPrimaryColName().' = :pkval', ['pkval' => $ids]);
+            
+            return $this->fetchOneRecord($select_obj, $relations_to_include);
         }
     }
     
@@ -1260,31 +1021,31 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchRecordsIntoCollection(array $params = array()) {
+    public function fetchRecordsIntoCollection(?object $select_obj=null, array $relations_to_include=[]) {
 
-        return $this->doFetchRecordsIntoCollection($params);
+        return $this->doFetchRecordsIntoCollection($select_obj, $relations_to_include);
     }
     
-    public function fetchRecordsIntoCollectionKeyedOnPkVal(array $params = array()) {
+    public function fetchRecordsIntoCollectionKeyedOnPkVal(?\Aura\SqlQuery\Common\Select $select_obj=null, array $relations_to_include=[]) {
 
-        return $this->doFetchRecordsIntoCollection($params, true);
+        return $this->doFetchRecordsIntoCollection($select_obj, $relations_to_include, true);
     }
     
-    protected function doFetchRecordsIntoCollection(array $params = array(), $use_p_k_val_as_key=false) {
-        
+    protected function doFetchRecordsIntoCollection(
+        ?\Aura\SqlQuery\Common\Select $select_obj=null, 
+        array $relations_to_include=[], 
+        bool $use_p_k_val_as_key=false
+    ) {
         $results = false;
-        $data = $this->_getArrayOfRecordObjects($params, $use_p_k_val_as_key);
+        $data = $this->_getArrayOfRecordObjects($select_obj, $use_p_k_val_as_key);
         
         if($data !== false && is_array($data) && count($data) > 0 ) {
         
             $results = $this->createNewCollection(new \GDAO\Model\RecordsList($data));
 
-            if( array_key_exists('relations_to_include', $params) ) {
+            foreach( $relations_to_include as $rel_name ) {
 
-                foreach( $params['relations_to_include'] as $rel_name ) {
-
-                    $this->loadRelationshipData($rel_name, $results, true, true);
-                }
+                $this->loadRelationshipData($rel_name, $results, true, true);
             }
         }
         
@@ -1295,37 +1056,37 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchRecordsIntoArray(array $params = array()) {
+    public function fetchRecordsIntoArray(?object $select_obj=null, array $relations_to_include=[]): array {
         
-        return $this->doFetchRecordsIntoArray($params);
+        return $this->doFetchRecordsIntoArray($select_obj, $relations_to_include);
     }
     
-    public function fetchRecordsIntoArrayKeyedOnPkVal(array $params = array()) {
+    public function fetchRecordsIntoArrayKeyedOnPkVal(?\Aura\SqlQuery\Common\Select $select_obj=null, array $relations_to_include=[]) {
         
-        return $this->doFetchRecordsIntoArray($params, true);
+        return $this->doFetchRecordsIntoArray($select_obj, $relations_to_include, true);
     }
     
-    protected function doFetchRecordsIntoArray(array $params = array(), $use_p_k_val_as_key=false) {
-        
-        $results = $this->_getArrayOfRecordObjects($params, $use_p_k_val_as_key);
+    protected function doFetchRecordsIntoArray(
+        ?\Aura\SqlQuery\Common\Select $select_obj=null, 
+        array $relations_to_include=[], 
+        bool $use_p_k_val_as_key=false
+    ): array {
+        $results = $this->_getArrayOfRecordObjects($select_obj, $use_p_k_val_as_key);
 
         if( $results !== false && is_array($results) && count($results) > 0 ) {
-            
-            if( array_key_exists('relations_to_include', $params) ) {
 
-                foreach( $params['relations_to_include'] as $rel_name ) {
+            foreach( $relations_to_include as $rel_name ) {
 
-                    $this->loadRelationshipData($rel_name, $results, true);
-                }
+                $this->loadRelationshipData($rel_name, $results, true);
             }
         }
         
         return $results;
     }
     
-    protected function _getArrayOfRecordObjects($params, $use_p_k_val_as_key=false) {
+    protected function _getArrayOfRecordObjects(?\Aura\SqlQuery\Common\Select $select_obj=null, bool $use_p_k_val_as_key=false): array {
 
-        $results = $this->_getArrayOfDbRows($params, $use_p_k_val_as_key);
+        $results = $this->_getArrayOfDbRows($select_obj, $use_p_k_val_as_key);
         
         if( $results !== false && is_array($results) ) {
          
@@ -1338,15 +1099,15 @@ SELECT {$foreign_table_name}.*
         return $results;
     }
     
-    protected function _getArrayOfDbRows($params, $use_p_k_val_as_key=false) {
+    protected function _getArrayOfDbRows(?\Aura\SqlQuery\Common\Select $select_obj=null, bool $use_p_k_val_as_key=false): array {
         
-        $query_obj = $this->_buildFetchQueryObjectFromParams($params);
+        $query_obj = $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
         
         $results = $this->_db_connector->dbFetchAll($sql, $params_2_bind_2_sql);
         
-        if( $use_p_k_val_as_key && is_array($results) && count($results) > 0 && !empty($this->_primary_col) ) {
+        if( $use_p_k_val_as_key && is_array($results) && count($results) > 0 && $this->_primary_col !== '' ) {
             
             $results_keyed_by_pk = [];
             
@@ -1377,28 +1138,28 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchRowsIntoArray(array $params = array()) {
+    public function fetchRowsIntoArray(?object $select_obj=null, array $relations_to_include=[]): array {
 
-        return $this->doFetchRowsIntoArray($params);
+        return $this->doFetchRowsIntoArray($select_obj, $relations_to_include);
     }
     
-    public function fetchRowsIntoArrayKeyedOnPkVal(array $params = array()) {
+    public function fetchRowsIntoArrayKeyedOnPkVal(?\Aura\SqlQuery\Common\Select $select_obj=null, array $relations_to_include=[]): array {
 
-        return $this->doFetchRowsIntoArray($params, true);
+        return $this->doFetchRowsIntoArray($select_obj, $relations_to_include, true);
     }
     
-    protected function doFetchRowsIntoArray(array $params = array(), $use_p_k_val_as_key=false) {
-        
-        $results = $this->_getArrayOfDbRows($params, $use_p_k_val_as_key);
+    protected function doFetchRowsIntoArray(
+        ?\Aura\SqlQuery\Common\Select $select_obj=null, 
+        array $relations_to_include=[], 
+        bool $use_p_k_val_as_key=false
+    ): array {
+        $results = $this->_getArrayOfDbRows($select_obj, $use_p_k_val_as_key);
 
         if( $results !== false && is_array($results) && count($results) > 0 ) {
-            
-            if( array_key_exists('relations_to_include', $params) ) {
 
-                foreach( $params['relations_to_include'] as $rel_name ) {
+            foreach( $relations_to_include as $rel_name ) {
 
-                    $this->loadRelationshipData($rel_name, $results);
-                }
+                $this->loadRelationshipData($rel_name, $results);
             }
         }
         
@@ -1409,7 +1170,7 @@ SELECT {$foreign_table_name}.*
      * 
      * @return PDO
      */
-    public function getPDO() {
+    public function getPDO(): \PDO {
         
         return DBConnector::getDb($this->_dsn); //return pdo object associated with
                                                 //the current dsn
@@ -1419,7 +1180,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function deleteMatchingDbTableRows(array $cols_n_vals=array()) {
+    public function deleteMatchingDbTableRows(array $cols_n_vals=[]): ?int {
         
         $result = null;
         
@@ -1478,7 +1239,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function deleteSpecifiedRecord(\GDAO\Model\RecordInterface $record) {
+    public function deleteSpecifiedRecord(\GDAO\Model\RecordInterface $record): ?bool {
         
         //$this->_primary_col should have a valid value because a
         //GDAO\ModelPrimaryColNameNotSetDuringConstructionException
@@ -1514,24 +1275,9 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchCol(array $params = array()) {
-        
-        if( 
-            array_key_exists('cols', $params) 
-            && ( !is_array($params['cols']) || count($params['cols']) < 1 )
-        ) {
-            //throw Exception
-            $msg = "ERROR: Bad param entry. Array containing at least 1 string "
-                 . "value expected as the value of the item with the key named 'cols' ."
-                 . PHP_EOL . var_export($params, true) . PHP_EOL
-                 . " passed to " 
-                 . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                 . PHP_EOL;
+    public function fetchCol(?object $select_obj=null): array {
 
-            throw new ModelBadFetchParamsSuppliedException($msg);
-        }
-
-        $query_obj = $this->_buildFetchQueryObjectFromParams($params);
+        $query_obj = $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
@@ -1542,14 +1288,10 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchOneRecord(array $params = array()) {
+    public function fetchOneRecord(?object $select_obj=null, array $relations_to_include=[]) {
 
-        $param_keys_2_exclude = array('limit_offset', 'limit_size');
-        
-        $query_obj = 
-            $this->_buildFetchQueryObjectFromParams($params, $param_keys_2_exclude);
+        $query_obj = $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj);
         $query_obj->limit(1);
-        
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
@@ -1559,12 +1301,9 @@ SELECT {$foreign_table_name}.*
             
             $result = $this->createNewRecord($result, array('is_new'=>false));
             
-            if( array_key_exists('relations_to_include', $params) ) {
+            foreach( $relations_to_include as $rel_name ) {
 
-                foreach( $params['relations_to_include'] as $rel_name ) {
-
-                    $this->loadRelationshipData($rel_name, $result, true, true);
-                }
+                $this->loadRelationshipData($rel_name, $result, true, true);
             }
         }
         
@@ -1575,25 +1314,9 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchPairs(array $params = array()) {
+    public function fetchPairs(?object $select_obj=null): array {
 
-        if( 
-            array_key_exists('cols', $params) 
-            && ( !is_array($params['cols']) || count($params['cols']) < 2 )
-        ) {
-            //throw Exception
-            $msg = "ERROR: Bad param entry. Array (with at least two items) "
-                 . "expected as the value of the item with the key named 'cols'"
-                 . " in the array: "
-                 . PHP_EOL . var_export($params, true) . PHP_EOL
-                 . " passed to " 
-                 . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                 . PHP_EOL;
-
-            throw new ModelBadFetchParamsSuppliedException($msg);
-        }
-
-        $query_obj = $this->_buildFetchQueryObjectFromParams($params);
+        $query_obj = $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
@@ -1604,13 +1327,13 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchValue(array $params = array()) {
-        
-        $param_keys_2_exclude = array('limit_offset', 'limit_size');
+    public function fetchValue(?object $select_obj=null) {
         
         $query_obj = 
-            $this->_buildFetchQueryObjectFromParams($params, $param_keys_2_exclude);
+            $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj);
         $query_obj->limit(1);
+        
+        $query_obj_4_num_matching_rows = clone $query_obj;
         
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
@@ -1618,9 +1341,10 @@ SELECT {$foreign_table_name}.*
         $result = $this->_db_connector->dbFetchValue($sql, $params_2_bind_2_sql);
         
         //need to issue a second query to get the number of matching rows
-        $params['cols'] = array(' COUNT(*) AS num_rows');
-        $query_obj_4_num_matching_rows =
-                $this->_buildFetchQueryObjectFromParams($params, $param_keys_2_exclude);
+        // clear the cols part of the query above while preserving all the
+        // other parts of the query
+        $query_obj_4_num_matching_rows->resetCols();
+        $query_obj_4_num_matching_rows->cols([' COUNT(*) AS num_rows']);
         
         $sql = $query_obj_4_num_matching_rows->__toString();
         $params_2_bind_2_sql = $query_obj_4_num_matching_rows->getBindValues();
@@ -1635,7 +1359,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function insert(array $data_2_insert = array()) {
+    public function insert(array $data_2_insert = []) {
 
         $result = false;
 
@@ -1771,7 +1495,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function insertMany(array $rows_of_data_2_insert = array()) {
+    public function insertMany(array $rows_of_data_2_insert = []) {
         
         $result = false;
         
@@ -1926,8 +1650,8 @@ SELECT {$foreign_table_name}.*
      * {@inheritDoc}
      */
     public function updateMatchingDbTableRows(
-        array $col_names_n_vals_2_save = array(),
-        array $col_names_n_vals_2_match = array()
+        array $col_names_n_vals_2_save = [],
+        array $col_names_n_vals_2_match = []
     ) {
         $result = null;
 
@@ -2047,7 +1771,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function updateSpecifiedRecord(\GDAO\Model\RecordInterface $record) {
+    public function updateSpecifiedRecord(\GDAO\Model\RecordInterface $record): ?bool {
         
         //$this->_primary_col should have a valid value because a
         //GDAO\ModelPrimaryColNameNotSetDuringConstructionException
@@ -2121,29 +1845,155 @@ SELECT {$foreign_table_name}.*
         return $this->$property_name;
     }
 
-    public function getCurrentConnectionInfo() {
+    public function getCurrentConnectionInfo(): array {
 
-        $attributes = array(
-			'database_server_info' => 'SERVER_INFO',
-			'driver_name' => 'DRIVER_NAME',
-			'pdo_client_version' => 'CLIENT_VERSION',
-			'database_server_version' => 'SERVER_VERSION',
-			'connection_status' => 'CONNECTION_STATUS',
-			'connection_is_persistent' => 'PERSISTENT',
-		);
+        $attributes = [
+            'database_server_info' => 'SERVER_INFO',
+            'driver_name' => 'DRIVER_NAME',
+            'pdo_client_version' => 'CLIENT_VERSION',
+            'database_server_version' => 'SERVER_VERSION',
+            'connection_status' => 'CONNECTION_STATUS',
+            'connection_is_persistent' => 'PERSISTENT',
+        ];
 
         $pdo_obj = $this->getPDO();
         
-		foreach ($attributes as $key => $value)
-		{
-			$attributes[ $key ] = $pdo_obj->getAttribute(constant('PDO::ATTR_' . $value));
-            
+        foreach ($attributes as $key => $value) {
+
+            $attributes[ $key ] = $pdo_obj->getAttribute(constant('PDO::ATTR_' . $value));
+
             if( $value === 'PERSISTENT' ) {
-                
+
                 $attributes[ $key ] = var_export($attributes[ $key ], true);
             }
-		}
+        }
 
-		return $attributes;
-	}
+        return $attributes;
+    }
+    
+    ///////////////////////////////////////
+    // Methods for defining relationships
+    ///////////////////////////////////////
+    
+    public function hasOne(
+        string $relation_name,
+        string $foreign_key_col_in_this_models_table,
+        string $foreign_table_name,
+        string $foreign_key_col_in_foreign_table,
+        string $primary_key_col_in_foreign_table,
+        string $foreign_models_class_name = \LeanOrm\Model::class,
+        string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
+        string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
+        ?callable $sql_query_modifier = null,
+        array $extra_opts_for_foreign_model = []
+    ): self {
+        $this->_relations[$relation_name] = [];
+        $this->_relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
+        $this->_relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
+        $this->_relations[$relation_name]['foreign_table'] = $foreign_table_name;
+        $this->_relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
+        $this->_relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
+        
+        $this->_relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
+        $this->_relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
+        $this->_relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
+        
+        $this->_relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
+        $this->_relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
+        
+        return $this;
+    }
+    
+    public function belongsTo(
+        string $relation_name,
+        string $foreign_key_col_in_this_models_table,
+        string $foreign_table_name,
+        string $foreign_key_col_in_foreign_table,
+        string $primary_key_col_in_foreign_table,
+        string $foreign_models_class_name = \LeanOrm\Model::class,
+        string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
+        string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
+        ?callable $sql_query_modifier = null,
+        array $extra_opts_for_foreign_model = []
+    ): self {
+        $this->_relations[$relation_name] = [];
+        $this->_relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
+        $this->_relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
+        $this->_relations[$relation_name]['foreign_table'] = $foreign_table_name;
+        $this->_relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
+        $this->_relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
+        
+        $this->_relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
+        $this->_relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
+        $this->_relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
+        
+        $this->_relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
+        $this->_relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
+        
+        return $this;
+    }
+    
+    public function hasMany(
+        string $relation_name,
+        string $foreign_key_col_in_this_models_table,
+        string $foreign_table_name,
+        string $foreign_key_col_in_foreign_table,
+        string $primary_key_col_in_foreign_table,
+        string $foreign_models_class_name = \LeanOrm\Model::class,
+        string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
+        string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
+        ?callable $sql_query_modifier = null,
+        array $extra_opts_for_foreign_model = []
+    ): self {
+        $this->_relations[$relation_name] = [];
+        $this->_relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY;
+        $this->_relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
+        $this->_relations[$relation_name]['foreign_table'] = $foreign_table_name;
+        $this->_relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
+        $this->_relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
+        
+        $this->_relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
+        $this->_relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
+        $this->_relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
+        
+        $this->_relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
+        $this->_relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
+        
+        return $this;
+    }
+    
+    public function hasManyThrough(
+        string $relation_name,
+        string $col_in_my_table_linked_to_join_table,
+        string $join_table,
+        string $col_in_join_table_linked_to_my_table,
+        string $col_in_join_table_linked_to_foreign_table,
+        string $foreign_table_name,
+        string $col_in_foreign_table_linked_to_join_table,
+        string $primary_key_col_in_foreign_table,
+        string $foreign_models_class_name = \LeanOrm\Model::class,
+        string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
+        string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
+        ?callable $sql_query_modifier = null,
+        array $extra_opts_for_foreign_model = []
+    ): self {
+        $this->_relations[$relation_name] = [];
+        $this->_relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH;
+        $this->_relations[$relation_name]['col_in_my_table_linked_to_join_table'] = $col_in_my_table_linked_to_join_table;
+        $this->_relations[$relation_name]['join_table'] = $join_table;
+        $this->_relations[$relation_name]['col_in_join_table_linked_to_my_table'] = $col_in_join_table_linked_to_my_table;
+        $this->_relations[$relation_name]['col_in_join_table_linked_to_foreign_table'] = $col_in_join_table_linked_to_foreign_table;
+        $this->_relations[$relation_name]['foreign_table'] = $foreign_table_name;
+        $this->_relations[$relation_name]['col_in_foreign_table_linked_to_join_table'] = $col_in_foreign_table_linked_to_join_table;
+        $this->_relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
+        
+        $this->_relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
+        $this->_relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
+        $this->_relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
+        
+        $this->_relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
+        $this->_relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
+        
+        return $this;
+    }
 }

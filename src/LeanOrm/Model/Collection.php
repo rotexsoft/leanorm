@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace LeanOrm\Model;
 
 /**
@@ -11,19 +11,14 @@ namespace LeanOrm\Model;
  */
 class Collection implements \GDAO\Model\CollectionInterface
 {
-    /**
-     *
-     * @var \GDAO\Model
-     * 
-     */
-    protected $_model;
+    protected \GDAO\Model $_model;
 
     /**
      * 
-     * @var array of \GDAO\Model\RecordInterface records
+     * @var \GDAO\Model\RecordInterface[] array of \GDAO\Model\RecordInterface records
      * 
      */
-    protected $_data = array();
+    protected array $_data = [];
     
     /**
      * 
@@ -41,10 +36,10 @@ class Collection implements \GDAO\Model\CollectionInterface
      *                          of this class
      */
     public function __construct(
-        \GDAO\Model\RecordsList $data, \GDAO\Model $model, array $extra_opts=array()
+        \GDAO\Model $model, array $extra_opts=[], \GDAO\Model\RecordInterface ...$data
     ) {
         $this->setModel($model);
-        $this->_data = $data->toArray();
+        $this->_data = $data;
         
         if(count($extra_opts) > 0) {
             
@@ -144,9 +139,9 @@ class Collection implements \GDAO\Model\CollectionInterface
      *               element.
      * 
      */
-	public function getColVals($col) {
+    public function getColVals($col): array {
         
-        $list = array();
+        $list = [];
         
         foreach ($this->_data as $key => $record) {
             
@@ -159,11 +154,9 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * Returns all the keys for this collection.
-     * 
-     * @return array
-     * 
+     *  
      */
-    public function getKeys() {
+    public function getKeys(): array {
         
         return array_keys($this->_data);
     }
@@ -175,7 +168,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return \GDAO\Model The origin model object.
      * 
      */
-	public function getModel() {
+    public function getModel(): \GDAO\Model {
         
         return $this->_model;
     }
@@ -187,7 +180,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return bool True if empty, false if not.
      * 
      */
-	public function isEmpty() {
+    public function isEmpty(): bool {
         
         return empty($this->_data);
     }
@@ -203,12 +196,12 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @param \GDAO\Model\RecordsList $data_2_load
      * 
-     * @return void
-     * 
      */
-	public function loadData(\GDAO\Model\RecordsList $data_2_load){
+    public function loadData(\GDAO\Model\RecordInterface ...$data_2_load): self{
         
-        $this->_data = $data_2_load->toArray();
+        $this->_data = $data_2_load;
+        
+        return $this;
     }
     
     
@@ -217,10 +210,8 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Removes all records from the collection but **does not** delete them
      * from the database.
      * 
-     * @return void
-     * 
      */
-	public function removeAll() {
+    public function removeAll(): self {
         
         $keys =  array_keys($this->_data);
         
@@ -230,7 +221,9 @@ class Collection implements \GDAO\Model\CollectionInterface
             unset($this->_data[$key]);
         }
         
-        $this->_data = array();
+        $this->_data = [];
+        
+        return $this;
     }
 
     /**
@@ -342,12 +335,13 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @param \GDAO\Model $model The origin model object.
      * 
-     * @return void
      * 
      */
-	public function setModel(\GDAO\Model $model) {
+    public function setModel(\GDAO\Model $model): self {
         
         $this->_model = $model;
+        
+        return $this;
     }
     
     /**
@@ -357,7 +351,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return array an array representation of an instance of this class.
      * 
      */
-    public function toArray() {
+    public function toArray(): array {
 
         return get_object_vars($this);
     }
@@ -372,11 +366,8 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @param string $key The requested key.
      * 
-     * @return bool
-     * 
      */
-    #[\ReturnTypeWillChange]
-    public function offsetExists($key) {
+    public function offsetExists($key): bool {
         
         return $this->__isset($key);
     }
@@ -405,12 +396,11 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
      * 
-     * @return void
      * 
      * @throws \GDAO\Model\CollectionCanOnlyContainGDAORecordsException
      * 
      */
-    public function offsetSet($key, $val) {
+    public function offsetSet($key, $val): void {
 
         if( !($val instanceof \GDAO\Model\RecordInterface) ) {
             
@@ -447,8 +437,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return void
      * 
      */
-    #[\ReturnTypeWillChange]
-    public function offsetUnset($key) {
+    public function offsetUnset($key): void {
         
         $this->__unset($key);
     }
@@ -460,8 +449,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return int
      * 
      */
-    #[\ReturnTypeWillChange]
-    public function count() {
+    public function count(): int {
         
         return count($this->_data);
     }
@@ -473,8 +461,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return \Iterator an Iterator eg. an instance of \ArrayIterator
      * 
      */
-    #[\ReturnTypeWillChange]
-    public function getIterator() {
+    public function getIterator(): \Iterator  {
         
         return new \ArrayIterator($this->_data);
     }
@@ -490,10 +477,8 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @param int|string $key The sequential or associative key value for the
      *                        record.
      * 
-     * @return \GDAO\Model\RecordInterface
-     * 
      */
-    public function __get($key) {
+    public function __get($key): \GDAO\Model\RecordInterface {
         
         if (array_key_exists($key, $this->_data)) {
 
@@ -513,11 +498,9 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Does a certain key exist in the data?
      * 
      * @param string $key The requested data key.
-     * 
-     * @return void
-     * 
+     *  
      */
-    public function __isset($key) {
+    public function __isset($key): bool {
         
         return array_key_exists($key, $this->_data);
     }
@@ -526,14 +509,11 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * Set a key value.
      * 
-     * 
      * @param string $key The requested key.
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
-     * 
-     * @return void
-     *  
+     *   
      */
-    public function __set($key, \GDAO\Model\RecordInterface $val) {
+    public function __set($key, \GDAO\Model\RecordInterface $val): void {
        
         // set the value
         $this->_data[$key] = $val;
@@ -543,10 +523,10 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * Returns a string representation of an instance of this class.
      * 
-     * @return array a string representation of an instance of this class.
+     * @return string a string representation of an instance of this class.
      * 
      */
-    public function __toString() {
+    public function __toString(): string {
         
         return var_export($this->toArray(), true);
     }
@@ -557,10 +537,8 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @param string $key The requested data key.
      * 
-     * @return void
-     * 
      */
-    public function __unset($key) {
+    public function __unset($key): void {
         
         unset($this->_data[$key]);
     }
@@ -568,50 +546,22 @@ class Collection implements \GDAO\Model\CollectionInterface
     //Hooks
     
     /**
-     * 
-     * User-defined pre-delete logic.
-     * 
-     * Implementers of this class should add a call to this method as the 
-     * first line of code in their implementation of $this->deleteAll()
-     * 
-     * @return void
-     * 
+     * {@inheritDoc}
      */
-    public function _preDeleteAll() { }
+    public function _preDeleteAll(): void { }
     
     /**
-     * 
-     * User-defined post-delete logic.
-     * 
-     * Implementers of this class should add a call to this method as the 
-     * last line of code in their implementation of $this->deleteAll()
-     * 
-     * @return void
-     * 
+     * {@inheritDoc}
      */
-    public function _postDeleteAll() { }
+    public function _postDeleteAll(): void { }
     
     /**
-     * 
-     * User-defined pre-save logic for the collection.
-     * 
-     * Implementers of this class should add a call to this method as the 
-     * first line of code in their implementation of $this->save(...)
-     * 
-     * @return void
-     * 
+     * {@inheritDoc}
      */
-    public function _preSaveAll($group_inserts_together=false) { }
+    public function _preSaveAll(bool $group_inserts_together=false): void { }
     
     /**
-     * 
-     * User-defined post-save logic for the collection.
-     * 
-     * Implementers of this class should add a call to this method as the 
-     * last line of code in their implementation of $this->save(...)
-     * 
-     * @return void
-     * 
+     * {@inheritDoc}
      */
-    public function _postSaveAll($save_all_result, $group_inserts_together=false) { }
+    public function _postSaveAll($save_all_result, bool $group_inserts_together=false): void { }
 }

@@ -22,3 +22,24 @@ See http://rotexsoft.github.io/leanorm/ for documentation.
 
  * Old versions have branches corresponding to their version numbers (e.g. 1.X) 
 while the most current / actively being developed version is on the master branch
+
+
+## Concepts
+
+Courtesy of https://www.semicolonandsons.com/code_diary/databases/difference-between-has-one-belongs-to-and-has-many
+
+### Difference between has one belongs to and has many
+
+This is part of the Semicolon&Sons [Code Diary](https://www.semicolonandsons.com/code_diary) - consisting of lessons learned on the job. You're in the [databases](https://www.semicolonandsons.com/code_diary/databases) category.
+
+
+The only difference between `hasOne` and `belongsTo` is where the foreign key column is located.
+
+Let's say you have two entities: User and an Account.
+
+-   If the users table has the `account_id` column then a User `belongsTo` Account. (And the Account either `hasOne` or `hasMany` Users)
+    
+-   But if the users table does _not have_ the `account_id` column, and instead the accounts table has the `user_id` column, then User `hasOne` or `hasMany` Accounts
+    
+
+In short `hasOne` and `belongsTo` are inverses of one another - if one record `belongTo` the other, the other `hasOne` of the first. Or, more accurately, eiterh `hasOne` or `hasMany` - depending on how many times its id appears.

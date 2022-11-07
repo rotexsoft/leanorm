@@ -1,0 +1,23 @@
+# run rector
+./vendor/bin/rector process src --dry-run
+
+# OR
+
+./vendor/bin/rector process src
+
+# clear rector cache
+./vendor/bin/rector --clear-cache
+
+
+# run rector on *.php files in src but not any of its sub-directories
+reset && ./vendor/bin/rector --clear-cache  && ./vendor/bin/rector process src/*.php --dry-run
+
+# run rector on *.php files in src
+reset && ./vendor/bin/rector --clear-cache  && ./vendor/bin/rector process src --dry-run
+
+# run rector on *.php files in tests
+reset && ./vendor/bin/rector --clear-cache  && ./vendor/bin/rector process tests --dry-run
+
+# Run Psalm
+./vendor/bin/psalm --threads=1
+ 
