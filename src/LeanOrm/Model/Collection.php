@@ -22,14 +22,6 @@ class Collection implements \GDAO\Model\CollectionInterface
     
     /**
      * 
-     * \GDAO\Model\RecordsList is only used to enforce strict typing.
-     * Ie. all the records in the collection are of type \GDAO\Model\RecordInterface
-     * or any of its sub-classes.
-     * 
-     * $this->_data should be assigned the value of 
-     * \GDAO\Model\RecordsList->toArray(). In this case $data->toArray().
-     * 
-     * @param \GDAO\Model\RecordsList $data list of instances of \GDAO\Model\RecordInterface
      * @param \GDAO\Model $model The model object that transfers data between the db and this collection.
      * @param array $extra_opts an array that may be used to pass initialization 
      *                          value(s) for protected and / or private properties
@@ -188,14 +180,7 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * Load the collection with a list of records.
-     * 
-     * \GDAO\Model\RecordsList is used instead of an array because
-     * \GDAO\Model\RecordsList can only contain instances of \GDAO\Model\RecordInterface
-     * or its descendants. We only ever want instances of \GDAO\Model\RecordInterface or
-     * its descendants inside a collection.
-     * 
-     * @param \GDAO\Model\RecordsList $data_2_load
-     * 
+     *  
      */
     public function loadData(\GDAO\Model\RecordInterface ...$data_2_load): self{
         

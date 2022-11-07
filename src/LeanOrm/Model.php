@@ -236,23 +236,26 @@ class Model extends \GDAO\Model
      * @param string $table_name name of the table to select from (will default to $this->_table_name if empty)
      * @return \Aura\SqlQuery\Common\Select or any of its descendants
      */
-    protected function _buildDefaultFetchQueryObjectIfNeeded(?\Aura\SqlQuery\Common\Select $select_obj=null, $table_name='') {
+    protected function _createQueryObjectIfNullAndAddFromAndColsToQuery(?\Aura\SqlQuery\Common\Select $select_obj=null, $table_name='') {
         
-        if( $select_obj === null ) {
-            
-            $select_obj = $this->getSelect();
-            
-            if( empty($table_name) ) {
+        $initiallyNull = ( $select_obj === null );
+        $select_obj ??= $this->getSelect();
+        
+        if( $table_name === '' ) {
 
-                $select_obj->from($this->_table_name);
-                $table_name = $this->_table_name;
+            $select_obj->from($this->_table_name);
+            $table_name = $this->_table_name;
 
-            } else {
+        } else {
 
-                $select_obj->from($table_name);
-            }
+            $select_obj->from($table_name);
+        }
+        
+        if($initiallyNull || !$select_obj->hasCols()) {
             
-            //defaults
+            // We either just created the select object in this method or
+            // there are no cols to select specified yet. 
+            // Let's select all cols.
             $select_obj->cols([" {$table_name}.* "]);
         }
         
@@ -473,7 +476,7 @@ class Model extends \GDAO\Model
                     Utils::arrayGet($rel_info, 'extra_opts_for_foreign_model', []);
             
             $query_obj = 
-                $this->_buildDefaultFetchQueryObjectIfNeeded(null, $foreign_table_name);
+                $this->_createQueryObjectIfNullAndAddFromAndColsToQuery(null, $foreign_table_name);
             
             $query_obj->cols( array(" {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} ") );
             
@@ -734,7 +737,7 @@ SELECT {$foreign_table_name}.*
                 Utils::arrayGet($rel_info, 'extra_opts_for_foreign_model', []);
 
         $query_obj = 
-            $this->_buildDefaultFetchQueryObjectIfNeeded( null, $foreign_table_name);
+            $this->_createQueryObjectIfNullAndAddFromAndColsToQuery( null, $foreign_table_name);
 
         if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
@@ -921,8 +924,9 @@ SELECT {$foreign_table_name}.*
             //wrap into a collection object
             $matching_related_records = 
                 new $foreign_models_collection_class_name (
-                    new \GDAO\Model\RecordsList( $matching_related_records ), 
-                    $foreign_model_obj
+                    $foreign_model_obj,
+                    [],
+                    ...$matching_related_records
                 );
         }
     }
@@ -977,7 +981,11 @@ SELECT {$foreign_table_name}.*
         if($select_obj === null) {
             
             //defaults
-            $select_obj = $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj, $this->_table_name);
+            $select_obj = $this->_createQueryObjectIfNullAndAddFromAndColsToQuery($select_obj, $this->_table_name);
+            
+        } else {
+            
+            $select_obj->from($this->_table_name);
         }
         
         if( is_array($ids) ) {
@@ -1041,7 +1049,7 @@ SELECT {$foreign_table_name}.*
         
         if($data !== false && is_array($data) && count($data) > 0 ) {
         
-            $results = $this->createNewCollection(new \GDAO\Model\RecordsList($data));
+            $results = $this->createNewCollection([], ...$data);
 
             foreach( $relations_to_include as $rel_name ) {
 
@@ -1101,7 +1109,7 @@ SELECT {$foreign_table_name}.*
     
     protected function _getArrayOfDbRows(?\Aura\SqlQuery\Common\Select $select_obj=null, bool $use_p_k_val_as_key=false): array {
         
-        $query_obj = $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj);
+        $query_obj = $this->_createQueryObjectIfNullAndAddFromAndColsToQuery($select_obj);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
         
@@ -1277,7 +1285,7 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchCol(?object $select_obj=null): array {
 
-        $query_obj = $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj);
+        $query_obj = $this->_createQueryObjectIfNullAndAddFromAndColsToQuery($select_obj);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
@@ -1290,7 +1298,7 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchOneRecord(?object $select_obj=null, array $relations_to_include=[]) {
 
-        $query_obj = $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj);
+        $query_obj = $this->_createQueryObjectIfNullAndAddFromAndColsToQuery($select_obj);
         $query_obj->limit(1);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
@@ -1316,7 +1324,7 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchPairs(?object $select_obj=null): array {
 
-        $query_obj = $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj);
+        $query_obj = $this->_createQueryObjectIfNullAndAddFromAndColsToQuery($select_obj);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
 
@@ -1330,7 +1338,7 @@ SELECT {$foreign_table_name}.*
     public function fetchValue(?object $select_obj=null) {
         
         $query_obj = 
-            $this->_buildDefaultFetchQueryObjectIfNeeded($select_obj);
+            $this->_createQueryObjectIfNullAndAddFromAndColsToQuery($select_obj);
         $query_obj->limit(1);
         
         $query_obj_4_num_matching_rows = clone $query_obj;
