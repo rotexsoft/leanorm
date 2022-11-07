@@ -771,6 +771,11 @@ SELECT {$foreign_table_name}.*
             $query_obj = $sql_query_modifier($query_obj);
         }
         
+        if(!$query_obj->hasCols()){
+            
+            $query_obj->cols(["{$foreign_table_name}.*"]);
+        }
+        
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $sql_2_get_related_data = $query_obj->__toString();
 
@@ -928,12 +933,7 @@ SELECT {$foreign_table_name}.*
     
     /**
      * 
-     * Fetches a record or collection by primary key value(s).
-     * 
-     * If $ids holds a single scalar value, always return the db row whose primary
-     * key value matches the scalar value.
-     * 
-     * If $ids is an array of scalar values:
+     * Fetches a collection by primary key value(s).
      * 
      *      # `$use_collections === true`: return a \LeanOrm\Model\Collection of 
      *        \LeanOrm\Model\Record records each matching the values in $ids
@@ -946,9 +946,7 @@ SELECT {$foreign_table_name}.*
      *          - `$use_records === false`: return an array of rows (each row being
      *            an associative array) each matching the values in $ids
      * 
-     * @param mixed|array $ids scalar primary key field value of a single db 
-     *                       record to be fetched or an array of scalar values 
-     *                       of the primary key field of db rows to be fetched
+     * @param array $ids an array of scalar values of the primary key field of db rows to be fetched
      * 
      * @param bool $use_records true if each matched db row should be wrapped in 
      *                          an instance of \LeanOrm\Model\Record; false if 
@@ -962,11 +960,13 @@ SELECT {$foreign_table_name}.*
      *                              matched db rows should be returned in a
      *                              php array
      * 
-     * @return array|\LeanOrm\Model\Record|\LeanOrm\Model\Collection Description
+     * @param bool $use_p_k_val_as_key true means the collection or array returned should be keyed on the primary key values
+     * 
+     * @return array|\LeanOrm\Model\Collection 
      * 
      */
     public function fetch(
-        $ids, 
+        array $ids, 
         ?\Aura\SqlQuery\Common\Select $select_obj=null, 
         array $relations_to_include=[], 
         bool $use_records=false, 
@@ -983,11 +983,13 @@ SELECT {$foreign_table_name}.*
             $select_obj->from($this->_table_name);
         }
         
-        if( is_array($ids) ) {
+        if( \count($ids) > 0 ) {
             
+            // Add 
+            // Where $this->getPrimaryColName() . ' IN (?, ?,...., ?, ?)'
             $select_obj->where(
-                $this->getPrimaryColName() . ' IN (:pkvals)', 
-                ['pkvals' => $ids]
+                $this->getPrimaryColName() . ' IN (' . implode( ',', array_fill(0, count($ids), '?') ) . ')', 
+                ...$ids
             );
             
             if( $use_collections ) {
@@ -1013,10 +1015,8 @@ SELECT {$foreign_table_name}.*
             
         } else {
             
-            //assume it's a scalar value, string, int , etc
-            $select_obj->where($this->getPrimaryColName().' = :pkval', ['pkval' => $ids]);
-            
-            return $this->fetchOneRecord($select_obj, $relations_to_include);
+            // return empty collection or array
+            return $use_collections ? $this->createNewCollection() : [];
         }
     }
     
