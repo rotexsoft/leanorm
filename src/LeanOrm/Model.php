@@ -978,9 +978,6 @@ SELECT {$foreign_table_name}.*
             //defaults
             $select_obj = $this->_createQueryObjectIfNullAndAddColsToQuery($select_obj);
             
-        } else {
-            
-            $select_obj->from($this->_table_name);
         }
         
         if( \count($ids) > 0 ) {
