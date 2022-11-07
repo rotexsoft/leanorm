@@ -975,12 +975,7 @@ SELECT {$foreign_table_name}.*
         bool $use_collections=false, 
         bool $use_p_k_val_as_key=false
     ) {
-        if($select_obj === null) {
-            
-            //defaults
-            $select_obj = $this->_createQueryObjectIfNullAndAddColsToQuery($select_obj);
-            
-        }
+        $select_obj ??= $this->_createQueryObjectIfNullAndAddColsToQuery($select_obj);
         
         if( \count($ids) > 0 ) {
             
@@ -1010,13 +1005,12 @@ SELECT {$foreign_table_name}.*
                 return ($use_p_k_val_as_key) 
                             ? $this->fetchRowsIntoArrayKeyedOnPkVal($select_obj, $relations_to_include) 
                             : $this->fetchRowsIntoArray($select_obj, $relations_to_include);
-            }
+                
+            } // if( $use_collections ) else ...
+        } // if( \count($ids) > 0 )
             
-        } else {
-            
-            // return empty collection or array
-            return $use_collections ? $this->createNewCollection() : [];
-        }
+        // return empty collection or array
+        return $use_collections ? $this->createNewCollection() : [];
     }
     
     /**
