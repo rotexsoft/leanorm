@@ -65,5 +65,6 @@ in the for of select * from blog_posts where author_id  = current_authors_id to 
 If you specify that you want to fetch blog posts at the time you are calling the fetch method, then only two queries will be issued
 
 A. select * from authors
+
 B. select * from blog_posts where author_id IN ( select distinct id from authors ) // The result of this query will be stitched into the 
                                                                                    // appropriate author records from the query A above.
