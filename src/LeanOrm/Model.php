@@ -1920,8 +1920,9 @@ SELECT {$foreign_table_name}.*
             ($this->logger !== null)
                 &&  $this->logger->info(
                         PHP_EOL .
-                        'SQL:' . PHP_EOL . "\t{$sql}" . PHP_EOL . 
-                        'BIND PARAMS:' . PHP_EOL . str_replace(PHP_EOL,  "\t". PHP_EOL, var_export($bind_params, true))
+                        'SQL:' . PHP_EOL . "{$sql}" . PHP_EOL . PHP_EOL . PHP_EOL .
+                        'BIND PARAMS:' . PHP_EOL . var_export($bind_params, true)
+                         . PHP_EOL . PHP_EOL . PHP_EOL
                     );                    
         }
         
