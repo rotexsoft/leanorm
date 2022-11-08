@@ -33,10 +33,6 @@ class Model extends \GDAO\Model
     /////////////////////////////////////////////////////////////////////////////
     // Properties declared here are specific to \LeanOrm\Model and its kids //
     /////////////////////////////////////////////////////////////////////////////
-    protected static array $_valid_extra_opts_keys_4_dbconnector = [
-        'logging', //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
-        'logger',  //[NOT NEEDED: WILL IMPLEMENT QUERY LOGGING HERE]
-    ];
 
     /**
      *
@@ -47,13 +43,19 @@ class Model extends \GDAO\Model
      */
     protected string $_pdo_driver_name = '';
     
-    
     /**
      *
      *  An object for interacting with the db
      * 
      */
     protected ?\LeanOrm\DBConnector $_db_connector = null;
+
+    // Query Logging related properties
+    protected bool $can_log_queries = false;
+    protected array $query_log = [];
+    protected static array $all_instances_query_log = [];
+    protected ?\Psr\Log\LoggerInterface $logger = null;
+
 
     /**
      * 
@@ -87,17 +89,7 @@ class Model extends \GDAO\Model
             
             DBConnector::configure( 'driver_options', $pdo_driver_opts, $dsn);//use $dsn as connection name in 3rd parameter
         }
-        
-        foreach ($extra_opts as $e_opt_key => $e_opt_val) {
-
-            if(
-                is_string($e_opt_key) 
-                && in_array($e_opt_key, static::$_valid_extra_opts_keys_4_dbconnector)
-            ) {
-                DBConnector::configure($e_opt_key, $e_opt_val, $dsn);//use $dsn as connection name in 3rd parameter
-            }
-        }
-        
+                
         $this->_db_connector = DBConnector::create($dsn);//use $dsn as connection name
         $this->_pdo_driver_name = $this->getPDO()
                                        ->getAttribute(\PDO::ATTR_DRIVER_NAME);
@@ -542,6 +534,8 @@ SELECT {$foreign_table_name}.*,
   JOIN {$join_table_name} ON {$join_table_name}.{$col_in_join_table_linked_to_foreign_models_table} = {$foreign_table_name}.{$fkey_col_in_foreign_table}
  WHERE {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = {$parent_data->$fkey_col_in_my_table}
 */
+            $this->logQuery($sql_2_get_related_data, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
+            
             //GRAB DA RELATED DATA
             $related_data = 
                 $this->_db_connector
@@ -778,6 +772,7 @@ SELECT {$foreign_table_name}.*
         
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $sql_2_get_related_data = $query_obj->__toString();
+        $this->logQuery($sql_2_get_related_data, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
         //GRAB DA RELATED DATA
         $related_data = 
@@ -1100,6 +1095,7 @@ SELECT {$foreign_table_name}.*
         $query_obj = $this->_createQueryObjectIfNullAndAddColsToQuery($select_obj);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
+        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
         
         $results = $this->_db_connector->dbFetchAll($sql, $params_2_bind_2_sql);
         
@@ -1211,7 +1207,8 @@ SELECT {$foreign_table_name}.*
             
             $dlt_qry = $del_qry_obj->__toString();
             $dlt_qry_params = $del_qry_obj->getBindValues();
-
+            $this->logQuery($dlt_qry, $dlt_qry_params, __METHOD__, '' . __LINE__);
+            
             $result = $this->_db_connector->executeQuery($dlt_qry, $dlt_qry_params, true); 
 
             if( $result[0] === true ) {
@@ -1276,7 +1273,8 @@ SELECT {$foreign_table_name}.*
         $query_obj = $this->_createQueryObjectIfNullAndAddColsToQuery($select_obj);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
-
+        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
+        
         return $this->_db_connector->dbFetchCol($sql, $params_2_bind_2_sql);
     }
 
@@ -1290,7 +1288,8 @@ SELECT {$foreign_table_name}.*
         $query_obj->limit(1);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
-
+        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
+        
         $result = $this->_db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
 
         if( $result !== false && is_array($result) && count($result) > 0 ) {
@@ -1315,7 +1314,8 @@ SELECT {$foreign_table_name}.*
         $query_obj = $this->_createQueryObjectIfNullAndAddColsToQuery($select_obj);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
-
+        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
+        
         return $this->_db_connector->dbFetchPairs($sql, $params_2_bind_2_sql);
     }
 
@@ -1333,6 +1333,7 @@ SELECT {$foreign_table_name}.*
         
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
+        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
         $result = $this->_db_connector->dbFetchValue($sql, $params_2_bind_2_sql);
         
@@ -1344,6 +1345,7 @@ SELECT {$foreign_table_name}.*
         
         $sql = $query_obj_4_num_matching_rows->__toString();
         $params_2_bind_2_sql = $query_obj_4_num_matching_rows->getBindValues();
+        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
         
         $num_matching_rows = $this->_db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
         
@@ -1449,6 +1451,8 @@ SELECT {$foreign_table_name}.*
                 }
             }
 
+            $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
+            
             if( $this->_db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
              
                 if($has_autoinc_pkey_col) {
@@ -1635,6 +1639,7 @@ SELECT {$foreign_table_name}.*
                 }
             }
             
+            $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
             $result = $this->_db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params);
         }
         
@@ -1743,7 +1748,8 @@ SELECT {$foreign_table_name}.*
             
             $updt_qry = $update_qry_obj->__toString();
             $updt_qry_params = $update_qry_obj->getBindValues();
-
+            $this->logQuery($updt_qry, $updt_qry_params, __METHOD__, '' . __LINE__);
+            
             $result = $this->_db_connector->executeQuery($updt_qry, $updt_qry_params, true);
 
             if( $result[0] === true ) {
@@ -1865,6 +1871,61 @@ SELECT {$foreign_table_name}.*
         }
 
         return $attributes;
+    }
+    
+    public function getQueryLog(?string $dsn=null): array {
+        
+        $dsn ??= $this->_dsn;
+        
+        return array_key_exists($dsn, $this->query_log) ? $this->query_log[$dsn] : [];
+    }
+    
+    public static function getQueryLogForAllInstances(?string $dsn=null): array {
+        
+        return $dsn === null ? 
+                static::$all_instances_query_log 
+                : 
+                ( 
+                    array_key_exists($dsn, static::$all_instances_query_log) 
+                    ? static::$all_instances_query_log[$dsn] 
+                    : [] 
+                );
+    }
+    
+    protected function logQuery(string $sql, array $bind_params, string $calling_method='', string $calling_line=''): self {
+        
+        if( $this->can_log_queries ) {
+            
+            if(!array_key_exists($this->_dsn, $this->query_log)) {
+                
+                $this->query_log[$this->_dsn] = [];
+            }
+            
+            if(!array_key_exists($this->_dsn, static::$all_instances_query_log)) {
+                
+                static::$all_instances_query_log[$this->_dsn] = [];
+            }
+            
+            $log_record = [
+                'sql' => $sql,
+                'bind_params' => $bind_params,
+                'date_executed' => date('Y-m-d H:i:s'),
+                'class_method' => $calling_method,
+                'line_of_execution' => $calling_line,
+            ];
+            
+            $this->query_log[$this->_dsn][] = $log_record;
+            static::$all_instances_query_log[$this->_dsn][] = $log_record;
+            
+            ($this->logger !== null)
+                &&  $this->logger->info(
+                        PHP_EOL .
+                        'SQL:' . PHP_EOL . "\t{$sql}" . PHP_EOL . 
+                        'BIND PARAMS:' . PHP_EOL . str_replace(PHP_EOL,  "\t". PHP_EOL, var_export($bind_params, true))
+                    );                    
+        }
+        
+        return $this;
     }
     
     ///////////////////////////////////////

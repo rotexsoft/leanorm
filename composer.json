@@ -17,7 +17,8 @@
         "php": ">=7.4",
         "rotexsoft/gdao": "dev-master",
         "aura/sqlquery": "^2.4",
-        "aura/sqlschema": "^2.0"
+        "aura/sqlschema": "^2.0",
+        "psr/log": "^1.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0",
