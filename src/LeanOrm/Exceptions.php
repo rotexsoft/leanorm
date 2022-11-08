@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace LeanOrm {
 
-    class StringHelperException extends \Exception {}
     class ModelPropertyNotDefinedException extends \Exception{}
     class ModelBadCollectionClassNameForFetchingRelatedDataException extends \Exception{}
     class ModelBadRecordClassNameForFetchingRelatedDataException extends \Exception{}
