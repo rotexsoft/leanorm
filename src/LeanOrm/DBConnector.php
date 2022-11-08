@@ -59,8 +59,6 @@ class DBConnector {
         'username' => null,
         'password' => null,
         'driver_options' => null,
-        'logging' => false,
-        'logger' => null,
     ];
 
     // Map of configuration settings
@@ -68,12 +66,6 @@ class DBConnector {
 
     // Map of database connections, instances of the PDO class
     protected static $_db = [];
-
-    // Last query run, only populated if logging is enabled
-    protected static $_last_query;
-
-    // Log of all queries run, mapped by connection key, only populated if logging is enabled
-    protected static $_query_log = [];
 
     // --------------------------- //
     // --- INSTANCE PROPERTIES --- //
@@ -187,18 +179,6 @@ class DBConnector {
                 // Map of database connections, instances of the PDO class
                 return static::$_db;
             
-            case '_last_query':
-            case 'last_query':
-                
-                // Last query run, only populated if logging is enabled
-                return static::$_last_query;
-            
-            case '_query_log':
-            case 'query_log':
-                
-                // Log of all queries run, mapped by connection key, only populated if logging is enabled
-                return static::$_query_log;
-            
             default:
                 ///////////////////////////
                 // Return all properties //
@@ -210,12 +190,6 @@ class DBConnector {
 
                     // Map of database connections, instances of the PDO class
                     '$_db' => static::$_db,
-
-                    // Last query run, only populated if logging is enabled
-                    '$_last_query' => static::$_last_query,
-
-                    // Log of all queries run, mapped by connection key, only populated if logging is enabled
-                    '$_query_log' => static::$_query_log,
                 ];
         }
     }
@@ -246,20 +220,6 @@ class DBConnector {
                 static::$_db = [];
                 break;
             
-            case '_last_query':
-            case 'last_query':
-                
-                // Last query run, only populated if logging is enabled
-                static::$_last_query = '';
-                break;
-            
-            case '_query_log':
-            case 'query_log':
-                
-                // Log of all queries run, mapped by connection key, only populated if logging is enabled
-                static::$_query_log = [];
-                break;
-            
             default:
                 //////////////////////////
                 // Reset all properties //
@@ -270,12 +230,6 @@ class DBConnector {
                 
                 // Map of database connections, instances of the PDO class
                 static::$_db = [];
-                
-                // Last query run, only populated if logging is enabled
-                static::$_last_query = '';
-                
-                // Log of all queries run, mapped by connection key, only populated if logging is enabled
-                static::$_query_log = [];
                 break;
         }
     }
@@ -415,184 +369,10 @@ class DBConnector {
             $exec_result = $result;
             $result = [$exec_result, $statement];
         }
-        
-        if ( static::$_config[$connection_name]['logging'] ) {
-            
-            // Logging is enabled, log da query
-            static::_logQuery($query, $parameters, $connection_name, (microtime(true)-$time));
-        }
 
         return $result;
     }
-
-    /**
-     * Add a query to the internal query log. Only works if the
-     * 'logging' config option is set to true.
-     *
-     * This works by manually binding the parameters to the query - the
-     * query isn't executed like this (PDO normally passes the query and
-     * parameters to the database which takes care of the binding) but
-     * doing it this way makes the logged queries more readable.
-     * @param string $query
-     * @param array $parameters An array of parameters to be bound in to the query
-     * @param string $connection_name Which connection to use
-     * @param float $query_time Query time
-     * @return bool
-     */
-    protected static function _logQuery( $query, $parameters, $connection_name, $query_time ) {
-        
-        // If logging is not enabled, do nothing
-        if ( !static::$_config[$connection_name]['logging'] ) {
-            
-            return false;
-        }
-                
-        if ( !isset( static::$_query_log[$connection_name] ) ) {
-            
-            static::$_query_log[$connection_name] = [];
-        }
-        
-        static::$_last_query = ['unbound'=>$query, 'parameters'=>$parameters];
-        
-        $parameters_with_non_int_keys = [];//holds named parameters
-
-        // Strip out any non-integer indexes from the parameters
-        foreach($parameters as $key => $value) {
-            
-            if ( !is_int($key) ) {
-                
-                $parameters_with_non_int_keys[$key] = $value;
-                unset($parameters[$key]);
-            }
-        }
-
-        if ( count($parameters) > 0 && count($parameters_with_non_int_keys) <= 0 ) {
-            
-            //Deal with only question mark place holders
-            
-            // Escape the parameters
-            $parameters = 
-                array_map([static::getDb($connection_name), 'quote'], $parameters);
-
-            // Avoid %format collision for vsprintf
-            $query = str_replace("%", "%%", $query);
-
-            // Replace placeholders in the query for vsprintf
-            if( false !== strpos($query, "'") || false !== strpos($query, '"') ) {
-                
-                $query = StringHelper::strReplaceOutsideQuotes("?", "%s", $query);
-                
-            } else {
-                
-                $query = str_replace("?", "%s", $query);
-            }
-
-            // Replace the question marks in the query with the parameters
-            $bound_query = vsprintf($query, $parameters);
-            
-        } else if( count($parameters_with_non_int_keys) > 0 && count($parameters) <= 0 ){
-            
-            //Deal with only named place holders
-            
-            // Escape the parameters
-            $parameters_with_non_int_keys = 
-                array_map([static::getDb($connection_name), 'quote'], $parameters_with_non_int_keys);
-
-            // Avoid %format collision for vsprintf
-            $query = str_replace("%", "%%", $query);
-            
-            $re_indexed_parameters_with_non_int_keys_for_vsprintf = [];
-            
-            foreach($parameters_with_non_int_keys as $key=>$value) {
-                              
-                $new_index = strpos($query, ":{$key}");
-                
-                if( $new_index !== false ){
-                    
-                    $re_indexed_parameters_with_non_int_keys_for_vsprintf[$new_index] = $value;
-                }
-                
-                // Replace placeholders in the query for vsprintf
-                if( false !== strpos($query, "'") || false !== strpos($query, '"') ) {
-
-                    $query = StringHelper::strReplaceOutsideQuotes(":{$key}", "%s", $query);
-
-                } else {
-
-                    $query = str_replace(":{$key}", "%s", $query);
-                }
-            }            
-
-            // Replace the named placeholders in the query with the parameters
-            $bound_query = vsprintf($query, $re_indexed_parameters_with_non_int_keys_for_vsprintf);
-            
-        }else {
-            //Either no parameters to bind to query (which is good) or there are 
-            //mixed types of parameters (ie. named and question marked in the 
-            //same query which will eventually lead to a PDO Exception).
-            $bound_query = $query;
-        }
-
-        static::$_last_query['bound'] = $bound_query;
-        static::$_query_log[$connection_name][] = static::$_last_query;
-
-        if( is_callable( static::$_config[$connection_name]['logger'] ) ) {
-            
-            $logger = static::$_config[$connection_name]['logger'];
-            $logger(
-                    "Bound Query:". PHP_EOL. static::$_last_query['bound'], 
-                    "Unbound Query:".PHP_EOL.static::$_last_query['unbound'], 
-                    "Query Parameters:".PHP_EOL. var_export(static::$_last_query['parameters'], true), 
-                    $query_time
-                );
-        }
-
-        return true;
-    }
-
-    /**
-     * Get the last query executed. Only works if the
-     * 'logging' config option is set to true. Otherwise
-     * this will return null. Returns last query from all connections if
-     * no connection_name is specified
-     * @param null|string $connection_name Which connection to use
-     * @return string
-     */
-    public static function getLastQuery($connection_name = null) {
-        
-        if ($connection_name === null) {
-            
-            return static::$_last_query;
-        }
-        if (!isset(static::$_query_log[$connection_name])) {
-            
-            return '';
-        }
-
-        return end(static::$_query_log[$connection_name]);
-    }
-
-    /**
-     * Get an array containing all the queries run on a
-     * specified connection up to now.
-     * Only works if the 'logging' config option is
-     * set to true. Otherwise, returned array will be empty.
-     * @param string $connection_name Which connection to use. Set it to null to get query logs for all connections.
-     */
-    public static function getQueryLog($connection_name = self::DEFAULT_CONNECTION) {
-        
-        if ( isset( static::$_query_log[$connection_name] ) ) {
-            
-            return static::$_query_log[$connection_name];
-            
-        } else if ( is_null($connection_name) ) {
-            
-            return static::$_query_log;
-        }
-        
-        return [];
-    }
-
+    
     /**
      * Get a list of the available connection names
      * @return array
@@ -708,122 +488,5 @@ class DBConnector {
         $statement = array_pop($bool_and_statement);
             
         return $statement->fetchColumn(0);
-    }
-}
-
-/**
- * A class to handle str_replace operations that involve quoted strings
- * @example StringHelper::str_replace_outside_quotes('?', '%s', 'columnA = "Hello?" AND columnB = ?');
- * @example StringHelper::value('columnA = "Hello?" AND columnB = ?')->replace_outside_quotes('?', '%s');
- * @author Jeff Roberson <ridgerunner@fluxbb.org>
- * @author Simon Holywell <treffynnon@php.net>
- * @link http://stackoverflow.com/a/13370709/461813 StackOverflow answer
- */
-class StringHelper {
-    
-    protected $subject;
-    protected $search;
-    protected $replace;
-
-    /**
-     * Get an easy to use instance of the class
-     * @param string $subject
-     * @return \self
-     */
-    public static function value($subject) {
-        
-        return new self($subject);
-    }
-
-    /**
-     * Shortcut method: Replace all occurrences of the search string with the replacement
-     * string where they appear outside quotes.
-     * @param string $search
-     * @param string $replace
-     * @param string $subject
-     * @return string
-     */
-    public static function strReplaceOutsideQuotes($search, $replace, $subject) {
-        
-        return static::value($subject)->replaceOutsideQuotes($search, $replace);
-    }
-
-    /**
-     * Set the base string object
-     * @param string $subject
-     */
-    public function __construct($subject) {
-        
-        $this->subject = (string) $subject;
-    }
-
-    /**
-     * Replace all occurrences of the search string with the replacement
-     * string where they appear outside quotes
-     * @param string $search
-     * @param string $replace
-     * @return string
-     */
-    public function replaceOutsideQuotes($search, $replace) {
-        
-        $this->search = $search;
-        $this->replace = $replace;
-        return $this->_strReplaceOutsideQuotes();
-    }
-
-    /**
-     * Validate an input string and perform a replace on all ocurrences
-     * of $this->search with $this->replace
-     * @author Jeff Roberson <ridgerunner@fluxbb.org>
-     * @link http://stackoverflow.com/a/13370709/461813 StackOverflow answer
-     * @return string
-     */
-    protected function _strReplaceOutsideQuotes(){
-        
-        $re_valid = '/
-            # Validate string having embedded quoted substrings.
-            ^                           # Anchor to start of string.
-            (?:                         # Zero or more string chunks.
-              "[^"\\\\]*(?:\\\\.[^"\\\\]*)*"  # Either a double quoted chunk,
-            | \'[^\'\\\\]*(?:\\\\.[^\'\\\\]*)*\'  # or a single quoted chunk,
-            | [^\'"\\\\]+               # or an unquoted chunk (no escapes).
-            )*                          # Zero or more string chunks.
-            \z                          # Anchor to end of string.
-            /sx';
-        if (!preg_match($re_valid, $this->subject)) {
-            throw new StringHelperException("Subject string is not valid in the replace_outside_quotes context.");
-        }
-        $re_parse = '/
-            # Match one chunk of a valid string having embedded quoted substrings.
-              (                         # Either $1: Quoted chunk.
-                "[^"\\\\]*(?:\\\\.[^"\\\\]*)*"  # Either a double quoted chunk,
-              | \'[^\'\\\\]*(?:\\\\.[^\'\\\\]*)*\'  # or a single quoted chunk.
-              )                         # End $1: Quoted chunk.
-            | ([^\'"\\\\]+)             # or $2: an unquoted chunk (no escapes).
-            /sx';
-        
-        return preg_replace_callback($re_parse, [$this, '_strReplaceOutsideQuotesCb'], $this->subject);
-    }
-
-    /**
-     * Process each matching chunk from preg_replace_callback replacing
-     * each occurrence of $this->search with $this->replace
-     * @author Jeff Roberson <ridgerunner@fluxbb.org>
-     * @link http://stackoverflow.com/a/13370709/461813 StackOverflow answer
-     * @param array $matches
-     * @return string
-     */
-    protected function _strReplaceOutsideQuotesCb($matches) {
-        
-        // Return quoted string chunks (in group $1) unaltered.
-        if ($matches[1]) {
-            
-            return $matches[1];
-        }
-        
-        $search_str = '/'. preg_quote($this->search, '/') .'/';
-        
-        // Process only unquoted chunks (in group $2).
-        return preg_replace( $search_str, $this->replace, $matches[2]);
     }
 }
