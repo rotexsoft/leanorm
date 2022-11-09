@@ -23,22 +23,22 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * Data for this record ([to be saved to the db] or [as read from the db]).
      *
      */
-    protected array $_data = [];
+    protected array $data = [];
     
     /**
      * 
      * Data for this record (not to be saved to the db i.e. not from any actual db column and not related data).
      *
      */
-    protected array $_non_table_col_and_non_related_data = [];
+    protected array $non_table_col_and_non_related_data = [];
     
     /**
      * 
      * Holds relationship data retrieved based on definitions in the array below.
-     * \GDAO\Model::$_relations
+     * \GDAO\Model::$relations
      * 
      */
-    protected array $_related_data = [];
+    protected array $related_data = [];
 
     /**
      *
@@ -46,7 +46,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * of this record.
      * 
      */
-    protected \GDAO\Model $_model;
+    protected \GDAO\Model $model;
 
     /**
      * 
@@ -85,9 +85,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
 
         //print "Destroying Record with Primary key Value: " . $this->getPrimaryVal() . "<br>";
 
-        unset($this->_data);
-        unset($this->_related_data);
-        unset($this->_non_table_col_and_non_related_data);
+        unset($this->data);
+        unset($this->related_data);
+        unset($this->non_table_col_and_non_related_data);
 
         //Don't unset $this->_model, it may still be referenced by other 
         //Record and / or Collection objects.
@@ -120,7 +120,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function getData(): array {
         
-        return $this->_data;
+        return $this->data;
     }
     
     /**
@@ -143,7 +143,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function getRelatedData(): array {
         
-        return $this->_related_data;
+        return $this->related_data;
     }
     
     /**
@@ -154,7 +154,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function getNonTableColAndNonRelatedData(): array {
         
-        return $this->_non_table_col_and_non_related_data;
+        return $this->non_table_col_and_non_related_data;
     }
     
     /**
@@ -166,7 +166,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function &getDataByRef(): array {
         
-        return $this->_data;
+        return $this->data;
     }
     
     /**
@@ -188,7 +188,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function &getRelatedDataByRef(): array {
         
-        return $this->_related_data;
+        return $this->related_data;
     }
     
     /**
@@ -199,7 +199,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function &getNonTableColAndNonRelatedDataByRef(): array {
         
-        return $this->_non_table_col_and_non_related_data;
+        return $this->non_table_col_and_non_related_data;
     }
     
     /**
@@ -233,7 +233,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
         }
         
         //We're safe, set the related data.
-        $this->_related_data[$key] = $value;
+        $this->related_data[$key] = $value;
         
         return $this;
     }
@@ -245,7 +245,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function getModel(): \GDAO\Model {
         
-        return $this->_model;
+        return $this->model;
     }
     
     /**
@@ -255,7 +255,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function getPrimaryCol(): string {
 
-        return $this->_model->getPrimaryColName();
+        return $this->model->getPrimaryColName();
     }
 
     /**
@@ -359,17 +359,17 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
                     
                     if ( in_array($col_name, $table_col_names_4_my_model) ) {
                         
-                        $this->_data[$col_name] = $value_2_load;
+                        $this->data[$col_name] = $value_2_load;
                     } else {
                         
-                        $this->_non_table_col_and_non_related_data[$col_name] = $value_2_load;
+                        $this->non_table_col_and_non_related_data[$col_name] = $value_2_load;
                     }
                 }
                 
             } else if ($data_2_load instanceof \GDAO\Model\RecordInterface) {
 
-                $this->_data = $data_2_load->getData();
-                $this->_non_table_col_and_non_related_data = $data_2_load->getNonTableColAndNonRelatedData();
+                $this->data = $data_2_load->getData();
+                $this->non_table_col_and_non_related_data = $data_2_load->getNonTableColAndNonRelatedData();
             }
             
         } else {
@@ -389,11 +389,11 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
                 ) {
                     if ( in_array($col_name, $table_col_names_4_my_model) ) {
 
-                        $this->_data[$col_name] = $data_2_load[$col_name];
+                        $this->data[$col_name] = $data_2_load[$col_name];
 
                     } else {
 
-                        $this->_non_table_col_and_non_related_data[$col_name] = $data_2_load[$col_name];
+                        $this->non_table_col_and_non_related_data[$col_name] = $data_2_load[$col_name];
                     }
                 }
             } // foreach ( $cols_2_load as $col_name )
@@ -460,7 +460,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function setModel(\GDAO\Model $model): self{
         
-        $this->_model = $model;
+        $this->model = $model;
         
         return $this;
     }
@@ -533,12 +533,12 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
 
     public function count(): int {
 
-        return count($this->_data);
+        return count($this->data);
     }
 
     public function getIterator(): \ArrayIterator {
 
-        return new \ArrayIterator($this->_data + $this->_related_data + $this->_non_table_col_and_non_related_data);
+        return new \ArrayIterator($this->data + $this->related_data + $this->non_table_col_and_non_related_data);
     }
 
     //Magic Methods
@@ -554,17 +554,17 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function __get($key) {
 
-        if ( array_key_exists($key, $this->_data) ) {
+        if ( array_key_exists($key, $this->data) ) {
             
-            return $this->_data[$key];
+            return $this->data[$key];
             
-        } else if ( array_key_exists($key, $this->_related_data) ) {
+        } else if ( array_key_exists($key, $this->related_data) ) {
 
-            return $this->_related_data[$key];
+            return $this->related_data[$key];
             
-        } else if ( array_key_exists($key, $this->_non_table_col_and_non_related_data) ) { 
+        } else if ( array_key_exists($key, $this->non_table_col_and_non_related_data) ) { 
             
-            return $this->_non_table_col_and_non_related_data[$key];
+            return $this->non_table_col_and_non_related_data[$key];
             
         } else if ( 
             $this->getModel() instanceof \GDAO\Model 
@@ -573,9 +573,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
             //$key is a valid db column in the db table assoiciated with this 
             //model's record. Initialize it to a null value since it has not 
             //yet been set.
-            $this->_data[$key] = null;
+            $this->data[$key] = null;
             
-            return $this->_data[$key];
+            return $this->data[$key];
             
         } else if( 
             $this->getModel() instanceof \GDAO\Model 
@@ -586,7 +586,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
             $this->getModel()->loadRelationshipData($key, $this, true, true);
             
             //return loaded data
-            return $this->_related_data[$key];
+            return $this->related_data[$key];
             
         } else {
 
@@ -613,9 +613,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
         try { $this->$key;  } //access the property first to make sure the data is loaded
         catch ( \Exception $exception ) {  } //do nothing if exception was thrown
         
-        return array_key_exists($key, $this->_data) 
-            || array_key_exists($key, $this->_related_data)
-            || array_key_exists($key, $this->_non_table_col_and_non_related_data);
+        return array_key_exists($key, $this->data) 
+            || array_key_exists($key, $this->related_data)
+            || array_key_exists($key, $this->non_table_col_and_non_related_data);
     }
     
     /**

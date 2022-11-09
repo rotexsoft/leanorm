@@ -20,7 +20,7 @@ class Model extends \GDAO\Model
      * Must be a descendant of \GDAO\Model\Collection
      * 
      */
-    protected ?string $_collection_class_name = \LeanOrm\Model\Collection::class;
+    protected ?string $collection_class_name = \LeanOrm\Model\Collection::class;
 
 
     /**
@@ -28,7 +28,7 @@ class Model extends \GDAO\Model
      * Must be a descendant of \GDAO\Model\Record
      * 
      */
-    protected ?string $_record_class_name = \LeanOrm\Model\Record::class;
+    protected ?string $record_class_name = \LeanOrm\Model\Record::class;
 
     /////////////////////////////////////////////////////////////////////////////
     // Properties declared here are specific to \LeanOrm\Model and its kids //
@@ -41,14 +41,14 @@ class Model extends \GDAO\Model
      * $this->getPDO()->getAvailableDrivers()
      *  
      */
-    protected string $_pdo_driver_name = '';
+    protected string $pdo_driver_name = '';
 
     /**
      *
      *  An object for interacting with the db
      * 
      */
-    protected ?\LeanOrm\DBConnector $_db_connector = null;
+    protected ?\LeanOrm\DBConnector $db_connector = null;
 
     // Query Logging related properties
     protected bool $can_log_queries = false;
@@ -85,7 +85,7 @@ class Model extends \GDAO\Model
 
         } catch (\GDAO\ModelPrimaryColNameNotSetDuringConstructionException $e) {
 
-            //$this->_primary_col (primary key colun has not yet been set)
+            //$this->primary_col (primary key colun has not yet been set)
             //hold this exception for later if necessary
             $pri_col_not_set_exception = $e;
         }
@@ -99,14 +99,14 @@ class Model extends \GDAO\Model
             DBConnector::configure( 'driver_options', $pdo_driver_opts, $dsn);//use $dsn as connection name in 3rd parameter
         }
 
-        $this->_db_connector = DBConnector::create($dsn);//use $dsn as connection name
-        $this->_pdo_driver_name = $this->getPDO()
+        $this->db_connector = DBConnector::create($dsn);//use $dsn as connection name
+        $this->pdo_driver_name = $this->getPDO()
                                        ->getAttribute(\PDO::ATTR_DRIVER_NAME);
 
         ////////////////////////////////////////////////////////
         //Get and Set Table Schema Meta Data if Not Already Set
         ////////////////////////////////////////////////////////
-        if ( $this->_table_cols === [] ) {
+        if ( $this->table_cols === [] ) {
 
             static $dsn_n_tname_to_schema_def_map;
 
@@ -115,57 +115,57 @@ class Model extends \GDAO\Model
                 $dsn_n_tname_to_schema_def_map = [];
             }
 
-            if( array_key_exists($dsn.$this->_table_name, $dsn_n_tname_to_schema_def_map) ) {
+            if( array_key_exists($dsn.$this->table_name, $dsn_n_tname_to_schema_def_map) ) {
 
                 // use cached schema definition for the dsn and table name combo
-                $schema_definitions = $dsn_n_tname_to_schema_def_map[$dsn.$this->_table_name];
+                $schema_definitions = $dsn_n_tname_to_schema_def_map[$dsn.$this->table_name];
 
             } else {
                 // a column definition factory 
                 $column_factory = new ColumnFactory();
 
                 $schema_class_name = '\\Aura\\SqlSchema\\' 
-                                     .ucfirst($this->_pdo_driver_name).'Schema';
+                                     .ucfirst($this->pdo_driver_name).'Schema';
 
                 // the schema discovery object
                 $schema = new $schema_class_name($this->getPDO(), $column_factory);
 
-                $this->_table_cols = [];
-                $schema_definitions = $schema->fetchTableCols($this->_table_name);
+                $this->table_cols = [];
+                $schema_definitions = $schema->fetchTableCols($this->table_name);
 
                 // cache schema definition for the current dsn and table combo
-                $dsn_n_tname_to_schema_def_map[$dsn.$this->_table_name] = $schema_definitions;
+                $dsn_n_tname_to_schema_def_map[$dsn.$this->table_name] = $schema_definitions;
             }
 
             foreach( $schema_definitions as $colname => $metadata_obj ) {
 
-                $this->_table_cols[$colname] = [];
-                $this->_table_cols[$colname]['name'] = $metadata_obj->name;
-                $this->_table_cols[$colname]['type'] = $metadata_obj->type;
-                $this->_table_cols[$colname]['size'] = $metadata_obj->size;
-                $this->_table_cols[$colname]['scale'] = $metadata_obj->scale;
-                $this->_table_cols[$colname]['notnull'] = $metadata_obj->notnull;
-                $this->_table_cols[$colname]['default'] = $metadata_obj->default;
-                $this->_table_cols[$colname]['autoinc'] = $metadata_obj->autoinc;
-                $this->_table_cols[$colname]['primary'] = $metadata_obj->primary;
+                $this->table_cols[$colname] = [];
+                $this->table_cols[$colname]['name'] = $metadata_obj->name;
+                $this->table_cols[$colname]['type'] = $metadata_obj->type;
+                $this->table_cols[$colname]['size'] = $metadata_obj->size;
+                $this->table_cols[$colname]['scale'] = $metadata_obj->scale;
+                $this->table_cols[$colname]['notnull'] = $metadata_obj->notnull;
+                $this->table_cols[$colname]['default'] = $metadata_obj->default;
+                $this->table_cols[$colname]['autoinc'] = $metadata_obj->autoinc;
+                $this->table_cols[$colname]['primary'] = $metadata_obj->primary;
 
-                if( $this->_primary_col === '' && $metadata_obj->primary ) {
+                if( $this->primary_col === '' && $metadata_obj->primary ) {
 
                     //this is a primary column
-                    $this->_primary_col = $metadata_obj->name;
+                    $this->primary_col = $metadata_obj->name;
                 }
             }
         }
 
-        //if $this->_primary_col is still null at this point, throw an exception.
-        if( $this->_primary_col === '' ) {
+        //if $this->primary_col is still null at this point, throw an exception.
+        if( $this->primary_col === '' ) {
 
             throw $pri_col_not_set_exception;
         }
 
         $table_cols = $this->getTableColNames();
 
-        foreach(array_keys($this->_relations) as $relation_name) {
+        foreach(array_keys($this->relations) as $relation_name) {
 
             if( in_array($relation_name, $table_cols) ) {
 
@@ -186,9 +186,9 @@ class Model extends \GDAO\Model
 
     public function getSelect(): \Aura\SqlQuery\Common\Select {
 
-        $selectObj = (new QueryFactory($this->_pdo_driver_name))->newSelect();
+        $selectObj = (new QueryFactory($this->pdo_driver_name))->newSelect();
 
-        $selectObj->from($this->_table_name);
+        $selectObj->from($this->table_name);
 
         return $selectObj;
     }
@@ -200,14 +200,14 @@ class Model extends \GDAO\Model
      */
     public function createNewCollection(array $extra_opts=[], \GDAO\Model\RecordInterface ...$list_of_records): \GDAO\Model\CollectionInterface {
 
-        if( empty($this->_collection_class_name) ) {
+        if( empty($this->collection_class_name) ) {
 
             //default to creating new collection of type \LeanOrm\Model\Collection
             $collection = new \LeanOrm\Model\Collection($this, $extra_opts, ...$list_of_records);
 
         } else {
 
-            $collection = new $this->_collection_class_name($this, $extra_opts, ...$list_of_records);
+            $collection = new $this->collection_class_name($this, $extra_opts, ...$list_of_records);
         }
 
         return $collection;
@@ -219,14 +219,14 @@ class Model extends \GDAO\Model
      */
     public function createNewRecord(array $col_names_n_vals = [], array $extra_opts=[]): \GDAO\Model\RecordInterface {
 
-        if( empty($this->_record_class_name) ) {
+        if( empty($this->record_class_name) ) {
 
             //default to creating new record of type \LeanOrm\Model\Record
             $record = new \LeanOrm\Model\Record($col_names_n_vals, $this, $extra_opts);
 
         } else {
 
-            $record = new $this->_record_class_name($col_names_n_vals, $this, $extra_opts);
+            $record = new $this->record_class_name($col_names_n_vals, $this, $extra_opts);
         }
 
         return $record;
@@ -236,7 +236,7 @@ class Model extends \GDAO\Model
      * 
      * @param array $params an array of parameters passed to a fetch*() method
      * @param array $disallowed_keys list of keys in $params not to be used to build the query object 
-     * @param string $table_name name of the table to select from (will default to $this->_table_name if empty)
+     * @param string $table_name name of the table to select from (will default to $this->table_name if empty)
      * @return \Aura\SqlQuery\Common\Select or any of its descendants
      */
     protected function _createQueryObjectIfNullAndAddColsToQuery(
@@ -247,7 +247,7 @@ class Model extends \GDAO\Model
 
         if( $table_name === '' ) {
 
-            $table_name = $this->_table_name;
+            $table_name = $this->table_name;
         }
 
         if($initiallyNull || !$select_obj->hasCols()) {
@@ -268,7 +268,7 @@ class Model extends \GDAO\Model
 
         $default_colvals = [];
 
-        foreach($this->_table_cols as $col_name => $col_metadata) {
+        foreach($this->table_cols as $col_name => $col_metadata) {
 
             $default_colvals[$col_name] = $col_metadata['default'];
         }
@@ -279,26 +279,26 @@ class Model extends \GDAO\Model
     public function loadRelationshipData($rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false): self {
 
         if( 
-            array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_MANY 
+            array_key_exists($rel_name, $this->relations) 
+            && $this->relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_MANY 
         ) {
             $this->_loadHasMany($rel_name, $parent_data, $wrap_each_row_in_a_record, $wrap_records_in_collection);
 
         } else if (
-            array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH        
+            array_key_exists($rel_name, $this->relations) 
+            && $this->relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH        
         ) {
             $this->_loadHasManyTrough($rel_name, $parent_data, $wrap_each_row_in_a_record, $wrap_records_in_collection);
 
         } else if (
-            array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_ONE
+            array_key_exists($rel_name, $this->relations) 
+            && $this->relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_ONE
         ) {
             $this->_loadHasOne($rel_name, $parent_data, $wrap_each_row_in_a_record);
 
         } else if (
-            array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_BELONGS_TO
+            array_key_exists($rel_name, $this->relations) 
+            && $this->relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_BELONGS_TO
         ) {
             $this->_loadBelongsTo($rel_name, $parent_data, $wrap_each_row_in_a_record);
         }
@@ -344,8 +344,8 @@ class Model extends \GDAO\Model
         string $rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false 
     ): void {
         if( 
-            array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY
+            array_key_exists($rel_name, $this->relations) 
+            && $this->relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY
         ) {
             [
                 $fkey_col_in_foreign_table, $foreign_models_record_class_name,
@@ -415,17 +415,17 @@ class Model extends \GDAO\Model
                 //stitch the related data to the parent record
                 $parent_data->setRelatedData($rel_name, $related_data);
             } // else if ($parent_data instanceof \GDAO\Model\RecordInterface)
-        } // if( array_key_exists($rel_name, $this->_relations) )
+        } // if( array_key_exists($rel_name, $this->relations) )
     }
     
     protected function _loadHasManyTrough( 
         string $rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false 
     ): void {
         if( 
-            array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH
+            array_key_exists($rel_name, $this->relations) 
+            && $this->relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH
         ) {
-            $rel_info = $this->_relations[$rel_name];
+            $rel_info = $this->relations[$rel_name];
 
             $foreign_table_name = Utils::arrayGet($rel_info, 'foreign_table');
 
@@ -536,7 +536,7 @@ SELECT {$foreign_table_name}.*,
 
             //GRAB DA RELATED DATA
             $related_data = 
-                $this->_db_connector
+                $this->db_connector
                      ->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql);
 
             if ( 
@@ -582,15 +582,15 @@ SELECT {$foreign_table_name}.*,
                 //stitch the related data to the parent record
                 $parent_data->setRelatedData($rel_name, $related_data);
             } // else if ( $parent_data instanceof \GDAO\Model\RecordInterface )
-        } // if( array_key_exists($rel_name, $this->_relations) )
+        } // if( array_key_exists($rel_name, $this->relations) )
     }
     
     protected function _loadHasOne( 
         string $rel_name, &$parent_data, $wrap_row_in_a_record=false
     ): void {
         if( 
-            array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_ONE
+            array_key_exists($rel_name, $this->relations) 
+            && $this->relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_ONE
         ) {
             [
                 $fkey_col_in_foreign_table, $foreign_models_record_class_name,
@@ -663,18 +663,18 @@ SELECT {$foreign_table_name}.*
                 //stitch the related data to the parent record
                 $parent_data->setRelatedData($rel_name, array_shift($related_data));
             } // else if ($parent_data instanceof \GDAO\Model\RecordInterface)
-        } // if( array_key_exists($rel_name, $this->_relations) )
+        } // if( array_key_exists($rel_name, $this->relations) )
     }
     
     protected function _loadBelongsTo(string $rel_name, &$parent_data, $wrap_row_in_a_record=false): void {
 
         if( 
-            array_key_exists($rel_name, $this->_relations) 
-            && $this->_relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_BELONGS_TO
+            array_key_exists($rel_name, $this->relations) 
+            && $this->relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_BELONGS_TO
         ) {
 
             //quick hack
-            $this->_relations[$rel_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
+            $this->relations[$rel_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
 
             //I really don't see the difference in the sql to fetch data for
             //a has-one relationship and a belongs-to relationship. Hence, I
@@ -682,7 +682,7 @@ SELECT {$foreign_table_name}.*
             $this->_loadHasOne($rel_name, $parent_data, $wrap_row_in_a_record);
 
             //undo quick hack
-            $this->_relations[$rel_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
+            $this->relations[$rel_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
         }
     }
 
@@ -691,7 +691,7 @@ SELECT {$foreign_table_name}.*
      */
     protected function _getBelongsToOrHasOneOrHasManyData(string $rel_name, &$parent_data): array {
 
-        $rel_info = $this->_relations[$rel_name];
+        $rel_info = $this->relations[$rel_name];
 
         $foreign_table_name = Utils::arrayGet($rel_info, 'foreign_table');
 
@@ -766,7 +766,7 @@ SELECT {$foreign_table_name}.*
 
         //GRAB DA RELATED DATA
         $related_data = 
-            $this->_db_connector
+            $this->db_connector
                  ->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql);
 
         return [
@@ -803,7 +803,7 @@ SELECT {$foreign_table_name}.*
             // a column definition factory 
             $column_factory = new ColumnFactory();
             $schema_class_name = '\\Aura\\SqlSchema\\' 
-                                 .ucfirst($this->_pdo_driver_name).'Schema';
+                                 .ucfirst($this->pdo_driver_name).'Schema';
 
             // the schema discovery object
             $schema = new $schema_class_name($this->getPDO(), $column_factory);
@@ -822,8 +822,8 @@ SELECT {$foreign_table_name}.*
 
         $merged_extra_opts = array_merge(
             [
-                '_primary_col' => $pri_key_col_in_f_models_table,
-                '_table_name' => $f_table_name
+                'primary_col' => $pri_key_col_in_f_models_table,
+                'table_name' => $f_table_name
             ],
             $extra_opts_for_foreign_model
         );
@@ -839,13 +839,13 @@ SELECT {$foreign_table_name}.*
 
             throw new ModelRelatedModelNotCreatedException($msg);
         }
-
+        
         //try to create a model object for the related data
         return new $f_models_class_name(
-            $this->_dsn, 
-            $this->_username, 
-            $this->_passwd, 
-            $this->_pdo_driver_opts,
+            $this->dsn, 
+            $this->username, 
+            $this->passwd, 
+            $this->pdo_driver_opts,
             $merged_extra_opts
         );
     }
@@ -1099,27 +1099,27 @@ SELECT {$foreign_table_name}.*
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
-        $results = $this->_db_connector->dbFetchAll($sql, $params_2_bind_2_sql);
+        $results = $this->db_connector->dbFetchAll($sql, $params_2_bind_2_sql);
 
-        if( $use_p_k_val_as_key && $results !== [] && $this->_primary_col !== '' ) {
+        if( $use_p_k_val_as_key && $results !== [] && $this->primary_col !== '' ) {
 
             $results_keyed_by_pk = [];
 
             foreach( $results as $result ) {
 
-                if( !array_key_exists($this->_primary_col, $result) ) {
+                if( !array_key_exists($this->primary_col, $result) ) {
 
                     $msg = "ERROR: Can't key fetch results by Primary Key value."
-                         . PHP_EOL . " One or more result rows has no Primary Key field (`{$this->_primary_col}`)" 
+                         . PHP_EOL . " One or more result rows has no Primary Key field (`{$this->primary_col}`)" 
                          . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).'
                          . PHP_EOL . 'Fetch Results:' . PHP_EOL . var_export($results, true) . PHP_EOL
-                         . PHP_EOL . "Row without Primary Key field (`{$this->_primary_col}`):" . PHP_EOL . var_export($result, true) . PHP_EOL;
+                         . PHP_EOL . "Row without Primary Key field (`{$this->primary_col}`):" . PHP_EOL . var_export($result, true) . PHP_EOL;
 
                     throw new \LeanOrm\KeyingFetchResultsByPrimaryKeyFailedException($msg);
                 }
 
                 // key on primary key value
-                $results_keyed_by_pk[$result[$this->_primary_col]] = $result;
+                $results_keyed_by_pk[$result[$this->primary_col]] = $result;
             }
 
             $results = $results_keyed_by_pk;
@@ -1169,7 +1169,7 @@ SELECT {$foreign_table_name}.*
     public function getPDO(): \PDO {
 
         //return pdo object associated with the current dsn
-        return DBConnector::getDb($this->_dsn); 
+        return DBConnector::getDb($this->dsn); 
     }
 
     /**
@@ -1183,8 +1183,8 @@ SELECT {$foreign_table_name}.*
         if ( $cols_n_vals !== [] ) {
 
             //delete statement
-            $del_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newDelete();
-            $del_qry_obj->from($this->_table_name);
+            $del_qry_obj = (new QueryFactory($this->pdo_driver_name))->newDelete();
+            $del_qry_obj->from($this->table_name);
 
             foreach ($cols_n_vals as $colname => $colval) {
 
@@ -1213,7 +1213,7 @@ SELECT {$foreign_table_name}.*
             $dlt_qry_params = $del_qry_obj->getBindValues();
             $this->logQuery($dlt_qry, $dlt_qry_params, __METHOD__, '' . __LINE__);
 
-            $result = $this->_db_connector->executeQuery($dlt_qry, $dlt_qry_params, true); 
+            $result = $this->db_connector->executeQuery($dlt_qry, $dlt_qry_params, true); 
 
             if( $result['query_result'] === true ) {
 
@@ -1224,7 +1224,7 @@ SELECT {$foreign_table_name}.*
             } else {
 
                 //return boolean result of the \PDOStatement::execute() call
-                //from $this->_db_connector->executeQuery($dlt_qry, $dlt_qry_params, true);
+                //from $this->db_connector->executeQuery($dlt_qry, $dlt_qry_params, true);
                 $result = $result['query_result'];
             }
         }
@@ -1238,9 +1238,9 @@ SELECT {$foreign_table_name}.*
      */
     public function deleteSpecifiedRecord(\GDAO\Model\RecordInterface $record): ?bool {
 
-        //$this->_primary_col should have a valid value because a
+        //$this->primary_col should have a valid value because a
         //GDAO\ModelPrimaryColNameNotSetDuringConstructionException
-        //is thrown in $this->__construct() if $this->_primary_col is not set.
+        //is thrown in $this->__construct() if $this->primary_col is not set.
         $succesfully_deleted = null;
 
         if( $record instanceof \LeanOrm\Model\ReadOnlyRecord ) {
@@ -1279,7 +1279,7 @@ SELECT {$foreign_table_name}.*
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
-        return $this->_db_connector->dbFetchCol($sql, $params_2_bind_2_sql);
+        return $this->db_connector->dbFetchCol($sql, $params_2_bind_2_sql);
     }
 
     /**
@@ -1295,7 +1295,7 @@ SELECT {$foreign_table_name}.*
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
-        $result = $this->_db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
+        $result = $this->db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
 
         if( $result !== false && is_array($result) && $result !== [] ) {
 
@@ -1321,7 +1321,7 @@ SELECT {$foreign_table_name}.*
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
-        return $this->_db_connector->dbFetchPairs($sql, $params_2_bind_2_sql);
+        return $this->db_connector->dbFetchPairs($sql, $params_2_bind_2_sql);
     }
 
     /**
@@ -1340,7 +1340,7 @@ SELECT {$foreign_table_name}.*
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
-        $result = $this->_db_connector->dbFetchValue($sql, $params_2_bind_2_sql);
+        $result = $this->db_connector->dbFetchValue($sql, $params_2_bind_2_sql);
 
         //need to issue a second query to get the number of matching rows
         // clear the cols part of the query above while preserving all the
@@ -1352,7 +1352,7 @@ SELECT {$foreign_table_name}.*
         $params_2_bind_2_sql = $query_obj_4_num_matching_rows->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
-        $num_matching_rows = $this->_db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
+        $num_matching_rows = $this->db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
 
         //return null if there wasn't any matching row
         return (((int)$num_matching_rows['num_rows']) > 0) ? $result : null;
@@ -1369,8 +1369,8 @@ SELECT {$foreign_table_name}.*
         if ( $data_2_insert !== [] ) {
 
             $table_cols = $this->getTableColNames();
-            $time_created_colname = $this->_created_timestamp_column_name;
-            $last_updated_colname = $this->_updated_timestamp_column_name;
+            $time_created_colname = $this->created_timestamp_column_name;
+            $last_updated_colname = $this->updated_timestamp_column_name;
 
             if(
                 !empty($time_created_colname) 
@@ -1401,7 +1401,7 @@ SELECT {$foreign_table_name}.*
                 // Code below was lifted from Solar_Sql_Model::insert()
                 // remove empty autoinc columns to soothe postgres, which won't
                 // take explicit NULLs in SERIAL cols.
-                if ( $this->_table_cols[$key]['autoinc'] && empty($val) ) {
+                if ( $this->table_cols[$key]['autoinc'] && empty($val) ) {
 
                     unset($data_2_insert[$key]);
                 }
@@ -1409,7 +1409,7 @@ SELECT {$foreign_table_name}.*
 
             $has_autoinc_pkey_col = false;
 
-            foreach($this->_table_cols as $col_name=>$col_info) {
+            foreach($this->table_cols as $col_name=>$col_info) {
 
                 if ( $col_info['autoinc'] === true && $col_info['primary'] === true ) {
 
@@ -1425,8 +1425,8 @@ SELECT {$foreign_table_name}.*
             }
 
             //Insert statement
-            $insrt_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newInsert();
-            $insrt_qry_obj->into($this->_table_name)->cols($data_2_insert);
+            $insrt_qry_obj = (new QueryFactory($this->pdo_driver_name))->newInsert();
+            $insrt_qry_obj->into($this->table_name)->cols($data_2_insert);
 
             $insrt_qry_sql = $insrt_qry_obj->__toString();
             $insrt_qry_params = $insrt_qry_obj->getBindValues();
@@ -1441,7 +1441,7 @@ SELECT {$foreign_table_name}.*
                 ) {
                     $msg = "ERROR: the value "
                          . PHP_EOL . var_export($param, true) . PHP_EOL
-                         . " you are trying to insert into {$this->_table_name}."
+                         . " you are trying to insert into {$this->table_name}."
                          . "{$key} is not acceptable ('".  gettype($param) . "'"
                          . " supplied). Boolean, NULL, numeric or string value expected."
                          . PHP_EOL
@@ -1457,12 +1457,12 @@ SELECT {$foreign_table_name}.*
 
             $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
 
-            if( $this->_db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
+            if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
 
                 if($has_autoinc_pkey_col) {
 
                     $last_insert_sequence_name = 
-                        $insrt_qry_obj->getLastInsertIdName($this->_primary_col);
+                        $insrt_qry_obj->getLastInsertIdName($this->primary_col);
 
                     $pk_val_4_new_record = 
                             $this->getPDO()->lastInsertId($last_insert_sequence_name);
@@ -1470,10 +1470,10 @@ SELECT {$foreign_table_name}.*
                     if( empty($pk_val_4_new_record) ) {
 
                         $msg = "ERROR: Could not retrieve the value for the primary"
-                             . " key field name '{$this->_primary_col}' after the "
+                             . " key field name '{$this->primary_col}' after the "
                              . " successful insertion of the data below: "
                              . PHP_EOL . var_export($data_2_insert, true) . PHP_EOL
-                             . " into the table named '{$this->_table_name}' in the method " 
+                             . " into the table named '{$this->table_name}' in the method " 
                              . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                              . PHP_EOL;
 
@@ -1484,7 +1484,7 @@ SELECT {$foreign_table_name}.*
 
                         //add primary key value of the newly inserted record to the 
                         //data to be returned.
-                        $data_2_insert[$this->_primary_col] = $pk_val_4_new_record;
+                        $data_2_insert[$this->primary_col] = $pk_val_4_new_record;
                     }
                 }
 
@@ -1507,12 +1507,12 @@ SELECT {$foreign_table_name}.*
         if ($rows_of_data_2_insert !== []) {
 
             $table_cols = $this->getTableColNames();
-            $time_created_colname = $this->_created_timestamp_column_name;
-            $last_updated_colname = $this->_updated_timestamp_column_name;
+            $time_created_colname = $this->created_timestamp_column_name;
+            $last_updated_colname = $this->updated_timestamp_column_name;
 
             //if the db is sqlite 3.7.10 or prior, we can't take advantage of
             //bulk insert, have to revert to multiple insert statements.
-            if( strtolower($this->_pdo_driver_name) === 'sqlite' ) {
+            if( strtolower($this->pdo_driver_name) === 'sqlite' ) {
 
                 $pdo_obj = $this->getPDO();
 
@@ -1550,7 +1550,7 @@ SELECT {$foreign_table_name}.*
                         throw $e;
                     }
                 }//if( $version_numbers_only <= 3710 )
-            }//if( $this->_pdo_driver_name === 'sqlite' ) 
+            }//if( $this->pdo_driver_name === 'sqlite' ) 
 
             ////////////////////////////////////////////////////////////////////
             // Do Bulk insert for other DBMSs including Sqlite 3.7.11 and later
@@ -1587,13 +1587,13 @@ SELECT {$foreign_table_name}.*
                     // Code below was lifted from Solar_Sql_Model::insert()
                     // remove empty autoinc columns to soothe postgres, which won't
                     // take explicit NULLs in SERIAL cols.
-                    if ( $this->_table_cols[$col_name]['autoinc'] === true && empty($val)) {
+                    if ( $this->table_cols[$col_name]['autoinc'] === true && empty($val)) {
 
                         unset($rows_of_data_2_insert[$key][$col_name]);
                     }
                 }
 
-                foreach( $this->_table_cols as $col_name=>$col_info ) {
+                foreach( $this->table_cols as $col_name=>$col_info ) {
 
                     if ( $col_info['autoinc'] === true && $col_info['primary'] === true ) {
 
@@ -1607,15 +1607,15 @@ SELECT {$foreign_table_name}.*
 
                     } // if ( $col_info['autoinc'] === true && $col_info['primary'] === true )
 
-                } // foreach( $this->_table_cols as $col_name=>$col_info )
+                } // foreach( $this->table_cols as $col_name=>$col_info )
 
             } // foreach ($rows_of_data_2_insert as $key=>$row_2_insert)
 
             //Insert statement
-            $insrt_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newInsert();
+            $insrt_qry_obj = (new QueryFactory($this->pdo_driver_name))->newInsert();
 
             //Batch all the data into one insert query.
-            $insrt_qry_obj->into($this->_table_name)->addRows($rows_of_data_2_insert);           
+            $insrt_qry_obj->into($this->table_name)->addRows($rows_of_data_2_insert);           
             $insrt_qry_sql = $insrt_qry_obj->__toString();
             $insrt_qry_params = $insrt_qry_obj->getBindValues();
 
@@ -1629,7 +1629,7 @@ SELECT {$foreign_table_name}.*
                 ) {
                     $msg = "ERROR: the value "
                          . PHP_EOL . var_export($param, true) . PHP_EOL
-                         . " you are trying to insert into {$this->_table_name}."
+                         . " you are trying to insert into {$this->table_name}."
                          . "{$key} is not acceptable ('".  gettype($param) . "'"
                          . " supplied). Boolean, NULL, numeric or string value expected."
                          . PHP_EOL
@@ -1644,7 +1644,7 @@ SELECT {$foreign_table_name}.*
             }
 
             $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
-            $result = $this->_db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params);
+            $result = $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params);
         } // if ($rows_of_data_2_insert !== [])
 
         return $result;
@@ -1663,7 +1663,7 @@ SELECT {$foreign_table_name}.*
         if ($col_names_n_vals_2_save !== []) {
 
             $table_cols = $this->getTableColNames();
-            $last_updtd_colname = $this->_updated_timestamp_column_name;
+            $last_updtd_colname = $this->updated_timestamp_column_name;
 
             if(
                 !empty($last_updtd_colname) 
@@ -1699,7 +1699,7 @@ SELECT {$foreign_table_name}.*
                 ) {
                     $msg = "ERROR: the value "
                          . PHP_EOL . var_export($val, true) . PHP_EOL
-                         . " you are trying to update {$this->_table_name}."
+                         . " you are trying to update {$this->table_name}."
                          . "{$key} with is not acceptable ('".  gettype($val) . "'"
                          . " supplied). Boolean, NULL, numeric or string value expected."
                          . PHP_EOL
@@ -1714,8 +1714,8 @@ SELECT {$foreign_table_name}.*
             }
 
             //update statement
-            $update_qry_obj = (new QueryFactory($this->_pdo_driver_name))->newUpdate();
-            $update_qry_obj->table($this->_table_name);
+            $update_qry_obj = (new QueryFactory($this->pdo_driver_name))->newUpdate();
+            $update_qry_obj->table($this->table_name);
             $update_qry_obj->cols($col_names_n_vals_2_save);
 
             foreach ($col_names_n_vals_2_match as $colname => $colval) {
@@ -1748,7 +1748,7 @@ SELECT {$foreign_table_name}.*
             $updt_qry_params = $update_qry_obj->getBindValues();
             $this->logQuery($updt_qry, $updt_qry_params, __METHOD__, '' . __LINE__);
 
-            $result = $this->_db_connector->executeQuery($updt_qry, $updt_qry_params, true);
+            $result = $this->db_connector->executeQuery($updt_qry, $updt_qry_params, true);
 
             if( $result['query_result'] === true ) {
 
@@ -1759,7 +1759,7 @@ SELECT {$foreign_table_name}.*
             } else {
 
                 //return boolean result of the \PDOStatement::execute() call
-                //from $this->_db_connector->executeQuery($updt_qry, $updt_qry_params, true);
+                //from $this->db_connector->executeQuery($updt_qry, $updt_qry_params, true);
                 $result = $result['query_result'];
             }
         }
@@ -1773,9 +1773,9 @@ SELECT {$foreign_table_name}.*
      */
     public function updateSpecifiedRecord(\GDAO\Model\RecordInterface $record): ?bool {
 
-        //$this->_primary_col should have a valid value because a
+        //$this->primary_col should have a valid value because a
         //GDAO\ModelPrimaryColNameNotSetDuringConstructionException
-        //is thrown in $this->__construct() if $this->_primary_col is not set.
+        //is thrown in $this->__construct() if $this->primary_col is not set.
         $succesfully_updated = null;
 
         if( $record instanceof \LeanOrm\Model\ReadOnlyRecord ) {
@@ -1867,7 +1867,7 @@ SELECT {$foreign_table_name}.*
      */
     public function getQueryLog(?string $dsn=null): array {
 
-        $dsn ??= $this->_dsn;
+        $dsn ??= $this->dsn;
 
         return array_key_exists($dsn, $this->query_log) ? $this->query_log[$dsn] : [];
     }
@@ -1891,14 +1891,14 @@ SELECT {$foreign_table_name}.*
 
         if( $this->can_log_queries ) {
 
-            if(!array_key_exists($this->_dsn, $this->query_log)) {
+            if(!array_key_exists($this->dsn, $this->query_log)) {
 
-                $this->query_log[$this->_dsn] = [];
+                $this->query_log[$this->dsn] = [];
             }
 
-            if(!array_key_exists($this->_dsn, static::$all_instances_query_log)) {
+            if(!array_key_exists($this->dsn, static::$all_instances_query_log)) {
 
-                static::$all_instances_query_log[$this->_dsn] = [];
+                static::$all_instances_query_log[$this->dsn] = [];
             }
 
             $log_record = [
@@ -1909,8 +1909,8 @@ SELECT {$foreign_table_name}.*
                 'line_of_execution' => $calling_line,
             ];
 
-            $this->query_log[$this->_dsn][] = $log_record;
-            static::$all_instances_query_log[$this->_dsn][] = $log_record;
+            $this->query_log[$this->dsn][] = $log_record;
+            static::$all_instances_query_log[$this->dsn][] = $log_record;
 
             if($this->logger !== null) {
 
@@ -1942,19 +1942,19 @@ SELECT {$foreign_table_name}.*
         ?callable $sql_query_modifier = null,
         array $extra_opts_for_foreign_model = []
     ): self {
-        $this->_relations[$relation_name] = [];
-        $this->_relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
-        $this->_relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
-        $this->_relations[$relation_name]['foreign_table'] = $foreign_table_name;
-        $this->_relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
-        $this->_relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
+        $this->relations[$relation_name] = [];
+        $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
+        $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
+        $this->relations[$relation_name]['foreign_table'] = $foreign_table_name;
+        $this->relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
+        $this->relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
 
-        $this->_relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
-        $this->_relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
-        $this->_relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
+        $this->relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
+        $this->relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
+        $this->relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
 
-        $this->_relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
-        $this->_relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
+        $this->relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
+        $this->relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
 
         return $this;
     }
@@ -1971,19 +1971,19 @@ SELECT {$foreign_table_name}.*
         ?callable $sql_query_modifier = null,
         array $extra_opts_for_foreign_model = []
     ): self {
-        $this->_relations[$relation_name] = [];
-        $this->_relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
-        $this->_relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
-        $this->_relations[$relation_name]['foreign_table'] = $foreign_table_name;
-        $this->_relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
-        $this->_relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
+        $this->relations[$relation_name] = [];
+        $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
+        $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
+        $this->relations[$relation_name]['foreign_table'] = $foreign_table_name;
+        $this->relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
+        $this->relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
 
-        $this->_relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
-        $this->_relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
-        $this->_relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
+        $this->relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
+        $this->relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
+        $this->relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
 
-        $this->_relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
-        $this->_relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
+        $this->relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
+        $this->relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
 
         return $this;
     }
@@ -2000,19 +2000,19 @@ SELECT {$foreign_table_name}.*
         ?callable $sql_query_modifier = null,
         array $extra_opts_for_foreign_model = []
     ): self {
-        $this->_relations[$relation_name] = [];
-        $this->_relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY;
-        $this->_relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
-        $this->_relations[$relation_name]['foreign_table'] = $foreign_table_name;
-        $this->_relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
-        $this->_relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
+        $this->relations[$relation_name] = [];
+        $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY;
+        $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
+        $this->relations[$relation_name]['foreign_table'] = $foreign_table_name;
+        $this->relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
+        $this->relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
 
-        $this->_relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
-        $this->_relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
-        $this->_relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
+        $this->relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
+        $this->relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
+        $this->relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
 
-        $this->_relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
-        $this->_relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
+        $this->relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
+        $this->relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
 
         return $this;
     }
@@ -2032,22 +2032,22 @@ SELECT {$foreign_table_name}.*
         ?callable $sql_query_modifier = null,
         array $extra_opts_for_foreign_model = []
     ): self {
-        $this->_relations[$relation_name] = [];
-        $this->_relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH;
-        $this->_relations[$relation_name]['col_in_my_table_linked_to_join_table'] = $col_in_my_table_linked_to_join_table;
-        $this->_relations[$relation_name]['join_table'] = $join_table;
-        $this->_relations[$relation_name]['col_in_join_table_linked_to_my_table'] = $col_in_join_table_linked_to_my_table;
-        $this->_relations[$relation_name]['col_in_join_table_linked_to_foreign_table'] = $col_in_join_table_linked_to_foreign_table;
-        $this->_relations[$relation_name]['foreign_table'] = $foreign_table_name;
-        $this->_relations[$relation_name]['col_in_foreign_table_linked_to_join_table'] = $col_in_foreign_table_linked_to_join_table;
-        $this->_relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
+        $this->relations[$relation_name] = [];
+        $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH;
+        $this->relations[$relation_name]['col_in_my_table_linked_to_join_table'] = $col_in_my_table_linked_to_join_table;
+        $this->relations[$relation_name]['join_table'] = $join_table;
+        $this->relations[$relation_name]['col_in_join_table_linked_to_my_table'] = $col_in_join_table_linked_to_my_table;
+        $this->relations[$relation_name]['col_in_join_table_linked_to_foreign_table'] = $col_in_join_table_linked_to_foreign_table;
+        $this->relations[$relation_name]['foreign_table'] = $foreign_table_name;
+        $this->relations[$relation_name]['col_in_foreign_table_linked_to_join_table'] = $col_in_foreign_table_linked_to_join_table;
+        $this->relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
 
-        $this->_relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
-        $this->_relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
-        $this->_relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
+        $this->relations[$relation_name]['foreign_models_class_name'] = $foreign_models_class_name;
+        $this->relations[$relation_name]['foreign_models_record_class_name'] = $foreign_models_record_class_name;
+        $this->relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
 
-        $this->_relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
-        $this->_relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
+        $this->relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
+        $this->relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
 
         return $this;
     }

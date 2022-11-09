@@ -61,7 +61,7 @@ class DBConnector {
 //////////// --- CLASS PROPERTIES TO KEEP --- //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
     // Class configuration
-    protected static array $_default_config = [
+    protected static array $default_config = [
         'connection_string' => 'sqlite::memory:',
         'error_mode' => \PDO::ERRMODE_EXCEPTION,
         'username' => null,
@@ -70,20 +70,20 @@ class DBConnector {
     ];
 
     // Map of configuration settings
-    protected static array $_config = [];
+    protected static array $config = [];
 
     // Map of database connections, instances of the PDO class
     /**
      * @var array<string, \PDO>
      */
-    protected static array $_db = [];
+    protected static array $db = [];
 
     // --------------------------- //
     // --- INSTANCE PROPERTIES --- //
     // --------------------------- //
 
-    // Key name of the connection in static::$_db used by this instance
-    protected string $_connection_name;
+    // Key name of the connection in static::$db used by this instance
+    protected string $connection_name;
 
 //////////// ------------------------------------ //////////////////////////////
 //////////// --- END CLASS PROPERTIES TO KEEP --- //////////////////////////////
@@ -128,7 +128,7 @@ class DBConnector {
                 $key_or_settings = 'connection_string';
             }
 
-            static::$_config[$connection_name][$key_or_settings] = $value;
+            static::$config[$connection_name][$key_or_settings] = $value;
         }
     }
 
@@ -142,52 +142,50 @@ class DBConnector {
         if( $key && is_null($conn_name) ) {
 
             //get key's value for each connection
-            $conn_names = array_keys(static::$_config);
-            $val_of_key_4_each_conn_name = array_column(static::$_config, $key);
+            $conn_names = array_keys(static::$config);
+            $val_of_key_4_each_conn_name = array_column(static::$config, $key);
 
             return array_combine($conn_names, $val_of_key_4_each_conn_name);
 
         } else if ( $key && !is_null($conn_name) && strlen($conn_name) > 0 ) {
 
             //get key's value for the specified connection
-            return static::$_config[$conn_name][$key];
+            return static::$config[$conn_name][$key];
 
         } else if( !$key && is_null($conn_name) ) {
 
             //get all config values for all connections
-            return static::$_config;
+            return static::$config;
 
         } else {
 
             //get all config values for the specified connection
-            return static::$_config[$conn_name];
+            return static::$config[$conn_name];
         }
     }
 
     /**
      * 
      * DBConnector::resetAllStaticPropertiesExceptDefaultConfig() returns the values of all properties
-     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig('_db') will return only the value of DBConnector::$_db
+     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig('db') will return only the value of DBConnector::$db
      * 
-     * @param string $prop_name name of the property (eg. 'db' or '_db') whose value is to be retrieved
+     * @param string $prop_name name of the property (eg. 'db') whose value is to be retrieved
      * 
-     * @return mixed the value of the property specified or an array of all properties if $prop_name is empty or not a name of any of the properties.
+     * @return mixed[]|array<string, \PDO>|array<string, mixed[]> the value of the property specified or an array of all properties if $prop_name is empty or not a name of any of the properties.
      */
-    public static function getAllStaticPropertiesExceptDefaultConfig(string $prop_name='') {
+    public static function getAllStaticPropertiesExceptDefaultConfig(string $prop_name=''): array {
 
         switch ($prop_name) {
 
-            case '_config':
             case 'config':
 
                 // Map of configuration settings
-                return static::$_config;
-
-            case '_db':
+                return static::$config;
+                
             case 'db':
 
                 // Map of database connections, instances of the PDO class
-                return static::$_db;
+                return static::$db;
 
             default:
                 ///////////////////////////
@@ -196,10 +194,10 @@ class DBConnector {
 
                 // Map of configuration settings
                 return [
-                    '$_config' => static::$_config,
+                    '$config' => static::$config,
 
                     // Map of database connections, instances of the PDO class
-                    '$_db' => static::$_db,
+                    '$db' => static::$db,
                 ];
         }
     }
@@ -207,27 +205,25 @@ class DBConnector {
     /**
      * 
      * DBConnector::resetAllStaticPropertiesExceptDefaultConfig() resets all properties
-     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig('_db') will reset only DBConnector::$_db
+     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig('db') will reset only DBConnector::$db
      * 
-     * @param string $prop_name name of the property (eg. 'db' or '_db') whose value is to be reset. 
+     * @param string $prop_name name of the property (eg. 'db') whose value is to be reset. 
      * 
      */
     public static function resetAllStaticPropertiesExceptDefaultConfig(string $prop_name=''): void {
 
         switch ($prop_name) {
 
-            case '_config':
             case 'config':
 
                 // Map of configuration settings
-                static::$_config = [];
+                static::$config = [];
                 break;
 
-            case '_db':
             case 'db':
 
                 // Map of database connections, instances of the PDO class
-                static::$_db = [];
+                static::$db = [];
                 break;
 
             default:
@@ -236,10 +232,10 @@ class DBConnector {
                 //////////////////////////
 
                 // Map of configuration settings
-                static::$_config = [];
+                static::$config = [];
 
                 // Map of database connections, instances of the PDO class
-                static::$_db = [];
+                static::$db = [];
                 break;
         }
     }
@@ -262,19 +258,19 @@ class DBConnector {
      */
     protected static function _setupDb(string $connection_name = self::DEFAULT_CONNECTION): void {
 
-        if (!array_key_exists($connection_name, static::$_db) ||
-            !is_object(static::$_db[$connection_name])) {
+        if (!array_key_exists($connection_name, static::$db) ||
+            !is_object(static::$db[$connection_name])) {
 
             static::_initDbConfigWithDefaultVals($connection_name);
 
             $db = new \PDO(
-                static::$_config[$connection_name]['connection_string'],
-                static::$_config[$connection_name]['username'],
-                static::$_config[$connection_name]['password'],
-                static::$_config[$connection_name]['driver_options']
+                static::$config[$connection_name]['connection_string'],
+                static::$config[$connection_name]['username'],
+                static::$config[$connection_name]['password'],
+                static::$config[$connection_name]['driver_options']
             );
 
-            $db->setAttribute(\PDO::ATTR_ERRMODE, static::$_config[$connection_name]['error_mode']);
+            $db->setAttribute(\PDO::ATTR_ERRMODE, static::$config[$connection_name]['error_mode']);
             static::setDb($db, $connection_name);
         }
     }
@@ -285,9 +281,9 @@ class DBConnector {
     */
     protected static function _initDbConfigWithDefaultVals(string $connection_name): void {
 
-        if (!array_key_exists($connection_name, static::$_config)) {
+        if (!array_key_exists($connection_name, static::$config)) {
 
-            static::$_config[$connection_name] = static::$_default_config;
+            static::$config[$connection_name] = static::$default_config;
         }
     }
 
@@ -301,7 +297,7 @@ class DBConnector {
     public static function setDb(\PDO $db, string $connection_name = self::DEFAULT_CONNECTION): void {
 
         static::_initDbConfigWithDefaultVals($connection_name);
-        static::$_db[$connection_name] = $db;
+        static::$db[$connection_name] = $db;
     }
 
     /**
@@ -314,7 +310,7 @@ class DBConnector {
     public static function getDb(string $connection_name = self::DEFAULT_CONNECTION): \PDO {
 
         static::_setupDb($connection_name); // required in case this is called before DBConnector is instantiated
-        return static::$_db[$connection_name];
+        return static::$db[$connection_name];
     }
 
     /**
@@ -328,7 +324,7 @@ class DBConnector {
      */
     public function executeQuery(string $query, array $parameters=[], bool $return_pdo_statement=false) {
 
-        return static::_execute($query, $parameters, $return_pdo_statement, $this->_connection_name);
+        return static::_execute($query, $parameters, $return_pdo_statement, $this->connection_name);
     }
 
    /**
@@ -384,7 +380,7 @@ class DBConnector {
      */
     public static function getConnectionNames(): array {
 
-        return array_keys(static::$_db);
+        return array_keys(static::$db);
     }
 
     // ------------------------ //
@@ -397,7 +393,7 @@ class DBConnector {
      */
     protected function __construct(string $connection_name = self::DEFAULT_CONNECTION) {
 
-        $this->_connection_name = $connection_name;
+        $this->connection_name = $connection_name;
         static::_initDbConfigWithDefaultVals($connection_name);
     }
 
@@ -406,7 +402,7 @@ class DBConnector {
      */
     public function getConnectionName(): string {
 
-        return $this->_connection_name;
+        return $this->connection_name;
     }
 
     /**
@@ -420,7 +416,7 @@ class DBConnector {
      */
     public function dbFetchOne(string $select_query, array $parameters = [] ) {
 
-       $result = static::_execute($select_query, $parameters, true, $this->_connection_name);
+       $result = static::_execute($select_query, $parameters, true, $this->connection_name);
        $statement = $result['pdo_statement'];
 
         return $statement->fetch(\PDO::FETCH_ASSOC);
@@ -436,7 +432,7 @@ class DBConnector {
      */
     public function dbFetchAll(string $select_query, array $parameters = []): array {
 
-        $result = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        $result = static::_execute($select_query, $parameters, true, $this->connection_name);
         $statement = $result['pdo_statement'];
 
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -452,7 +448,7 @@ class DBConnector {
      */
     public function dbFetchCol(string $select_query, array $parameters = []): array {
 
-        $result = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        $result = static::_execute($select_query, $parameters, true, $this->connection_name);
         $statement = $result['pdo_statement'];
 
         return $statement->fetchAll(\PDO::FETCH_COLUMN, 0);
@@ -468,7 +464,7 @@ class DBConnector {
      */
     public function dbFetchPairs(string $select_query, array $parameters = []): array {
 
-        $result = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        $result = static::_execute($select_query, $parameters, true, $this->connection_name);
         $statement = $result['pdo_statement'];
         $data = [];
 
@@ -488,7 +484,7 @@ class DBConnector {
      */
     public function dbFetchValue(string $select_query, array $parameters = []) {
 
-        $result = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        $result = static::_execute($select_query, $parameters, true, $this->connection_name);
         $statement = $result['pdo_statement'];
 
         return $statement->fetchColumn(0);

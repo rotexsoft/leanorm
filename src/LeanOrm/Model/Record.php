@@ -17,36 +17,36 @@ class Record implements \GDAO\Model\RecordInterface
      * Data for this record ([to be saved to the db] or [as read from the db]).
      *
      */
-    protected array $_data = [];
+    protected array $data = [];
     
     /**
      * 
      * Data for this record (not to be saved to the db i.e. not from any actual db column and not related data).
      *
      */
-    protected array $_non_table_col_and_non_related_data = [];
+    protected array $non_table_col_and_non_related_data = [];
     
     /**
      *
      * Copy of the initial data loaded into this record or data for this record immediately after an insert or update.
      * 
      */
-    protected ?array $_initial_data = null;
+    protected ?array $initial_data = null;
     
     /**
      * 
      * Holds relationship data retrieved based on definitions in the array below.
-     * \GDAO\Model::$_relations
+     * \GDAO\Model::$relations
      *
      */
-    protected array $_related_data = [];
+    protected array $related_data = [];
     
     /**
      * 
      * Tracks if *this record* is new (i.e., not in the database yet).
      *
      */
-    protected bool $_is_new = true;
+    protected bool $is_new = true;
 
     /**
      *
@@ -54,7 +54,7 @@ class Record implements \GDAO\Model\RecordInterface
      * of this record
      * 
      */
-    protected \GDAO\Model $_model;
+    protected \GDAO\Model $model;
     
     /**
      * 
@@ -93,13 +93,13 @@ class Record implements \GDAO\Model\RecordInterface
 
         //print "Destroying Record with Primary key Value: " . $this->getPrimaryVal() . "<br>";
 
-        unset($this->_data);
-        unset($this->_initial_data);
-        unset($this->_is_new);
-        unset($this->_related_data);
-        unset($this->_non_table_col_and_non_related_data);
+        unset($this->data);
+        unset($this->initial_data);
+        unset($this->is_new);
+        unset($this->related_data);
+        unset($this->non_table_col_and_non_related_data);
 
-        //Don't unset $this->_model, it may still be referenced by other 
+        //Don't unset $this->model, it may still be referenced by other 
         //Record and / or Collection objects.
     }
     
@@ -111,8 +111,8 @@ class Record implements \GDAO\Model\RecordInterface
      * table is auto-incrementing, then unset the primary key field in the data 
      * contained in the record object.
      * 
-     * NOTE: data contained in the record include $this->_data, $this->_related_data,
-     *       $this->_non_table_col_and_non_related_data and $this->_initial_data.
+     * NOTE: data contained in the record include $this->data, $this->related_data,
+     *       $this->non_table_col_and_non_related_data and $this->initial_data.
      * 
      * @param bool $set_record_objects_data_to_empty_array true to reset the record object's data to an empty array if db deletion was successful, false to keep record object's data
      * 
@@ -121,14 +121,14 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function delete($set_record_objects_data_to_empty_array=false): bool {
         
-        $result = $this->_model->deleteSpecifiedRecord($this);
+        $result = $this->model->deleteSpecifiedRecord($this);
         
         if( $result && $set_record_objects_data_to_empty_array ) {
             
-            $this->_data = [];
-            $this->_related_data = [];
-            $this->_initial_data = [];
-            $this->_non_table_col_and_non_related_data = [];
+            $this->data = [];
+            $this->related_data = [];
+            $this->initial_data = [];
+            $this->non_table_col_and_non_related_data = [];
         }
         
         // if $result is null this means the record does not even exist in the db
@@ -145,7 +145,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function getData(): array {
         
-        return $this->_data;
+        return $this->data;
     }
     
     /**
@@ -157,7 +157,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function getInitialData(): array {
         
-        return $this->_initial_data ?? [];
+        return $this->initial_data ?? [];
     }
     
     
@@ -170,7 +170,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function getRelatedData(): array {
         
-        return $this->_related_data;
+        return $this->related_data;
     }
     
     /**
@@ -181,7 +181,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function getNonTableColAndNonRelatedData(): array {
         
-        return $this->_non_table_col_and_non_related_data;
+        return $this->non_table_col_and_non_related_data;
     }
     
     /**
@@ -193,7 +193,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function &getDataByRef(): array {
         
-        return $this->_data;
+        return $this->data;
     }
     
     /**
@@ -205,7 +205,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function &getInitialDataByRef(): array {
         
-        return $this->_initial_data ?? [];
+        return $this->initial_data ?? [];
     }
     
     /**
@@ -217,7 +217,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function &getRelatedDataByRef(): array {
         
-        return $this->_related_data;
+        return $this->related_data;
     }
     
     /**
@@ -228,7 +228,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function &getNonTableColAndNonRelatedDataByRef(): array {
         
-        return $this->_non_table_col_and_non_related_data;
+        return $this->non_table_col_and_non_related_data;
     }
 
     /**
@@ -262,7 +262,7 @@ class Record implements \GDAO\Model\RecordInterface
         }
         
         //We're safe, set the related data.
-        $this->_related_data[$key] = $value;
+        $this->related_data[$key] = $value;
         
         return $this;
     }
@@ -275,7 +275,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function getModel(): \GDAO\Model {
         
-        return $this->_model;
+        return $this->model;
     }
     
     /**
@@ -285,7 +285,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function getPrimaryCol(): string {
 
-        return $this->_model->getPrimaryColName();
+        return $this->model->getPrimaryColName();
     }
 
     /**
@@ -330,7 +330,7 @@ class Record implements \GDAO\Model\RecordInterface
         // if no column specified, check if the record as a whole has changed
         if ($col === null) {
 
-            $cols = $this->_model->getTableColNames();
+            $cols = $this->model->getTableColNames();
 
             foreach ($cols as $col) {
                 if ($this->isChanged($col)) {
@@ -344,33 +344,33 @@ class Record implements \GDAO\Model\RecordInterface
         // col needs to exist in the initial array
         if (
             (    
-                !array_key_exists($col, $this->_initial_data)
-                && array_key_exists($col, $this->_data)
+                !array_key_exists($col, $this->initial_data)
+                && array_key_exists($col, $this->data)
             )
             ||
             (    
-                array_key_exists($col, $this->_initial_data)
-                && !array_key_exists($col, $this->_data)
+                array_key_exists($col, $this->initial_data)
+                && !array_key_exists($col, $this->data)
             )                    
         ) {
             return true;
             
         } elseif(
-            !array_key_exists($col, $this->_initial_data)
-            && !array_key_exists($col, $this->_data)
+            !array_key_exists($col, $this->initial_data)
+            && !array_key_exists($col, $this->data)
         ) {
             return null;
             
         } else {
-            // array_key_exists($col, $this->_initial_data)
-            // && array_key_exists($col, $this->_data)
+            // array_key_exists($col, $this->initial_data)
+            // && array_key_exists($col, $this->data)
 
             // track changes to or from null
-            $from_null = $this->_initial_data[$col] === null &&
-                    $this->_data[$col] !== null;
+            $from_null = $this->initial_data[$col] === null &&
+                    $this->data[$col] !== null;
 
-            $to_null = $this->_initial_data[$col] !== null &&
-                    $this->_data[$col] === null;
+            $to_null = $this->initial_data[$col] !== null &&
+                    $this->data[$col] === null;
 
             if ($from_null || $to_null) {
                 
@@ -378,16 +378,16 @@ class Record implements \GDAO\Model\RecordInterface
             }
 
             // track numeric changes
-            $both_numeric = is_numeric($this->_initial_data[$col]) &&
-                    is_numeric($this->_data[$col]);
+            $both_numeric = is_numeric($this->initial_data[$col]) &&
+                    is_numeric($this->data[$col]);
 
             if ($both_numeric) {
                 // use normal inequality
-                return $this->_initial_data[$col] != (string) $this->_data[$col];
+                return $this->initial_data[$col] != (string) $this->data[$col];
             }
 
             // use strict inequality
-            return $this->_initial_data[$col] !== $this->_data[$col];
+            return $this->initial_data[$col] !== $this->data[$col];
         }
     }
     
@@ -398,11 +398,11 @@ class Record implements \GDAO\Model\RecordInterface
      */
 	public function isNew(): bool {
         
-        return $this->_is_new;
+        return $this->is_new;
     }
 
     /**
-     * \GDAO\Model\Record::$_initial_data should be set here only if it has the 
+     * \GDAO\Model\Record::$initial_data should be set here only if it has the 
      * initial value of null.
      * 
      * This method partially or completely overwrites pre-existing data and 
@@ -475,18 +475,18 @@ class Record implements \GDAO\Model\RecordInterface
                     
                     if ( in_array($col_name, $table_col_names_4_my_model) ) {
                         
-                        $this->_data[$col_name] = $value_2_load;
+                        $this->data[$col_name] = $value_2_load;
                         
                     } else {
                         
-                        $this->_non_table_col_and_non_related_data[$col_name] = $value_2_load;
+                        $this->non_table_col_and_non_related_data[$col_name] = $value_2_load;
                     }
                 }
                 
             } elseif ($data_2_load instanceof \GDAO\Model\RecordInterface) {
 
-                $this->_data = $data_2_load->getData();
-                $this->_non_table_col_and_non_related_data = $data_2_load->getNonTableColAndNonRelatedData();
+                $this->data = $data_2_load->getData();
+                $this->non_table_col_and_non_related_data = $data_2_load->getNonTableColAndNonRelatedData();
             }
             
         } else {
@@ -506,27 +506,27 @@ class Record implements \GDAO\Model\RecordInterface
                 ) {
                     if ( in_array($col_name, $table_col_names_4_my_model) ) {
 
-                        $this->_data[$col_name] = $data_2_load[$col_name];
+                        $this->data[$col_name] = $data_2_load[$col_name];
 
                     } else {
 
-                        $this->_non_table_col_and_non_related_data[$col_name] = $data_2_load[$col_name];
+                        $this->non_table_col_and_non_related_data[$col_name] = $data_2_load[$col_name];
                     }
                 }
             } // foreach ( $cols_2_load as $col_name )
         }// elseif ( is_array($cols_2_load) && $cols_2_load !== [] )
 
-        if ($this->_initial_data === null) {
+        if ($this->initial_data === null) {
              
             $initial_data = [];
 
             foreach($table_col_names_4_my_model as $col_name) {
 
                 $initial_data[$col_name] = 
-                    array_key_exists($col_name, $this->_data)? $this->_data[$col_name] : '';
+                    array_key_exists($col_name, $this->data)? $this->data[$col_name] : '';
             }
             
-            $this->_initial_data = $initial_data;
+            $this->initial_data = $initial_data;
         }
         
         return $this;
@@ -540,7 +540,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function markAsNew(): self {
         
-        $this->_is_new = true;
+        $this->is_new = true;
         
         return $this;
     }
@@ -553,7 +553,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function markAsNotNew(): self {
         
-        $this->_is_new = false;
+        $this->is_new = false;
         
         return $this;
     }
@@ -585,7 +585,7 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * Save the specified or already existing data for this record to the db.
      * Since this record can only talk to the db via its model property (_model)
-     * the save operation will actually be done via $this->_model.
+     * the save operation will actually be done via $this->model.
      * 
      * @param \GDAO\Model\RecordInterface|array $data_2_save
      * 
@@ -608,7 +608,7 @@ class Record implements \GDAO\Model\RecordInterface
             if ( empty($pri_val) ) {
 
                 //insert
-                $inserted_data = $this->_model->insert($data_2_save);
+                $inserted_data = $this->model->insert($data_2_save);
                 $result = ($inserted_data !== false);
                 
                 if( $result && is_array($inserted_data) && $inserted_data !== [] ) {
@@ -617,7 +617,7 @@ class Record implements \GDAO\Model\RecordInterface
                     $this->loadData($inserted_data);
                     
                     //update initial data
-                    $this->_initial_data = $inserted_data;
+                    $this->initial_data = $inserted_data;
                     
                     //record has now been saved to the DB, 
                     //it is no longer a new record (it now exists in the DB).
@@ -632,11 +632,11 @@ class Record implements \GDAO\Model\RecordInterface
                 if( $this->isChanged() ) {
                     
                     //update
-                    $result = $this->_model->updateSpecifiedRecord($this);
+                    $result = $this->model->updateSpecifiedRecord($this);
                     
                     if( $result === true ) {
                         
-                        $this->_initial_data = $this->_data;
+                        $this->initial_data = $this->data;
                     }
                 }
             }
@@ -665,7 +665,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function saveInTransaction($data_2_save = null): ?bool {
 
-        $pdo_obj = $this->_model->getPDO();
+        $pdo_obj = $this->model->getPDO();
 
         if ($pdo_obj instanceof \PDO) {
 
@@ -715,7 +715,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
 	public function setModel(\GDAO\Model $model): self {
         
-        $this->_model = $model;
+        $this->model = $model;
         
         return $this;
     }
@@ -794,12 +794,12 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function count(): int {
 
-        return count($this->_data);
+        return count($this->data);
     }
 
     public function getIterator(): \ArrayIterator {
 
-        return new \ArrayIterator($this->_data + $this->_related_data + $this->_non_table_col_and_non_related_data);
+        return new \ArrayIterator($this->data + $this->related_data + $this->non_table_col_and_non_related_data);
     }
 
     //Magic Methods
@@ -815,17 +815,17 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function __get($key) {
 
-        if ( array_key_exists($key, $this->_data) ) {
+        if ( array_key_exists($key, $this->data) ) {
             
-            return $this->_data[$key];
+            return $this->data[$key];
             
-        } elseif ( array_key_exists($key, $this->_related_data) ) {
+        } elseif ( array_key_exists($key, $this->related_data) ) {
 
-            return $this->_related_data[$key];
+            return $this->related_data[$key];
             
-        } elseif ( array_key_exists($key, $this->_non_table_col_and_non_related_data) ) { 
+        } elseif ( array_key_exists($key, $this->non_table_col_and_non_related_data) ) { 
             
-            return $this->_non_table_col_and_non_related_data[$key];
+            return $this->non_table_col_and_non_related_data[$key];
             
         } elseif ( 
             $this->getModel() instanceof \GDAO\Model 
@@ -834,9 +834,9 @@ class Record implements \GDAO\Model\RecordInterface
             //$key is a valid db column in the db table assoiciated with this 
             //model's record. Initialize it to a null value since it has not 
             //yet been set.
-            $this->_data[$key] = null;
+            $this->data[$key] = null;
             
-            return $this->_data[$key];
+            return $this->data[$key];
             
         } elseif( 
             $this->getModel() instanceof \GDAO\Model 
@@ -847,7 +847,7 @@ class Record implements \GDAO\Model\RecordInterface
             $this->getModel()->loadRelationshipData($key, $this, true, true);
             
             //return loaded data
-            return $this->_related_data[$key];
+            return $this->related_data[$key];
             
         } else {
 
@@ -874,9 +874,9 @@ class Record implements \GDAO\Model\RecordInterface
         try { $this->$key;  } //access the property first to make sure the data is loaded
         catch ( \Exception $exception ) {  } //do nothing if exception was thrown
         
-        return array_key_exists($key, $this->_data) 
-            || array_key_exists($key, $this->_related_data)
-            || array_key_exists($key, $this->_non_table_col_and_non_related_data);
+        return array_key_exists($key, $this->data) 
+            || array_key_exists($key, $this->related_data)
+            || array_key_exists($key, $this->non_table_col_and_non_related_data);
     }
 
     /**
@@ -896,18 +896,18 @@ class Record implements \GDAO\Model\RecordInterface
         ) {
             //$key is a valid db column in the db table assoiciated with this 
             //model's record.
-            $this->_data[$key] = $val;
+            $this->data[$key] = $val;
             
         } elseif( 
             $this->getModel() instanceof \GDAO\Model 
             && in_array($key, $this->getModel()->getRelationNames()) 
         ) {
             //$key is a valid relation name in the model for this record.
-            $this->_related_data[$key] = $val;
+            $this->related_data[$key] = $val;
             
         } else {
 
-            $this->_non_table_col_and_non_related_data[$key] = $val;
+            $this->non_table_col_and_non_related_data[$key] = $val;
         }
     }
 
@@ -920,22 +920,22 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function __unset($key): void {
         
-        if( array_key_exists($key, $this->_data) ) {
+        if( array_key_exists($key, $this->data) ) {
             
-            unset($this->_data[$key]);
-            $this->_data[$key] = null;
+            unset($this->data[$key]);
+            $this->data[$key] = null;
         }
         
-        if( array_key_exists($key, $this->_related_data) ) {
+        if( array_key_exists($key, $this->related_data) ) {
             
-            unset($this->_related_data[$key]);
-            $this->_related_data[$key] = null;
+            unset($this->related_data[$key]);
+            $this->related_data[$key] = null;
         }
         
-        if( array_key_exists($key, $this->_non_table_col_and_non_related_data) ) {
+        if( array_key_exists($key, $this->non_table_col_and_non_related_data) ) {
             
-            unset($this->_non_table_col_and_non_related_data[$key]);
-            $this->_non_table_col_and_non_related_data[$key] = null;
+            unset($this->non_table_col_and_non_related_data[$key]);
+            $this->non_table_col_and_non_related_data[$key] = null;
         }
     }
 

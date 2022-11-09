@@ -11,14 +11,14 @@ namespace LeanOrm\Model;
  */
 class Collection implements \GDAO\Model\CollectionInterface
 {
-    protected \GDAO\Model $_model;
+    protected \GDAO\Model $model;
 
     /**
      * 
      * @var \GDAO\Model\RecordInterface[] array of \GDAO\Model\RecordInterface records
      * 
      */
-    protected array $_data = [];
+    protected array $data = [];
     
     /**
      * 
@@ -32,7 +32,7 @@ class Collection implements \GDAO\Model\CollectionInterface
         \GDAO\Model $model, array $extra_opts=[], \GDAO\Model\RecordInterface ...$data
     ) {
         $this->setModel($model);
-        $this->_data = $data;
+        $this->data = $data;
 
         //set properties of this class specified in $extra_opts
         foreach($extra_opts as $e_opt_key => $e_opt_val) {
@@ -70,7 +70,7 @@ class Collection implements \GDAO\Model\CollectionInterface
         
         $result = true;
         
-        foreach($this->_data as $record) {
+        foreach($this->data as $record) {
             
             if( $record instanceof ReadOnlyRecord ) {
                 
@@ -88,7 +88,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             //generate list of keys of records in this collection
             //that were not successfully saved.
 
-            foreach( $this->_data as $record ) {
+            foreach( $this->data as $record ) {
 
                 $primary_key = $record->getPrimaryVal();
                 $delete_result = $record->delete();
@@ -127,7 +127,7 @@ class Collection implements \GDAO\Model\CollectionInterface
         
         $list = [];
         
-        foreach ($this->_data as $key => $record) {
+        foreach ($this->data as $key => $record) {
             
             $list[$key] = $record->$col;
         }
@@ -142,7 +142,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function getKeys(): array {
         
-        return array_keys($this->_data);
+        return array_keys($this->data);
     }
     
     /**
@@ -154,7 +154,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function getModel(): \GDAO\Model {
         
-        return $this->_model;
+        return $this->model;
     }
     
     /**
@@ -166,7 +166,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function isEmpty(): bool {
         
-        return empty($this->_data);
+        return empty($this->data);
     }
     
     /**
@@ -176,7 +176,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function loadData(\GDAO\Model\RecordInterface ...$data_2_load): self{
         
-        $this->_data = $data_2_load;
+        $this->data = $data_2_load;
         
         return $this;
     }
@@ -190,15 +190,15 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function removeAll(): self {
         
-        $keys =  array_keys($this->_data);
+        $keys =  array_keys($this->data);
         
         foreach( $keys as $key ) {
             
-            $this->_data[$key] = null;
-            unset($this->_data[$key]);
+            $this->data[$key] = null;
+            unset($this->data[$key]);
         }
         
-        $this->_data = [];
+        $this->data = [];
         
         return $this;
     }
@@ -246,7 +246,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             
             $data_2_save_4_new_records = [];
 
-            foreach ( $this->_data as $key => $record ) {
+            foreach ( $this->data as $key => $record ) {
 
                 if( $record instanceof ReadOnlyRecord ) {
 
@@ -287,7 +287,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             }
         } else {
             
-            foreach ( $this->_data as $key=>$record ) {
+            foreach ( $this->data as $key=>$record ) {
                 
                 if( $record->save() === false ) {
                     
@@ -316,7 +316,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function setModel(\GDAO\Model $model): self {
         
-        $this->_model = $model;
+        $this->model = $model;
         
         return $this;
     }
@@ -419,7 +419,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function count(): int {
         
-        return count($this->_data);
+        return count($this->data);
     }
 
     /**
@@ -431,7 +431,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function getIterator(): \ArrayIterator {
         
-        return new \ArrayIterator($this->_data);
+        return new \ArrayIterator($this->data);
     }
 
     /////////////////////
@@ -448,9 +448,9 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function __get($key): \GDAO\Model\RecordInterface {
         
-        if (array_key_exists($key, $this->_data)) {
+        if (array_key_exists($key, $this->data)) {
 
-            return $this->_data[$key];
+            return $this->data[$key];
             
         } else {
 
@@ -470,7 +470,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function __isset($key): bool {
         
-        return array_key_exists($key, $this->_data);
+        return array_key_exists($key, $this->data);
     }
 
     /**
@@ -484,7 +484,7 @@ class Collection implements \GDAO\Model\CollectionInterface
     public function __set($key, \GDAO\Model\RecordInterface $val): void {
        
         // set the value
-        $this->_data[$key] = $val;
+        $this->data[$key] = $val;
     }
 
     /**
@@ -508,7 +508,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function __unset($key): void {
         
-        unset($this->_data[$key]);
+        unset($this->data[$key]);
     }
     
     //Hooks
