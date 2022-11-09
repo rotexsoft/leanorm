@@ -1512,7 +1512,7 @@ SELECT {$foreign_table_name}.*
 
             //if the db is sqlite 3.7.10 or prior, we can't take advantage of
             //bulk insert, have to revert to multiple insert statements.
-            if( strtolower($this->pdo_driver_name) === 'sqlite' ) {
+            if( strtolower($this->_pdo_driver_name) === 'sqlite' ) {
 
                 $pdo_obj = $this->getPDO();
 
@@ -1550,7 +1550,7 @@ SELECT {$foreign_table_name}.*
                         throw $e;
                     }
                 }//if( $version_numbers_only <= 3710 )
-            }//if( $this->pdo_driver_name === 'sqlite' ) 
+            }//if( $this->_pdo_driver_name === 'sqlite' ) 
 
             ////////////////////////////////////////////////////////////////////
             // Do Bulk insert for other DBMSs including Sqlite 3.7.11 and later
