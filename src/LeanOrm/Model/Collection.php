@@ -426,7 +426,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * IteratorAggregate: returns an external iterator for this collection.
      * 
-     * @return \Iterator an Iterator eg. an instance of \ArrayIterator
+     * @return \ArrayIterator an Iterator eg. an instance of \ArrayIterator
      * 
      */
     public function getIterator(): \ArrayIterator {

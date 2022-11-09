@@ -53,8 +53,14 @@ class Model extends \GDAO\Model
     // Query Logging related properties
     protected bool $can_log_queries = false;
 
+    /**
+     * @var array<string, array>
+     */
     protected array $query_log = [];
 
+    /**
+     * @var array<string, array>
+     */
     protected static array $all_instances_query_log = [];
 
     protected ?\Psr\Log\LoggerInterface $logger = null;
@@ -100,7 +106,7 @@ class Model extends \GDAO\Model
         ////////////////////////////////////////////////////////
         //Get and Set Table Schema Meta Data if Not Already Set
         ////////////////////////////////////////////////////////
-        if ( empty($this->_table_cols) || count($this->_table_cols) <= 0 ) {
+        if ( $this->_table_cols === [] ) {
 
             static $dsn_n_tname_to_schema_def_map;
 
@@ -333,10 +339,7 @@ class Model extends \GDAO\Model
 
         return true;
     }
-
-    /**
-     * @return \GDAO\Model\CollectionInterface|array
-     */
+    
     protected function _loadHasMany( 
         string $rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false 
     ): void {
@@ -414,11 +417,7 @@ class Model extends \GDAO\Model
             } // else if ($parent_data instanceof \GDAO\Model\RecordInterface)
         } // if( array_key_exists($rel_name, $this->_relations) )
     }
-
-    /**
-     * 
-     * @return \GDAO\Model\CollectionInterface|array
-     */
+    
     protected function _loadHasManyTrough( 
         string $rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false 
     ): void {
@@ -585,11 +584,7 @@ SELECT {$foreign_table_name}.*,
             } // else if ( $parent_data instanceof \GDAO\Model\RecordInterface )
         } // if( array_key_exists($rel_name, $this->_relations) )
     }
-
-    /**
-     * 
-     * @return \GDAO\Model\RecordInterface|array
-     */
+    
     protected function _loadHasOne( 
         string $rel_name, &$parent_data, $wrap_row_in_a_record=false
     ): void {
@@ -670,11 +665,7 @@ SELECT {$foreign_table_name}.*
             } // else if ($parent_data instanceof \GDAO\Model\RecordInterface)
         } // if( array_key_exists($rel_name, $this->_relations) )
     }
-
-    /**
-     * 
-     * @return \GDAO\Model\RecordInterface|array
-     */
+    
     protected function _loadBelongsTo(string $rel_name, &$parent_data, $wrap_row_in_a_record=false): void {
 
         if( 
