@@ -23,6 +23,7 @@ See http://rotexsoft.github.io/leanorm/ for documentation.
  * Old versions have branches corresponding to their version numbers (e.g. 1.X) 
 while the most current / actively being developed version is on the master branch
 
+![LeanORM Classes & GDAO Classes & Interfaces](class-diagram.svg)
 
 ## Concepts
 
