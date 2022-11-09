@@ -66,37 +66,34 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
         
         $this->setModel($model);
         $this->loadData($data);
+        
+        //set properties of this class specified in $extra_opts
+        foreach($extra_opts as $e_opt_key => $e_opt_val) {
 
-        if(count($extra_opts) > 0) {
-            
-            //set properties of this class specified in $extra_opts
-            foreach($extra_opts as $e_opt_key => $e_opt_val) {
-  
-                if ( property_exists($this, $e_opt_key) ) {
-                    
-                    $this->$e_opt_key = $e_opt_val;
+            if ( property_exists($this, $e_opt_key) ) {
 
-                } elseif ( property_exists($this, '_'.$e_opt_key) ) {
+                $this->$e_opt_key = $e_opt_val;
 
-                    $this->{"_$e_opt_key"} = $e_opt_val;
-                }
+            } elseif ( property_exists($this, '_'.$e_opt_key) ) {
+
+                $this->{'_'.$e_opt_key} = $e_opt_val;
             }
         }
     }
     
     public function __destruct() {
-        
+
         //print "Destroying Record with Primary key Value: " . $this->getPrimaryVal() . "<br>";
-        
+
         unset($this->_data);
         unset($this->_related_data);
         unset($this->_non_table_col_and_non_related_data);
-        
+
         //Don't unset $this->_model, it may still be referenced by other 
         //Record and / or Collection objects.
     }
     
-    protected function _throwNotSupportedException($function_name) {
+    protected function _throwNotSupportedException($function_name): void {
         
         $msg = "ERROR: ". get_class($this) . '::' . $function_name . '(...)' 
              . " is not supported in a ReadOnly Record. ";
@@ -129,7 +126,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * 
      * Not Supported, not overridable.
-     * 
+     * @return mixed[]
      */
     public final function getInitialData():array {
         
@@ -175,7 +172,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * 
      * Not Supported, not overridable.
-     * 
+     * @return mixed[]
      */
     public final function &getInitialDataByRef(): array {
         
@@ -224,9 +221,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
             
             //Error trying to add a relation whose name collides with an actual
             //name of a column in the db table associated with this record's model.
-            $msg = "ERROR: You cannont add a relationship with the name '$key' "
+            $msg = sprintf("ERROR: You cannont add a relationship with the name '%s' ", $key)
                  . " to the record (".get_class($this)."). The database table "
-                 . " '{$my_model->getTableName()}' associated with the "
+                 . sprintf(" '%s' associated with the ", $my_model->getTableName())
                  . " record's model (".get_class($my_model).") already contains"
                  . " a column with the same name."
                  . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
@@ -307,7 +304,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      *      \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      * 
      * @param \GDAO\Model\RecordInterface|array $data_2_load
-     * @param array $cols_2_load name of field to load from $data_2_load. If null, 
+     * @param array $cols_2_load name of field to load from $data_2_load. If empty, 
      *                           load all fields in $data_2_load.
      * 
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
@@ -323,7 +320,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
                                 get_class($data_2_load) : gettype($data_2_load);
             
             $msg = "ERROR: Trying to load data into a record from an unsupported"
-                   . " data source of type '{$datasource_type}'. An 'Array' or"
+                   . sprintf(" data source of type '%s'. An 'Array' or", $datasource_type)
                    . " instance of '\\LeanOrm\\Model\\Record' or any of its"
                    . " subclasses are the allowed data sources acceptable by "
                    . get_class($this).'::'.__FUNCTION__.'(...)'
@@ -354,9 +351,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
 
         $table_col_names_4_my_model = $this->getModel()->getTableColNames();
         
-        if ( empty($cols_2_load) ) {
+        if ( $cols_2_load === [] ) {
 
-            if ( is_array($data_2_load) && count($data_2_load) > 0 ) {
+            if ( is_array($data_2_load) && $data_2_load !== [] ) {
 
                 foreach( $data_2_load as $col_name => $value_2_load ) {
                     
@@ -375,14 +372,14 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
                 $this->_non_table_col_and_non_related_data = $data_2_load->getNonTableColAndNonRelatedData();
             }
             
-        } else if ( is_array($cols_2_load) && count($cols_2_load) > 0 ) {
-            
+        } else {
+
             foreach ( $cols_2_load as $col_name ) {
 
                 if (
                     (
                         is_array($data_2_load)
-                        && count($data_2_load) > 0
+                        && $data_2_load !== []
                         && array_key_exists($col_name, $data_2_load)
                     ) 
                     || (
@@ -391,11 +388,11 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
                     )
                 ) {
                     if ( in_array($col_name, $table_col_names_4_my_model) ) {
-                        
+
                         $this->_data[$col_name] = $data_2_load[$col_name];
-                        
+
                     } else {
-                        
+
                         $this->_non_table_col_and_non_related_data[$col_name] = $data_2_load[$col_name];
                     }
                 }
@@ -594,7 +591,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
         } else {
 
             //$key is not a valid db column name or relation name.
-            $msg = "Property '$key' does not exist in " 
+            $msg = sprintf("Property '%s' does not exist in ", $key) 
                    . get_class($this) . PHP_EOL . $this->__toString();
             
             throw new NoSuchPropertyForRecordException($msg);
@@ -614,7 +611,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     public function __isset($key): bool {
         
         try { $this->$key;  } //access the property first to make sure the data is loaded
-        catch ( \Exception $ex ) {  } //do nothing if exception was thrown
+        catch ( \Exception $exception ) {  } //do nothing if exception was thrown
         
         return array_key_exists($key, $this->_data) 
             || array_key_exists($key, $this->_related_data)

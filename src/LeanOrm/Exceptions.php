@@ -1,8 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace LeanOrm {
-
-    class ModelPropertyNotDefinedException extends \Exception{}
+    
     class ModelBadCollectionClassNameForFetchingRelatedDataException extends \Exception{}
     class ModelBadRecordClassNameForFetchingRelatedDataException extends \Exception{}
     class ModelRelatedModelNotCreatedException extends \Exception{}

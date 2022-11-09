@@ -46,14 +46,22 @@ class DBConnector {
     // ----------------------- //
     // --- CLASS CONSTANTS --- //
     // ----------------------- //
-    const DEFAULT_CONNECTION = 'default';
+    /**
+     * @var string
+     */
+    public const DEFAULT_CONNECTION = 'default';
+
+    /**
+     * @var int
+     */
+    public const NANO_SECOND_TO_SECOND_DIVISOR = 1_000_000_000;
 
 ////////////////////////////////////////////////////////////////////////////////        
 //////////// -------------------------------- //////////////////////////////////
 //////////// --- CLASS PROPERTIES TO KEEP --- //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
     // Class configuration
-    protected static $_default_config = [
+    protected static array $_default_config = [
         'connection_string' => 'sqlite::memory:',
         'error_mode' => \PDO::ERRMODE_EXCEPTION,
         'username' => null,
@@ -62,19 +70,21 @@ class DBConnector {
     ];
 
     // Map of configuration settings
-    protected static $_config = [];
+    protected static array $_config = [];
 
     // Map of database connections, instances of the PDO class
-    protected static $_db = [];
+    /**
+     * @var array<string, \PDO>
+     */
+    protected static array $_db = [];
 
     // --------------------------- //
     // --- INSTANCE PROPERTIES --- //
     // --------------------------- //
 
-    // Key name of the connections in static::$_db used by this instance
-    protected $_connection_name;
+    // Key name of the connection in static::$_db used by this instance
+    protected string $_connection_name;
 
-////////////////////////////////////////////////////////////////////////////////        
 //////////// ------------------------------------ //////////////////////////////
 //////////// --- END CLASS PROPERTIES TO KEEP --- //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,68 +102,68 @@ class DBConnector {
      * required to use DBConnector). If you have more than one setting
      * you wish to configure, another shortcut is to pass an array
      * of settings (and omit the second argument).
-     * @param string $key
+     * @param string|array $key_or_settings
      * @param mixed $value
      * @param string $connection_name Which connection to use
      */
-    public static function configure($key, $value = null, $connection_name = self::DEFAULT_CONNECTION) {
-        
+    public static function configure($key_or_settings, $value = null, string $connection_name = self::DEFAULT_CONNECTION): void {
+
         static::_initDbConfigWithDefaultVals($connection_name); //ensures at least default config is set
 
-        if (is_array($key)) {
-            
+        if (is_array($key_or_settings)) {
+
             // Shortcut: If only one array argument is passed,
             // assume it's an array of configuration settings
-            foreach ($key as $conf_key => $conf_value) {
-                
+            foreach ($key_or_settings as $conf_key => $conf_value) {
+
                 static::configure($conf_key, $conf_value, $connection_name);
             }
         } else {
-            
+
             if (is_null($value)) {
-                
+
                 // Shortcut: If only one string argument is passed, 
                 // assume it's a connection string
-                $value = $key;
-                $key = 'connection_string';
+                $value = $key_or_settings;
+                $key_or_settings = 'connection_string';
             }
-            
-            static::$_config[$connection_name][$key] = $value;
+
+            static::$_config[$connection_name][$key_or_settings] = $value;
         }
     }
 
     /**
      * Retrieve configuration options by key, or as whole array.
-     * @param string $key
+     * 
      * @param string $conn_name Which connection to use or null for all connections
      */
-    public static function getConfig($key = null, $conn_name = self::DEFAULT_CONNECTION) {
-        
+    public static function getConfig(?string $key = null, string $conn_name = self::DEFAULT_CONNECTION) {
+
         if( $key && is_null($conn_name) ) {
-            
+
             //get key's value for each connection
             $conn_names = array_keys(static::$_config);
             $val_of_key_4_each_conn_name = array_column(static::$_config, $key);
-            
+
             return array_combine($conn_names, $val_of_key_4_each_conn_name);
-            
+
         } else if ( $key && !is_null($conn_name) && strlen($conn_name) > 0 ) {
-            
+
             //get key's value for the specified connection
             return static::$_config[$conn_name][$key];
-            
+
         } else if( !$key && is_null($conn_name) ) {
-            
+
             //get all config values for all connections
             return static::$_config;
-            
+
         } else {
-            
+
             //get all config values for the specified connection
             return static::$_config[$conn_name];
         }
     }
-    
+
     /**
      * 
      * DBConnector::resetAllStaticPropertiesExceptDefaultConfig() returns the values of all properties
@@ -163,27 +173,27 @@ class DBConnector {
      * 
      * @return mixed the value of the property specified or an array of all properties if $prop_name is empty or not a name of any of the properties.
      */
-    public static function getAllStaticPropertiesExceptDefaultConfig($prop_name='') {
-        
+    public static function getAllStaticPropertiesExceptDefaultConfig(string $prop_name='') {
+
         switch ($prop_name) {
-            
+
             case '_config':
             case 'config':
-                
+
                 // Map of configuration settings
                 return static::$_config;
-            
+
             case '_db':
             case 'db':
-                
+
                 // Map of database connections, instances of the PDO class
                 return static::$_db;
-            
+
             default:
                 ///////////////////////////
                 // Return all properties //
                 ///////////////////////////
-                
+
                 // Map of configuration settings
                 return [
                     '$_config' => static::$_config,
@@ -193,7 +203,7 @@ class DBConnector {
                 ];
         }
     }
-    
+
     /**
      * 
      * DBConnector::resetAllStaticPropertiesExceptDefaultConfig() resets all properties
@@ -202,32 +212,32 @@ class DBConnector {
      * @param string $prop_name name of the property (eg. 'db' or '_db') whose value is to be reset. 
      * 
      */
-    public static function resetAllStaticPropertiesExceptDefaultConfig($prop_name='') {
-        
+    public static function resetAllStaticPropertiesExceptDefaultConfig(string $prop_name=''): void {
+
         switch ($prop_name) {
-            
+
             case '_config':
             case 'config':
-                
+
                 // Map of configuration settings
                 static::$_config = [];
                 break;
-            
+
             case '_db':
             case 'db':
-                
+
                 // Map of database connections, instances of the PDO class
                 static::$_db = [];
                 break;
-            
+
             default:
                 //////////////////////////
                 // Reset all properties //
                 //////////////////////////
-                
+
                 // Map of configuration settings
                 static::$_config = [];
-                
+
                 // Map of database connections, instances of the PDO class
                 static::$_db = [];
                 break;
@@ -238,11 +248,10 @@ class DBConnector {
      * This is the factory method used to acquire instances of the class.
      * 
      * @param string $connection_name Which connection to use
-     * @return DBConnector
      */
     //rename to factory
-    public static function create($connection_name = self::DEFAULT_CONNECTION) {
-        
+    public static function create(string $connection_name = self::DEFAULT_CONNECTION): \LeanOrm\DBConnector {
+
         static::_setupDb($connection_name);
         return new self($connection_name);
     }
@@ -251,7 +260,7 @@ class DBConnector {
      * Set up the database connection used by the class
      * @param string $connection_name Which connection to use
      */
-    protected static function _setupDb($connection_name = self::DEFAULT_CONNECTION) {
+    protected static function _setupDb(string $connection_name = self::DEFAULT_CONNECTION): void {
 
         if (!array_key_exists($connection_name, static::$_db) ||
             !is_object(static::$_db[$connection_name])) {
@@ -274,10 +283,10 @@ class DBConnector {
     * Ensures configuration (multiple connections) is at least set to default.
     * @param string $connection_name Which connection to use
     */
-    protected static function _initDbConfigWithDefaultVals($connection_name) {
-        
+    protected static function _initDbConfigWithDefaultVals(string $connection_name): void {
+
         if (!array_key_exists($connection_name, static::$_config)) {
-            
+
             static::$_config[$connection_name] = static::$_default_config;
         }
     }
@@ -287,11 +296,10 @@ class DBConnector {
      * This is public in case the DBConnector should use a ready-instantiated
      * PDO object as its database connection. Accepts an optional string key
      * to identify the connection if multiple connections are used.
-     * @param PDO $db
      * @param string $connection_name Which connection to use
      */
-    public static function setDb($db, $connection_name = self::DEFAULT_CONNECTION) {
-        
+    public static function setDb(\PDO $db, string $connection_name = self::DEFAULT_CONNECTION): void {
+
         static::_initDbConfigWithDefaultVals($connection_name);
         static::$_db[$connection_name] = $db;
     }
@@ -302,10 +310,9 @@ class DBConnector {
      * required outside the class. If multiple connections are used,
      * accepts an optional key name for the connection.
      * @param string $connection_name Which connection to use
-     * @return PDO
      */
-    public static function getDb($connection_name = self::DEFAULT_CONNECTION) {
-        
+    public static function getDb(string $connection_name = self::DEFAULT_CONNECTION): \PDO {
+
         static::_setupDb($connection_name); // required in case this is called before DBConnector is instantiated
         return static::$_db[$connection_name];
     }
@@ -319,8 +326,8 @@ class DBConnector {
      * 
      * @return bool|array bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
      */
-    public function executeQuery( $query, $parameters=[], $return_pdo_statement=false ) {
-        
+    public function executeQuery(string $query, array $parameters=[], bool $return_pdo_statement=false) {
+
         return static::_execute($query, $parameters, $return_pdo_statement, $this->_connection_name);
     }
 
@@ -328,57 +335,55 @@ class DBConnector {
     * Internal helper method for executing statments. Logs queries, and
     * stores statement object in ::_last_statment, accessible publicly
     * through ::get_last_statement()
-    * @param string $query
     * @param array $parameters An array of parameters to be bound in to the query
-    * @param bool $return_pdo_statement true to add the \PDOStatement object used by this function to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
+    * @param bool $return_pdo_stmt_and_exec_time true to add the \PDOStatement object used by this function & time in seconds it took the query to execute to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
     * @param string $connection_name Which connection to use
     * 
-    * @return bool|array bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
+    * @return bool|array Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
     */
-    protected static function _execute($query, $parameters = [], $return_pdo_statement=false, $connection_name = self::DEFAULT_CONNECTION) {
-        
+    protected static function _execute(string $query, array $parameters = [], bool $return_pdo_stmt_and_exec_time=false, string $connection_name = self::DEFAULT_CONNECTION) {
+
         $statement = static::getDb($connection_name)->prepare($query);
-        $time = microtime(true);
 
         foreach ($parameters as $key => &$param) {
-            
+
             if (is_null($param)) {
-                
+
                 $type = \PDO::PARAM_NULL;
-                
+
             } else if (is_bool($param)) {
-                
+
                 $type = \PDO::PARAM_BOOL;
-                
-            } else if (is_int($param)) {
-                
-                $type = \PDO::PARAM_INT;
-                
+
             } else {
 
-                $type = \PDO::PARAM_STR;
+                $type = is_int($param) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
             }
 
             $statement->bindParam((is_int($key) ? ++$key : $key), $param, $type);
         }
 
+        $start_time = \hrtime(true); // start timing
         $result = $statement->execute();
+        $end_time = \hrtime(true); // stop timing
+        $total_execution_time_in_seconds = (($end_time - $start_time) / self::NANO_SECOND_TO_SECOND_DIVISOR);
 
-        if( $return_pdo_statement ) {
-            
+        if( $return_pdo_stmt_and_exec_time ) {
+
             $exec_result = $result;
-            $result = [$exec_result, $statement];
+            $result = ['query_result'=>$exec_result, 'pdo_statement'=>$statement, 'exec_time_in_seconds'=>$total_execution_time_in_seconds];
         }
 
         return $result;
     }
-    
+
     /**
      * Get a list of the available connection names
-     * @return array
+     * 
+     * @return string[]
      */
-    public static function getConnectionNames() {
-        
+    public static function getConnectionNames(): array {
+
         return array_keys(static::$_db);
     }
 
@@ -390,7 +395,7 @@ class DBConnector {
      * "Private" constructor; shouldn't be called directly.
      * Use the DBConnector::create factory method instead.
      */
-    protected function __construct($connection_name = self::DEFAULT_CONNECTION) {
+    protected function __construct(string $connection_name = self::DEFAULT_CONNECTION) {
 
         $this->_connection_name = $connection_name;
         static::_initDbConfigWithDefaultVals($connection_name);
@@ -398,13 +403,12 @@ class DBConnector {
 
     /**
      * Get connection name for current instance of this class.
-     * @return array
      */
-    public function getConnectionName() {
-        
+    public function getConnectionName(): string {
+
         return $this->_connection_name;
     }
-    
+
     /**
      * Tell the DBConnector that you are expecting a single result
      * back from your query, and execute it. Will return
@@ -414,79 +418,79 @@ class DBConnector {
      * to this method. This will perform a primary key
      * lookup on the table.
      */
-    public function dbFetchOne( $select_query,  $parameters = [] ) {
+    public function dbFetchOne(string $select_query, array $parameters = [] ) {
 
-       $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
-        
-        $statement = array_pop($bool_and_statement);
-            
+       $result = static::_execute($select_query, $parameters, true, $this->_connection_name);
+       $statement = $result['pdo_statement'];
+
         return $statement->fetch(\PDO::FETCH_ASSOC);
     }
-    
+
     /**
      * Perform a raw query. The query can contain placeholders in
      * either named or question mark style. If placeholders are
      * used, the parameters should be an array of values which will
      * be bound to the placeholders in the query.
+     * 
+     * @return mixed[]
      */
-    public function dbFetchAll($select_query, $parameters = []) {
+    public function dbFetchAll(string $select_query, array $parameters = []): array {
 
-        $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
-        
-        $statement = array_pop($bool_and_statement);
-            
+        $result = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        $statement = $result['pdo_statement'];
+
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
-    
+
     /**
      * Perform a raw query. The query can contain placeholders in
      * either named or question mark style. If placeholders are
      * used, the parameters should be an array of values which will
      * be bound to the placeholders in the query.
+     * 
+     * @return mixed[]
      */
-    public function dbFetchCol($select_query, $parameters = []) {
+    public function dbFetchCol(string $select_query, array $parameters = []): array {
 
-        $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
-        
-        $statement = array_pop($bool_and_statement);
-            
+        $result = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        $statement = $result['pdo_statement'];
+
         return $statement->fetchAll(\PDO::FETCH_COLUMN, 0);
     }
-    
+
     /**
      * Perform a raw query. The query can contain placeholders in
      * either named or question mark style. If placeholders are
      * used, the parameters should be an array of values which will
      * be bound to the placeholders in the query.
+     * 
+     * @return array<int|string, mixed>
      */
-    public function dbFetchPairs($select_query, $parameters = []) {
+    public function dbFetchPairs(string $select_query, array $parameters = []): array {
 
-        $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
-        
-        $statement = array_pop($bool_and_statement);
-        
+        $result = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        $statement = $result['pdo_statement'];
         $data = [];
-        
+
         while ($row = $statement->fetch(\PDO::FETCH_NUM)) {
-            
+
             $data[$row[0]] = $row[1];
         }
-            
+
         return $data;
     }
-    
+
     /**
      * Perform a raw query. The query can contain placeholders in
      * either named or question mark style. If placeholders are
      * used, the parameters should be an array of values which will
      * be bound to the placeholders in the query.
      */
-    public function dbFetchValue($select_query, $parameters = []) {
+    public function dbFetchValue(string $select_query, array $parameters = []) {
 
-        $bool_and_statement = static::_execute($select_query, $parameters, true, $this->_connection_name);
-        
-        $statement = array_pop($bool_and_statement);
-            
+        $result = static::_execute($select_query, $parameters, true, $this->_connection_name);
+        $statement = $result['pdo_statement'];
+
         return $statement->fetchColumn(0);
     }
 }

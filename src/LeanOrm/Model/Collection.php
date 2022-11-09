@@ -26,26 +26,24 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @param array $extra_opts an array that may be used to pass initialization 
      *                          value(s) for protected and / or private properties
      *                          of this class
+     * @param \GDAO\Model\RecordInterface[] ...$data
      */
     public function __construct(
         \GDAO\Model $model, array $extra_opts=[], \GDAO\Model\RecordInterface ...$data
     ) {
         $this->setModel($model);
         $this->_data = $data;
-        
-        if(count($extra_opts) > 0) {
-            
-            //set properties of this class specified in $extra_opts
-            foreach($extra_opts as $e_opt_key => $e_opt_val) {
-  
-                if ( property_exists($this, $e_opt_key) ) {
-                    
-                    $this->$e_opt_key = $e_opt_val;
 
-                } elseif ( property_exists($this, '_'.$e_opt_key) ) {
+        //set properties of this class specified in $extra_opts
+        foreach($extra_opts as $e_opt_key => $e_opt_val) {
 
-                    $this->{"_$e_opt_key"} = $e_opt_val;
-                }
+            if ( property_exists($this, $e_opt_key) ) {
+
+                $this->$e_opt_key = $e_opt_val;
+
+            } elseif ( property_exists($this, '_'.$e_opt_key) ) {
+
+                $this->{'_' .$e_opt_key} = $e_opt_val;
             }
         }
     }
@@ -82,37 +80,31 @@ class Collection implements \GDAO\Model\CollectionInterface
                 throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
             }
         }
-        
-        try {
 
-            if( $this->count() > 0 ) {
+        if( $this->count() > 0 ) {
 
-                $result = array();
+            $result = [];
 
-                //generate list of keys of records in this collection
-                //that were not successfully saved.
+            //generate list of keys of records in this collection
+            //that were not successfully saved.
 
-                foreach( $this->_data as $coll_key=>$record ) {
-                    
-                    $primary_key = $record->getPrimaryVal();
-                    
-                    if( $record->delete() !== true ) {
+            foreach( $this->_data as $record ) {
 
-                        //record still exists in the db table
-                        //it wasn't successfully deleted.
-                        $result[] = $primary_key;
-                    }
-                }
-                
-                if( count($result) <= 0 ) {
-                    
-                    $result = true;
+                $primary_key = $record->getPrimaryVal();
+                $delete_result = $record->delete();
+
+                if( !$delete_result && $delete_result !== null ) {
+
+                    //record still exists in the db table
+                    //it wasn't successfully deleted.
+                    $result[] = $primary_key;
                 }
             }
 
-        }  catch(\Exception $e) {
+            if( count($result) <= 0 ) {
 
-            throw $e;
+                $result = true;
+            }
         }
         
         $this->_postDeleteAll();
@@ -146,7 +138,7 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * Returns all the keys for this collection.
-     *  
+     * @return int[]|string[]
      */
     public function getKeys(): array {
         
@@ -180,7 +172,7 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * Load the collection with a list of records.
-     *  
+     * @param \GDAO\Model\RecordInterface[] ...$data_2_load
      */
     public function loadData(\GDAO\Model\RecordInterface ...$data_2_load): self{
         
@@ -248,11 +240,11 @@ class Collection implements \GDAO\Model\CollectionInterface
         $this->_preSaveAll($group_inserts_together);
         
         $result = true;
-        $keys_4_unsuccessfully_saved_records = array();
+        $keys_4_unsuccessfully_saved_records = [];
         
         if ( $group_inserts_together ) {
             
-            $data_2_save_4_new_records = array();
+            $data_2_save_4_new_records = [];
 
             foreach ( $this->_data as $key => $record ) {
 
@@ -282,7 +274,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             
             //Try bulk insertion of new records
             if( 
-                count($data_2_save_4_new_records) > 0
+                $data_2_save_4_new_records !== []
                 && !$this->getModel()->insertMany($data_2_save_4_new_records) 
             ) {
                 //bulk insert failed, none of the new records got saved
@@ -304,7 +296,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             }
         }
         
-        if( count($keys_4_unsuccessfully_saved_records) > 0 ) {
+        if( $keys_4_unsuccessfully_saved_records !== [] ) {
             
             $result = $keys_4_unsuccessfully_saved_records;
         }
@@ -367,7 +359,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      */
     #[\ReturnTypeWillChange]
-    public function offsetGet($key) {
+    public function offsetGet($key): \GDAO\Model\RecordInterface {
         
         return $this->__get($key);
     }
@@ -389,7 +381,7 @@ class Collection implements \GDAO\Model\CollectionInterface
 
         if( !($val instanceof \GDAO\Model\RecordInterface) ) {
             
-            $msg = "ERROR: Only instances of \\GDAO\\Model\\RecordInterface or its"
+            $msg = "ERROR: Only instances of " . \GDAO\Model\RecordInterface::class . " or its"
                    . " sub-classes can be added to a Collection. You tried to"
                    . " insert the following item: " 
                    . PHP_EOL . var_export($val, true) . PHP_EOL;
@@ -402,11 +394,6 @@ class Collection implements \GDAO\Model\CollectionInterface
             //support for $this[] = $record; syntax
             
             $key = $this->count();
-            
-            if (! $key) {
-                
-                $key = 0;
-            }
         }
         
         $this->__set($key, $val);
@@ -419,8 +406,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @param string $key The requested key.
      * 
-     * @return void
-     * 
      */
     public function offsetUnset($key): void {
         
@@ -430,8 +415,6 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * Countable: how many keys are there?
-     * 
-     * @return int
      * 
      */
     public function count(): int {
@@ -446,7 +429,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return \Iterator an Iterator eg. an instance of \ArrayIterator
      * 
      */
-    public function getIterator(): \Iterator  {
+    public function getIterator(): \ArrayIterator {
         
         return new \ArrayIterator($this->_data);
     }
@@ -471,7 +454,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             
         } else {
 
-            $msg = "ERROR: Item with key '$key' does not exist in " 
+            $msg = sprintf("ERROR: Item with key '%s' does not exist in ", $key) 
                    . get_class($this) .'.'. PHP_EOL . $this->__toString();
             
             throw new \GDAO\Model\ItemNotFoundInCollectionException($msg);

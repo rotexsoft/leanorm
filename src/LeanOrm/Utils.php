@@ -10,7 +10,7 @@ namespace LeanOrm;
  */
 class Utils
 {
-    public static function isEmptyString($string) {
+    public static function isEmptyString($string): bool {
         
         return empty($string) && mb_strlen( ''.$string, 'UTF-8') <= 0;
     }
@@ -19,15 +19,14 @@ class Utils
         
         $result = $string;
         
-        if( static::isEmptyString($string) ) {
-            
-            $result = "''"; // force it to empty string literal so queries will not break
-                            // EG: select * from table where table.col = $string will become
-                            //     select * from table where table.col = ''
-            
-        } else if( is_string($string) ) {
-            
-            $result = $pdo->quote($result); // do pdo quote
+        if (static::isEmptyString($string)) {
+            // force it to empty string literal so queries will not break
+            // EG: select * from table where table.col = $string will become
+            //     select * from table where table.col = ''
+            $result = "''";
+        } elseif (is_string($string)) {
+            // do pdo quote
+            $result = $pdo->quote($result);
         }
         
         return $result;
@@ -45,7 +44,7 @@ class Utils
         }
     }
     
-    public static function search2D(array &$array, $key, $value, array &$results) {
+    public static function search2D(array &$array, $key, $value, array &$results): void {
 
         foreach ($array as &$avalue) {
 

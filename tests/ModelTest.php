@@ -116,26 +116,6 @@ class ModelTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(\LeanOrm\Model\Record::class, get_class($record_generic));
     }
     
-    public function test__Get() {
-        
-        $mock_model_cust = $this->_mock_model_objs['customers'];
-        
-        //access protected property
-        $this->assertEquals('CustomerID', $mock_model_cust->primary_col);
-        $this->assertEquals('CustomerID', $mock_model_cust->_primary_col);
-        
-        try {
-            //access non-existent property
-            $mock_model_cust->non_existent_property;
-            
-        } catch (Exception $ex) {
-
-            $this->assertEquals(
-                \LeanOrm\ModelPropertyNotDefinedException::class, get_class($ex)
-            );
-        }
-    }
-    
     public function testDeleteMatchingDbTableRows() {
         
         $ins_sql = <<<SQL

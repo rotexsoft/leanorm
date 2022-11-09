@@ -75,33 +75,30 @@ class Record implements \GDAO\Model\RecordInterface
         $this->setModel($model);
         $this->loadData($data);
 
-        if(count($extra_opts) > 0) {
-            
-            //set properties of this class specified in $extra_opts
-            foreach($extra_opts as $e_opt_key => $e_opt_val) {
-  
-                if ( property_exists($this, ''.$e_opt_key) ) {
-                    
-                    $this->{''.$e_opt_key} = $e_opt_val;
+        //set properties of this class specified in $extra_opts
+        foreach($extra_opts as $e_opt_key => $e_opt_val) {
 
-                } elseif ( property_exists($this, '_'.$e_opt_key) ) {
+            if ( property_exists($this, ''.$e_opt_key) ) {
 
-                    $this->{"_$e_opt_key"} = $e_opt_val;
-                }
+                $this->{''.$e_opt_key} = $e_opt_val;
+
+            } elseif ( property_exists($this, '_'.$e_opt_key) ) {
+
+                $this->{'_'.$e_opt_key} = $e_opt_val;
             }
         }
     }
     
     public function __destruct() {
-        
+
         //print "Destroying Record with Primary key Value: " . $this->getPrimaryVal() . "<br>";
-        
+
         unset($this->_data);
         unset($this->_initial_data);
         unset($this->_is_new);
         unset($this->_related_data);
         unset($this->_non_table_col_and_non_related_data);
-        
+
         //Don't unset $this->_model, it may still be referenced by other 
         //Record and / or Collection objects.
     }
@@ -126,15 +123,17 @@ class Record implements \GDAO\Model\RecordInterface
         
         $result = $this->_model->deleteSpecifiedRecord($this);
         
-        if( $result === true && $set_record_objects_data_to_empty_array ) {
+        if( $result && $set_record_objects_data_to_empty_array ) {
             
-            $this->_data = $this->_related_data 
-                         = $this->_initial_data 
-                         = $this->_non_table_col_and_non_related_data 
-                         = [];
+            $this->_data = [];
+            $this->_related_data = [];
+            $this->_initial_data = [];
+            $this->_non_table_col_and_non_related_data = [];
         }
         
-        return $result;
+        // if $result is null this means the record does not even exist in the db
+        // and it's as good as it being deleted, so return true
+        return $result ?? true;
     }
     
     /**
@@ -251,9 +250,9 @@ class Record implements \GDAO\Model\RecordInterface
             
             //Error trying to add a relation whose name collides with an actual
             //name of a column in the db table associated with this record's model.
-            $msg = "ERROR: You cannont add a relationship with the name '$key' "
+            $msg = sprintf("ERROR: You cannont add a relationship with the name '%s' ", $key)
                  . " to the record (".get_class($this)."). The database table "
-                 . " '{$my_model->getTableName()}' associated with the "
+                 . sprintf(" '%s' associated with the ", $my_model->getTableName())
                  . " record's model (".get_class($my_model).") already contains"
                  . " a column with the same name."
                  . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
@@ -273,7 +272,6 @@ class Record implements \GDAO\Model\RecordInterface
      * Get the model object that saves and reads data to and from the db on 
      * behalf of this record
      * 
-     * @return \GDAO\Model
      */
     public function getModel(): \GDAO\Model {
         
@@ -331,14 +329,15 @@ class Record implements \GDAO\Model\RecordInterface
 
         // if no column specified, check if the record as a whole has changed
         if ($col === null) {
-            
+
             $cols = $this->_model->getTableColNames();
-            
+
             foreach ($cols as $col) {
                 if ($this->isChanged($col)) {
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -356,7 +355,7 @@ class Record implements \GDAO\Model\RecordInterface
         ) {
             return true;
             
-        } else if(
+        } elseif(
             !array_key_exists($col, $this->_initial_data)
             && !array_key_exists($col, $this->_data)
         ) {
@@ -396,7 +395,6 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * Is the record new? (I.e. its data has never been saved to the db)
      * 
-     * @return bool
      */
 	public function isNew(): bool {
         
@@ -422,7 +420,7 @@ class Record implements \GDAO\Model\RecordInterface
      *      \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      * 
      * @param \GDAO\Model\RecordInterface|array $data_2_load
-     * @param array $cols_2_load name of field to load from $data_2_load. If null, 
+     * @param array $cols_2_load name of field to load from $data_2_load. If empty, 
      *                           load all fields in $data_2_load.
      * 
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
@@ -438,7 +436,7 @@ class Record implements \GDAO\Model\RecordInterface
                                 get_class($data_2_load) : gettype($data_2_load);
             
             $msg = "ERROR: Trying to load data into a record from an unsupported"
-                   . " data source of type '{$datasource_type}'. An 'Array' or"
+                   . sprintf(" data source of type '%s'. An 'Array' or", $datasource_type)
                    . " instance of '\\LeanOrm\\Model\\Record' or any of its"
                    . " subclasses are the allowed data sources acceptable by "
                    . get_class($this).'::'.__FUNCTION__.'(...)'
@@ -469,9 +467,9 @@ class Record implements \GDAO\Model\RecordInterface
 
         $table_col_names_4_my_model = $this->getModel()->getTableColNames();
         
-        if ( empty($cols_2_load) ) {
+        if ( $cols_2_load === [] ) {
 
-            if ( is_array($data_2_load) && count($data_2_load) > 0 ) {
+            if ( is_array($data_2_load) && $data_2_load !== [] ) {
 
                 foreach( $data_2_load as $col_name => $value_2_load ) {
                     
@@ -485,20 +483,20 @@ class Record implements \GDAO\Model\RecordInterface
                     }
                 }
                 
-            } else if ($data_2_load instanceof \GDAO\Model\RecordInterface) {
+            } elseif ($data_2_load instanceof \GDAO\Model\RecordInterface) {
 
                 $this->_data = $data_2_load->getData();
                 $this->_non_table_col_and_non_related_data = $data_2_load->getNonTableColAndNonRelatedData();
             }
             
-        } else if ( is_array($cols_2_load) && count($cols_2_load) > 0 ) {
-            
+        } else {
+
             foreach ( $cols_2_load as $col_name ) {
 
                 if (
                     (
                         is_array($data_2_load)
-                        && count($data_2_load) > 0
+                        && $data_2_load !== []
                         && array_key_exists($col_name, $data_2_load)
                     ) 
                     || (
@@ -507,16 +505,16 @@ class Record implements \GDAO\Model\RecordInterface
                     )
                 ) {
                     if ( in_array($col_name, $table_col_names_4_my_model) ) {
-                        
+
                         $this->_data[$col_name] = $data_2_load[$col_name];
-                        
+
                     } else {
-                        
+
                         $this->_non_table_col_and_non_related_data[$col_name] = $data_2_load[$col_name];
                     }
                 }
             } // foreach ( $cols_2_load as $col_name )
-        }// else if ( is_array($cols_2_load) && count($cols_2_load) > 0 )
+        }// elseif ( is_array($cols_2_load) && $cols_2_load !== [] )
 
         if ($this->_initial_data === null) {
              
@@ -613,7 +611,7 @@ class Record implements \GDAO\Model\RecordInterface
                 $inserted_data = $this->_model->insert($data_2_save);
                 $result = ($inserted_data !== false);
                 
-                if( $result === true && is_array($inserted_data) && count($inserted_data) > 0 ) {
+                if( $result && is_array($inserted_data) && $inserted_data !== [] ) {
                     
                     //update the record with the newly inserted data
                     $this->loadData($inserted_data);
@@ -662,7 +660,7 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @throws \LeanOrm\Model\RecordOperationNotSupportedByDriverException
      * 
-     * @return bool true for a successful save, false for failed save, null: no changed data to save
+     * @return bool|null true for a successful save, false for failed save, null: no changed data to save
      * 
      */
     public function saveInTransaction($data_2_save = null): ?bool {
@@ -685,7 +683,7 @@ class Record implements \GDAO\Model\RecordInterface
                     $pdo_obj->commit();
                     return true;
                     
-                } else if ($save_status === false) {
+                } elseif ($save_status === false) {
 
                     // at least one part of the save was *not* valid.
                     // throw it all away.
@@ -696,11 +694,11 @@ class Record implements \GDAO\Model\RecordInterface
 
                     return null; //$save_status === null nothing was done
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception $exception) {
 
                 // roll back and throw the exception
                 $pdo_obj->rollBack();
-                throw $e;
+                throw $exception;
             }
         } else {
 
@@ -741,12 +739,9 @@ class Record implements \GDAO\Model\RecordInterface
      * ArrayAccess: does the requested key exist?
      * 
      * @param string $key The requested key.
-     * 
-     * @return bool
-     * 
+     *  
      */
-    #[\ReturnTypeWillChange]
-    public function offsetExists($key) {
+    public function offsetExists($key): bool {
 
         return $this->__isset($key);
     }
@@ -774,11 +769,8 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @param string $val The value to set it to.
      * 
-     * @return void
-     * 
      */
-    #[\ReturnTypeWillChange]
-    public function offsetSet($key, $val) {
+    public function offsetSet($key, $val): void {
 
         $this->__set($key, $val);
     }
@@ -789,11 +781,8 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @param string $key The requested key.
      * 
-     * @return void
-     * 
      */
-    #[\ReturnTypeWillChange]
-    public function offsetUnset($key) {
+    public function offsetUnset($key): void {
 
         $this->__unset($key);
     }
@@ -802,22 +791,12 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * Countable: how many keys are there?
      * 
-     * @return int
-     * 
      */
-    #[\ReturnTypeWillChange]
-    public function count() {
+    public function count(): int {
 
         return count($this->_data);
     }
 
-    /**
-     * 
-     * 
-     * @return \ArrayIterator
-     * 
-     */
-    #[\ReturnTypeWillChange]
     public function getIterator(): \ArrayIterator {
 
         return new \ArrayIterator($this->_data + $this->_related_data + $this->_non_table_col_and_non_related_data);
@@ -840,15 +819,15 @@ class Record implements \GDAO\Model\RecordInterface
             
             return $this->_data[$key];
             
-        } else if ( array_key_exists($key, $this->_related_data) ) {
+        } elseif ( array_key_exists($key, $this->_related_data) ) {
 
             return $this->_related_data[$key];
             
-        } else if ( array_key_exists($key, $this->_non_table_col_and_non_related_data) ) { 
+        } elseif ( array_key_exists($key, $this->_non_table_col_and_non_related_data) ) { 
             
             return $this->_non_table_col_and_non_related_data[$key];
             
-        } else if ( 
+        } elseif ( 
             $this->getModel() instanceof \GDAO\Model 
             && in_array($key, $this->getModel()->getTableColNames()) 
         ) {
@@ -859,7 +838,7 @@ class Record implements \GDAO\Model\RecordInterface
             
             return $this->_data[$key];
             
-        } else if( 
+        } elseif( 
             $this->getModel() instanceof \GDAO\Model 
             && in_array($key, $this->getModel()->getRelationNames()) 
         ) {
@@ -873,7 +852,7 @@ class Record implements \GDAO\Model\RecordInterface
         } else {
 
             //$key is not a valid db column name or relation name.
-            $msg = "Property '$key' does not exist in " 
+            $msg = sprintf("Property '%s' does not exist in ", $key) 
                    . get_class($this) . PHP_EOL . $this->__toString();
             
             throw new NoSuchPropertyForRecordException($msg);
@@ -893,7 +872,7 @@ class Record implements \GDAO\Model\RecordInterface
     public function __isset($key): bool {
         
         try { $this->$key;  } //access the property first to make sure the data is loaded
-        catch ( \Exception $ex ) {  } //do nothing if exception was thrown
+        catch ( \Exception $exception ) {  } //do nothing if exception was thrown
         
         return array_key_exists($key, $this->_data) 
             || array_key_exists($key, $this->_related_data)
@@ -919,7 +898,7 @@ class Record implements \GDAO\Model\RecordInterface
             //model's record.
             $this->_data[$key] = $val;
             
-        } else if( 
+        } elseif( 
             $this->getModel() instanceof \GDAO\Model 
             && in_array($key, $this->getModel()->getRelationNames()) 
         ) {
