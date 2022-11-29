@@ -519,8 +519,7 @@ class Model extends \GDAO\Model
             if(\is_callable($sql_query_modifier)) {
 
                 $sql_query_modifier = Utils::getClosureFromCallable($sql_query_modifier);
-                
-                // modify the query object before executing the query 
+                // modify the query object before executing the query
                 $query_obj = $sql_query_modifier($query_obj);
             }
 
@@ -2056,7 +2055,7 @@ SELECT {$foreign_table_name}.*
         return $this;
     }
     
-    protected function checkThatRelationNameIsNotAnActualColumnName(string $relationName) {
+    protected function checkThatRelationNameIsNotAnActualColumnName(string $relationName): void {
         
         $tableCols = $this->getTableColNames();
         $tableColsLowerCase = array_map('strtolower', $tableCols);
