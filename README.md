@@ -29,6 +29,16 @@ while the most current / actively being developed version is on the master branc
 
 Courtesy of https://www.semicolonandsons.com/code_diary/databases/difference-between-has-one-belongs-to-and-has-many
 
+## Running Tests
+
+  `./vendor/bin/phpunit --coverage-text`
+
+> You can set the environment variable **LEANORM_PDO_DSN** with a valid $dsn string for pdo e.g. LEANORM_PDO_DSN=sqlite::memory:
+> You can set the environment variable **LEANORM_PDO_USERNAME** with a valid $username string for pdo if needed e.g. LEANORM_PDO_USERNAME=jblow
+> You can set the environment variable **LEANORM_PDO_PASSWORD** with a valid $password string for pdo if needed e.g. LEANORM_PDO_PASSWORD=some_password
+> For example:
+>   `LEANORM_PDO_DSN=sqlite::memory: LEANORM_PDO_USERNAME=jblow LEANORM_PDO_PASSWORD=some_password ./vendor/bin/phpunit --coverage-text`
+
 ### Difference between has one belongs to and has many
 
 This is part of the Semicolon&Sons [Code Diary](https://www.semicolonandsons.com/code_diary) - consisting of lessons learned on the job. You're in the [databases](https://www.semicolonandsons.com/code_diary/databases) category.

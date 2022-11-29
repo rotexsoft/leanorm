@@ -23,29 +23,13 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * @param \GDAO\Model $model The model object that transfers data between the db and this collection.
-     * @param array $extra_opts an array that may be used to pass initialization 
-     *                          value(s) for protected and / or private properties
-     *                          of this class
      * @param \GDAO\Model\RecordInterface[] ...$data
      */
     public function __construct(
-        \GDAO\Model $model, array $extra_opts=[], \GDAO\Model\RecordInterface ...$data
+        \GDAO\Model $model, \GDAO\Model\RecordInterface ...$data
     ) {
         $this->setModel($model);
         $this->data = $data;
-
-        //set properties of this class specified in $extra_opts
-        foreach($extra_opts as $e_opt_key => $e_opt_val) {
-
-            if ( property_exists($this, $e_opt_key) ) {
-
-                $this->$e_opt_key = $e_opt_val;
-
-            } elseif ( property_exists($this, '_'.$e_opt_key) ) {
-
-                $this->{'_' .$e_opt_key} = $e_opt_val;
-            }
-        }
     }
     
     /**

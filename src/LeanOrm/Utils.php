@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace LeanOrm;
 
+use Closure;
+
 /**
  * Description of Utils
  *
@@ -53,5 +55,10 @@ class Utils
                 $results[] = $avalue;
             }
         }
+    }
+    
+    public static function getClosureFromCallable(callable $callable): Closure {
+
+        return ($callable instanceof Closure)? $callable : Closure::fromCallable($callable);
     }
 }

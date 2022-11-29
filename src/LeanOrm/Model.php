@@ -4,6 +4,7 @@ namespace LeanOrm;
 use Aura\SqlQuery\QueryFactory;
 use Aura\SqlSchema\ColumnFactory;
 use LeanOrm\Utils;
+use Psr\Log\LoggerInterface;
 
 /**
  * 
@@ -43,6 +44,11 @@ class Model extends \GDAO\Model
      */
     protected string $pdo_driver_name = '';
 
+    public function getPdoDriverName(): string
+    {
+        return $this->pdo_driver_name;
+    }
+
     /**
      *
      *  An object for interacting with the db
@@ -52,6 +58,23 @@ class Model extends \GDAO\Model
 
     // Query Logging related properties
     protected bool $can_log_queries = false;
+
+    public function canLogQueries(): bool {
+
+        return $this->can_log_queries;
+    }
+
+    public function enableQueryLogging(): self {
+
+        $this->can_log_queries = true;
+        return $this;
+    }
+
+    public function disableQueryLogging(): self {
+
+        $this->can_log_queries = false;
+        return $this;
+    }
 
     /**
      * @var array<string, array>
@@ -63,9 +86,20 @@ class Model extends \GDAO\Model
      */
     protected static array $all_instances_query_log = [];
 
-    protected ?\Psr\Log\LoggerInterface $logger = null;
+    protected ?LoggerInterface $logger = null;
 
-
+    public function setLogger(?LoggerInterface $logger): self {
+        
+        $this->logger = $logger;
+        
+        return $this;
+    }
+    
+    public function getLogger(): ?LoggerInterface {
+        
+        return $this->logger;
+    }
+    
     /**
      * 
      * {@inheritDoc}
@@ -75,13 +109,14 @@ class Model extends \GDAO\Model
         string $username = '', 
         string $passwd = '', 
         array $pdo_driver_opts = [],
-        array $extra_opts = []
+        string $primary_col_name='',
+        string $table_name=''
     ) {
         $pri_col_not_set_exception = null;
 
         try {
 
-            parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $extra_opts);
+            parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
 
         } catch (\GDAO\ModelPrimaryColNameNotSetDuringConstructionException $e) {
 
@@ -162,26 +197,6 @@ class Model extends \GDAO\Model
 
             throw $pri_col_not_set_exception;
         }
-
-        $table_cols = $this->getTableColNames();
-
-        foreach(array_keys($this->relations) as $relation_name) {
-
-            if( in_array($relation_name, $table_cols) ) {
-
-                //Error trying to add a relation whose name collides with an actual
-                //name of a column in the db table associated with this model.
-                $msg = sprintf("ERROR: You cannont add a relationship with the name '%s' ", $relation_name)
-                     . " to the Model (".get_class($this)."). The database table "
-                     . sprintf(" '%s' associated with the ", $this->getTableName())
-                     . " model (".get_class($this).") already contains"
-                     . " a column with the same name."
-                     . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                     . PHP_EOL;
-
-                throw new \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
-            }
-        }
     }
 
     public function getSelect(): \Aura\SqlQuery\Common\Select {
@@ -198,16 +213,16 @@ class Model extends \GDAO\Model
      *
      * {@inheritDoc}
      */
-    public function createNewCollection(array $extra_opts=[], \GDAO\Model\RecordInterface ...$list_of_records): \GDAO\Model\CollectionInterface {
+    public function createNewCollection(\GDAO\Model\RecordInterface ...$list_of_records): \GDAO\Model\CollectionInterface {
 
         if( empty($this->collection_class_name) ) {
 
             //default to creating new collection of type \LeanOrm\Model\Collection
-            $collection = new \LeanOrm\Model\Collection($this, $extra_opts, ...$list_of_records);
+            $collection = new \LeanOrm\Model\Collection($this, ...$list_of_records);
 
         } else {
 
-            $collection = new $this->collection_class_name($this, $extra_opts, ...$list_of_records);
+            $collection = new $this->collection_class_name($this, ...$list_of_records);
         }
 
         return $collection;
@@ -217,16 +232,16 @@ class Model extends \GDAO\Model
      * 
      * {@inheritDoc}
      */
-    public function createNewRecord(array $col_names_n_vals = [], array $extra_opts=[]): \GDAO\Model\RecordInterface {
+    public function createNewRecord(array $col_names_n_vals = []): \GDAO\Model\RecordInterface {
 
         if( empty($this->record_class_name) ) {
 
             //default to creating new record of type \LeanOrm\Model\Record
-            $record = new \LeanOrm\Model\Record($col_names_n_vals, $this, $extra_opts);
+            $record = new \LeanOrm\Model\Record($col_names_n_vals, $this);
 
         } else {
 
-            $record = new $this->record_class_name($col_names_n_vals, $this, $extra_opts);
+            $record = new $this->record_class_name($col_names_n_vals, $this);
         }
 
         return $record;
@@ -461,15 +476,11 @@ class Model extends \GDAO\Model
             $sql_query_modifier = 
                     Utils::arrayGet($rel_info, 'sql_query_modifier', null);
 
-            $extra_opts_for_foreign_model = 
-                    Utils::arrayGet($rel_info, 'extra_opts_for_foreign_model', []);
-
             $foreign_model_obj = 
                 $this->_createRelatedModelObject(
                     $foreign_models_class_name,
                     $pri_key_col_in_foreign_models_table,
-                    $foreign_table_name,
-                    $extra_opts_for_foreign_model
+                    $foreign_table_name
                 );
 
             $query_obj = $foreign_model_obj->getSelect();
@@ -507,6 +518,8 @@ class Model extends \GDAO\Model
 
             if(\is_callable($sql_query_modifier)) {
 
+                $sql_query_modifier = Utils::getClosureFromCallable($sql_query_modifier);
+                
                 // modify the query object before executing the query 
                 $query_obj = $sql_query_modifier($query_obj);
             }
@@ -716,14 +729,10 @@ SELECT {$foreign_table_name}.*
         $sql_query_modifier = 
                 Utils::arrayGet($rel_info, 'sql_query_modifier', null);
 
-        $extra_opts_for_foreign_model = 
-                Utils::arrayGet($rel_info, 'extra_opts_for_foreign_model', []);
-
         $foreign_model_obj = $this->_createRelatedModelObject(
                                         $foreign_models_class_name,
                                         $pri_key_col_in_foreign_models_table,
-                                        $foreign_table_name,
-                                        $extra_opts_for_foreign_model
+                                        $foreign_table_name
                                     );
 
         $query_obj = $foreign_model_obj->getSelect();
@@ -751,6 +760,8 @@ SELECT {$foreign_table_name}.*
 
         if(\is_callable($sql_query_modifier)) {
 
+            $sql_query_modifier = Utils::getClosureFromCallable($sql_query_modifier);
+            
             // modify the query object before executing the query 
             $query_obj = $sql_query_modifier($query_obj);
         }
@@ -779,8 +790,7 @@ SELECT {$foreign_table_name}.*
     protected function _createRelatedModelObject(
         $f_models_class_name, 
         $pri_key_col_in_f_models_table, 
-        $f_table_name,
-        $extra_opts_for_foreign_model
+        $f_table_name
     ): Model {
         //$foreign_models_class_name will never be empty it will default to \LeanOrm\Model
         //$foreign_table_name will never be empty because it is needed for fetching the 
@@ -820,14 +830,6 @@ SELECT {$foreign_table_name}.*
             }
         }
 
-        $merged_extra_opts = array_merge(
-            [
-                'primary_col' => $pri_key_col_in_f_models_table,
-                'table_name' => $f_table_name
-            ],
-            $extra_opts_for_foreign_model
-        );
-
         if(
             empty($pri_key_col_in_f_models_table)
         ) {
@@ -846,7 +848,8 @@ SELECT {$foreign_table_name}.*
             $this->username, 
             $this->passwd, 
             $this->pdo_driver_opts,
-            $merged_extra_opts
+            $pri_key_col_in_f_models_table,
+            $f_table_name
         );
     }
 
@@ -899,11 +902,10 @@ SELECT {$foreign_table_name}.*
             foreach ($matching_related_records as $key=>$rec_data) {
 
                 $matching_related_records[$key] = 
-                    new $foreign_models_record_class_name(
+                    (new $foreign_models_record_class_name(
                         $rec_data, 
-                        $foreign_model_obj, 
-                        ['is_new'=>false]
-                    );
+                        $foreign_model_obj
+                    ))->markAsNotNew();
             }
         }
 
@@ -913,7 +915,6 @@ SELECT {$foreign_table_name}.*
             $matching_related_records = 
                 new $foreign_models_collection_class_name (
                     $foreign_model_obj,
-                    [],
                     ...$matching_related_records
                 );
         }
@@ -1025,7 +1026,7 @@ SELECT {$foreign_table_name}.*
 
         if($data !== [] ) {
 
-            $results = $this->createNewCollection([], ...$data);
+            $results = $this->createNewCollection(...$data);
 
             foreach( $relations_to_include as $rel_name ) {
 
@@ -1083,7 +1084,7 @@ SELECT {$foreign_table_name}.*
 
         foreach ($results as $key=>$value) {
 
-            $results[$key] = $this->createNewRecord($value, ['is_new'=>false]);
+            $results[$key] = $this->createNewRecord($value)->markAsNotNew();
         }
 
         return $results;
@@ -1176,9 +1177,9 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function deleteMatchingDbTableRows(array $cols_n_vals=[]): ?int {
+    public function deleteMatchingDbTableRows(array $cols_n_vals): int {
 
-        $result = null;
+        $result = 0;
 
         if ( $cols_n_vals !== [] ) {
 
@@ -1220,12 +1221,11 @@ SELECT {$foreign_table_name}.*
                 //return number of affected rows
                 $pdo_statement_used_for_query = $result['pdo_statement'];
                 $result = $pdo_statement_used_for_query->rowCount();
-
             } else {
-
-                //return boolean result of the \PDOStatement::execute() call
-                //from $this->db_connector->executeQuery($dlt_qry, $dlt_qry_params, true);
-                $result = $result['query_result'];
+                
+                // something went wrong
+                // TODO: Maybe throw an exception
+                $result = 0;
             }
         }
 
@@ -1262,6 +1262,10 @@ SELECT {$foreign_table_name}.*
             if ( $succesfully_deleted === 1 ) {
 
                 $record->setStateToNew();
+                
+            } elseif($succesfully_deleted === 0) {
+                
+                $succesfully_deleted = null;
             }
         }
 
@@ -1299,7 +1303,7 @@ SELECT {$foreign_table_name}.*
 
         if( $result !== false && is_array($result) && $result !== [] ) {
 
-            $result = $this->createNewRecord($result, ['is_new'=>false]);
+            $result = $this->createNewRecord($result)->markAsNotNew();
 
             foreach( $relations_to_include as $rel_name ) {
 
@@ -1869,7 +1873,7 @@ SELECT {$foreign_table_name}.*
 
         $dsn ??= $this->dsn;
 
-        return array_key_exists($dsn, $this->query_log) ? $this->query_log[$dsn] : [];
+        return array_key_exists($dsn, $this->query_log) ? $this->query_log[$dsn] : $this->query_log;
     }
 
     /**
@@ -1939,9 +1943,10 @@ SELECT {$foreign_table_name}.*
         string $foreign_models_class_name = \LeanOrm\Model::class,
         string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
         string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
-        ?callable $sql_query_modifier = null,
-        array $extra_opts_for_foreign_model = []
+        ?callable $sql_query_modifier = null
     ): self {
+        $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
+        
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
         $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
@@ -1954,7 +1959,6 @@ SELECT {$foreign_table_name}.*
         $this->relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
 
         $this->relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
-        $this->relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
 
         return $this;
     }
@@ -1968,9 +1972,10 @@ SELECT {$foreign_table_name}.*
         string $foreign_models_class_name = \LeanOrm\Model::class,
         string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
         string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
-        ?callable $sql_query_modifier = null,
-        array $extra_opts_for_foreign_model = []
+        ?callable $sql_query_modifier = null
     ): self {
+        $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
+        
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
         $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
@@ -1983,7 +1988,6 @@ SELECT {$foreign_table_name}.*
         $this->relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
 
         $this->relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
-        $this->relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
 
         return $this;
     }
@@ -1997,9 +2001,10 @@ SELECT {$foreign_table_name}.*
         string $foreign_models_class_name = \LeanOrm\Model::class,
         string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
         string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
-        ?callable $sql_query_modifier = null,
-        array $extra_opts_for_foreign_model = []
+        ?callable $sql_query_modifier = null
     ): self {
+        $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
+        
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY;
         $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
@@ -2012,7 +2017,6 @@ SELECT {$foreign_table_name}.*
         $this->relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
 
         $this->relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
-        $this->relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
 
         return $this;
     }
@@ -2029,9 +2033,10 @@ SELECT {$foreign_table_name}.*
         string $foreign_models_class_name = \LeanOrm\Model::class,
         string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
         string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
-        ?callable $sql_query_modifier = null,
-        array $extra_opts_for_foreign_model = []
+        ?callable $sql_query_modifier = null
     ): self {
+        $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
+        
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH;
         $this->relations[$relation_name]['col_in_my_table_linked_to_join_table'] = $col_in_my_table_linked_to_join_table;
@@ -2047,8 +2052,28 @@ SELECT {$foreign_table_name}.*
         $this->relations[$relation_name]['foreign_models_collection_class_name'] = $foreign_models_collection_class_name;
 
         $this->relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
-        $this->relations[$relation_name]['extra_opts_for_foreign_model'] = $extra_opts_for_foreign_model;
 
         return $this;
+    }
+    
+    protected function checkThatRelationNameIsNotAnActualColumnName(string $relationName) {
+        
+        $tableCols = $this->getTableColNames();
+        $tableColsLowerCase = array_map('strtolower', $tableCols);
+
+        if( in_array(strtolower($relationName), $tableColsLowerCase) ) {
+
+            //Error trying to add a relation whose name collides with an actual
+            //name of a column in the db table associated with this model.
+            $msg = sprintf("ERROR: You cannont add a relationship with the name '%s' ", $relationName)
+                 . " to the Model (".get_class($this)."). The database table "
+                 . sprintf(" '%s' associated with the ", $this->getTableName())
+                 . " model (".get_class($this).") already contains"
+                 . " a column with the same name."
+                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL;
+
+            throw new \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
+        }
     }
 }

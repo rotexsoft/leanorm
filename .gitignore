@@ -37,3 +37,5 @@ file-only-present-on-dev-pc-at-home.txt
 index.php
 
 .phpunit.result.cache
+
+/tests/DbFiles/blog.sqlite

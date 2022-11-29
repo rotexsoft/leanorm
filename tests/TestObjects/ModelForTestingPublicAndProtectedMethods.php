@@ -8,14 +8,16 @@
 class ModelForTestingPublicAndProtectedMethods extends \LeanOrm\Model
 {
     public function __construct(
-        $dsn = '', $username = '', $passwd = '', 
-        array $pdo_driver_opts = [], array $extra_opts = []
+        string $dsn = '', 
+        string $uname = '', 
+        string $pswd = '', 
+        array $pdo_drv_opts = [],
+        string $primary_col_name='',
+        string $table_name=''
     ) {
-        if( $dsn || $username || $passwd || $pdo_driver_opts || $extra_opts) {
-            
-            parent::__construct(
-                $dsn, $username, $passwd, $pdo_driver_opts, $extra_opts
-            );
+        if ($dsn || $uname || $pswd || $pdo_drv_opts || $primary_col_name || $table_name) {
+
+            parent::__construct($dsn, $uname, $pswd, $pdo_drv_opts, $primary_col_name, $table_name);
         }
     }
 }

@@ -7,8 +7,8 @@
  */
 class RecordForTestingPublicAndProtectedMethods extends \LeanOrm\Model\Record
 {
-    public function __construct(array $data, \GDAO\Model $model, array $extra_opts = []) {
+    public function __construct(array $data, \GDAO\Model $model) {
         
-        parent::__construct($data, $model, $extra_opts);
+        parent::__construct($data, $model);
     }
 }
