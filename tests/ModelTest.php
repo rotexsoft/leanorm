@@ -124,7 +124,6 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     public function testThatConstructorWithNoArgsWorksAsExpected() {
         
         $this->expectException(\PDOException::class);
-        $this->expectExceptionMessage("invalid data source name");
 
         $model = new LeanOrm\Model();
     }
@@ -132,7 +131,6 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     public function testThatConstructorWithNoPrimaryColWorksAsExpected() {
         
         $this->expectException(\GDAO\ModelPrimaryColNameNotSetDuringConstructionException::class);
-        $this->expectExceptionMessage("Primary Key Column name not set for LeanOrm\\Model");
 
         $model = new LeanOrm\Model('sqlite::memory:');
     }
@@ -140,7 +138,6 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     public function testThatConstructorWithNoTableNameWorksAsExpected() {
         
         $this->expectException(\GDAO\ModelTableNameNotSetDuringConstructionException::class);
-        $this->expectExceptionMessage("Table name not set for LeanOrm\\Model");
 
         $model = new LeanOrm\Model('sqlite::memory:','','',[],'id','');
     }
