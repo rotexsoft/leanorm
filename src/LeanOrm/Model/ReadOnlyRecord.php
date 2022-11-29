@@ -481,8 +481,8 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * @param string $key The requested key.
      * 
      * @return mixed
-     * 
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($key) {
 
         return $this->__get($key);
