@@ -19,6 +19,7 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
         
         try {
             $this->createAuthorsTable();
+            $this->createEmptyDataTable();
             $this->createPostsTable();
             $this->createCommentsTable();
             $this->createSummariesTable();
@@ -39,6 +40,19 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
             $this->populatePostsTagsTable();
             return true;
         } catch (\Exception $exc) { return false; }
+    }
+    
+    
+    protected function createEmptyDataTable(): void {
+        
+        $this->connection->query("
+            CREATE TABLE empty_data (
+                id INTEGER PRIMARY KEY,
+                name TEXT,
+                m_timestamp TEXT NOT NULL,
+                date_created TEXT NOT NULL
+            )
+        ");
     }
     
     protected function createAuthorsTable(): void {
