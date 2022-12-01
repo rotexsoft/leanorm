@@ -37,7 +37,10 @@ Courtesy of https://www.semicolonandsons.com/code_diary/databases/difference-bet
 > You can set the environment variable **LEANORM_PDO_USERNAME** with a valid $username string for pdo if needed e.g. LEANORM_PDO_USERNAME=jblow
 > You can set the environment variable **LEANORM_PDO_PASSWORD** with a valid $password string for pdo if needed e.g. LEANORM_PDO_PASSWORD=some_password
 > For example:
+
 >   `LEANORM_PDO_DSN=sqlite::memory: LEANORM_PDO_USERNAME=jblow LEANORM_PDO_PASSWORD=some_password ./vendor/bin/phpunit --coverage-text`
+
+>   `LEANORM_PDO_DSN="mysql:host=10.0.0.243;dbname=blog" LEANORM_PDO_USERNAME="jblow" LEANORM_PDO_PASSWORD="some_password" ./vendor/bin/phpunit --coverage-text`
 
 ### Difference between has one belongs to and has many
 
