@@ -5,6 +5,7 @@ use Aura\SqlQuery\QueryFactory;
 use Aura\SqlSchema\ColumnFactory;
 use LeanOrm\Utils;
 use Psr\Log\LoggerInterface;
+use function sprintf;
 
 /**
  * 
@@ -320,13 +321,38 @@ class Model extends \GDAO\Model
 
         return $this;
     }
+    
+    protected function validateRelatedCollectionAndRecordAndModelClassNames(
+        string $collection_class_name, string $record_class_name, string $model_class_name
+    ): bool {
+        $result = $this->_validateRelatedCollectionAndRecordClassNames(
+                    $collection_class_name, $record_class_name
+                );
+        
+        $parent_model_class_name = self::class;
+        
+        if( !is_a($model_class_name, $parent_model_class_name, true) ) {
+            
+            //throw exception
+            $msg = "ERROR: '{$model_class_name}' is not a subclass or instance of "
+                 . "'{$parent_model_class_name}'. A model class name specified"
+                 . " for fetching related data must be the name of a class that"
+                 . " is a sub-class or instance of '{$parent_model_class_name}'"
+                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL;
+
+            throw new BadModelClassNameForFetchingRelatedDataException($msg);
+        }
+        
+        return $result && true;
+    }
 
     protected function _validateRelatedCollectionAndRecordClassNames($collection_class_name, $record_class_name): bool {
 
         $parent_collection_class_name = \GDAO\Model\CollectionInterface::class;
         $parent_record_class_name = \GDAO\Model\RecordInterface::class;
 
-        if( !is_subclass_of($collection_class_name, $parent_collection_class_name) ) {
+        if( !is_subclass_of($collection_class_name, $parent_collection_class_name, true) ) {
 
             //throw exception
             $msg = "ERROR: '{$collection_class_name}' is not a subclass of "
@@ -336,7 +362,7 @@ class Model extends \GDAO\Model
                  . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
-            throw new ModelBadCollectionClassNameForFetchingRelatedDataException($msg);
+            throw new BadCollectionClassNameForFetchingRelatedDataException($msg);
         }
 
         if( !is_subclass_of($record_class_name, $parent_record_class_name)  ) {
@@ -349,7 +375,7 @@ class Model extends \GDAO\Model
                  . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
-            throw new ModelBadRecordClassNameForFetchingRelatedDataException($msg);
+            throw new BadRecordClassNameForFetchingRelatedDataException($msg);
         }
 
         return true;
@@ -684,7 +710,6 @@ SELECT {$foreign_table_name}.*
             array_key_exists($rel_name, $this->relations) 
             && $this->relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_BELONGS_TO
         ) {
-
             //quick hack
             $this->relations[$rel_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
 
@@ -838,7 +863,7 @@ SELECT {$foreign_table_name}.*
                  . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
-            throw new ModelRelatedModelNotCreatedException($msg);
+            throw new RelatedModelNotCreatedException($msg);
         }
         
         //try to create a model object for the related data
@@ -1274,9 +1299,6 @@ SELECT {$foreign_table_name}.*
      */
     public function deleteSpecifiedRecord(\GDAO\Model\RecordInterface $record): ?bool {
 
-        //$this->primary_col should have a valid value because a
-        //GDAO\ModelPrimaryColNameNotSetDuringConstructionException
-        //is thrown in $this->__construct() if $this->primary_col is not set.
         $succesfully_deleted = null;
 
         if( $record instanceof \LeanOrm\Model\ReadOnlyRecord ) {
@@ -1285,6 +1307,23 @@ SELECT {$foreign_table_name}.*
                  . get_class($this) . '::' . __FUNCTION__ . '(...).'
                  . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
             throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+        }
+        
+        if( 
+            $record->getModel()->getTableName() !== $this->getTableName() 
+            || get_class($record->getModel()) !== get_class($this)  
+        ) {
+            $msg = "ERROR: Can't delete a record (an instance of `%s` belonging to the Model class `%s`) belonging to the database table `%s` " 
+                . "using a Model instance of `%s` belonging to the database table `%s` in " 
+                 . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                 . PHP_EOL .'Undeleted record: ' . PHP_EOL . var_export($record, true) . PHP_EOL; 
+            throw new InvalidArgumentException(
+                sprintf(
+                    $msg, get_class($record), get_class($record->getModel()), 
+                    $record->getModel()->getTableName(),
+                    get_class($this), $this->getTableName()
+                )
+            );
         }
 
         if ( count($record) > 0 ) { //test if the record object has data
@@ -1302,6 +1341,11 @@ SELECT {$foreign_table_name}.*
             } elseif($succesfully_deleted === 0) {
                 
                 $succesfully_deleted = null;
+                
+            } elseif( $this->fetch([$pri_key_val], null, [], true, true)->count() === 1 ) {
+                
+                //we were still able to fetch the record from the db, so delete failed
+                $succesfully_deleted = false;
             }
         }
 
@@ -1375,8 +1419,7 @@ SELECT {$foreign_table_name}.*
      */
     public function fetchValue(?object $select_obj=null) {
 
-        $query_obj = 
-            $this->_createQueryObjectIfNullAndAddColsToQuery($select_obj);
+        $query_obj = $this->_createQueryObjectIfNullAndAddColsToQuery($select_obj);
         $query_obj->limit(1);
 
         $query_obj_4_num_matching_rows = clone $query_obj;
@@ -1387,7 +1430,7 @@ SELECT {$foreign_table_name}.*
 
         $result = $this->db_connector->dbFetchValue($sql, $params_2_bind_2_sql);
 
-        //need to issue a second query to get the number of matching rows
+        // need to issue a second query to get the number of matching rows
         // clear the cols part of the query above while preserving all the
         // other parts of the query
         $query_obj_4_num_matching_rows->resetCols();
@@ -1717,8 +1760,7 @@ SELECT {$foreign_table_name}.*
                 //set last updated timestamp to now
                 $col_names_n_vals_2_save[$last_updtd_colname] = date('Y-m-d H:i:s');
             }
-
-
+            
             $pkey_col_name = $this->getPrimaryColName();
 
             if(array_key_exists($pkey_col_name, $col_names_n_vals_2_save)) {
@@ -1817,18 +1859,29 @@ SELECT {$foreign_table_name}.*
      * {@inheritDoc}
      */
     public function updateSpecifiedRecord(\GDAO\Model\RecordInterface $record): ?bool {
-
-        //$this->primary_col should have a valid value because a
-        //GDAO\ModelPrimaryColNameNotSetDuringConstructionException
-        //is thrown in $this->__construct() if $this->primary_col is not set.
+        
         $succesfully_updated = null;
 
         if( $record instanceof \LeanOrm\Model\ReadOnlyRecord ) {
 
             $msg = "ERROR: Can't save a ReadOnlyRecord to the database in " 
                  . get_class($this) . '::' . __FUNCTION__ . '(...).'
-                 . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
+                 . PHP_EOL .'Unupdated record' . var_export($record, true) . PHP_EOL;
             throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+        }
+        
+        if( $record->getModel()->getTableName() !== $this->getTableName() ) {
+            
+            $msg = "ERROR: Can't update a record (an instance of `%s`) belonging to the database table `%s` " 
+                . "using a Model instance of `%s` belonging to the database table `%s` in " 
+                 . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                 . PHP_EOL .'Unupdated record: ' . PHP_EOL . var_export($record, true) . PHP_EOL; 
+            throw new ModelInvalidUpdateValueSuppliedException(
+                sprintf(
+                    $msg, get_class($record), $record->getModel()->getTableName(),
+                    get_class($this), $this->getTableName()
+                )
+            );
         }
 
         $pri_key_val = $record->getPrimaryVal();
@@ -1845,18 +1898,9 @@ SELECT {$foreign_table_name}.*
 
             if($succesfully_updated === 1 || $succesfully_updated === true) {
 
-                $params = [
-                            'where' =>  
-                                [
-                                    [
-                                        'col' => $record->getPrimaryCol(), 
-                                         'op' => '=', 
-                                        'val' => $record->getPrimaryVal()
-                                    ]
-                                ],
-                        ];
-
-                $updated_data = $this->fetchRowsIntoArray($params);
+                $updated_data = $this->fetchRowsIntoArray(
+                    $this->getSelect()->where(" {$record->getPrimaryCol()} = ? ", $record->getPrimaryVal())
+                );
 
                 //Get the first record. There should only be one record
                 //since we are fetching by the primary key column's value.
@@ -1995,6 +2039,9 @@ SELECT {$foreign_table_name}.*
         ?callable $sql_query_modifier = null
     ): self {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
+        $this->validateRelatedCollectionAndRecordAndModelClassNames(
+            $foreign_models_collection_class_name, $foreign_models_record_class_name, $foreign_models_class_name
+        );
         
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
@@ -2024,6 +2071,9 @@ SELECT {$foreign_table_name}.*
         ?callable $sql_query_modifier = null
     ): self {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
+        $this->validateRelatedCollectionAndRecordAndModelClassNames(
+            $foreign_models_collection_class_name, $foreign_models_record_class_name, $foreign_models_class_name
+        );
         
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
@@ -2053,6 +2103,9 @@ SELECT {$foreign_table_name}.*
         ?callable $sql_query_modifier = null
     ): self {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
+        $this->validateRelatedCollectionAndRecordAndModelClassNames(
+            $foreign_models_collection_class_name, $foreign_models_record_class_name, $foreign_models_class_name
+        );
         
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY;
@@ -2085,6 +2138,9 @@ SELECT {$foreign_table_name}.*
         ?callable $sql_query_modifier = null
     ): self {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
+        $this->validateRelatedCollectionAndRecordAndModelClassNames(
+            $foreign_models_collection_class_name, $foreign_models_record_class_name, $foreign_models_class_name
+        );
         
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH;

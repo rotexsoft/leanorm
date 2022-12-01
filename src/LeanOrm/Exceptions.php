@@ -2,11 +2,13 @@
 declare(strict_types=1);
 namespace LeanOrm {
     
-    class ModelBadCollectionClassNameForFetchingRelatedDataException extends \Exception{}
-    class ModelBadRecordClassNameForFetchingRelatedDataException extends \Exception{}
-    class ModelRelatedModelNotCreatedException extends \Exception{}
+    class BadModelClassNameForFetchingRelatedDataException extends \Exception{}
+    class BadCollectionClassNameForFetchingRelatedDataException extends \Exception{}
+    class BadRecordClassNameForFetchingRelatedDataException extends \Exception{}
+    class RelatedModelNotCreatedException extends \Exception{}
     class CantDeleteReadOnlyRecordFromDBException extends \Exception{}
     class KeyingFetchResultsByPrimaryKeyFailedException extends \Exception{}
+    class InvalidArgumentException extends \InvalidArgumentException{}
 }
 
 namespace LeanOrm\Model {
