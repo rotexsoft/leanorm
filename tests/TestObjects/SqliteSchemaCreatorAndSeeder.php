@@ -27,7 +27,10 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
             $this->createTagsTable();
             $this->createPostsTagsTable();
             return true;
-        } catch (\Exception $exc) { return false; }
+        } catch (\Exception $exc) { 
+            
+            throw $exc;
+        }
     }
 
     public function populateTables(): bool {
@@ -40,7 +43,10 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
             $this->populateTagsTable();
             $this->populatePostsTagsTable();
             return true;
-        } catch (\Exception $exc) { return false; }
+        } catch (\Exception $exc) { 
+            
+            throw $exc;
+        }
     }
     
     protected function createEmptyDataTable(): void {
@@ -60,7 +66,7 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
         $this->connection->query("
             CREATE TABLE key_value (
                 id INTEGER PRIMARY KEY,
-                key TEXT,
+                key_name TEXT,
                 value TEXT,
                 m_timestamp TEXT NOT NULL,
                 date_created TEXT NOT NULL
