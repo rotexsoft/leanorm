@@ -1122,6 +1122,7 @@ SELECT {$foreign_table_name}.*
 
             $results[$key] = $this->createNewRecord($value)->markAsNotNew();
         }
+        
         return $results;
     }
 
