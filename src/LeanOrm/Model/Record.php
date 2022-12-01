@@ -257,7 +257,7 @@ class Record implements \GDAO\Model\RecordInterface
      * behalf of this record
      * 
      */
-    public function getModel(): \GDAO\Model {
+    public function getModel(): \LeanOrm\Model {
         
         return $this->model;
     }

@@ -485,7 +485,7 @@ class Model extends \GDAO\Model
 
             $query_obj = $foreign_model_obj->getSelect();
 
-            $query_obj->cols( [" {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} "] );
+            $query_obj->cols( [" {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} ", " {$foreign_table_name}.* "] );
 
             $query_obj->innerJoin(
                             $join_table_name, 
@@ -842,7 +842,7 @@ SELECT {$foreign_table_name}.*
         }
         
         //try to create a model object for the related data
-        return new $f_models_class_name(
+        $related_model = new $f_models_class_name(
             $this->dsn, 
             $this->username, 
             $this->passwd, 
@@ -850,6 +850,22 @@ SELECT {$foreign_table_name}.*
             $pri_key_col_in_f_models_table,
             $f_table_name
         );
+        
+        if($this->canLogQueries()) {
+            
+            // Transfer logger settings from this model
+            // to the newly created model
+            $related_model->enableQueryLogging();
+            
+            if( 
+                $this->getLogger() !== null
+                && $related_model->getLogger() === null
+            ) {
+                $related_model->setLogger($this->getLogger());
+            }
+        }
+        
+        return $related_model;
     }
 
     /**
@@ -964,8 +980,10 @@ SELECT {$foreign_table_name}.*
         bool $use_p_k_val_as_key=false
     ) {
         $select_obj ??= $this->_createQueryObjectIfNullAndAddColsToQuery($select_obj);
-
+        
         if( $ids !== [] ) {
+            
+            $result = [];
 
             // Add 
             // Where $this->getPrimaryColName() . ' IN (?, ?,...., ?, ?)'
@@ -976,7 +994,7 @@ SELECT {$foreign_table_name}.*
 
             if( $use_collections ) {
 
-                return ($use_p_k_val_as_key) 
+                $result = ($use_p_k_val_as_key) 
                             ? $this->fetchRecordsIntoCollectionKeyedOnPkVal($select_obj, $relations_to_include) 
                             : $this->fetchRecordsIntoCollection($select_obj, $relations_to_include);
 
@@ -984,17 +1002,26 @@ SELECT {$foreign_table_name}.*
 
                 if( $use_records ) {
 
-                    return ($use_p_k_val_as_key) 
-                            ? $this->fetchRecordsIntoArrayKeyedOnPkVal($select_obj, $relations_to_include) 
-                            : $this->fetchRecordsIntoArray($select_obj, $relations_to_include);
-                }
+                    $result = ($use_p_k_val_as_key) 
+                                ? $this->fetchRecordsIntoArrayKeyedOnPkVal($select_obj, $relations_to_include) 
+                                : $this->fetchRecordsIntoArray($select_obj, $relations_to_include);
+                } else {
 
-                //default
-                return ($use_p_k_val_as_key) 
-                            ? $this->fetchRowsIntoArrayKeyedOnPkVal($select_obj, $relations_to_include) 
-                            : $this->fetchRowsIntoArray($select_obj, $relations_to_include);
-
+                    //default
+                    $result = ($use_p_k_val_as_key) 
+                                ? $this->fetchRowsIntoArrayKeyedOnPkVal($select_obj, $relations_to_include) 
+                                : $this->fetchRowsIntoArray($select_obj, $relations_to_include);
+                } // if( $use_records ) else ...
             } // if( $use_collections ) else ...
+            
+            if(!($result instanceof \GDAO\Model\CollectionInterface) && !is_array($result)) {
+               
+                return $use_collections ? $this->createNewCollection() : [];
+                
+            } 
+            
+            return $result;
+            
         } // if( $ids !== [] )
 
         // return empty collection or array
@@ -1005,12 +1032,12 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchRecordsIntoCollection(?object $select_obj=null, array $relations_to_include=[]) {
+    public function fetchRecordsIntoCollection(?object $select_obj=null, array $relations_to_include=[]): \GDAO\Model\CollectionInterface {
 
         return $this->doFetchRecordsIntoCollection($select_obj, $relations_to_include);
     }
 
-    public function fetchRecordsIntoCollectionKeyedOnPkVal(?\Aura\SqlQuery\Common\Select $select_obj=null, array $relations_to_include=[]) {
+    public function fetchRecordsIntoCollectionKeyedOnPkVal(?\Aura\SqlQuery\Common\Select $select_obj=null, array $relations_to_include=[]): \GDAO\Model\CollectionInterface {
 
         return $this->doFetchRecordsIntoCollection($select_obj, $relations_to_include, true);
     }
@@ -1020,12 +1047,22 @@ SELECT {$foreign_table_name}.*
         array $relations_to_include=[], 
         bool $use_p_k_val_as_key=false
     ) {
-        $results = false;
+        $results = $this->createNewCollection();
         $data = $this->_getArrayOfRecordObjects($select_obj, $use_p_k_val_as_key);
 
         if($data !== [] ) {
 
-            $results = $this->createNewCollection(...$data);
+            if($use_p_k_val_as_key) {
+                
+                foreach ($data as $pkey => $current_record) {
+                    
+                    $results[$pkey] = $current_record;
+                }
+                
+            } else {
+               
+                $results = $this->createNewCollection(...$data);
+            }
 
             foreach( $relations_to_include as $rel_name ) {
 
@@ -1041,7 +1078,7 @@ SELECT {$foreign_table_name}.*
      * {@inheritDoc}
      */
     public function fetchRecordsIntoArray(?object $select_obj=null, array $relations_to_include=[]): array {
-
+        
         return $this->doFetchRecordsIntoArray($select_obj, $relations_to_include);
     }
 
@@ -1049,7 +1086,7 @@ SELECT {$foreign_table_name}.*
      * @return \GDAO\Model\RecordInterface[]
      */
     public function fetchRecordsIntoArrayKeyedOnPkVal(?\Aura\SqlQuery\Common\Select $select_obj=null, array $relations_to_include=[]): array {
-
+        
         return $this->doFetchRecordsIntoArray($select_obj, $relations_to_include, true);
     }
 
@@ -1085,7 +1122,6 @@ SELECT {$foreign_table_name}.*
 
             $results[$key] = $this->createNewRecord($value)->markAsNotNew();
         }
-
         return $results;
     }
 
@@ -1100,7 +1136,7 @@ SELECT {$foreign_table_name}.*
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
         $results = $this->db_connector->dbFetchAll($sql, $params_2_bind_2_sql);
-
+        
         if( $use_p_k_val_as_key && $results !== [] && $this->primary_col !== '' ) {
 
             $results_keyed_by_pk = [];
@@ -1154,7 +1190,7 @@ SELECT {$foreign_table_name}.*
         bool $use_p_k_val_as_key=false
     ): array {
         $results = $this->_getArrayOfDbRows($select_obj, $use_p_k_val_as_key);
-
+        
         if( $results !== [] ) {
 
             foreach( $relations_to_include as $rel_name ) {
@@ -1289,7 +1325,7 @@ SELECT {$foreign_table_name}.*
      * 
      * {@inheritDoc}
      */
-    public function fetchOneRecord(?object $select_obj=null, array $relations_to_include=[]) {
+    public function fetchOneRecord(?object $select_obj=null, array $relations_to_include=[]): ?\GDAO\Model\RecordInterface {
 
         $query_obj = $this->_createQueryObjectIfNullAndAddColsToQuery($select_obj);
         $query_obj->limit(1);
@@ -1308,6 +1344,11 @@ SELECT {$foreign_table_name}.*
 
                 $this->loadRelationshipData($rel_name, $result, true, true);
             }
+        }
+        
+        if(!($result instanceof \GDAO\Model\RecordInterface)) {
+            
+            $result = null;
         }
 
         return $result;
