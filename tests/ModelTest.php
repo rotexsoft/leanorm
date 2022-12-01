@@ -526,17 +526,17 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // return all the values under the first column in the table which is 
         // the tag_id column 
         $cols = $tagsModel->fetchCol();
-        $this->assertTrue($cols === ['1', '2', '3', '4']);
+        $this->assertEquals(['1', '2', '3', '4'], $cols);
         
         $cols2 = $tagsModel->fetchCol(
                 $tagsModel->getSelect()->cols(['name'])
             );
-        $this->assertTrue($cols2 === ['tag_1', 'tag_2', 'tag_3', 'tag_4']);
+        $this->assertEquals(['tag_1', 'tag_2', 'tag_3', 'tag_4'], $cols2);
         
         $cols3 = $tagsModel->fetchCol(
                 $tagsModel->getSelect()->cols(['name'])->where(' tag_id < 3 ')
             );
-        $this->assertTrue($cols3 === ['tag_1', 'tag_2']);
+        $this->assertEquals(['tag_1', 'tag_2'], $cols3);
         
         // Test with empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
