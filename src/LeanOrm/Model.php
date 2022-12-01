@@ -344,7 +344,7 @@ class Model extends \GDAO\Model
             throw new BadModelClassNameForFetchingRelatedDataException($msg);
         }
         
-        return $result && true;
+        return $result;
     }
 
     protected function _validateRelatedCollectionAndRecordClassNames($collection_class_name, $record_class_name): bool {
