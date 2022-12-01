@@ -105,7 +105,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function delete($set_record_objects_data_to_empty_array=false): bool {
         
-        $result = $this->model->deleteSpecifiedRecord($this);
+        $result = $this->getModel()->deleteSpecifiedRecord($this);
         
         if( $result && $set_record_objects_data_to_empty_array ) {
             
@@ -269,7 +269,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function getPrimaryCol(): string {
 
-        return $this->model->getPrimaryColName();
+        return $this->getModel()->getPrimaryColName();
     }
 
     /**
@@ -314,7 +314,7 @@ class Record implements \GDAO\Model\RecordInterface
         // if no column specified, check if the record as a whole has changed
         if ($col === null) {
 
-            $cols = $this->model->getTableColNames();
+            $cols = $this->getModel()->getTableColNames();
 
             foreach ($cols as $col) {
                 if ($this->isChanged($col)) {
@@ -592,7 +592,7 @@ class Record implements \GDAO\Model\RecordInterface
             if ( empty($pri_val) ) {
 
                 //insert
-                $inserted_data = $this->model->insert($data_2_save);
+                $inserted_data = $this->getModel()->insert($data_2_save);
                 $result = ($inserted_data !== false);
                 
                 if( $result && is_array($inserted_data) && $inserted_data !== [] ) {
@@ -616,7 +616,7 @@ class Record implements \GDAO\Model\RecordInterface
                 if( $this->isChanged() ) {
                     
                     //update
-                    $result = $this->model->updateSpecifiedRecord($this);
+                    $result = $this->getModel()->updateSpecifiedRecord($this);
                     
                     if( $result === true ) {
                         
@@ -649,7 +649,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function saveInTransaction($data_2_save = null): ?bool {
 
-        $pdo_obj = $this->model->getPDO();
+        $pdo_obj = $this->getModel()->getPDO();
 
         if ($pdo_obj instanceof \PDO) {
 
