@@ -1895,8 +1895,16 @@ SELECT {$foreign_table_name}.*
         $pdo_obj = $this->getPDO();
 
         foreach ($attributes as $key => $value) {
-
-            $attributes[ $key ] = $pdo_obj->getAttribute(constant('PDO::ATTR_' . $value));
+            
+            try{
+                
+                $attributes[ $key ] = $pdo_obj->getAttribute(constant('PDO::ATTR_' . $value));
+                
+            } catch (\PDOException $e) {
+                
+                $attributes[ $key ] = 'Unsupported attribute for the current PDO driver';
+                continue;
+            }
 
             if( $value === 'PERSISTENT' ) {
 
