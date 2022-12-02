@@ -25,6 +25,22 @@ class AuthorsModel extends \LeanOrm\Model {
             PostsCollection::class, 
             null
         )
+        ->hasMany(
+            'one_post', 
+            'author_id', 
+            'posts', 
+            'author_id', 
+            'post_id', 
+            PostsModel::class, 
+            PostRecord::class, 
+            PostsCollection::class, 
+            function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                    
+                $selectObj->limit(1);
+            
+                return $selectObj;
+            }
+        )
         ->setCollectionClassName(AuthorsCollection::class)
         ->setRecordClassName(AuthorRecord::class);
     }

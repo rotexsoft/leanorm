@@ -2,7 +2,10 @@
 declare(strict_types=1);
 namespace LeanOrm {
     
+    class BadModelColumnNameException extends \Exception{}
     class BadModelClassNameForFetchingRelatedDataException extends \Exception{}
+    class BadModelTableNameException extends \Exception{}
+    class BadModelPrimaryColumnNameException extends \Exception{}
     class BadCollectionClassNameForFetchingRelatedDataException extends \Exception{}
     class BadRecordClassNameForFetchingRelatedDataException extends \Exception{}
     class RelatedModelNotCreatedException extends \Exception{}

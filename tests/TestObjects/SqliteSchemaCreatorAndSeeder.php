@@ -18,7 +18,7 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
     public function createTables(): bool {
         
         try {
-            $this->createAuthorsTable();
+            $this->createAuthorsTableAndView();
             $this->createEmptyDataTable();
             $this->createKeyValueTable();
             $this->createPostsTable();
@@ -74,7 +74,7 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
         ");
     }
     
-    protected function createAuthorsTable(): void {
+    protected function createAuthorsTableAndView(): void {
         
         $this->connection->query("
             CREATE TABLE authors (
@@ -83,6 +83,18 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
                 m_timestamp TEXT NOT NULL,
                 date_created TEXT NOT NULL
             )
+        ");
+        
+        $this->connection->query("
+            CREATE VIEW v_authors 
+            AS 
+            SELECT
+                author_id,
+                name,
+                m_timestamp,
+                date_created
+            FROM
+                authors
         ");
     }
     

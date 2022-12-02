@@ -20,7 +20,7 @@ class MysqlSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
         try {
             
             $this->connection->query("SET foreign_key_checks = 0");
-            $this->createAuthorsTable();
+            $this->createAuthorsTableAndView();
             $this->createEmptyDataTable();
             $this->createKeyValueTable();
             $this->createPostsTable();
@@ -89,7 +89,7 @@ class MysqlSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
         ");
     }
     
-    protected function createAuthorsTable(): void {
+    protected function createAuthorsTableAndView(): void {
         
         $this->connection->query("
             DROP TABLE IF EXISTS `authors`;
@@ -103,6 +103,20 @@ class MysqlSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
               `date_created` datetime NOT NULL,
               PRIMARY KEY (`author_id`)
             )
+        ");
+        
+        $this->connection->query("
+            DROP VIEW IF EXISTS `v_authors`;
+        ");
+        
+        $this->connection->query("
+            CREATE VIEW `v_authors` AS 
+            SELECT
+              `authors`.`author_id`    AS `author_id`,
+              `authors`.`name`         AS `name`,
+              `authors`.`m_timestamp`  AS `m_timestamp`,
+              `authors`.`date_created` AS `date_created`
+            FROM `authors`
         ");
     }
     
