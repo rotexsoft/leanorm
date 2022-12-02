@@ -29,6 +29,48 @@ class PostsModel extends \LeanOrm\Model{
                 AuthorRecord::class,
                 AuthorsCollection::class
             )
+            ->belongsTo(
+                'author_with_callback', 
+                'author_id', 
+                'authors', 
+                'author_id', 
+                'author_id',
+                AuthorsModel::class,
+                AuthorRecord::class,
+                AuthorsCollection::class,
+                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                    
+                    $selectObj->orderBy(['author_id']); // just for testing that the query object gets manipulated
+
+                    return $selectObj;
+                }
+            )
+            ->hasOne(
+                'summary',
+                'post_id', 
+                'summaries', 
+                'post_id', 
+                'summary_id',
+                SummariesModel::class,
+                SummaryRecord::class,
+                SummariesCollection::class
+            )
+            ->hasOne(
+                'summary_with_callback', 
+                'post_id', 
+                'summaries', 
+                'post_id', 
+                'summary_id',
+                SummariesModel::class,
+                SummaryRecord::class,
+                SummariesCollection::class,
+                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                    
+                    $selectObj->orderBy(['summary_id']); // just for testing that the query object gets manipulated
+
+                    return $selectObj;
+                }
+            )
             ->hasMany(
                 'comments', 
                 'post_id', 
@@ -39,15 +81,21 @@ class PostsModel extends \LeanOrm\Model{
                 CommentRecord::class,
                 CommentsCollection::class
             )
-            ->hasOne(
-                'summary', 
+            ->hasMany(
+                'comments_with_callback', 
                 'post_id', 
-                'summaries', 
+                'comments', 
                 'post_id', 
-                'summary_id',
-                SummariesModel::class,
-                SummaryRecord::class,
-                SummariesCollection::class
+                'comment_id',
+                CommentsModel::class,
+                CommentRecord::class,
+                CommentsCollection::class,
+                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                    
+                    $selectObj->orderBy(['comment_id']); // just for testing that the query object gets manipulated
+
+                    return $selectObj;
+                }
             )
             ->hasMany(
                 'posts_tags',
@@ -71,6 +119,25 @@ class PostsModel extends \LeanOrm\Model{
                 TagsModel::class,
                 TagRecord::class,
                 TagsCollection::class
+            )
+            ->hasManyThrough(
+                'tags_with_callback',
+                'post_id',
+                'posts_tags',
+                'post_id',
+                'tag_id',
+                'tags',
+                'tag_id',
+                'tag_id',
+                TagsModel::class,
+                TagRecord::class,
+                TagsCollection::class,
+                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+
+                    $selectObj->orderBy(['tags.tag_id']); // just for testing that the query object gets manipulated
+
+                    return $selectObj;
+                }
             )
             ->setCollectionClassName(PostsCollection::class)
             ->setRecordClassName(PostRecord::class);
