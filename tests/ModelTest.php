@@ -178,7 +178,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             protected function format($level, $message, $context, $timestamp = null)
             {
                 if ($timestamp === null) $timestamp = date('Y-m-d H:i:s');
-                return '[' . $timestamp . '] ' . strtoupper($level) . ': ' . $this->interpolate($message, $context) . "\n";
+                return PHP_EOL . '[' . $timestamp . '] ' . strtoupper($level) . ': ' . $this->interpolate($message, $context) . PHP_EOL;
             }
         };
     }
@@ -221,18 +221,32 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new LeanOrm\Model();
     }
     
+    public function testThatConstructorWithNonExistentTableNameWorksAsExpected() {
+        
+        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'id','non_existent_table');
+    }
+    
+    public function testThatConstructorWithNonExistentPrimaryColumnNameWorksAsExpected() {
+        
+        $this->expectException(\LeanOrm\BadModelPrimaryColumnNameException::class);
+
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'non_existent_column','authors');
+    }
+    
     public function testThatConstructorWithNoPrimaryColWorksAsExpected() {
         
         $this->expectException(\GDAO\ModelPrimaryColNameNotSetDuringConstructionException::class);
 
-        $model = new LeanOrm\Model('sqlite::memory:');
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'','v_authors');
     }
     
     public function testThatConstructorWithNoTableNameWorksAsExpected() {
         
         $this->expectException(\GDAO\ModelTableNameNotSetDuringConstructionException::class);
 
-        $model = new LeanOrm\Model('sqlite::memory:','','',[],'id','');
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','');
     }
     
     public function testThatConstructorWorksAsExpected() {
@@ -390,6 +404,65 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
     }
     
+    public function testThatBelongsToThrowsExceptionWithNonExistentForeignTableName() {
+        
+        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->belongsTo(
+            'post', 
+            'post_id', 
+            'non_existent_foreign_table', // Non-existent foreign table
+            'post_id', 
+            'post_id'
+        );
+    }
+    
+    public function testThatBelongsToThrowsExceptionWithNonExistentCol1() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        // relation name with the same name as p key column
+        $model->belongsTo(
+            'post', 
+            'non_existent', 
+            'posts', 
+            'post_id', 
+            'post_id'
+        );
+    }
+    
+    public function testThatBelongsToThrowsExceptionWithNonExistentCol2() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        // relation name with the same name as p key column
+        $model->belongsTo(
+            'post', 
+            'post_id', 
+            'posts', 
+            'non_existent', 
+            'post_id'
+        );
+    }
+    
+    public function testThatBelongsToThrowsExceptionWithNonExistentCol3() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        // relation name with the same name as p key column
+        $model->belongsTo(
+            'post', 
+            'post_id', 
+            'posts', 
+            'post_id', 
+            'non_existent'
+        );
+    }
+    
     public function testThatBelongsToWorksAsExpected() {
 
         $postsModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
@@ -444,7 +517,6 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
         
         $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
-        // relation name with the same name as p key column
         $model->hasOne(
             'post', 
             'post_id', 
@@ -462,7 +534,6 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
         
         $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
-        // relation name with the same name as p key column
         $model->hasOne(
             'post', 
             'post_id', 
@@ -475,12 +546,25 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
     }
     
+    public function testThatHasOneThrowsExceptionWithNonExistentForeignTableName() {
+        
+        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->hasOne(
+            'post', 
+            'post_id', 
+            'non_existent_foreign_table', // Non-existent foreign table
+            'post_id', 
+            'post_id'
+        );
+    }
+    
     public function testThatHasOneThrowsExceptionWithInvalidForeignCollectionClassName() {
         
         $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
         
         $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
-        // relation name with the same name as p key column
         $model->hasOne(
             'post', 
             'post_id', 
@@ -490,6 +574,48 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             \LeanOrm\TestObjects\PostsModel::class,
             \LeanOrm\TestObjects\PostRecord::class,
             \PDO::class  // bad Collection class name
+        );
+    }
+    
+    public function testThatHasOneThrowsExceptionWithNonExistentCol1() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->hasOne(
+            'post', 
+            'non_existent', 
+            'posts', 
+            'post_id', 
+            'post_id'
+        );
+    }
+    
+    public function testThatHasOneThrowsExceptionWithNonExistentCol2() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->hasOne(
+            'post', 
+            'post_id', 
+            'posts', 
+            'non_existent', 
+            'post_id'
+        );
+    }
+    
+    public function testThatHasOneThrowsExceptionWithNonExistentCol3() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->hasOne(
+            'post', 
+            'post_id', 
+            'posts', 
+            'post_id', 
+            'non_existent'
         );
     }
     
@@ -531,6 +657,402 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
         $this->assertEquals(['author', 'author2'], $postsModel->getRelationNames());
         $this->assertEquals($callback, $postsModel->getRelations()['author2']['sql_query_modifier']);
+    }
+    
+    public function testThatHasManyThrowsExceptionWhenRelationNameCollidesWithColumnName() {
+        
+        $this->expectException(\GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        // relation name with the same name as p key column
+        $model->hasMany('author_id', '', '', '', '');
+    }
+    
+    public function testThatHasManyThrowsExceptionWithInvalidForeignModelClassName() {
+        
+        $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        
+        $model->hasMany(
+            'posts', 
+            'post_id', 
+            'posts', 
+            'post_id', 
+            'post_id',
+            \PDO::class, // bad Model class name
+            LeanOrm\TestObjects\PostRecord::class,
+            \LeanOrm\TestObjects\PostsCollection::class
+        );
+    }
+    
+    public function testThatHasManyThrowsExceptionWithInvalidForeignRecordClassName() {
+        
+        $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->hasMany(
+            'post', 
+            'post_id', 
+            'posts', 
+            'post_id', 
+            'post_id',
+            \LeanOrm\TestObjects\PostsModel::class,
+            \PDO::class, // bad Record class name
+            \LeanOrm\TestObjects\PostsCollection::class
+        );
+    }
+    
+    public function testThatHasManyThrowsExceptionWithNonExistentForeignTableName() {
+        
+        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->hasMany(
+            'post', 
+            'post_id', 
+            'non_existent', // non-existent foreign table
+            'post_id', 
+            'post_id'
+        );
+    }
+    
+    public function testThatHasManyThrowsExceptionWithInvalidForeignCollectionClassName() {
+        
+        $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->hasMany(
+            'post', 
+            'post_id', 
+            'posts', 
+            'post_id', 
+            'post_id',
+            \LeanOrm\TestObjects\PostsModel::class,
+            \LeanOrm\TestObjects\PostRecord::class,
+            \PDO::class  // bad Collection class name
+        );
+    }
+    
+    public function testThatHasManyThrowsExceptionWithNonExistentCol1() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->hasMany(
+            'post', 
+            'non_existent', 
+            'posts', 
+            'post_id', 
+            'post_id'
+        );
+    }
+    
+    public function testThatHasManyThrowsExceptionWithNonExistentCol2() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->hasMany(
+            'post', 
+            'post_id', 
+            'posts', 
+            'non_existent', 
+            'post_id'
+        );
+    }
+    
+    public function testThatHasManyThrowsExceptionWithNonExistentCol3() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model->hasMany(
+            'post', 
+            'post_id', 
+            'posts', 
+            'post_id', 
+            'non_existent'
+        );
+    }
+    
+    public function testThatHasManyWorksAsExpected() {
+
+        $postsModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
+        $postsModel->hasMany(
+            'comments', 
+            'post_id', 
+            'comments', 
+            'post_id', 
+            'comment_id',
+            LeanOrm\TestObjects\CommentsModel::class,
+            LeanOrm\TestObjects\CommentRecord::class,
+            LeanOrm\TestObjects\CommentsCollection::class
+        );
+        $this->assertEquals(['comments'], $postsModel->getRelationNames());
+        $relations = $postsModel->getRelations();
+        $this->assertArrayHasKey('comments', $relations);
+        $this->assertArrayHasKey('relation_type', $relations['comments']);
+        $this->assertArrayHasKey('foreign_key_col_in_my_table', $relations['comments']);
+        $this->assertArrayHasKey('foreign_table', $relations['comments']);
+        $this->assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['comments']);
+        $this->assertArrayHasKey('primary_key_col_in_foreign_table', $relations['comments']);
+        $this->assertArrayHasKey('foreign_models_class_name', $relations['comments']);
+        $this->assertArrayHasKey('foreign_models_record_class_name', $relations['comments']);
+        $this->assertArrayHasKey('foreign_models_collection_class_name', $relations['comments']);
+        $this->assertArrayHasKey('sql_query_modifier', $relations['comments']);
+        
+        $this->assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY, $relations['comments']['relation_type']);
+        $this->assertEquals('post_id', $relations['comments']['foreign_key_col_in_my_table']);
+        $this->assertEquals('comments', $relations['comments']['foreign_table']);
+        $this->assertEquals('post_id', $relations['comments']['foreign_key_col_in_foreign_table']);
+        $this->assertEquals('comment_id', $relations['comments']['primary_key_col_in_foreign_table']);
+        $this->assertEquals(LeanOrm\TestObjects\CommentsModel::class, $relations['comments']['foreign_models_class_name']);
+        $this->assertEquals(LeanOrm\TestObjects\CommentRecord::class, $relations['comments']['foreign_models_record_class_name']);
+        $this->assertEquals(LeanOrm\TestObjects\CommentsCollection::class, $relations['comments']['foreign_models_collection_class_name']);
+        $this->assertNull($relations['comments']['sql_query_modifier']);
+        
+        $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
+        $postsModel->hasMany(
+            'comments2', 'post_id', 'comments', 'post_id', 'comment_id', \LeanOrm\Model::class,
+            \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, 
+            $callback
+        );
+        $this->assertEquals(['comments', 'comments2'], $postsModel->getRelationNames());
+        $this->assertEquals($callback, $postsModel->getRelations()['comments2']['sql_query_modifier']);
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWhenRelationNameCollidesWithColumnName() {
+        
+        $this->expectException(\GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        // relation name with the same name as p key column
+        $model->hasManyThrough('author_id', '', '', '', '', '', '', '');
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithInvalidForeignModelClassName() {
+        
+        $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model->hasManyThrough(
+            'tags',
+            'post_id',
+            'posts_tags',
+            'post_id',
+            'tag_id',
+            'tags',
+            'tag_id',
+            'tag_id',
+            \PDO::class, // bad Model class name
+            LeanOrm\TestObjects\TagRecord::class,
+            LeanOrm\TestObjects\TagsCollection::class
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithInvalidForeignRecordClassName() {
+        
+        $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model->hasManyThrough(
+            'tags',
+            'post_id',
+            'posts_tags',
+            'post_id',
+            'tag_id',
+            'tags',
+            'tag_id',
+            'tag_id',
+            LeanOrm\TestObjects\TagsModel::class,
+            \PDO::class, // bad Record class name
+            LeanOrm\TestObjects\TagsCollection::class
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithNonExistentForeignTableName() {
+        
+        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model->hasManyThrough(
+            'tags',
+            'post_id',
+            'posts_tags',
+            'post_id',
+            'tag_id',
+            'non_existent_table', // non-existent foreign table
+            'tag_id',
+            'tag_id'
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithNonExistentJoinTableName() {
+        
+        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model->hasManyThrough(
+            'tags',
+            'post_id',
+            'non_existent', // non-existent join table
+            'post_id',
+            'tag_id',
+            'tags',
+            'tag_id',
+            'tag_id'
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithInvalidForeignCollectionClassName() {
+        
+        $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model->hasManyThrough(
+            'tags',
+            'post_id',
+            'posts_tags',
+            'post_id',
+            'tag_id',
+            'tags',
+            'tag_id',
+            'tag_id',
+            LeanOrm\TestObjects\TagsModel::class,
+            LeanOrm\TestObjects\TagRecord::class,
+            \PDO::class  // bad Collection class name
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithNonExistentCol1() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model->hasManyThrough(
+            'tags',
+            'non_existent', // post_id
+            'posts_tags',
+            'post_id',
+            'tag_id',
+            'tags',
+            'tag_id',
+            'tag_id'
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithNonExistentCol2() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model->hasManyThrough(
+            'tags',
+            'post_id',
+            'posts_tags',
+            'non_existent', // post_id
+            'tag_id',
+            'tags',
+            'tag_id',
+            'tag_id'
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithNonExistentCol3() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model->hasManyThrough(
+            'tags',
+            'post_id',
+            'posts_tags',
+            'post_id',
+            'non_existent', // tag_id
+            'tags',
+            'tag_id',
+            'tag_id'
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithNonExistentCol4() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model->hasManyThrough(
+            'tags',
+            'post_id',
+            'posts_tags',
+            'post_id',
+            'tag_id',
+            'tags',
+            'non_existent', // tag_id
+            'tag_id'
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithNonExistentCol5() {
+        
+        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        
+        $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model->hasManyThrough(
+            'tags',
+            'post_id',
+            'posts_tags',
+            'post_id',
+            'tag_id',
+            'tags',
+            'tag_id',
+            'non_existent'
+        );
+    }
+    
+    public function testThatHasManyThroughWorksAsExpected() {
+
+        $postsModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
+        $postsModel->hasManyThrough(
+            'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
+            LeanOrm\TestObjects\TagsModel::class, LeanOrm\TestObjects\TagRecord::class, LeanOrm\TestObjects\TagsCollection::class
+        );
+        $this->assertEquals(['tags'], $postsModel->getRelationNames());
+        $relations = $postsModel->getRelations();
+        $this->assertArrayHasKey('tags', $relations);
+        $this->assertArrayHasKey('relation_type', $relations['tags']);
+        $this->assertArrayHasKey('col_in_my_table_linked_to_join_table', $relations['tags']);
+        $this->assertArrayHasKey('join_table', $relations['tags']);
+        $this->assertArrayHasKey('col_in_join_table_linked_to_my_table', $relations['tags']);
+        $this->assertArrayHasKey('col_in_join_table_linked_to_foreign_table', $relations['tags']);
+        $this->assertArrayHasKey('foreign_table', $relations['tags']);
+        $this->assertArrayHasKey('col_in_foreign_table_linked_to_join_table', $relations['tags']);
+        $this->assertArrayHasKey('primary_key_col_in_foreign_table', $relations['tags']);
+        $this->assertArrayHasKey('foreign_models_class_name', $relations['tags']);
+        $this->assertArrayHasKey('foreign_models_record_class_name', $relations['tags']);
+        $this->assertArrayHasKey('foreign_models_collection_class_name', $relations['tags']);
+        $this->assertArrayHasKey('sql_query_modifier', $relations['tags']);
+        
+        $this->assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH, $relations['tags']['relation_type']);
+        $this->assertEquals('post_id', $relations['tags']['col_in_my_table_linked_to_join_table']);
+        $this->assertEquals('posts_tags', $relations['tags']['join_table']);
+        $this->assertEquals('post_id', $relations['tags']['col_in_join_table_linked_to_my_table']);
+        $this->assertEquals('tag_id', $relations['tags']['col_in_join_table_linked_to_foreign_table']);
+        $this->assertEquals('tags', $relations['tags']['foreign_table']);
+        $this->assertEquals('tag_id', $relations['tags']['col_in_foreign_table_linked_to_join_table']);
+        $this->assertEquals('tag_id', $relations['tags']['primary_key_col_in_foreign_table']);
+        $this->assertEquals(LeanOrm\TestObjects\TagsModel::class, $relations['tags']['foreign_models_class_name']);
+        $this->assertEquals(LeanOrm\TestObjects\TagRecord::class, $relations['tags']['foreign_models_record_class_name']);
+        $this->assertEquals(LeanOrm\TestObjects\TagsCollection::class, $relations['tags']['foreign_models_collection_class_name']);
+        $this->assertNull($relations['tags']['sql_query_modifier']);
+        
+        $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
+        $postsModel->hasManyThrough(
+            'tags2',  'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
+            \LeanOrm\Model::class, \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, $callback
+        );
+        $this->assertEquals(['tags', 'tags2'], $postsModel->getRelationNames());
+        $this->assertEquals($callback, $postsModel->getRelations()['tags2']['sql_query_modifier']);
     }
     
     public function testThatCanLogQueriesWorksAsExpected() {
@@ -846,10 +1368,17 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // test that eager loaded relationship data works
         $this->assertInstanceOf(GDAO\Model\CollectionInterface::class, $secondAuthorInTheTable->posts);
         $this->assertCount(2, $secondAuthorInTheTable->posts);
+        $this->assertCount(1, $secondAuthorInTheTable->one_post);
+        
         $this->assertEquals(['2', '4'], $secondAuthorInTheTable->posts->getColVals('post_id'));
         $this->assertEquals(['2', '2'], $secondAuthorInTheTable->posts->getColVals('author_id'));
         $this->assertEquals(['Post 2', 'Post 4'], $secondAuthorInTheTable->posts->getColVals('title'));
         $this->assertEquals(['Post Body 2', 'Post Body 4'], $secondAuthorInTheTable->posts->getColVals('body'));
+        
+        $this->assertEquals(['2'], $secondAuthorInTheTable->one_post->getColVals('post_id'));
+        $this->assertEquals(['2'], $secondAuthorInTheTable->one_post->getColVals('author_id'));
+        $this->assertEquals(['Post 2'], $secondAuthorInTheTable->one_post->getColVals('title'));
+        $this->assertEquals(['Post Body 2'], $secondAuthorInTheTable->one_post->getColVals('body'));
         
         ///////////////////////////////////////////////////////////////////////
         // Test that record not in db returns false
@@ -1346,7 +1875,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         ////////////////////////////////////////////////////////////////////////
         $allPostsWithAllRelateds = 
             $postsModel->fetchRecordsIntoCollection(
-                null, [ 'author', 'comments', 'summary', 'posts_tags', 'tags' ]
+                null, 
+                [
+                    'author', 'author_with_callback', 
+                    'comments', 'comments_with_callback', 
+                    'summary', 'summary_with_callback', 
+                    'posts_tags', 'tags', 'tags_with_callback'
+                ]
             );
         $this->assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPostsWithAllRelateds);
         $this->assertCount(4, $allPostsWithAllRelateds);
@@ -1376,14 +1911,22 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             
             // author of the post
             $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
+            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author_with_callback);
+            $this->assertEquals($postRecord->author->getData(), $postRecord->author_with_callback->getData());
             
             // post's comments
             $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);
             $this->assertCount(1, $postRecord->comments);
             $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
+            $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments_with_callback);
+            $this->assertCount(1, $postRecord->comments_with_callback);
+            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments_with_callback);
+            
             // summary of the post
             $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
+            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary_with_callback);
+            $this->assertEquals($postRecord->summary->getData(), $postRecord->summary_with_callback->getData());
             
             // post's posts_tags
             $this->assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
@@ -1394,6 +1937,10 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
             $this->assertCount(1, $postRecord->tags);
             $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
+            
+            $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags_with_callback);
+            $this->assertCount(1, $postRecord->tags_with_callback);
+            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags_with_callback);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         unset($allPostsWithAllRelateds);
     }
@@ -1433,14 +1980,22 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             
             // author of the post
             $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
+            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author_with_callback);
+            $this->assertEquals($postRecord->author->getData(), $postRecord->author_with_callback->getData());
             
             // post's comments
             $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);  
             $this->assertCount(1, $postRecord->comments);
             $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
+            $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments_with_callback);  
+            $this->assertCount(1, $postRecord->comments_with_callback);
+            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments_with_callback);
+            
             // summary of the post
             $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
+            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary_with_callback);
+            $this->assertEquals($postRecord->summary->getData(), $postRecord->summary_with_callback->getData());
             
             // post's posts_tags
             $this->assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
@@ -1451,6 +2006,10 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
             $this->assertCount(1, $postRecord->tags);
             $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
+            
+            $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags_with_callback);
+            $this->assertCount(1, $postRecord->tags_with_callback);
+            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags_with_callback);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         
         unset($allPostsWithoutRelateds);
@@ -1963,6 +2522,146 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->assertSame(static::$psrLogger, $commentsModel->getLogger());
     }
     
+    public function testThatGetPDOWorksAsExpected() {
+        
+        $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $this->assertInstanceOf(\PDO::class, $commentsModel->getPDO());
+    }
+    
+    public function testThatGetPdoDriverNameWorksAsExpected() {
+        
+        $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $this->assertEquals(
+            static::$atlasPdo->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME), 
+            $commentsModel->getPdoDriverName()
+        );
+    }
+    
+    public function testThatGetQueryLogWorksAsExpected() {
+        
+        $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $postsModel = new LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        //$commentsModel->setLogger(static::$psrLogger);
+        $commentsModel->enableQueryLogging();
+        $postsModel->disableQueryLogging();
+        
+        $commentsModel->fetchCol();
+        $commentsModel->fetchValue();
+        $commentsModel->fetchRecordsIntoCollection();
+        
+        $postsModel->fetchCol();
+        $postsModel->fetchValue();
+        $postsModel->fetchRecordsIntoCollection();
+        
+        foreach($commentsModel->getQueryLog() as $commentQueryLogEntry){
+            
+            $this->assertArrayHasAllKeys(
+                $commentQueryLogEntry, 
+                ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
+            );
+        }
+        
+        $this->assertEquals([], $postsModel->getQueryLog());
+        \LeanOrm\Model::clearQueryLogForAllInstances();
+    }
+    
+    public function testThatGetQueryLogForAllInstancesWorksAsExpected() {
+        
+        $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $postsModel = new LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $tagsModel = new LeanOrm\TestObjects\TagsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        //$commentsModel->setLogger(static::$psrLogger);
+        $commentsModel->enableQueryLogging();
+        $postsModel->enableQueryLogging();
+        $tagsModel->disableQueryLogging();
+        
+        $commentsModel->fetchCol();
+        $commentsModel->fetchRecordsIntoCollection();
+        
+        $postsModel->fetchCol();
+        $postsModel->fetchRecordsIntoCollection();
+        
+        $tagsModel->fetchCol();
+        $tagsModel->fetchRecordsIntoCollection();
+        
+        ////////////////////////////////////////////////////////////////////////
+        $logForAllInstances = \LeanOrm\Model::getQueryLogForAllInstances();
+        $keysToCheck = [
+            static::$dsn . '::' . get_class($commentsModel),
+            static::$dsn . '::' . get_class($postsModel),
+        ];
+        $this->assertArrayHasAllKeys($logForAllInstances, $keysToCheck);
+        $this->assertArrayNotHasKey(static::$dsn . '::' . get_class($tagsModel), $logForAllInstances);
+        
+        foreach($logForAllInstances as $dsnModelNameKey => $queryLogEntriesForDsnAndModelName){
+            
+            foreach($queryLogEntriesForDsnAndModelName as $queryLogEntry) {
+                $this->assertArrayHasAllKeys(
+                    $queryLogEntry,
+                    ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
+                );
+            }
+        }
+        
+        ////////////////////////////////////////////////////////////////////////
+        $logForCommentsModel = 
+            \LeanOrm\Model::getQueryLogForAllInstances(static::$dsn, $commentsModel);
+        
+        foreach($logForCommentsModel as $queryLogEntry) {
+            $this->assertArrayHasAllKeys(
+                $queryLogEntry,
+                ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
+            );
+        }
+        
+        ////////////////////////////////////////////////////////////////////////
+        $logForPostsModel = 
+            \LeanOrm\Model::getQueryLogForAllInstances(static::$dsn, $postsModel);
+        
+        foreach($logForPostsModel as $queryLogEntry) {
+            $this->assertArrayHasAllKeys(
+                $queryLogEntry,
+                ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
+            );
+        }
+        
+        ////////////////////////////////////////////////////////////////////////
+        $this->assertEquals([], \LeanOrm\Model::getQueryLogForAllInstances(static::$dsn, $tagsModel));
+
+        ////////////////////////////////////////////////////////////////////////
+        \LeanOrm\Model::clearQueryLogForAllInstances();
+    }
+    
+    public function testThatClearQueryLogForAllInstancesWorksAsExpected() {
+        
+        $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $postsModel = new LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $tagsModel = new LeanOrm\TestObjects\TagsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        $commentsModel->enableQueryLogging();
+        $postsModel->enableQueryLogging();
+        $tagsModel->disableQueryLogging();
+        
+        $commentsModel->fetchCol();
+        $commentsModel->fetchRecordsIntoCollection();
+        
+        $postsModel->fetchCol();
+        $postsModel->fetchRecordsIntoCollection();
+        
+        $tagsModel->fetchCol();
+        $tagsModel->fetchRecordsIntoCollection();
+        
+        ////////////////////////////////////////////////////////////////////////
+        $logForAllInstances = \LeanOrm\Model::getQueryLogForAllInstances();
+        $this->assertCount(2, $logForAllInstances);
+        
+        ////////////////////////////////////////////////////////////////////////
+        \LeanOrm\Model::clearQueryLogForAllInstances();
+        $this->assertCount(0, \LeanOrm\Model::getQueryLogForAllInstances());
+    }
+    
     public function testThatsetLoggerWorksAsExpected() {
         
         $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
@@ -1973,6 +2672,15 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         // test that the setter worked as expected
         $this->assertSame(static::$psrLogger, $commentsModel->getLogger());
+    }
+    
+    public function testThatGetSelectWorksAsExpected() {
+        
+        $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $this->assertInstanceOf(
+            get_class(static::$auraQueryFactory->newSelect()),
+            $commentsModel->getSelect()
+        );
     }
     
     protected function insertDataIntoTable(string $tableName, array $tableData) {
