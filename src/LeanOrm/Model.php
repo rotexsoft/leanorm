@@ -6,6 +6,8 @@ use Aura\SqlQuery\QueryFactory;
 use Aura\SqlSchema\ColumnFactory;
 use LeanOrm\Utils;
 use Psr\Log\LoggerInterface;
+use Atlas\Info\Info as AtlasInfo;
+use Atlas\Pdo\Connection as AtlasPdoConnection;
 use function sprintf;
 
 /**
@@ -109,7 +111,7 @@ class Model extends \GDAO\Model {
             //hold this exception for later if necessary
             $pri_col_not_set_exception = $e;
         }
-
+        
         DBConnector::configure($dsn, null, $dsn);//use $dsn as connection name in 3rd parameter
         DBConnector::configure('username', $username, $dsn);//use $dsn as connection name in 3rd parameter
         DBConnector::configure('password', $passwd, $dsn);//use $dsn as connection name in 3rd parameter
@@ -140,10 +142,7 @@ class Model extends \GDAO\Model {
                 $schema_definitions = $dsn_n_tname_to_schema_def_map[$dsn.$this->table_name];
 
             } else {
-
-                // the schema discovery object
-                $schema = $this->getSchemaQueryingObject();
-
+                
                 // let's make sure that $this->table_name is an actual table / view in the db
                 if( !$this->tableExistsInDB($this->table_name) ) {
 
@@ -152,15 +151,15 @@ class Model extends \GDAO\Model {
                             . ' does not exist as a table or view in the database';
                     throw new BadModelTableNameException($msg);
                 }
-
+                
                 $this->table_cols = [];
-                $schema_definitions = $schema->fetchTableCols($this->table_name);
+                $schema_definitions = $this->fetchTableColsFromDB($this->table_name);
 
                 // cache schema definition for the current dsn and table combo
                 $dsn_n_tname_to_schema_def_map[$dsn.$this->table_name] = $schema_definitions;
 
             } // if( array_key_exists($dsn.$this->table_name, $dsn_n_tname_to_schema_def_map) )
-
+            
             if( 
                 $primary_col_name !== ''
                 && !$this->columnExistsInDbTable($this->table_name, $primary_col_name) 
@@ -201,16 +200,14 @@ class Model extends \GDAO\Model {
     
     protected function columnExistsInDbTable(string $table_name, string $column_name): bool {
         
-        $schema = $this->getSchemaQueryingObject();
-        $schema_definitions = $schema->fetchTableCols($table_name);
+        $schema_definitions = $this->fetchTableColsFromDB($table_name);
         
         return array_key_exists($column_name, $schema_definitions);
     }
     
     protected function tableExistsInDB(string $table_name): bool {
         
-        $schema = $this->getSchemaQueryingObject();
-        $list_of_tables_and_views = $this->fetchTableListFromDB($schema);
+        $list_of_tables_and_views = $this->fetchTableListFromDB();
         
         return in_array($table_name, $list_of_tables_and_views, true);
     }
@@ -230,10 +227,14 @@ class Model extends \GDAO\Model {
     /**
      * @return mixed[]|string[]
      */
-    protected function fetchTableListFromDB(\Aura\SqlSchema\AbstractSchema $schema): array {
+    protected function fetchTableListFromDB(): array {
         
         if(strtolower($this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) === 'sqlite') {
             
+            // Do this to return both tables and views
+            // $this->getSchemaQueryingObject()->fetchTableList()
+            // only returns table names but no views. That's why
+            // we are doing this here
             return $this->db_connector->dbFetchCol("
                 SELECT name FROM sqlite_master
                 UNION ALL
@@ -242,7 +243,56 @@ class Model extends \GDAO\Model {
             ");
         }
         
+        $schema = $this->getSchemaQueryingObject();
+        
+        if(strtolower($this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) ===  'pgsql') {
+            
+            // Calculate schema name for postgresql
+            $schema_and_table_name = explode('.', $this->table_name);
+            $schema_name = 'public';
+            
+            if(count($schema_and_table_name) === 2 ) {
+                
+                $schema_name = array_shift($schema_and_table_name);
+            }
+            
+            return $schema->fetchTableList($schema_name);
+        }
+        
         return $schema->fetchTableList();
+    }
+    
+    /**
+     * @return object[]
+     */
+    protected function fetchTableColsFromDB(string $table_name): array {
+                
+        if(strtolower($this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) ===  'pgsql') {
+            
+            // Use Atlas Info to get this data for Postgresql because 
+            // Aura Sql Schema keeps blowing up when fetchTableCols
+            // is called on \Aura\SqlSchema\PgsqlSchema
+            $info = AtlasInfo::new(AtlasPdoConnection::new($this->getPDO()));
+            
+            $columns_info = $info->fetchColumns($table_name);
+
+            foreach ($columns_info as $key=>$column_info) {
+
+                // Convert each row to objects because 
+                // $this->getSchemaQueryingObject()->fetchTableCols(..)
+                // returns an array of Aura\SqlSchema\Column objects
+                // whose properties are used to populate $this->table_cols.
+                // Converting each row to an object will allow for each
+                // row's data to be accessible via object property syntax
+                $columns_info[$key] = (object)$column_info;
+            }
+             
+             return $columns_info;
+        }
+        
+        // This works so far for mysql & sqlite.  
+        // Will need to test what works for MS Sql Server
+        return $this->getSchemaQueryingObject()->fetchTableCols($table_name);
     }
 
     public function getSelect(): \Aura\SqlQuery\Common\Select {
