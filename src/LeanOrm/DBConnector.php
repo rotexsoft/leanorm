@@ -133,114 +133,6 @@ class DBConnector {
     }
 
     /**
-     * Retrieve configuration options by key, or as whole array.
-     * 
-     * @param string $conn_name Which connection to use or null for all connections
-     */
-    public static function getConfig(?string $key = null, string $conn_name = self::DEFAULT_CONNECTION) {
-
-        if( $key && is_null($conn_name) ) {
-
-            //get key's value for each connection
-            $conn_names = array_keys(static::$config);
-            $val_of_key_4_each_conn_name = array_column(static::$config, $key);
-
-            return array_combine($conn_names, $val_of_key_4_each_conn_name);
-
-        } else if ( $key && !is_null($conn_name) && strlen($conn_name) > 0 ) {
-
-            //get key's value for the specified connection
-            return static::$config[$conn_name][$key];
-
-        } else if( !$key && is_null($conn_name) ) {
-
-            //get all config values for all connections
-            return static::$config;
-
-        } else {
-
-            //get all config values for the specified connection
-            return static::$config[$conn_name];
-        }
-    }
-
-    /**
-     * 
-     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig() returns the values of all properties
-     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig('db') will return only the value of DBConnector::$db
-     * 
-     * @param string $prop_name name of the property (eg. 'db') whose value is to be retrieved
-     * 
-     * @return mixed[]|array<string, \PDO>|array<string, mixed[]> the value of the property specified or an array of all properties if $prop_name is empty or not a name of any of the properties.
-     */
-    public static function getAllStaticPropertiesExceptDefaultConfig(string $prop_name=''): array {
-
-        switch ($prop_name) {
-
-            case 'config':
-
-                // Map of configuration settings
-                return static::$config;
-                
-            case 'db':
-
-                // Map of database connections, instances of the PDO class
-                return static::$db;
-
-            default:
-                ///////////////////////////
-                // Return all properties //
-                ///////////////////////////
-
-                // Map of configuration settings
-                return [
-                    '$config' => static::$config,
-
-                    // Map of database connections, instances of the PDO class
-                    '$db' => static::$db,
-                ];
-        }
-    }
-
-    /**
-     * 
-     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig() resets all properties
-     * DBConnector::resetAllStaticPropertiesExceptDefaultConfig('db') will reset only DBConnector::$db
-     * 
-     * @param string $prop_name name of the property (eg. 'db') whose value is to be reset. 
-     * 
-     */
-    public static function resetAllStaticPropertiesExceptDefaultConfig(string $prop_name=''): void {
-
-        switch ($prop_name) {
-
-            case 'config':
-
-                // Map of configuration settings
-                static::$config = [];
-                break;
-
-            case 'db':
-
-                // Map of database connections, instances of the PDO class
-                static::$db = [];
-                break;
-
-            default:
-                //////////////////////////
-                // Reset all properties //
-                //////////////////////////
-
-                // Map of configuration settings
-                static::$config = [];
-
-                // Map of database connections, instances of the PDO class
-                static::$db = [];
-                break;
-        }
-    }
-
-    /**
      * This is the factory method used to acquire instances of the class.
      * 
      * @param string $connection_name Which connection to use
@@ -371,16 +263,6 @@ class DBConnector {
         }
 
         return $result;
-    }
-
-    /**
-     * Get a list of the available connection names
-     * 
-     * @return string[]
-     */
-    public static function getConnectionNames(): array {
-
-        return array_keys(static::$db);
     }
 
     // ------------------------ //
