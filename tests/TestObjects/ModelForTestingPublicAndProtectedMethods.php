@@ -20,4 +20,14 @@ class ModelForTestingPublicAndProtectedMethods extends \LeanOrm\Model
             parent::__construct($dsn, $uname, $pswd, $pdo_drv_opts, $primary_col_name, $table_name);
         }
     }
+    
+    public function fetchTableColsFromDBPublic(string $table_name): array {
+        
+        return parent::fetchTableColsFromDB($table_name);
+    }
+    
+    public function fetchTableListFromDBPublic(): array {
+        
+        return parent::fetchTableListFromDB();
+    }
 }
