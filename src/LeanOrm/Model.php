@@ -142,7 +142,7 @@ class Model extends \GDAO\Model {
                 $schema_definitions = $dsn_n_tname_to_schema_def_map[$dsn.$this->table_name];
 
             } else {
-                
+
                 // let's make sure that $this->table_name is an actual table / view in the db
                 if( !$this->tableExistsInDB($this->table_name) ) {
 
@@ -151,7 +151,7 @@ class Model extends \GDAO\Model {
                             . ' does not exist as a table or view in the database';
                     throw new BadModelTableNameException($msg);
                 }
-                
+
                 $this->table_cols = [];
                 $schema_definitions = $this->fetchTableColsFromDB($this->table_name);
 
@@ -159,7 +159,7 @@ class Model extends \GDAO\Model {
                 $dsn_n_tname_to_schema_def_map[$dsn.$this->table_name] = $schema_definitions;
 
             } // if( array_key_exists($dsn.$this->table_name, $dsn_n_tname_to_schema_def_map) )
-            
+
             if( 
                 $primary_col_name !== ''
                 && !$this->columnExistsInDbTable($this->table_name, $primary_col_name) 
