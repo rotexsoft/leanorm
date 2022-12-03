@@ -1102,6 +1102,11 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         // no matching record
         $this->assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> 'key 55']) );
+        
+        $this->assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> ""]) );
+        $this->assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> "''"]) );
+        $this->assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> [""]]) );
+        $this->assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> ["''"]]) );
     }
     
     public function testThatDeleteSpecifiedRecordWorksAsExpected() {
@@ -1381,7 +1386,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals(['Post Body 2'], $secondAuthorInTheTable->one_post->getColVals('body'));
         
         ///////////////////////////////////////////////////////////////////////
-        // Test that record not in db returns false
+        // Test that record not in db returns null
         $authorNotInTheTable = $authorsModel->fetchOneRecord(
             $authorsModel->getSelect()->where(' author_id =  777 '), ['posts']
         );
@@ -1392,6 +1397,17 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
         $this->assertNull($author2NotInTheTable);
         
+        $this->assertNull(
+            $authorsModel->fetchOneRecord(
+                $authorsModel->getSelect()->where(" name =  '' "), ['posts']
+            )
+        );
+        $this->assertNull(
+            $authorsModel->fetchOneRecord(
+                $authorsModel->getSelect()->where(" name =  ? ", "''"), ['posts']
+            )
+        );
+
         /////////////////////////////
         // Querying an empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
