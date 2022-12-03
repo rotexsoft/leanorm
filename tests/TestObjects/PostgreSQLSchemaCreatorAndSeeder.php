@@ -81,6 +81,7 @@ class PostgreSQLSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterfac
                 id SERIAL PRIMARY KEY,
                 key_name TEXT NOT NULL,
                 value TEXT NOT NULL,
+                blankable_value TEXT DEFAULT NULL,
                 m_timestamp TIMESTAMP NOT NULL,
                 date_created TIMESTAMP NOT NULL
             )

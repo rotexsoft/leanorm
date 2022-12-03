@@ -66,8 +66,9 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
         $this->connection->query("
             CREATE TABLE key_value (
                 id INTEGER PRIMARY KEY,
-                key_name TEXT,
-                value TEXT,
+                key_name TEXT NOT NULL,
+                value TEXT NOT NULL,
+                blankable_value TEXT,
                 m_timestamp TEXT NOT NULL,
                 date_created TEXT NOT NULL
             )

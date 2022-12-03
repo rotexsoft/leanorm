@@ -82,6 +82,7 @@ class MysqlSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
                 id int unsigned NOT NULL AUTO_INCREMENT,
                 key_name TEXT NOT NULL,
                 value TEXT NOT NULL,
+                blankable_value TEXT DEFAULT NULL,
                 m_timestamp datetime NOT NULL,
                 date_created datetime NOT NULL,
                 PRIMARY KEY (`id`)
