@@ -263,7 +263,7 @@ class Model extends \GDAO\Model {
     }
     
     /**
-     * @return object[]
+     * @return  mixed[]|\Aura\SqlSchema\Column[]
      */
     protected function fetchTableColsFromDB(string $table_name): array {
                 
