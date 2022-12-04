@@ -86,6 +86,17 @@ class PostgreSQLSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterfac
                 date_created TIMESTAMP NOT NULL
             )
         ");
+        
+        $this->connection->query("
+            CREATE TABLE key_value_no_auto_inc_pk (
+                id integer PRIMARY KEY,
+                key_name TEXT NOT NULL,
+                value TEXT NOT NULL,
+                blankable_value TEXT DEFAULT NULL,
+                m_timestamp TIMESTAMP NOT NULL,
+                date_created TIMESTAMP NOT NULL
+            )
+        ");
     }
     
     protected function createAuthorsTableAndView(): void {

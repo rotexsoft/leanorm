@@ -15,6 +15,15 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
         $this->connection = $conn;
     }
 
+    protected function cantUseWithoutRowid(): bool {
+
+        $pdo_obj = $this->connection->getPdo();
+        $sqliteVersionNumber = 
+            $pdo_obj->getAttribute(\PDO::ATTR_SERVER_VERSION);
+        
+        return version_compare($sqliteVersionNumber, '3.8.1', '<=');
+    }
+    
     public function createTables(): bool {
         
         try {
@@ -73,6 +82,33 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
                 date_created TEXT NOT NULL
             )
         ");
+        
+        if($this->cantUseWithoutRowid()) {
+            
+            $this->connection->query("
+                CREATE TABLE key_value_no_auto_inc_pk (
+                    id INTEGER PRIMARY KEY,
+                    key_name TEXT NOT NULL,
+                    value TEXT NOT NULL,
+                    blankable_value TEXT,
+                    m_timestamp TEXT NOT NULL,
+                    date_created TEXT NOT NULL
+                );
+            ");
+            
+        } else {
+            
+            $this->connection->query("
+                CREATE TABLE key_value_no_auto_inc_pk (
+                    id INTEGER PRIMARY KEY,
+                    key_name TEXT NOT NULL,
+                    value TEXT NOT NULL,
+                    blankable_value TEXT,
+                    m_timestamp TEXT NOT NULL,
+                    date_created TEXT NOT NULL
+                )WITHOUT ROWID;
+            ");
+        }
     }
     
     protected function createAuthorsTableAndView(): void {

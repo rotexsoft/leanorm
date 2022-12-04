@@ -88,6 +88,18 @@ class MysqlSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
                 PRIMARY KEY (`id`)
             )
         ");
+        
+        $this->connection->query("
+            CREATE TABLE key_value_no_auto_inc_pk (
+                id int unsigned NOT NULL,
+                key_name TEXT NOT NULL,
+                value TEXT NOT NULL,
+                blankable_value TEXT DEFAULT NULL,
+                m_timestamp datetime NOT NULL,
+                date_created datetime NOT NULL,
+                PRIMARY KEY (`id`)
+            )
+        ");
     }
     
     protected function createAuthorsTableAndView(): void {
