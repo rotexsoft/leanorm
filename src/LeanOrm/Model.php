@@ -123,6 +123,7 @@ class Model extends \GDAO\Model {
 
         $this->db_connector = DBConnector::create($dsn);//use $dsn as connection name
         $this->pdo_driver_name = $this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        $this->pdoServerVersionCheck();
 
         ////////////////////////////////////////////////////////
         //Get and Set Table Schema Meta Data if Not Already Set
@@ -196,6 +197,30 @@ class Model extends \GDAO\Model {
 
             throw $pri_col_not_set_exception;
         }
+    }
+    
+    /**
+     * Detect if an unsupported DB Engine version is being used
+     */
+    protected function pdoServerVersionCheck(): void {
+
+        if(strtolower($this->pdo_driver_name) === 'sqlite') {
+
+            $pdo_obj = $this->getPDO();
+            $sqlite_version_number = $pdo_obj->getAttribute(\PDO::ATTR_SERVER_VERSION);
+
+            if(version_compare($sqlite_version_number, '3.7.10', '<=')) {
+
+                $source = get_class($this) . '::' . __FUNCTION__ . '(...)';
+                $msg = "ERROR ({$source}): Sqlite version `{$sqlite_version_number}`"
+                        . " detected. This package requires Sqlite version `3.7.11`"
+                        . " or greater. Use a newer version of sqlite or use another"
+                        . " DB server supported by this package." . PHP_EOL . 'Goodbye!!';
+
+                throw new UnsupportedPdoServerVersionException($msg);
+
+            } // if( version_compare($sqlite_version_number, '3.7.10', '<=') )
+        } // if( strtolower($this->pdo_driver_name) === 'sqlite' )
     }
     
     protected function columnExistsInDbTable(string $table_name, string $column_name): bool {
@@ -305,7 +330,6 @@ class Model extends \GDAO\Model {
     }
 
     /**
-     *
      * {@inheritDoc}
      */
     public function createNewCollection(\GDAO\Model\RecordInterface ...$list_of_records): \GDAO\Model\CollectionInterface {
@@ -317,7 +341,6 @@ class Model extends \GDAO\Model {
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
     public function createNewRecord(array $col_names_n_vals = []): \GDAO\Model\RecordInterface {
@@ -1105,7 +1128,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
     public function fetchRecordsIntoCollection(?object $select_obj=null, array $relations_to_include=[]): \GDAO\Model\CollectionInterface {
@@ -1150,7 +1172,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
     public function fetchRecordsIntoArray(?object $select_obj=null, array $relations_to_include=[]): array {
@@ -1242,7 +1263,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
     public function fetchRowsIntoArray(?object $select_obj=null, array $relations_to_include=[]): array {
@@ -1286,7 +1306,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
     public function deleteMatchingDbTableRows(array $cols_n_vals): int {
@@ -1345,7 +1364,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     *
      * {@inheritDoc}
      */
     public function deleteSpecifiedRecord(\GDAO\Model\RecordInterface $record): ?bool {
@@ -1404,7 +1422,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
     public function fetchCol(?object $select_obj=null): array {
@@ -1418,7 +1435,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
     public function fetchOneRecord(?object $select_obj=null, array $relations_to_include=[]): ?\GDAO\Model\RecordInterface {
@@ -1451,7 +1467,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
     public function fetchPairs(?object $select_obj=null): array {
@@ -1465,7 +1480,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
     public function fetchValue(?object $select_obj=null) {
@@ -1496,9 +1510,114 @@ SELECT {$foreign_table_name}.*
         //return null if there wasn't any matching row
         return (((int)$num_matching_rows['num_rows']) > 0) ? $result : null;
     }
+    
+    protected function addTimestampToData(array &$data, ?string $timestamp_col_name, array $table_cols): void {
+        
+        if(
+            !empty($timestamp_col_name) 
+            && in_array($timestamp_col_name, $table_cols)
+            && 
+            (
+                !array_key_exists($timestamp_col_name, $data)
+                || empty($data[$timestamp_col_name])
+            )
+        ) {
+            //set timestamp to now
+            $data[$timestamp_col_name] = date('Y-m-d H:i:s');
+        }
+    }
 
     /**
-     * 
+     * @return mixed
+     */
+    protected function stringifyIfStringable(string $col_name, $col_val, array $table_cols) {
+        
+        if(
+            in_array($col_name, $table_cols)
+            && is_object($col_val) && method_exists($col_val, '__toString')
+        ) {
+            return $col_val->__toString();
+        }
+        
+        return $col_val;
+    }
+    
+    protected function isAcceptableInsertValue($val): bool {
+        
+        return is_bool($val) || is_null($val) || is_numeric($val) || is_string($val);
+    }
+    
+    protected function isAcceptableUpdateValue($val): bool {
+        
+        return $this->isAcceptableInsertValue($val);
+    }
+
+    protected function processRowOfDataToInsert(
+        array &$data, array &$table_cols, bool &$has_autoinc_pk_col=false
+    ): void {
+        
+        $this->addTimestampToData($data, $this->created_timestamp_column_name, $table_cols);
+        $this->addTimestampToData($data, $this->updated_timestamp_column_name, $table_cols);
+
+        // remove non-existent table columns from the data and also
+        // converts object values for objects with __toString() to 
+        // their string value
+        foreach ($data as $key => $val) {
+
+            $data[$key] = $this->stringifyIfStringable($key, $val, $table_cols);
+
+            if ( !in_array($key, $table_cols) ) {
+
+                unset($data[$key]);
+                // not in the table, so no need to check for autoinc
+                continue;
+
+            } elseif( !$this->isAcceptableInsertValue($val) ) {
+
+                $msg = "ERROR: the value "
+                     . PHP_EOL . var_export($val, true) . PHP_EOL
+                     . " you are trying to insert into `{$this->table_name}`."
+                     . "`{$key}` is not acceptable ('".  gettype($val) . "'"
+                     . " supplied). Boolean, NULL, numeric or string value expected."
+                     . PHP_EOL
+                     . "Data supplied to "
+                     . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                     . " for insertion:"
+                     . PHP_EOL . var_export($data, true) . PHP_EOL
+                     . PHP_EOL;
+
+                throw new \GDAO\ModelInvalidInsertValueSuppliedException($msg);
+            }
+
+            // Code below was lifted from Solar_Sql_Model::insert()
+            // remove empty autoinc columns to soothe postgres, which won't
+            // take explicit NULLs in SERIAL cols.
+            if ( $this->table_cols[$key]['autoinc'] && empty($val) ) {
+
+                unset($data[$key]);
+                
+            } // if ( $this->table_cols[$key]['autoinc'] && empty($val) )
+        } // foreach ($data as $key => $val)
+
+        foreach($this->table_cols as $col_name=>$col_info) {
+
+            if ( $col_info['autoinc'] === true && $col_info['primary'] === true ) {
+
+                if(array_key_exists($col_name, $data)) {
+
+                    //no need to add primary key value to the insert 
+                    //statement since the column is auto incrementing
+                    unset($data[$col_name]);
+
+                } // if(array_key_exists($col_name, $data_2_insert))
+
+                $has_autoinc_pk_col = true;
+
+            } // if ( $col_info['autoinc'] === true && $col_info['primary'] === true )
+        } // foreach($this->table_cols as $col_name=>$col_info)
+    }
+    
+    /**
      * {@inheritDoc}
      */
     public function insert(array $data_2_insert = []) {
@@ -1508,289 +1627,113 @@ SELECT {$foreign_table_name}.*
         if ( $data_2_insert !== [] ) {
 
             $table_cols = $this->getTableColNames();
-            $time_created_colname = $this->created_timestamp_column_name;
-            $last_updated_colname = $this->updated_timestamp_column_name;
+            $has_autoinc_pkey_col=false;
+            
+            $this->processRowOfDataToInsert(
+                $data_2_insert, $table_cols, $has_autoinc_pkey_col
+            );
 
-            if(
-                !empty($time_created_colname) 
-                && in_array($time_created_colname, $table_cols)
-            ) {
-                //set created timestamp to now
-                $data_2_insert[$time_created_colname] = date('Y-m-d H:i:s');
-            }
+            // Do we still have anything left to save after removing items
+            // in the array that do not map to actual db table columns
+            if( (is_countable($data_2_insert) ? count($data_2_insert) : 0) > 0 ) {
 
-            if(
-                !empty($last_updated_colname) 
-                && in_array($last_updated_colname, $table_cols)
-            ) {
-                //set last updated timestamp to now
-                $data_2_insert[$last_updated_colname] = date('Y-m-d H:i:s');
-            }
+                //Insert statement
+                $insrt_qry_obj = (new QueryFactory($this->pdo_driver_name))->newInsert();
+                $insrt_qry_obj->into($this->table_name)->cols($data_2_insert);
 
-            // remove non-existent table columns from the data
-            foreach ($data_2_insert as $key => $val) {
+                $insrt_qry_sql = $insrt_qry_obj->__toString();
+                $insrt_qry_params = $insrt_qry_obj->getBindValues();
+                $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
 
-                if ( !in_array($key, $table_cols) ) {
+                if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
 
-                    unset($data_2_insert[$key]);
-                    // not in the table, so no need to check for autoinc
-                    continue;
-                }
+                    if($has_autoinc_pkey_col) {
 
-                // Code below was lifted from Solar_Sql_Model::insert()
-                // remove empty autoinc columns to soothe postgres, which won't
-                // take explicit NULLs in SERIAL cols.
-                if ( $this->table_cols[$key]['autoinc'] && empty($val) ) {
+                        $last_insert_sequence_name = 
+                            $insrt_qry_obj->getLastInsertIdName($this->primary_col);
 
-                    unset($data_2_insert[$key]);
-                }
-            }
-
-            $has_autoinc_pkey_col = false;
-
-            foreach($this->table_cols as $col_name=>$col_info) {
-
-                if ( $col_info['autoinc'] === true && $col_info['primary'] === true ) {
-
-                    if(array_key_exists($col_name, $data_2_insert)) {
-
-                        //no need to add primary key value to the insert 
-                        //statement since the column is auto incrementing
-                        unset($data_2_insert[$col_name]);
-                    }
-
-                    $has_autoinc_pkey_col = true;
-                }
-            }
-
-            //Insert statement
-            $insrt_qry_obj = (new QueryFactory($this->pdo_driver_name))->newInsert();
-            $insrt_qry_obj->into($this->table_name)->cols($data_2_insert);
-
-            $insrt_qry_sql = $insrt_qry_obj->__toString();
-            $insrt_qry_params = $insrt_qry_obj->getBindValues();
-
-            foreach ( $insrt_qry_params as $key => $param ) {
-
-                if(
-                    !is_bool($param) 
-                    && !is_null($param) 
-                    && !is_numeric($param)
-                    && !is_string($param)
-                ) {
-                    $msg = "ERROR: the value "
-                         . PHP_EOL . var_export($param, true) . PHP_EOL
-                         . " you are trying to insert into {$this->table_name}."
-                         . "{$key} is not acceptable ('".  gettype($param) . "'"
-                         . " supplied). Boolean, NULL, numeric or string value expected."
-                         . PHP_EOL
-                         . "Data supplied to "
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . " for insertion:"
-                         . PHP_EOL . var_export($data_2_insert, true) . PHP_EOL
-                         . PHP_EOL;
-
-                    throw new \GDAO\ModelInvalidInsertValueSuppliedException($msg);
-                }
-            }
-
-            $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
-
-            if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
-
-                if($has_autoinc_pkey_col) {
-
-                    $last_insert_sequence_name = 
-                        $insrt_qry_obj->getLastInsertIdName($this->primary_col);
-
-                    $pk_val_4_new_record = 
+                        $pk_val_4_new_record = 
                             $this->getPDO()->lastInsertId($last_insert_sequence_name);
 
-                    if( empty($pk_val_4_new_record) ) {
+                        if( empty($pk_val_4_new_record) ) {
 
-                        $msg = "ERROR: Could not retrieve the value for the primary"
-                             . " key field name '{$this->primary_col}' after the "
-                             . " successful insertion of the data below: "
-                             . PHP_EOL . var_export($data_2_insert, true) . PHP_EOL
-                             . " into the table named '{$this->table_name}' in the method " 
-                             . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                             . PHP_EOL;
+                            $msg = "ERROR: Could not retrieve the value for the primary"
+                                 . " key field name '{$this->primary_col}' after the "
+                                 . " successful insertion of the data below: "
+                                 . PHP_EOL . var_export($data_2_insert, true) . PHP_EOL
+                                 . " into the table named '{$this->table_name}' in the method " 
+                                 . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                                 . PHP_EOL;
 
-                        //throw exception
-                        throw new \GDAO\ModelPrimaryColValueNotRetrievableAfterInsertException($msg);
+                            //throw exception
+                            throw new \GDAO\ModelPrimaryColValueNotRetrievableAfterInsertException($msg);
 
-                    } else {
+                        } else {
 
-                        //add primary key value of the newly inserted record to the 
-                        //data to be returned.
-                        $data_2_insert[$this->primary_col] = $pk_val_4_new_record;
-                    }
-                }
+                            //add primary key value of the newly inserted record to the 
+                            //data to be returned.
+                            $data_2_insert[$this->primary_col] = $pk_val_4_new_record;
 
-                //insert was successful
-                $result = $data_2_insert;
-            } 
+                        } // if( empty($pk_val_4_new_record) )
+                    } // if($has_autoinc_pkey_col)
+
+                    //insert was successful
+                    $result = $data_2_insert;
+                    
+                } // if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) )
+            } // if(count($data_2_insert) > 0 ) 
         }
 
         return $result;
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
-    public function insertMany(array $rows_of_data_2_insert = []) {
+    public function insertMany(array $rows_of_data_2_insert = []): bool {
 
         $result = false;
 
         if ($rows_of_data_2_insert !== []) {
 
             $table_cols = $this->getTableColNames();
-            $time_created_colname = $this->created_timestamp_column_name;
-            $last_updated_colname = $this->updated_timestamp_column_name;
 
-            //if the db is sqlite 3.7.10 or prior, we can't take advantage of
-            //bulk insert, have to revert to multiple insert statements.
-            if( strtolower($this->pdo_driver_name) === 'sqlite' ) {
+            foreach (array_keys($rows_of_data_2_insert) as $key) {
+                
+                $this->processRowOfDataToInsert($rows_of_data_2_insert[$key], $table_cols);
+                
+                if((is_countable($rows_of_data_2_insert[$key]) ? count($rows_of_data_2_insert[$key]) : 0) === 0) {
 
-                $pdo_obj = $this->getPDO();
+                    // all the keys in the curent row of data aren't valid
+                    // db table columns, remove the row of data from the 
+                    // data to be inserted into the DB.
+                    unset($rows_of_data_2_insert[$key]);
 
-                $sqlite_version_number = 
-                            $pdo_obj->getAttribute(\PDO::ATTR_SERVER_VERSION);
-
-                if( version_compare($sqlite_version_number, '3.7.10', '<=') ) {
-
-                    // start the transaction
-                    $pdo_obj->beginTransaction();
-
-                    try {
-
-                        foreach($rows_of_data_2_insert as $row_2_insert) {
-
-                            $result = $this->insert($row_2_insert);
-
-                            if ($result === false) {
-
-                                // insert for current row failed.
-                                // throw it all away.
-                                $pdo_obj->rollBack();
-                                return false;
-                            }
-                        }
-
-                        //all inserts succeeded
-                        $pdo_obj->commit();
-                        return true;
-
-                    } catch (\Exception $e) {
-
-                        // roll back and throw the exception
-                        $pdo_obj->rollBack();
-                        throw $e;
-                    }
-                }//if( $version_numbers_only <= 3710 )
-            }//if( $this->pdo_driver_name === 'sqlite' ) 
-
-            ////////////////////////////////////////////////////////////////////
-            // Do Bulk insert for other DBMSs including Sqlite 3.7.11 and later
-            ////////////////////////////////////////////////////////////////////
-
-            foreach ($rows_of_data_2_insert as $key=>$row_2_insert) {
-
-                if(
-                    !empty($time_created_colname) 
-                    && in_array($time_created_colname, $table_cols)
-                ) {
-                    //set created timestamp to now
-                    $rows_of_data_2_insert[$key][$time_created_colname] = date('Y-m-d H:i:s');
-                }
-
-                if(
-                    !empty($last_updated_colname) 
-                    && in_array($last_updated_colname, $table_cols)
-                ) {
-                    //set last updated timestamp to now
-                    $rows_of_data_2_insert[$key][$last_updated_colname] = date('Y-m-d H:i:s');
-                }
-
-                // remove non-existent table columns from the data
-                foreach ($row_2_insert as $col_name => $val) {
-
-                    if ( !in_array($col_name, $table_cols) ) {
-
-                        unset($rows_of_data_2_insert[$key][$col_name]);
-                        // not in the table, so no need to check for autoinc
-                        continue;
-                    }
-
-                    // Code below was lifted from Solar_Sql_Model::insert()
-                    // remove empty autoinc columns to soothe postgres, which won't
-                    // take explicit NULLs in SERIAL cols.
-                    if ( $this->table_cols[$col_name]['autoinc'] === true && empty($val)) {
-
-                        unset($rows_of_data_2_insert[$key][$col_name]);
-                    }
-                }
-
-                foreach( $this->table_cols as $col_name=>$col_info ) {
-
-                    if ( $col_info['autoinc'] === true && $col_info['primary'] === true ) {
-
-                        if(array_key_exists($col_name, $row_2_insert)) {
-
-                            //no need to add primary key value to the insert 
-                            //statement since the column is auto incrementing
-                            unset($rows_of_data_2_insert[$key][$col_name]);
-
-                        } // if(array_key_exists($col_name, $row_2_insert))
-
-                    } // if ( $col_info['autoinc'] === true && $col_info['primary'] === true )
-
-                } // foreach( $this->table_cols as $col_name=>$col_info )
+                } // if(count($rows_of_data_2_insert[$key]) === 0)
 
             } // foreach ($rows_of_data_2_insert as $key=>$row_2_insert)
 
-            //Insert statement
-            $insrt_qry_obj = (new QueryFactory($this->pdo_driver_name))->newInsert();
+            // do we still have any data left to insert after all the filtration above?
+            if($rows_of_data_2_insert !== []) {
 
-            //Batch all the data into one insert query.
-            $insrt_qry_obj->into($this->table_name)->addRows($rows_of_data_2_insert);           
-            $insrt_qry_sql = $insrt_qry_obj->__toString();
-            $insrt_qry_params = $insrt_qry_obj->getBindValues();
+                //Insert statement
+                $insrt_qry_obj = (new QueryFactory($this->pdo_driver_name))->newInsert();
 
-            foreach ( $insrt_qry_params as $key => $param ) {
+                //Batch all the data into one insert query.
+                $insrt_qry_obj->into($this->table_name)->addRows($rows_of_data_2_insert);           
+                $insrt_qry_sql = $insrt_qry_obj->__toString();
+                $insrt_qry_params = $insrt_qry_obj->getBindValues();
 
-                if(
-                    !is_bool($param) 
-                    && !is_null($param) 
-                    && !is_numeric($param)
-                    && !is_string($param)
-                ) {
-                    $msg = "ERROR: the value "
-                         . PHP_EOL . var_export($param, true) . PHP_EOL
-                         . " you are trying to insert into {$this->table_name}."
-                         . "{$key} is not acceptable ('".  gettype($param) . "'"
-                         . " supplied). Boolean, NULL, numeric or string value expected."
-                         . PHP_EOL
-                         . "Data supplied to "
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . " for insertion:"
-                         . PHP_EOL . var_export($rows_of_data_2_insert, true) . PHP_EOL
-                         . PHP_EOL;
+                $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
+                $result = $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params);
 
-                    throw new \GDAO\ModelInvalidInsertValueSuppliedException($msg);
-                }
-            }
-
-            $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
-            $result = $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params);
+            } // if(count($rows_of_data_2_insert) > 0)
         } // if ($rows_of_data_2_insert !== [])
 
         return $result;
     }
 
     /**
-     * 
      * {@inheritDoc}
      */
     public function updateMatchingDbTableRows(
@@ -1802,18 +1745,11 @@ SELECT {$foreign_table_name}.*
         if ($col_names_n_vals_2_save !== []) {
 
             $table_cols = $this->getTableColNames();
-            $last_updtd_colname = $this->updated_timestamp_column_name;
-
-            if(
-                !empty($last_updtd_colname) 
-                && in_array($last_updtd_colname, $table_cols)
-            ) {
-                //set last updated timestamp to now
-                $col_names_n_vals_2_save[$last_updtd_colname] = date('Y-m-d H:i:s');
-            }
-            
             $pkey_col_name = $this->getPrimaryColName();
-
+            $this->addTimestampToData(
+                $col_names_n_vals_2_save, $this->updated_timestamp_column_name, $table_cols
+            );
+            
             if(array_key_exists($pkey_col_name, $col_names_n_vals_2_save)) {
 
                 //don't update the primary key
@@ -1823,21 +1759,21 @@ SELECT {$foreign_table_name}.*
             // remove non-existent table columns from the data
             // and check that existent table columns have values of  
             // the right data type: ie. Boolean, NULL, Number or String.
+            // Convert objects with a __toString to their string value.
             foreach ($col_names_n_vals_2_save as $key => $val) {
+
+                $col_names_n_vals_2_save[$key] = 
+                    $this->stringifyIfStringable($key, $val, $table_cols);
 
                 if ( !in_array($key, $table_cols) ) {
 
                     unset($col_names_n_vals_2_save[$key]);
 
-                } else if(
-                    !is_bool($val) 
-                    && !is_null($val) 
-                    && !is_numeric($val)
-                    && !is_string($val)
-                ) {
+                } else if( !$this->isAcceptableUpdateValue($val) ) {
+
                     $msg = "ERROR: the value "
                          . PHP_EOL . var_export($val, true) . PHP_EOL
-                         . " you are trying to update {$this->table_name}."
+                         . " you are trying to update `{$this->table_name}`.`{$key}`."
                          . "{$key} with is not acceptable ('".  gettype($val) . "'"
                          . " supplied). Boolean, NULL, numeric or string value expected."
                          . PHP_EOL
@@ -1848,8 +1784,8 @@ SELECT {$foreign_table_name}.*
                          . PHP_EOL;
 
                     throw new \GDAO\ModelInvalidUpdateValueSuppliedException($msg);
-                }
-            }
+                } // if ( !in_array($key, $table_cols) )
+            } // foreach ($col_names_n_vals_2_save as $key => $val)
 
             //update statement
             $update_qry_obj = (new QueryFactory($this->pdo_driver_name))->newUpdate();
@@ -1906,7 +1842,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     *
      * {@inheritDoc}
      */
     public function updateSpecifiedRecord(\GDAO\Model\RecordInterface $record): ?bool {

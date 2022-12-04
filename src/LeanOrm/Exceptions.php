@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace LeanOrm {
     
+    class UnsupportedPdoServerVersionException extends \Exception{}
     class BadModelColumnNameException extends \Exception{}
     class BadModelClassNameForFetchingRelatedDataException extends \Exception{}
     class BadModelTableNameException extends \Exception{}

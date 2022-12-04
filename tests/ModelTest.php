@@ -2699,6 +2699,48 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
     }
     
+    public function testThatProtectedFetchTableListFromDBWorksAsExpected() {
+        
+        $commentsModel = new \ModelForTestingPublicAndProtectedMethods(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'comment_id', 'comments');
+
+        $list_of_tables_and_views_in_test_db = [
+            'authors', 'comments', 'empty_data', 
+            'key_value', 'posts', 'posts_tags', 
+            'summaries', 'tags', 'v_authors'
+        ];
+        
+        $list_of_tables_and_views_as_keys_from_fetch = array_flip($commentsModel->fetchTableListFromDBPublic());
+        
+        // make sure every expected table and view was returned by fetchTableListFromDBPublic
+        $this->assertArrayHasAllKeys($list_of_tables_and_views_as_keys_from_fetch, $list_of_tables_and_views_in_test_db);
+    }
+    
+    public function testThatProtectedFetchTableColsFromDBWorksAsExpected() {
+        
+        $authorsModel = new \ModelForTestingPublicAndProtectedMethods(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors');
+
+        $authors_table_col_names = [
+            'author_id', 'name', 'm_timestamp', 'date_created'
+        ];
+
+        $v_authors_view_col_names = [
+            'author_id', 'name', 'm_timestamp', 'date_created'
+        ];
+        
+        // make sure fetchTableColsFromDBPublic works for both tables & views
+        $this->assertArrayHasAllKeys($authorsModel->fetchTableColsFromDBPublic('authors'), $authors_table_col_names);
+        $this->assertArrayHasAllKeys($authorsModel->fetchTableColsFromDBPublic('v_authors'), $v_authors_view_col_names);
+    }
+    
+    
+    public function testThatInsertWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+
+        $this->assertFalse($model->insert());
+        $this->assertFalse($model->insert([]));
+    }
+    
     protected function insertDataIntoTable(string $tableName, array $tableData) {
         
         $insertBuilder = static::$auraQueryFactory->newInsert();

@@ -18,6 +18,19 @@
 
 See http://rotexsoft.github.io/leanorm/ for documentation.
 
+## Installation Requirements
+
+PHP 7.4+.
+
+Version 2.X of this package has been rigorously tested against sqlite 3.7.11+, 
+MySQL 8.0.29+ & Postgresql 15.1+. 
+
+MS SQL Server, is theoretically supported but hasn't been tested. 
+Will provide more updates on MS SQL Server support once testing 
+on that DB engine has been done.
+
+If you are using Sqlite, version sqlite 3.7.11 or higher is required.
+
 ## Dev Notes
 
  * Old versions have branches corresponding to their version numbers (e.g. 1.X) 

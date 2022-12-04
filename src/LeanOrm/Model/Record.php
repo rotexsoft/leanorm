@@ -367,7 +367,7 @@ class Record implements \GDAO\Model\RecordInterface
 
             if ($both_numeric) {
                 // use normal inequality
-                return $this->initial_data[$col] != (string) $this->data[$col];
+                return ''.$this->initial_data[$col] !=  ''.$this->data[$col];
             }
 
             // use strict inequality
@@ -590,8 +590,8 @@ class Record implements \GDAO\Model\RecordInterface
             $pri_val = $this->getPrimaryVal();
             
             if ( empty($pri_val) ) {
-
-                //insert
+                
+                // New record because of empty primary key value, do insert
                 $inserted_data = $this->getModel()->insert($data_2_save);
                 $result = ($inserted_data !== false);
                 
