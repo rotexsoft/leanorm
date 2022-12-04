@@ -1555,7 +1555,7 @@ SELECT {$foreign_table_name}.*
     protected function processRowOfDataToInsert(
         array &$data, array &$table_cols, bool &$has_autoinc_pk_col=false
     ): void {
-        
+
         $this->addTimestampToData($data, $this->created_timestamp_column_name, $table_cols);
         $this->addTimestampToData($data, $this->updated_timestamp_column_name, $table_cols);
 
@@ -1595,7 +1595,7 @@ SELECT {$foreign_table_name}.*
             if ( $this->table_cols[$key]['autoinc'] && empty($val) ) {
 
                 unset($data[$key]);
-                
+
             } // if ( $this->table_cols[$key]['autoinc'] && empty($val) )
         } // foreach ($data as $key => $val)
 
@@ -1628,7 +1628,7 @@ SELECT {$foreign_table_name}.*
 
             $table_cols = $this->getTableColNames();
             $has_autoinc_pkey_col=false;
-            
+
             $this->processRowOfDataToInsert(
                 $data_2_insert, $table_cols, $has_autoinc_pkey_col
             );
@@ -1679,7 +1679,7 @@ SELECT {$foreign_table_name}.*
 
                     //insert was successful
                     $result = $data_2_insert;
-                    
+
                 } // if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) )
             } // if(count($data_2_insert) > 0 ) 
         }
@@ -1699,9 +1699,9 @@ SELECT {$foreign_table_name}.*
             $table_cols = $this->getTableColNames();
 
             foreach (array_keys($rows_of_data_2_insert) as $key) {
-                
+
                 $this->processRowOfDataToInsert($rows_of_data_2_insert[$key], $table_cols);
-                
+
                 if((is_countable($rows_of_data_2_insert[$key]) ? count($rows_of_data_2_insert[$key]) : 0) === 0) {
 
                     // all the keys in the curent row of data aren't valid

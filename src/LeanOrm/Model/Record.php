@@ -366,8 +366,8 @@ class Record implements \GDAO\Model\RecordInterface
                     is_numeric($this->data[$col]);
 
             if ($both_numeric) {
-                // use normal inequality
-                return ''.$this->initial_data[$col] !=  ''.$this->data[$col];
+                
+                return ''.$this->initial_data[$col] !== ''.$this->data[$col];
             }
 
             // use strict inequality
