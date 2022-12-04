@@ -50,7 +50,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function deleteAll() {
         
-        $this->_preDeleteAll();
+        $this->preDeleteAll();
         
         $result = true;
         
@@ -91,7 +91,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             }
         }
         
-        $this->_postDeleteAll();
+        $this->postDeleteAll();
         
         return $result;
     }
@@ -221,7 +221,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function saveAll($group_inserts_together=false) {
         
-        $this->_preSaveAll($group_inserts_together);
+        $this->preSaveAll($group_inserts_together);
         
         $result = true;
         $keys_4_unsuccessfully_saved_records = [];
@@ -285,7 +285,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             $result = $keys_4_unsuccessfully_saved_records;
         }
         
-        $this->_postSaveAll($result, $group_inserts_together);
+        $this->postSaveAll($result, $group_inserts_together);
 
         return $result;
     }
@@ -500,20 +500,20 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * {@inheritDoc}
      */
-    public function _preDeleteAll(): void { }
+    public function preDeleteAll(): void { }
     
     /**
      * {@inheritDoc}
      */
-    public function _postDeleteAll(): void { }
+    public function postDeleteAll(): void { }
     
     /**
      * {@inheritDoc}
      */
-    public function _preSaveAll(bool $group_inserts_together=false): void { }
+    public function preSaveAll(bool $group_inserts_together=false): void { }
     
     /**
      * {@inheritDoc}
      */
-    public function _postSaveAll($save_all_result, bool $group_inserts_together=false): void { }
+    public function postSaveAll($save_all_result, bool $group_inserts_together=false): void { }
 }
