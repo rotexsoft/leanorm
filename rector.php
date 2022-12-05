@@ -30,7 +30,6 @@ return static function (RectorConfig $rectorConfigurator): void {
     $rectorConfigurator->import(SetList::DEAD_CODE);
     $rectorConfigurator->import(SetList::PSR_4);
     $rectorConfigurator->import(SetList::TYPE_DECLARATION);
-    $rectorConfigurator->import(SetList::TYPE_DECLARATION_STRICT);
     
     // get services (needed for register a single rule)
     $services = $rectorConfigurator->services();

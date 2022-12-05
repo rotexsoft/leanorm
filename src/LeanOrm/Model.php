@@ -1364,7 +1364,10 @@ SELECT {$foreign_table_name}.*
 
         return $result;
     }
-
+    
+    /**
+     * @return never
+     */
     protected function throwExceptionForInvalidDeleteQueryArg($val, $cols_n_vals): void {
 
         $msg = "ERROR: the value "
@@ -1831,7 +1834,10 @@ SELECT {$foreign_table_name}.*
 
         return $result;
     }
-
+    
+    /**
+     * @return never
+     */
     protected function throwExceptionForInvalidUpdateQueryArg($val, array $cols_n_vals): void {
 
         $msg = "ERROR: the value "
@@ -2130,7 +2136,7 @@ SELECT {$foreign_table_name}.*
             
             try{
                 
-                $attributes[ $key ] = $pdo_obj->getAttribute(constant('PDO::ATTR_' . $value));
+                $attributes[ $key ] = $pdo_obj->getAttribute(constant(\PDO::class .'::ATTR_' . $value));
                 
             } catch (\PDOException $e) {
                 

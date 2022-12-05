@@ -150,7 +150,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function isEmpty(): bool {
         
-        return empty($this->data);
+        return $this->data === [];
     }
     
     /**

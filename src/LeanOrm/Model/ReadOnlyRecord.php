@@ -76,7 +76,11 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
         //Record and / or Collection objects.
     }
     
-    protected function _throwNotSupportedException($function_name): void {
+    /**
+     * @return never
+     * @throws \GDAO\Model\RecordOperationNotSupportedException
+     */
+    protected function throwNotSupportedException($function_name): void {
         
         $msg = "ERROR: ". get_class($this) . '::' . $function_name . '(...)' 
              . " is not supported in a ReadOnly Record. ";
@@ -91,7 +95,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public final function delete($set_record_objects_data_to_empty_array=false): bool{
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        $this->throwNotSupportedException(__FUNCTION__);
     }
     
     /**
@@ -612,7 +616,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public final function __set($key, $val): void {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        $this->throwNotSupportedException(__FUNCTION__);
     }
 
     /**
@@ -624,7 +628,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public final function __unset($key): void {
         
-        $this->_throwNotSupportedException(__FUNCTION__);
+        $this->throwNotSupportedException(__FUNCTION__);
     }
 	
     /**
