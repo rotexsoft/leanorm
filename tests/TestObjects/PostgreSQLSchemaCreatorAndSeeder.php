@@ -75,6 +75,9 @@ class PostgreSQLSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterfac
         $this->connection->query("
             DROP TABLE IF EXISTS key_value;
         ");
+        $this->connection->query("
+            DROP TABLE IF EXISTS key_value_no_auto_inc_pk;
+        ");
         
         $this->connection->query("
             CREATE TABLE key_value (

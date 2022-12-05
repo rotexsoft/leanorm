@@ -253,25 +253,25 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         
-        $this->assertEquals(static::$dsn, $model->getDsn());
-        $this->assertEquals(static::$username ?? "", $model->getUsername());
-        $this->assertEquals(static::$password ?? "", $model->getPasswd());
-        $this->assertEquals([], $model->getPdoDriverOpts());
-        $this->assertEquals('author_id', $model->getPrimaryCol());
-        $this->assertEquals('authors', $model->getTableName());
+        self::assertEquals(static::$dsn, $model->getDsn());
+        self::assertEquals(static::$username ?? "", $model->getUsername());
+        self::assertEquals(static::$password ?? "", $model->getPasswd());
+        self::assertEquals([], $model->getPdoDriverOpts());
+        self::assertEquals('author_id', $model->getPrimaryCol());
+        self::assertEquals('authors', $model->getTableName());
         
-        $this->assertContains('author_id', $model->getTableColNames());
-        $this->assertContains('name', $model->getTableColNames());
-        $this->assertContains('m_timestamp', $model->getTableColNames());
-        $this->assertContains('date_created', $model->getTableColNames());
+        self::assertContains('author_id', $model->getTableColNames());
+        self::assertContains('name', $model->getTableColNames());
+        self::assertContains('m_timestamp', $model->getTableColNames());
+        self::assertContains('date_created', $model->getTableColNames());
         
         // Test that the schema query gets & sets the primary key col
         // when an empty primary key value is passed to the constructor
         $model = new LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", [PDO::ATTR_PERSISTENT => true], '', 'authors'
         );
-        $this->assertEquals('author_id', $model->getPrimaryCol());
-        $this->assertEquals([PDO::ATTR_PERSISTENT => true], $model->getPdoDriverOpts());
+        self::assertEquals('author_id', $model->getPrimaryCol());
+        self::assertEquals([PDO::ATTR_PERSISTENT => true], $model->getPdoDriverOpts());
     }
 
     public function testCreateNewCollection() {
@@ -280,16 +280,16 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $nonGenericCollection = $modelWithMockCollAndRec->createNewCollection();
         
         //exact class
-        $this->assertEquals(\CollectionForTestingPublicAndProtectedMethods::class, get_class($nonGenericCollection));
+        self::assertEquals(\CollectionForTestingPublicAndProtectedMethods::class, get_class($nonGenericCollection));
         
         //has the right parent class
-        $this->assertInstanceOf(\LeanOrm\Model\Collection::class, $nonGenericCollection);
-        $this->assertInstanceOf(\GDAO\Model\CollectionInterface::class, $nonGenericCollection);
+        self::assertInstanceOf(\LeanOrm\Model\Collection::class, $nonGenericCollection);
+        self::assertInstanceOf(\GDAO\Model\CollectionInterface::class, $nonGenericCollection);
         
         //exact class test
         $modelWithAuthorCollAndRec = new LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         $coll_generic = $modelWithAuthorCollAndRec->createNewCollection();
-        $this->assertEquals(LeanOrm\TestObjects\AuthorsCollection::class, get_class($coll_generic));
+        self::assertEquals(LeanOrm\TestObjects\AuthorsCollection::class, get_class($coll_generic));
         
         // Test creating collection with some records
         $collection1WithRecords = 
@@ -304,13 +304,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
                     $modelWithMockCollAndRec->createNewRecord(),
                 ]);
         
-        $this->assertCount(2, $collection1WithRecords);
-        $this->assertCount(3, $collection2WithRecords);
+        self::assertCount(2, $collection1WithRecords);
+        self::assertCount(3, $collection2WithRecords);
         
         //generic model
         $genericModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'author_id','authors');
         $genericModel->setCollectionClassName('');
-        $this->assertEquals(\LeanOrm\Model\Collection::class, get_class($genericModel->createNewCollection()));
+        self::assertEquals(\LeanOrm\Model\Collection::class, get_class($genericModel->createNewCollection()));
     }
 
     public function testCreateNewRecord() {
@@ -320,25 +320,25 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $specializedRecord = $modelWithMockCollAndRec->createNewRecord();
         
         //exact class
-        $this->assertEquals(
+        self::assertEquals(
             \RecordForTestingPublicAndProtectedMethods::class, 
             get_class($specializedRecord)
         );
         
         //has the right parent class
-        $this->assertInstanceOf(\LeanOrm\Model\Record::class, $specializedRecord);
-        $this->assertInstanceOf(\GDAO\Model\RecordInterface::class, $specializedRecord);
+        self::assertInstanceOf(\LeanOrm\Model\Record::class, $specializedRecord);
+        self::assertInstanceOf(\GDAO\Model\RecordInterface::class, $specializedRecord);
         
         ////////////////////////////////////////////////////////////////////////
         // exact class test
         $modelWithLeanormCollAndRec = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         $modelWithLeanormCollAndRec->setRecordClassName('');
         $leanOrmRecord = $modelWithLeanormCollAndRec->createNewRecord();
-        $this->assertEquals(\LeanOrm\Model\Record::class, get_class($leanOrmRecord));
+        self::assertEquals(\LeanOrm\Model\Record::class, get_class($leanOrmRecord));
         
         // exact class test
         $modelWithAuthorCollAndRec =  new LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
-        $this->assertEquals(LeanOrm\TestObjects\AuthorRecord::class, get_class($modelWithAuthorCollAndRec->createNewRecord()));
+        self::assertEquals(LeanOrm\TestObjects\AuthorRecord::class, get_class($modelWithAuthorCollAndRec->createNewRecord()));
     }
     
     public function testThatBelongsToThrowsExceptionWhenRelationNameCollidesWithColumnName() {
@@ -470,28 +470,28 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             'author', 'author_id', 'authors', 'author_id', 'author_id', \LeanOrm\Model::class,
             \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, null
         );
-        $this->assertEquals(['author'], $postsModel->getRelationNames());
+        self::assertEquals(['author'], $postsModel->getRelationNames());
         $relations = $postsModel->getRelations();
-        $this->assertArrayHasKey('author', $relations);
-        $this->assertArrayHasKey('relation_type', $relations['author']);
-        $this->assertArrayHasKey('foreign_key_col_in_my_table', $relations['author']);
-        $this->assertArrayHasKey('foreign_table', $relations['author']);
-        $this->assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['author']);
-        $this->assertArrayHasKey('primary_key_col_in_foreign_table', $relations['author']);
-        $this->assertArrayHasKey('foreign_models_class_name', $relations['author']);
-        $this->assertArrayHasKey('foreign_models_record_class_name', $relations['author']);
-        $this->assertArrayHasKey('foreign_models_collection_class_name', $relations['author']);
-        $this->assertArrayHasKey('sql_query_modifier', $relations['author']);
+        self::assertArrayHasKey('author', $relations);
+        self::assertArrayHasKey('relation_type', $relations['author']);
+        self::assertArrayHasKey('foreign_key_col_in_my_table', $relations['author']);
+        self::assertArrayHasKey('foreign_table', $relations['author']);
+        self::assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['author']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['author']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['author']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['author']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['author']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['author']);
         
-        $this->assertEquals(\GDAO\Model::RELATION_TYPE_BELONGS_TO, $relations['author']['relation_type']);
-        $this->assertEquals('author_id', $relations['author']['foreign_key_col_in_my_table']);
-        $this->assertEquals('authors', $relations['author']['foreign_table']);
-        $this->assertEquals('author_id', $relations['author']['foreign_key_col_in_foreign_table']);
-        $this->assertEquals('author_id', $relations['author']['primary_key_col_in_foreign_table']);
-        $this->assertEquals(\LeanOrm\Model::class, $relations['author']['foreign_models_class_name']);
-        $this->assertEquals(\LeanOrm\Model\Record::class, $relations['author']['foreign_models_record_class_name']);
-        $this->assertEquals(\LeanOrm\Model\Collection::class, $relations['author']['foreign_models_collection_class_name']);
-        $this->assertNull($relations['author']['sql_query_modifier']);
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_BELONGS_TO, $relations['author']['relation_type']);
+        self::assertEquals('author_id', $relations['author']['foreign_key_col_in_my_table']);
+        self::assertEquals('authors', $relations['author']['foreign_table']);
+        self::assertEquals('author_id', $relations['author']['foreign_key_col_in_foreign_table']);
+        self::assertEquals('author_id', $relations['author']['primary_key_col_in_foreign_table']);
+        self::assertEquals(\LeanOrm\Model::class, $relations['author']['foreign_models_class_name']);
+        self::assertEquals(\LeanOrm\Model\Record::class, $relations['author']['foreign_models_record_class_name']);
+        self::assertEquals(\LeanOrm\Model\Collection::class, $relations['author']['foreign_models_collection_class_name']);
+        self::assertNull($relations['author']['sql_query_modifier']);
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->belongsTo(
@@ -499,8 +499,8 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, 
             $callback
         );
-        $this->assertEquals(['author', 'author2'], $postsModel->getRelationNames());
-        $this->assertEquals($callback, $postsModel->getRelations()['author2']['sql_query_modifier']);
+        self::assertEquals(['author', 'author2'], $postsModel->getRelationNames());
+        self::assertEquals($callback, $postsModel->getRelations()['author2']['sql_query_modifier']);
     }
     
     public function testThatHasOneThrowsExceptionWhenRelationNameCollidesWithColumnName() {
@@ -626,28 +626,28 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             'author', 'author_id', 'authors', 'author_id', 'author_id', \LeanOrm\Model::class,
             \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, null
         );
-        $this->assertEquals(['author'], $postsModel->getRelationNames());
+        self::assertEquals(['author'], $postsModel->getRelationNames());
         $relations = $postsModel->getRelations();
-        $this->assertArrayHasKey('author', $relations);
-        $this->assertArrayHasKey('relation_type', $relations['author']);
-        $this->assertArrayHasKey('foreign_key_col_in_my_table', $relations['author']);
-        $this->assertArrayHasKey('foreign_table', $relations['author']);
-        $this->assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['author']);
-        $this->assertArrayHasKey('primary_key_col_in_foreign_table', $relations['author']);
-        $this->assertArrayHasKey('foreign_models_class_name', $relations['author']);
-        $this->assertArrayHasKey('foreign_models_record_class_name', $relations['author']);
-        $this->assertArrayHasKey('foreign_models_collection_class_name', $relations['author']);
-        $this->assertArrayHasKey('sql_query_modifier', $relations['author']);
+        self::assertArrayHasKey('author', $relations);
+        self::assertArrayHasKey('relation_type', $relations['author']);
+        self::assertArrayHasKey('foreign_key_col_in_my_table', $relations['author']);
+        self::assertArrayHasKey('foreign_table', $relations['author']);
+        self::assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['author']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['author']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['author']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['author']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['author']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['author']);
         
-        $this->assertEquals(\GDAO\Model::RELATION_TYPE_HAS_ONE, $relations['author']['relation_type']);
-        $this->assertEquals('author_id', $relations['author']['foreign_key_col_in_my_table']);
-        $this->assertEquals('authors', $relations['author']['foreign_table']);
-        $this->assertEquals('author_id', $relations['author']['foreign_key_col_in_foreign_table']);
-        $this->assertEquals('author_id', $relations['author']['primary_key_col_in_foreign_table']);
-        $this->assertEquals(\LeanOrm\Model::class, $relations['author']['foreign_models_class_name']);
-        $this->assertEquals(\LeanOrm\Model\Record::class, $relations['author']['foreign_models_record_class_name']);
-        $this->assertEquals(\LeanOrm\Model\Collection::class, $relations['author']['foreign_models_collection_class_name']);
-        $this->assertNull($relations['author']['sql_query_modifier']);
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_HAS_ONE, $relations['author']['relation_type']);
+        self::assertEquals('author_id', $relations['author']['foreign_key_col_in_my_table']);
+        self::assertEquals('authors', $relations['author']['foreign_table']);
+        self::assertEquals('author_id', $relations['author']['foreign_key_col_in_foreign_table']);
+        self::assertEquals('author_id', $relations['author']['primary_key_col_in_foreign_table']);
+        self::assertEquals(\LeanOrm\Model::class, $relations['author']['foreign_models_class_name']);
+        self::assertEquals(\LeanOrm\Model\Record::class, $relations['author']['foreign_models_record_class_name']);
+        self::assertEquals(\LeanOrm\Model\Collection::class, $relations['author']['foreign_models_collection_class_name']);
+        self::assertNull($relations['author']['sql_query_modifier']);
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasOne(
@@ -655,8 +655,8 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, 
             $callback
         );
-        $this->assertEquals(['author', 'author2'], $postsModel->getRelationNames());
-        $this->assertEquals($callback, $postsModel->getRelations()['author2']['sql_query_modifier']);
+        self::assertEquals(['author', 'author2'], $postsModel->getRelationNames());
+        self::assertEquals($callback, $postsModel->getRelations()['author2']['sql_query_modifier']);
     }
     
     public function testThatHasManyThrowsExceptionWhenRelationNameCollidesWithColumnName() {
@@ -789,28 +789,28 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             LeanOrm\TestObjects\CommentRecord::class,
             LeanOrm\TestObjects\CommentsCollection::class
         );
-        $this->assertEquals(['comments'], $postsModel->getRelationNames());
+        self::assertEquals(['comments'], $postsModel->getRelationNames());
         $relations = $postsModel->getRelations();
-        $this->assertArrayHasKey('comments', $relations);
-        $this->assertArrayHasKey('relation_type', $relations['comments']);
-        $this->assertArrayHasKey('foreign_key_col_in_my_table', $relations['comments']);
-        $this->assertArrayHasKey('foreign_table', $relations['comments']);
-        $this->assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['comments']);
-        $this->assertArrayHasKey('primary_key_col_in_foreign_table', $relations['comments']);
-        $this->assertArrayHasKey('foreign_models_class_name', $relations['comments']);
-        $this->assertArrayHasKey('foreign_models_record_class_name', $relations['comments']);
-        $this->assertArrayHasKey('foreign_models_collection_class_name', $relations['comments']);
-        $this->assertArrayHasKey('sql_query_modifier', $relations['comments']);
+        self::assertArrayHasKey('comments', $relations);
+        self::assertArrayHasKey('relation_type', $relations['comments']);
+        self::assertArrayHasKey('foreign_key_col_in_my_table', $relations['comments']);
+        self::assertArrayHasKey('foreign_table', $relations['comments']);
+        self::assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['comments']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['comments']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['comments']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['comments']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['comments']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['comments']);
         
-        $this->assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY, $relations['comments']['relation_type']);
-        $this->assertEquals('post_id', $relations['comments']['foreign_key_col_in_my_table']);
-        $this->assertEquals('comments', $relations['comments']['foreign_table']);
-        $this->assertEquals('post_id', $relations['comments']['foreign_key_col_in_foreign_table']);
-        $this->assertEquals('comment_id', $relations['comments']['primary_key_col_in_foreign_table']);
-        $this->assertEquals(LeanOrm\TestObjects\CommentsModel::class, $relations['comments']['foreign_models_class_name']);
-        $this->assertEquals(LeanOrm\TestObjects\CommentRecord::class, $relations['comments']['foreign_models_record_class_name']);
-        $this->assertEquals(LeanOrm\TestObjects\CommentsCollection::class, $relations['comments']['foreign_models_collection_class_name']);
-        $this->assertNull($relations['comments']['sql_query_modifier']);
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY, $relations['comments']['relation_type']);
+        self::assertEquals('post_id', $relations['comments']['foreign_key_col_in_my_table']);
+        self::assertEquals('comments', $relations['comments']['foreign_table']);
+        self::assertEquals('post_id', $relations['comments']['foreign_key_col_in_foreign_table']);
+        self::assertEquals('comment_id', $relations['comments']['primary_key_col_in_foreign_table']);
+        self::assertEquals(LeanOrm\TestObjects\CommentsModel::class, $relations['comments']['foreign_models_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\CommentRecord::class, $relations['comments']['foreign_models_record_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\CommentsCollection::class, $relations['comments']['foreign_models_collection_class_name']);
+        self::assertNull($relations['comments']['sql_query_modifier']);
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasMany(
@@ -818,8 +818,8 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, 
             $callback
         );
-        $this->assertEquals(['comments', 'comments2'], $postsModel->getRelationNames());
-        $this->assertEquals($callback, $postsModel->getRelations()['comments2']['sql_query_modifier']);
+        self::assertEquals(['comments', 'comments2'], $postsModel->getRelationNames());
+        self::assertEquals($callback, $postsModel->getRelations()['comments2']['sql_query_modifier']);
     }
     
     public function testThatHasManyThroughThrowsExceptionWhenRelationNameCollidesWithColumnName() {
@@ -1017,68 +1017,68 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
             LeanOrm\TestObjects\TagsModel::class, LeanOrm\TestObjects\TagRecord::class, LeanOrm\TestObjects\TagsCollection::class
         );
-        $this->assertEquals(['tags'], $postsModel->getRelationNames());
+        self::assertEquals(['tags'], $postsModel->getRelationNames());
         $relations = $postsModel->getRelations();
-        $this->assertArrayHasKey('tags', $relations);
-        $this->assertArrayHasKey('relation_type', $relations['tags']);
-        $this->assertArrayHasKey('col_in_my_table_linked_to_join_table', $relations['tags']);
-        $this->assertArrayHasKey('join_table', $relations['tags']);
-        $this->assertArrayHasKey('col_in_join_table_linked_to_my_table', $relations['tags']);
-        $this->assertArrayHasKey('col_in_join_table_linked_to_foreign_table', $relations['tags']);
-        $this->assertArrayHasKey('foreign_table', $relations['tags']);
-        $this->assertArrayHasKey('col_in_foreign_table_linked_to_join_table', $relations['tags']);
-        $this->assertArrayHasKey('primary_key_col_in_foreign_table', $relations['tags']);
-        $this->assertArrayHasKey('foreign_models_class_name', $relations['tags']);
-        $this->assertArrayHasKey('foreign_models_record_class_name', $relations['tags']);
-        $this->assertArrayHasKey('foreign_models_collection_class_name', $relations['tags']);
-        $this->assertArrayHasKey('sql_query_modifier', $relations['tags']);
+        self::assertArrayHasKey('tags', $relations);
+        self::assertArrayHasKey('relation_type', $relations['tags']);
+        self::assertArrayHasKey('col_in_my_table_linked_to_join_table', $relations['tags']);
+        self::assertArrayHasKey('join_table', $relations['tags']);
+        self::assertArrayHasKey('col_in_join_table_linked_to_my_table', $relations['tags']);
+        self::assertArrayHasKey('col_in_join_table_linked_to_foreign_table', $relations['tags']);
+        self::assertArrayHasKey('foreign_table', $relations['tags']);
+        self::assertArrayHasKey('col_in_foreign_table_linked_to_join_table', $relations['tags']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['tags']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['tags']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['tags']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['tags']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['tags']);
         
-        $this->assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH, $relations['tags']['relation_type']);
-        $this->assertEquals('post_id', $relations['tags']['col_in_my_table_linked_to_join_table']);
-        $this->assertEquals('posts_tags', $relations['tags']['join_table']);
-        $this->assertEquals('post_id', $relations['tags']['col_in_join_table_linked_to_my_table']);
-        $this->assertEquals('tag_id', $relations['tags']['col_in_join_table_linked_to_foreign_table']);
-        $this->assertEquals('tags', $relations['tags']['foreign_table']);
-        $this->assertEquals('tag_id', $relations['tags']['col_in_foreign_table_linked_to_join_table']);
-        $this->assertEquals('tag_id', $relations['tags']['primary_key_col_in_foreign_table']);
-        $this->assertEquals(LeanOrm\TestObjects\TagsModel::class, $relations['tags']['foreign_models_class_name']);
-        $this->assertEquals(LeanOrm\TestObjects\TagRecord::class, $relations['tags']['foreign_models_record_class_name']);
-        $this->assertEquals(LeanOrm\TestObjects\TagsCollection::class, $relations['tags']['foreign_models_collection_class_name']);
-        $this->assertNull($relations['tags']['sql_query_modifier']);
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH, $relations['tags']['relation_type']);
+        self::assertEquals('post_id', $relations['tags']['col_in_my_table_linked_to_join_table']);
+        self::assertEquals('posts_tags', $relations['tags']['join_table']);
+        self::assertEquals('post_id', $relations['tags']['col_in_join_table_linked_to_my_table']);
+        self::assertEquals('tag_id', $relations['tags']['col_in_join_table_linked_to_foreign_table']);
+        self::assertEquals('tags', $relations['tags']['foreign_table']);
+        self::assertEquals('tag_id', $relations['tags']['col_in_foreign_table_linked_to_join_table']);
+        self::assertEquals('tag_id', $relations['tags']['primary_key_col_in_foreign_table']);
+        self::assertEquals(LeanOrm\TestObjects\TagsModel::class, $relations['tags']['foreign_models_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\TagRecord::class, $relations['tags']['foreign_models_record_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\TagsCollection::class, $relations['tags']['foreign_models_collection_class_name']);
+        self::assertNull($relations['tags']['sql_query_modifier']);
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasManyThrough(
             'tags2',  'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
             \LeanOrm\Model::class, \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, $callback
         );
-        $this->assertEquals(['tags', 'tags2'], $postsModel->getRelationNames());
-        $this->assertEquals($callback, $postsModel->getRelations()['tags2']['sql_query_modifier']);
+        self::assertEquals(['tags', 'tags2'], $postsModel->getRelationNames());
+        self::assertEquals($callback, $postsModel->getRelations()['tags2']['sql_query_modifier']);
     }
     
     public function testThatCanLogQueriesWorksAsExpected() {
         
         $postsModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         
-        $this->assertFalse($postsModel->canLogQueries());
-        $this->assertTrue($postsModel->enableQueryLogging()->canLogQueries());
+        self::assertFalse($postsModel->canLogQueries());
+        self::assertTrue($postsModel->enableQueryLogging()->canLogQueries());
     }
     
     public function testThatDisableQueryLoggingWorksAsExpected() {
         
         $postsModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         
-        $this->assertFalse($postsModel->canLogQueries());
-        $this->assertSame($postsModel->disableQueryLogging(), $postsModel);
-        $this->assertFalse($postsModel->canLogQueries());
+        self::assertFalse($postsModel->canLogQueries());
+        self::assertSame($postsModel->disableQueryLogging(), $postsModel);
+        self::assertFalse($postsModel->canLogQueries());
     }
     
     public function testThatEnableQueryLoggingWorksAsExpected() {
         
         $postsModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         
-        $this->assertFalse($postsModel->canLogQueries());
-        $this->assertSame($postsModel->enableQueryLogging(), $postsModel);
-        $this->assertTrue($postsModel->canLogQueries());
+        self::assertFalse($postsModel->canLogQueries());
+        self::assertSame($postsModel->enableQueryLogging(), $postsModel);
+        self::assertTrue($postsModel->canLogQueries());
     }
     
     public function testThatDeleteMatchingDbTableRowsWorksAsExpected() {
@@ -1095,18 +1095,54 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->insertDataIntoTable('key_value', $recordsToInsert[2]);
         
         // only one matching record
-        $this->assertEquals(1, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> 'key 1']));
+        self::assertEquals(1, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> 'key 1']));
         
         // two matching records
-        $this->assertEquals( 2, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> ['key 2', 'key 3']]) );
+        self::assertEquals( 2, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> ['key 2', 'key 3']]) );
         
         // no matching record
-        $this->assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> 'key 55']) );
+        self::assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> 'key 55']) );
         
-        $this->assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> ""]) );
-        $this->assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> "''"]) );
-        $this->assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> [""]]) );
-        $this->assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> ["''"]]) );
+        self::assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> ""]) );
+        self::assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> "''"]) );
+        self::assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> [""]]) );
+        self::assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['key_name'=> ["''"]]) );
+        self::assertEquals( 0, $keyValueModel->deleteMatchingDbTableRows(['non_existent_col'=> 'some_val', 'non_existent_col2'=> ['some_val']]) );
+    }
+    
+    public function testThatDeleteMatchingDbTableThrowsExceptionWithUnacceptableDeleteWhereParam() {
+        
+        // acceptable insert values are
+        // *bool, *null, *number, *string, *object with __toString
+        // Any value outside of these is considered invalid for insert
+        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $delete_query = [
+            'key_name'          => 'Test Key',
+            'value'             => 'Test Value',
+            'blankable_value'   => [
+                                        'Test Blankable Value', 
+                                        [], // invalid sub array value
+                                   ], 
+        ];
+        $model->deleteMatchingDbTableRows($delete_query); // will throw exception
+    }
+    
+    public function testThatDeleteMatchingDbTableThrowsExceptionWithUnacceptableDeleteWhereParam2() {
+        
+        // acceptable insert values are
+        // *bool, *null, *number, *string, *object with __toString
+        // Any value outside of these is considered invalid for insert
+        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $delete_query = [
+            'key_name'          => 'Test Key',
+            'value'             => 'Test Value',
+            'blankable_value'   => function(){}, // invalid value 
+        ];
+        $model->deleteMatchingDbTableRows($delete_query); // will throw exception
     }
     
     public function testThatDeleteSpecifiedRecordWorksAsExpected() {
@@ -1119,8 +1155,8 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         ];
         
         // Deleting a record that has never been saved to the DB
-        $this->assertNull( $keyValueModel->deleteSpecifiedRecord($keyValueModel->createNewRecord()));
-        $this->assertNull( $keyValueModel->deleteSpecifiedRecord($keyValueModel->createNewRecord($recordsToInsert[0])));
+        self::assertNull( $keyValueModel->deleteSpecifiedRecord($keyValueModel->createNewRecord()));
+        self::assertNull( $keyValueModel->deleteSpecifiedRecord($keyValueModel->createNewRecord($recordsToInsert[0])));
         
         $this->insertDataIntoTable('key_value', $recordsToInsert[0]);
         $this->insertDataIntoTable('key_value', $recordsToInsert[1]);
@@ -1129,10 +1165,10 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // see \TestSchemaCreatorAndSeeder::populateTables();
         // [ 'author_id'=> 1, 'name'=> 'user_1']
         $aRecord = $keyValueModel->fetchOneRecord($keyValueModel->getSelect()->where('key_name = ? ', 'key 1'));
-        $this->assertFalse($aRecord->isNew());
-        $this->assertTrue($keyValueModel->deleteSpecifiedRecord($aRecord));
+        self::assertFalse($aRecord->isNew());
+        self::assertTrue($keyValueModel->deleteSpecifiedRecord($aRecord));
         // record is new after being deleted
-        $this->assertTrue($aRecord->isNew());
+        self::assertTrue($aRecord->isNew());
     }
     
     public function testThatDeleteSpecifiedRecordThrowsExceptionForReadOnlyRecords()  {
@@ -1176,12 +1212,12 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $authorsModel = new LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
         //empty array with no ids for fetch returns empty array
-        $this->assertEquals([], $authorsModel->fetch([]));
+        self::assertEquals([], $authorsModel->fetch([]));
          
         //empty array with no ids for fetch returns empty collection
         $potentiallyEmptyCollection = $authorsModel->fetch([], null, [], false, true);
-        $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorsCollection::class, $potentiallyEmptyCollection);
-        $this->assertCount(0, $potentiallyEmptyCollection);
+        self::assertInstanceOf(\LeanOrm\TestObjects\AuthorsCollection::class, $potentiallyEmptyCollection);
+        self::assertCount(0, $potentiallyEmptyCollection);
         
         // fetch rows as arrays into an array not keyed on primary key
         $fiveRecords = $authorsModel->fetch([1,2,3,4,5]);
@@ -1190,15 +1226,15 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $fiveRecords2 = $authorsModel->fetch([1,2,3,4,5], null, [], false, false, true);
         
         // test keyed on PK
-        $this->assertEquals([1, 2, 3, 4, 5], \array_keys($fiveRecords2));
+        self::assertEquals([1, 2, 3, 4, 5], \array_keys($fiveRecords2));
 
-        $this->assertIsArray($fiveRecords);
-        $this->assertCount(5, $fiveRecords);
+        self::assertIsArray($fiveRecords);
+        self::assertCount(5, $fiveRecords);
         
         $nameColumnValues = ['user_1', 'user_2', 'user_3', 'user_4', 'user_5'];
         
-        foreach ($fiveRecords as $record) { $this->assertContains($record["name"], $nameColumnValues); }
-        foreach ($fiveRecords2 as $record) { $this->assertContains($record["name"], $nameColumnValues); }
+        foreach ($fiveRecords as $record) { self::assertContains($record["name"], $nameColumnValues); }
+        foreach ($fiveRecords2 as $record) { self::assertContains($record["name"], $nameColumnValues); }
         
         // fetch rows as records into a collection not keyed on primary key
         $fiveRecordsCollection = $authorsModel->fetch([1,2,3,4,5], null, [], false, true);
@@ -1206,16 +1242,16 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // fetch rows as records into a collection keyed on primary key
         $fiveRecords2Collection = $authorsModel->fetch([1,2,3,4,5], null, [], false, true, true);
 
-        $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorsCollection::class, $fiveRecordsCollection);
-        $this->assertCount(5, $fiveRecordsCollection);
+        self::assertInstanceOf(\LeanOrm\TestObjects\AuthorsCollection::class, $fiveRecordsCollection);
+        self::assertCount(5, $fiveRecordsCollection);
         
-        $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorsCollection::class, $fiveRecords2Collection);
-        $this->assertCount(5, $fiveRecords2Collection);
+        self::assertInstanceOf(\LeanOrm\TestObjects\AuthorsCollection::class, $fiveRecords2Collection);
+        self::assertCount(5, $fiveRecords2Collection);
         // test keyed on PK
-        $this->assertEquals([1, 2, 3, 4, 5], $fiveRecords2Collection->getKeys());
+        self::assertEquals([1, 2, 3, 4, 5], $fiveRecords2Collection->getKeys());
 
-        foreach ($fiveRecordsCollection as $record) { $this->assertContains($record["name"], $nameColumnValues); }
-        foreach ($fiveRecords2Collection as $record) { $this->assertContains($record["name"], $nameColumnValues); }
+        foreach ($fiveRecordsCollection as $record) { self::assertContains($record["name"], $nameColumnValues); }
+        foreach ($fiveRecords2Collection as $record) { self::assertContains($record["name"], $nameColumnValues); }
         
         // fetch rows as records into an array not keyed on primary key
         $fiveRecordsArrayOfRecords = $authorsModel->fetch([1,2,3,4,5], null, [], true, false);
@@ -1223,24 +1259,24 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // fetch rows as records into an array keyed on primary key
         $fiveRecords2ArrayOfRecords = $authorsModel->fetch([1,2,3,4,5], null, [], true, false, true);
         
-        $this->assertIsArray($fiveRecordsArrayOfRecords);
-        $this->assertCount(5, $fiveRecordsArrayOfRecords);
+        self::assertIsArray($fiveRecordsArrayOfRecords);
+        self::assertCount(5, $fiveRecordsArrayOfRecords);
         
-        $this->assertIsArray($fiveRecords2ArrayOfRecords);
-        $this->assertCount(5, $fiveRecords2ArrayOfRecords);
+        self::assertIsArray($fiveRecords2ArrayOfRecords);
+        self::assertCount(5, $fiveRecords2ArrayOfRecords);
         // test keyed on PK
-        $this->assertEquals([1, 2, 3, 4, 5], \array_keys($fiveRecords2ArrayOfRecords));
+        self::assertEquals([1, 2, 3, 4, 5], \array_keys($fiveRecords2ArrayOfRecords));
         
         foreach ($fiveRecordsArrayOfRecords as $record) {
 
-            $this->assertContains($record["name"], $nameColumnValues); 
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $record);
+            self::assertContains($record["name"], $nameColumnValues); 
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $record);
         }
         
         foreach ($fiveRecords2ArrayOfRecords as $record) {
             
-            $this->assertContains($record["name"], $nameColumnValues); 
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $record);
+            self::assertContains($record["name"], $nameColumnValues); 
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $record);
         }
         
         ////////////////////////////////////////////////////////////////////////
@@ -1251,22 +1287,22 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             ['posts'], false, false
         );
         
-        $this->assertIsArray($threeRecordsArrayOfRecords);
-        $this->assertCount(3, $threeRecordsArrayOfRecords);
-        $this->assertEquals(['user_1', 'user_2', 'user_3'], array_column($threeRecordsArrayOfRecords, 'name'));
+        self::assertIsArray($threeRecordsArrayOfRecords);
+        self::assertCount(3, $threeRecordsArrayOfRecords);
+        self::assertEquals(['user_1', 'user_2', 'user_3'], array_column($threeRecordsArrayOfRecords, 'name'));
         
         foreach($threeRecordsArrayOfRecords as $authorRecord) {
             
-            $this->assertIsArray($authorRecord['posts']);
+            self::assertIsArray($authorRecord['posts']);
             
             foreach($authorRecord['posts'] as $post) {
                 
-                $this->assertEquals($post['author_id'], $authorRecord['author_id']);
-                $this->assertArrayHasKey('post_id', $post);
-                $this->assertArrayHasKey('title', $post);
-                $this->assertArrayHasKey('body', $post);
-                $this->assertArrayHasKey('m_timestamp', $post);
-                $this->assertArrayHasKey('date_created', $post);
+                self::assertEquals($post['author_id'], $authorRecord['author_id']);
+                self::assertArrayHasKey('post_id', $post);
+                self::assertArrayHasKey('title', $post);
+                self::assertArrayHasKey('body', $post);
+                self::assertArrayHasKey('m_timestamp', $post);
+                self::assertArrayHasKey('date_created', $post);
             }
         }
         
@@ -1278,25 +1314,25 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             ['posts'], false, true
         );
 
-        $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorsCollection::class, $threeRecordsCollectionOfRecords);
-        $this->assertCount(3, $threeRecordsCollectionOfRecords);
-        $this->assertEquals(['user_1', 'user_2', 'user_3'], $threeRecordsCollectionOfRecords->getColVals('name'));
+        self::assertInstanceOf(\LeanOrm\TestObjects\AuthorsCollection::class, $threeRecordsCollectionOfRecords);
+        self::assertCount(3, $threeRecordsCollectionOfRecords);
+        self::assertEquals(['user_1', 'user_2', 'user_3'], $threeRecordsCollectionOfRecords->getColVals('name'));
         
         foreach($threeRecordsCollectionOfRecords as $authorRecord) {
             
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $authorRecord);
-            $this->assertInstanceOf(LeanOrm\TestObjects\PostsCollection::class, $authorRecord->posts);
-            $this->assertInstanceOf(LeanOrm\TestObjects\PostsCollection::class, $authorRecord['posts']);
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $authorRecord);
+            self::assertInstanceOf(LeanOrm\TestObjects\PostsCollection::class, $authorRecord->posts);
+            self::assertInstanceOf(LeanOrm\TestObjects\PostsCollection::class, $authorRecord['posts']);
             
             foreach($authorRecord['posts'] as $post) {
                 
-                $this->assertInstanceOf(\LeanOrm\TestObjects\PostRecord::class, $post);
-                $this->assertEquals($post['author_id'], $authorRecord['author_id']);
-                $this->assertArrayHasKey('post_id', $post->getData());
-                $this->assertArrayHasKey('title', $post->getData());
-                $this->assertArrayHasKey('body', $post->getData());
-                $this->assertArrayHasKey('m_timestamp', $post->getData());
-                $this->assertArrayHasKey('date_created', $post->getData());
+                self::assertInstanceOf(\LeanOrm\TestObjects\PostRecord::class, $post);
+                self::assertEquals($post['author_id'], $authorRecord['author_id']);
+                self::assertArrayHasKey('post_id', $post->getData());
+                self::assertArrayHasKey('title', $post->getData());
+                self::assertArrayHasKey('body', $post->getData());
+                self::assertArrayHasKey('m_timestamp', $post->getData());
+                self::assertArrayHasKey('date_created', $post->getData());
             }
         }
         
@@ -1304,12 +1340,12 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         
         $expectedEmptyCollection = $emptyModel->fetch([1,2,3], null, [], true, true);
-        $this->assertInstanceOf(GDAO\Model\CollectionInterface::class, $expectedEmptyCollection);
-        $this->assertCount(0, $expectedEmptyCollection);
+        self::assertInstanceOf(GDAO\Model\CollectionInterface::class, $expectedEmptyCollection);
+        self::assertCount(0, $expectedEmptyCollection);
         
         $expectedEmptyArray = $emptyModel->fetch([1,2,3], null, [], false, false);
-        $this->assertIsArray($expectedEmptyArray);
-        $this->assertCount(0, $expectedEmptyArray);
+        self::assertIsArray($expectedEmptyArray);
+        self::assertCount(0, $expectedEmptyArray);
     }
     
     public function testThatFetchColWorksAsExpected() {
@@ -1319,21 +1355,21 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // return all the values under the first column in the table which is 
         // the tag_id column 
         $cols = $tagsModel->fetchCol();
-        $this->assertEquals(['1', '2', '3', '4'], $cols);
+        self::assertEquals(['1', '2', '3', '4'], $cols);
         
         $cols2 = $tagsModel->fetchCol(
                 $tagsModel->getSelect()->cols(['name'])
             );
-        $this->assertEquals(['tag_1', 'tag_2', 'tag_3', 'tag_4'], $cols2);
+        self::assertEquals(['tag_1', 'tag_2', 'tag_3', 'tag_4'], $cols2);
         
         $cols3 = $tagsModel->fetchCol(
                 $tagsModel->getSelect()->cols(['name'])->where(' tag_id < 3 ')
             );
-        $this->assertEquals(['tag_1', 'tag_2'], $cols3);
+        self::assertEquals(['tag_1', 'tag_2'], $cols3);
         
         // Test with empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
-        $this->assertEquals([], $emptyModel->fetchCol());
+        self::assertEquals([], $emptyModel->fetchCol());
     }
     
     public function testThatFetchOneRecordWorksAsExpected() {
@@ -1343,20 +1379,20 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         ////////////////////////////////////////////////////////////////////////
         // fetch first record in the table
         $firstAuthorInTheTable = $authorsModel->fetchOneRecord();
-        $this->assertInstanceOf(GDAO\Model\RecordInterface::class, $firstAuthorInTheTable);
-        $this->assertArrayHasKey('author_id', $firstAuthorInTheTable->getData());
-        $this->assertArrayHasKey('name', $firstAuthorInTheTable->getData());
-        $this->assertArrayHasKey('m_timestamp', $firstAuthorInTheTable->getData());
-        $this->assertArrayHasKey('date_created', $firstAuthorInTheTable->getData());
+        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $firstAuthorInTheTable);
+        self::assertArrayHasKey('author_id', $firstAuthorInTheTable->getData());
+        self::assertArrayHasKey('name', $firstAuthorInTheTable->getData());
+        self::assertArrayHasKey('m_timestamp', $firstAuthorInTheTable->getData());
+        self::assertArrayHasKey('date_created', $firstAuthorInTheTable->getData());
         
         // test that lazy loaded relationship data works from a fetch without
         // relations to include supplied
-        $this->assertInstanceOf(GDAO\Model\CollectionInterface::class, $firstAuthorInTheTable->posts);
-        $this->assertCount(2, $firstAuthorInTheTable->posts);
-        $this->assertEquals(['1', '3'], $firstAuthorInTheTable->posts->getColVals('post_id'));
-        $this->assertEquals(['1', '1'], $firstAuthorInTheTable->posts->getColVals('author_id'));
-        $this->assertEquals(['Post 1', 'Post 3'], $firstAuthorInTheTable->posts->getColVals('title'));
-        $this->assertEquals(['Post Body 1', 'Post Body 3'], $firstAuthorInTheTable->posts->getColVals('body'));
+        self::assertInstanceOf(GDAO\Model\CollectionInterface::class, $firstAuthorInTheTable->posts);
+        self::assertCount(2, $firstAuthorInTheTable->posts);
+        self::assertEquals(['1', '3'], $firstAuthorInTheTable->posts->getColVals('post_id'));
+        self::assertEquals(['1', '1'], $firstAuthorInTheTable->posts->getColVals('author_id'));
+        self::assertEquals(['Post 1', 'Post 3'], $firstAuthorInTheTable->posts->getColVals('title'));
+        self::assertEquals(['Post Body 1', 'Post Body 3'], $firstAuthorInTheTable->posts->getColVals('body'));
         
         ////////////////////////////////////////////////////////////////////////
         // fetch Author with author_id = 2 & include posts during the fetch
@@ -1364,45 +1400,45 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $secondAuthorInTheTable = $authorsModel->fetchOneRecord(
             $authorsModel->getSelect()->where(' author_id =  2 '), ['posts']
         );
-        $this->assertInstanceOf(GDAO\Model\RecordInterface::class, $secondAuthorInTheTable);
-        $this->assertArrayHasKey('author_id', $secondAuthorInTheTable->getData());
-        $this->assertArrayHasKey('name', $secondAuthorInTheTable->getData());
-        $this->assertArrayHasKey('m_timestamp', $secondAuthorInTheTable->getData());
-        $this->assertArrayHasKey('date_created', $secondAuthorInTheTable->getData());
+        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $secondAuthorInTheTable);
+        self::assertArrayHasKey('author_id', $secondAuthorInTheTable->getData());
+        self::assertArrayHasKey('name', $secondAuthorInTheTable->getData());
+        self::assertArrayHasKey('m_timestamp', $secondAuthorInTheTable->getData());
+        self::assertArrayHasKey('date_created', $secondAuthorInTheTable->getData());
         
         // test that eager loaded relationship data works
-        $this->assertInstanceOf(GDAO\Model\CollectionInterface::class, $secondAuthorInTheTable->posts);
-        $this->assertCount(2, $secondAuthorInTheTable->posts);
-        $this->assertCount(1, $secondAuthorInTheTable->one_post);
+        self::assertInstanceOf(GDAO\Model\CollectionInterface::class, $secondAuthorInTheTable->posts);
+        self::assertCount(2, $secondAuthorInTheTable->posts);
+        self::assertCount(1, $secondAuthorInTheTable->one_post);
         
-        $this->assertEquals(['2', '4'], $secondAuthorInTheTable->posts->getColVals('post_id'));
-        $this->assertEquals(['2', '2'], $secondAuthorInTheTable->posts->getColVals('author_id'));
-        $this->assertEquals(['Post 2', 'Post 4'], $secondAuthorInTheTable->posts->getColVals('title'));
-        $this->assertEquals(['Post Body 2', 'Post Body 4'], $secondAuthorInTheTable->posts->getColVals('body'));
+        self::assertEquals(['2', '4'], $secondAuthorInTheTable->posts->getColVals('post_id'));
+        self::assertEquals(['2', '2'], $secondAuthorInTheTable->posts->getColVals('author_id'));
+        self::assertEquals(['Post 2', 'Post 4'], $secondAuthorInTheTable->posts->getColVals('title'));
+        self::assertEquals(['Post Body 2', 'Post Body 4'], $secondAuthorInTheTable->posts->getColVals('body'));
         
-        $this->assertEquals(['2'], $secondAuthorInTheTable->one_post->getColVals('post_id'));
-        $this->assertEquals(['2'], $secondAuthorInTheTable->one_post->getColVals('author_id'));
-        $this->assertEquals(['Post 2'], $secondAuthorInTheTable->one_post->getColVals('title'));
-        $this->assertEquals(['Post Body 2'], $secondAuthorInTheTable->one_post->getColVals('body'));
+        self::assertEquals(['2'], $secondAuthorInTheTable->one_post->getColVals('post_id'));
+        self::assertEquals(['2'], $secondAuthorInTheTable->one_post->getColVals('author_id'));
+        self::assertEquals(['Post 2'], $secondAuthorInTheTable->one_post->getColVals('title'));
+        self::assertEquals(['Post Body 2'], $secondAuthorInTheTable->one_post->getColVals('body'));
         
         ///////////////////////////////////////////////////////////////////////
         // Test that record not in db returns null
         $authorNotInTheTable = $authorsModel->fetchOneRecord(
             $authorsModel->getSelect()->where(' author_id =  777 '), ['posts']
         );
-        $this->assertNull($authorNotInTheTable);
+        self::assertNull($authorNotInTheTable);
         
         $author2NotInTheTable = $authorsModel->fetchOneRecord(
             $authorsModel->getSelect()->where(' author_id =  77 ')
         );
-        $this->assertNull($author2NotInTheTable);
+        self::assertNull($author2NotInTheTable);
         
-        $this->assertNull(
+        self::assertNull(
             $authorsModel->fetchOneRecord(
                 $authorsModel->getSelect()->where(" name =  '' "), ['posts']
             )
         );
-        $this->assertNull(
+        self::assertNull(
             $authorsModel->fetchOneRecord(
                 $authorsModel->getSelect()->where(" name =  ? ", "''"), ['posts']
             )
@@ -1412,7 +1448,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Querying an empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         
-        $this->assertNull($emptyModel->fetchOneRecord());
+        self::assertNull($emptyModel->fetchOneRecord());
     }
     
     public function testThatFetchPairsWorksAsExpected() {
@@ -1422,7 +1458,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $pairsOfFirstTwoColumnsTagIdAndName = 
             [1 => 'tag_1', 2 => 'tag_2', 3 => 'tag_3', 4 => 'tag_4'];
         
-        $this->assertEquals(
+        self::assertEquals(
             $pairsOfFirstTwoColumnsTagIdAndName, 
             $tagsModel->fetchPairs()
         );
@@ -1430,7 +1466,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $pairsOfTwoColumnsNameAndTagId = 
             ['tag_1' => '1', 'tag_2' => '2', 'tag_3' => '3', 'tag_4' => '4'];
         
-        $this->assertEquals(
+        self::assertEquals(
             $pairsOfTwoColumnsNameAndTagId, 
             $tagsModel->fetchPairs(
                 $tagsModel->getSelect()->cols(['name', 'tag_id'])
@@ -1438,7 +1474,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
         
         // Query that matches no db rows
-        $this->assertEquals(
+        self::assertEquals(
             [], 
             $tagsModel->fetchPairs(
                 $tagsModel->getSelect()->cols(['name', 'tag_id'])->where(' tag_id > 777 ')
@@ -1447,37 +1483,37 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         // Test with empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
-        $this->assertEquals([], $emptyModel->fetchPairs());
+        self::assertEquals([], $emptyModel->fetchPairs());
     }
     
     public function testThatFetchRecordsIntoArrayWorksAsExpected() {
         
         // Test with empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
-        $this->assertEquals([], $emptyModel->fetchRecordsIntoArray());
+        self::assertEquals([], $emptyModel->fetchRecordsIntoArray());
         
         ////////////////////////////////////////////////////////////////////////
         $postsModel = new LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
         $allPosts = $postsModel->fetchRecordsIntoArray();
-        $this->assertIsArray($allPosts);
-        $this->assertCount(4, $allPosts);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPosts);
+        self::assertIsArray($allPosts);
+        self::assertCount(4, $allPosts);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPosts);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             GenericCollection::makeNew($allPosts)->column('post_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             GenericCollection::makeNew($allPosts)->column('author_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             GenericCollection::makeNew($allPosts)->column('title')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             GenericCollection::makeNew($allPosts)->column('body')->toArray()
         );
@@ -1490,24 +1526,24 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $postsModel->getSelect()->where(' post_id < 3 ')   
         );
         
-        $this->assertIsArray($firstTwoPosts);
-        $this->assertCount(2, $firstTwoPosts);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $firstTwoPosts);
+        self::assertIsArray($firstTwoPosts);
+        self::assertCount(2, $firstTwoPosts);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $firstTwoPosts);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             GenericCollection::makeNew($firstTwoPosts)->column('post_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             GenericCollection::makeNew($firstTwoPosts)->column('author_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post 1', 'Post 2'],
             GenericCollection::makeNew($firstTwoPosts)->column('title')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post Body 1', 'Post Body 2'],
             GenericCollection::makeNew($firstTwoPosts)->column('body')->toArray()
         );
@@ -1520,24 +1556,24 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $postsModel->fetchRecordsIntoArray(
                 null, [ 'author', 'comments', 'summary', 'posts_tags', 'tags' ]
             );
-        $this->assertIsArray($allPostsWithAllRelateds);
-        $this->assertCount(4, $allPostsWithAllRelateds);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithAllRelateds);
+        self::assertIsArray($allPostsWithAllRelateds);
+        self::assertCount(4, $allPostsWithAllRelateds);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithAllRelateds);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             GenericCollection::makeNew($allPostsWithAllRelateds)->column('post_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             GenericCollection::makeNew($allPostsWithAllRelateds)->column('author_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             GenericCollection::makeNew($allPostsWithAllRelateds)->column('title')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             GenericCollection::makeNew($allPostsWithAllRelateds)->column('body')->toArray()
         );
@@ -1547,25 +1583,25 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         foreach($allPostsWithAllRelateds as $postRecord) {
             
             // author of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
             
             // post's comments
-            $this->assertIsArray($postRecord->comments);
-            $this->assertCount(1, $postRecord->comments);
-            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
+            self::assertIsArray($postRecord->comments);
+            self::assertCount(1, $postRecord->comments);
+            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
             // summary of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
+            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
             
             // post's posts_tags
-            $this->assertIsArray($postRecord->posts_tags);
-            $this->assertCount(1, $postRecord->posts_tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
+            self::assertIsArray($postRecord->posts_tags);
+            self::assertCount(1, $postRecord->posts_tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
             
             // post's tags
-            $this->assertIsArray($postRecord->tags);
-            $this->assertCount(1, $postRecord->tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
+            self::assertIsArray($postRecord->tags);
+            self::assertCount(1, $postRecord->tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         unset($allPostsWithAllRelateds);
     }
@@ -1577,24 +1613,24 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Not eager loading related records during fetch will lead to lots of 
         // queries when looping through records & accessing their related records
         $allPostsWithoutRelateds = $postsModel->fetchRecordsIntoArray();
-        $this->assertIsArray($allPostsWithoutRelateds);
-        $this->assertCount(4, $allPostsWithoutRelateds);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithoutRelateds);
+        self::assertIsArray($allPostsWithoutRelateds);
+        self::assertCount(4, $allPostsWithoutRelateds);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithoutRelateds);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             GenericCollection::makeNew($allPostsWithoutRelateds)->column('post_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             GenericCollection::makeNew($allPostsWithoutRelateds)->column('author_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             GenericCollection::makeNew($allPostsWithoutRelateds)->column('title')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             GenericCollection::makeNew($allPostsWithoutRelateds)->column('body')->toArray()
         );
@@ -1604,29 +1640,29 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         foreach($allPostsWithoutRelateds as $postRecord) {
             
             // author of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
             
             // post's comments
             // Because the lazy load is triggered at the record level & not during
             // the fetch, the results of hasMany & hasManyThrough relationships are 
             // placed in a collection instead of an array (if the relations were 
             // eager loaded during the fetch)
-            $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);  
-            $this->assertCount(1, $postRecord->comments);
-            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
+            self::assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);  
+            self::assertCount(1, $postRecord->comments);
+            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
             // summary of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
+            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
             
             // post's posts_tags
-            $this->assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
-            $this->assertCount(1, $postRecord->posts_tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
+            self::assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
+            self::assertCount(1, $postRecord->posts_tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
             
             // post's tags
-            $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
-            $this->assertCount(1, $postRecord->tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
+            self::assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
+            self::assertCount(1, $postRecord->tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         
         unset($allPostsWithoutRelateds);
@@ -1636,32 +1672,32 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         // Test with empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
-        $this->assertEquals([], $emptyModel->fetchRecordsIntoArrayKeyedOnPkVal());
+        self::assertEquals([], $emptyModel->fetchRecordsIntoArrayKeyedOnPkVal());
         
         ////////////////////////////////////////////////////////////////////////
         $postsModel = new LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
         $allPosts = $postsModel->fetchRecordsIntoArrayKeyedOnPkVal();
-        $this->assertIsArray($allPosts);
-        $this->assertCount(4, $allPosts);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPosts);
+        self::assertIsArray($allPosts);
+        self::assertCount(4, $allPosts);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPosts);
         // test that the results are keyed on PK
-        $this->assertEquals(static::POST_POST_IDS, array_keys($allPosts));
+        self::assertEquals(static::POST_POST_IDS, array_keys($allPosts));
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             GenericCollection::makeNew($allPosts)->column('post_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             GenericCollection::makeNew($allPosts)->column('author_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             GenericCollection::makeNew($allPosts)->column('title')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             GenericCollection::makeNew($allPosts)->column('body')->toArray()
         );
@@ -1674,26 +1710,26 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $postsModel->getSelect()->where(' post_id < 3 ')   
         );
         
-        $this->assertIsArray($firstTwoPosts);
-        $this->assertCount(2, $firstTwoPosts);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $firstTwoPosts);
+        self::assertIsArray($firstTwoPosts);
+        self::assertCount(2, $firstTwoPosts);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $firstTwoPosts);
         // test that the results are keyed on PK
-        $this->assertEquals(['1', '2'], array_keys($firstTwoPosts));
+        self::assertEquals(['1', '2'], array_keys($firstTwoPosts));
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             GenericCollection::makeNew($firstTwoPosts)->column('post_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             GenericCollection::makeNew($firstTwoPosts)->column('author_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post 1', 'Post 2'],
             GenericCollection::makeNew($firstTwoPosts)->column('title')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post Body 1', 'Post Body 2'],
             GenericCollection::makeNew($firstTwoPosts)->column('body')->toArray()
         );
@@ -1706,26 +1742,26 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $postsModel->fetchRecordsIntoArrayKeyedOnPkVal(
                 null, [ 'author', 'comments', 'summary', 'posts_tags', 'tags' ]
             );
-        $this->assertIsArray($allPostsWithAllRelateds);
-        $this->assertCount(4, $allPostsWithAllRelateds);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithAllRelateds);
+        self::assertIsArray($allPostsWithAllRelateds);
+        self::assertCount(4, $allPostsWithAllRelateds);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithAllRelateds);
         // test that the results are keyed on PK
-        $this->assertEquals(static::POST_POST_IDS, array_keys($allPostsWithAllRelateds));
+        self::assertEquals(static::POST_POST_IDS, array_keys($allPostsWithAllRelateds));
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             GenericCollection::makeNew($allPostsWithAllRelateds)->column('post_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             GenericCollection::makeNew($allPostsWithAllRelateds)->column('author_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             GenericCollection::makeNew($allPostsWithAllRelateds)->column('title')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             GenericCollection::makeNew($allPostsWithAllRelateds)->column('body')->toArray()
         );
@@ -1735,25 +1771,25 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         foreach($allPostsWithAllRelateds as $postRecord) {
             
             // author of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
             
             // post's comments
-            $this->assertIsArray($postRecord->comments);
-            $this->assertCount(1, $postRecord->comments);
-            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
+            self::assertIsArray($postRecord->comments);
+            self::assertCount(1, $postRecord->comments);
+            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
             // summary of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
+            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
             
             // post's posts_tags
-            $this->assertIsArray($postRecord->posts_tags);
-            $this->assertCount(1, $postRecord->posts_tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
+            self::assertIsArray($postRecord->posts_tags);
+            self::assertCount(1, $postRecord->posts_tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
             
             // post's tags
-            $this->assertIsArray($postRecord->tags);
-            $this->assertCount(1, $postRecord->tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
+            self::assertIsArray($postRecord->tags);
+            self::assertCount(1, $postRecord->tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         unset($allPostsWithAllRelateds);
     }
@@ -1765,26 +1801,26 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Not eager loading related records during fetch will lead to lots of 
         // queries when looping through records & accessing their related records
         $allPostsWithoutRelateds = $postsModel->fetchRecordsIntoArrayKeyedOnPkVal();
-        $this->assertIsArray($allPostsWithoutRelateds);
-        $this->assertCount(4, $allPostsWithoutRelateds);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithoutRelateds);
+        self::assertIsArray($allPostsWithoutRelateds);
+        self::assertCount(4, $allPostsWithoutRelateds);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithoutRelateds);
         // test that the results are keyed on PK
-        $this->assertEquals(static::POST_POST_IDS, array_keys($allPostsWithoutRelateds));
+        self::assertEquals(static::POST_POST_IDS, array_keys($allPostsWithoutRelateds));
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             GenericCollection::makeNew($allPostsWithoutRelateds)->column('post_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             GenericCollection::makeNew($allPostsWithoutRelateds)->column('author_id')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             GenericCollection::makeNew($allPostsWithoutRelateds)->column('title')->toArray()
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             GenericCollection::makeNew($allPostsWithoutRelateds)->column('body')->toArray()
         );
@@ -1794,29 +1830,29 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         foreach($allPostsWithoutRelateds as $postRecord) {
             
             // author of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
             
             // post's comments
             // Because the lazy load is triggered at the record level & not during
             // the fetch, the results of hasMany & hasManyThrough relationships are 
             // placed in a collection instead of an array (if the relations were 
             // eager loaded during the fetch)
-            $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);  
-            $this->assertCount(1, $postRecord->comments);
-            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
+            self::assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);  
+            self::assertCount(1, $postRecord->comments);
+            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
             // summary of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
+            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
             
             // post's posts_tags
-            $this->assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
-            $this->assertCount(1, $postRecord->posts_tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
+            self::assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
+            self::assertCount(1, $postRecord->posts_tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
             
             // post's tags
-            $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
-            $this->assertCount(1, $postRecord->tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
+            self::assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
+            self::assertCount(1, $postRecord->tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         
         unset($allPostsWithoutRelateds);
@@ -1827,31 +1863,31 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Test with empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         $emptyResult = $emptyModel->fetchRecordsIntoCollection();
-        $this->assertInstanceOf(\LeanOrm\Model\Collection::class, $emptyResult);
-        $this->assertCount(0, $emptyResult);
+        self::assertInstanceOf(\LeanOrm\Model\Collection::class, $emptyResult);
+        self::assertCount(0, $emptyResult);
         
         ////////////////////////////////////////////////////////////////////////
         $postsModel = new LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
         $allPosts = $postsModel->fetchRecordsIntoCollection();
-        $this->assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPosts);
-        $this->assertCount(4, $allPosts);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPosts);
+        self::assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPosts);
+        self::assertCount(4, $allPosts);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPosts);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             $allPosts->getColVals('post_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             $allPosts->getColVals('author_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             $allPosts->getColVals('title')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             $allPosts->getColVals('body')
         );
@@ -1863,24 +1899,24 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $firstTwoPosts = $postsModel->fetchRecordsIntoCollection(
             $postsModel->getSelect()->where(' post_id < 3 ')   
         );
-        $this->assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $firstTwoPosts);
-        $this->assertCount(2, $firstTwoPosts);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $firstTwoPosts);
+        self::assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $firstTwoPosts);
+        self::assertCount(2, $firstTwoPosts);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $firstTwoPosts);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             $firstTwoPosts->getColVals('post_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             $firstTwoPosts->getColVals('author_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post 1', 'Post 2'],
             $firstTwoPosts->getColVals('title')
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post Body 1', 'Post Body 2'],
             $firstTwoPosts->getColVals('body')
         );
@@ -1899,24 +1935,24 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
                     'posts_tags', 'tags', 'tags_with_callback'
                 ]
             );
-        $this->assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPostsWithAllRelateds);
-        $this->assertCount(4, $allPostsWithAllRelateds);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithAllRelateds);
+        self::assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPostsWithAllRelateds);
+        self::assertCount(4, $allPostsWithAllRelateds);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithAllRelateds);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             $allPostsWithAllRelateds->getColVals('post_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             $allPostsWithAllRelateds->getColVals('author_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             $allPostsWithAllRelateds->getColVals('title')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             $allPostsWithAllRelateds->getColVals('body')
         );
@@ -1926,37 +1962,37 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         foreach($allPostsWithAllRelateds as $postRecord) {
             
             // author of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author_with_callback);
-            $this->assertEquals($postRecord->author->getData(), $postRecord->author_with_callback->getData());
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author_with_callback);
+            self::assertEquals($postRecord->author->getData(), $postRecord->author_with_callback->getData());
             
             // post's comments
-            $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);
-            $this->assertCount(1, $postRecord->comments);
-            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
+            self::assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);
+            self::assertCount(1, $postRecord->comments);
+            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
-            $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments_with_callback);
-            $this->assertCount(1, $postRecord->comments_with_callback);
-            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments_with_callback);
+            self::assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments_with_callback);
+            self::assertCount(1, $postRecord->comments_with_callback);
+            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments_with_callback);
             
             // summary of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
-            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary_with_callback);
-            $this->assertEquals($postRecord->summary->getData(), $postRecord->summary_with_callback->getData());
+            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
+            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary_with_callback);
+            self::assertEquals($postRecord->summary->getData(), $postRecord->summary_with_callback->getData());
             
             // post's posts_tags
-            $this->assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
-            $this->assertCount(1, $postRecord->posts_tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
+            self::assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
+            self::assertCount(1, $postRecord->posts_tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
             
             // post's tags
-            $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
-            $this->assertCount(1, $postRecord->tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
+            self::assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
+            self::assertCount(1, $postRecord->tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
             
-            $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags_with_callback);
-            $this->assertCount(1, $postRecord->tags_with_callback);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags_with_callback);
+            self::assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags_with_callback);
+            self::assertCount(1, $postRecord->tags_with_callback);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags_with_callback);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         unset($allPostsWithAllRelateds);
     }
@@ -1968,24 +2004,24 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Not eager loading related records during fetch will lead to lots of 
         // queries when looping through records & accessing their related records
         $allPostsWithoutRelateds = $postsModel->fetchRecordsIntoCollection();
-        $this->assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPostsWithoutRelateds);
-        $this->assertCount(4, $allPostsWithoutRelateds);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithoutRelateds);
+        self::assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPostsWithoutRelateds);
+        self::assertCount(4, $allPostsWithoutRelateds);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithoutRelateds);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             $allPostsWithoutRelateds->getColVals('post_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             $allPostsWithoutRelateds->getColVals('author_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             $allPostsWithoutRelateds->getColVals('title')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             $allPostsWithoutRelateds->getColVals('body')
         );
@@ -1995,37 +2031,37 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         foreach($allPostsWithoutRelateds as $postRecord) {
             
             // author of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author_with_callback);
-            $this->assertEquals($postRecord->author->getData(), $postRecord->author_with_callback->getData());
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author_with_callback);
+            self::assertEquals($postRecord->author->getData(), $postRecord->author_with_callback->getData());
             
             // post's comments
-            $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);  
-            $this->assertCount(1, $postRecord->comments);
-            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
+            self::assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);  
+            self::assertCount(1, $postRecord->comments);
+            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
-            $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments_with_callback);  
-            $this->assertCount(1, $postRecord->comments_with_callback);
-            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments_with_callback);
+            self::assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments_with_callback);  
+            self::assertCount(1, $postRecord->comments_with_callback);
+            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments_with_callback);
             
             // summary of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
-            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary_with_callback);
-            $this->assertEquals($postRecord->summary->getData(), $postRecord->summary_with_callback->getData());
+            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
+            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary_with_callback);
+            self::assertEquals($postRecord->summary->getData(), $postRecord->summary_with_callback->getData());
             
             // post's posts_tags
-            $this->assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
-            $this->assertCount(1, $postRecord->posts_tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
+            self::assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
+            self::assertCount(1, $postRecord->posts_tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
             
             // post's tags
-            $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
-            $this->assertCount(1, $postRecord->tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
+            self::assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
+            self::assertCount(1, $postRecord->tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
             
-            $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags_with_callback);
-            $this->assertCount(1, $postRecord->tags_with_callback);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags_with_callback);
+            self::assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags_with_callback);
+            self::assertCount(1, $postRecord->tags_with_callback);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags_with_callback);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         
         unset($allPostsWithoutRelateds);
@@ -2036,33 +2072,33 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Test with empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         $emptyResult = $emptyModel->fetchRecordsIntoCollectionKeyedOnPkVal();
-        $this->assertInstanceOf(\LeanOrm\Model\Collection::class, $emptyResult);
-        $this->assertCount(0, $emptyResult);
+        self::assertInstanceOf(\LeanOrm\Model\Collection::class, $emptyResult);
+        self::assertCount(0, $emptyResult);
         
         ////////////////////////////////////////////////////////////////////////
         $postsModel = new LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
         $allPosts = $postsModel->fetchRecordsIntoCollectionKeyedOnPkVal();
-        $this->assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPosts);
-        $this->assertCount(4, $allPosts);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPosts);
+        self::assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPosts);
+        self::assertCount(4, $allPosts);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPosts);
         // test that the results are keyed on PK
-        $this->assertEquals(static::POST_POST_IDS, array_values($allPosts->getKeys()));
+        self::assertEquals(static::POST_POST_IDS, array_values($allPosts->getKeys()));
 
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             array_values($allPosts->getColVals('post_id'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             array_values($allPosts->getColVals('author_id'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             array_values($allPosts->getColVals('title'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             array_values($allPosts->getColVals('body'))
         );
@@ -2074,26 +2110,26 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $firstTwoPosts = $postsModel->fetchRecordsIntoCollectionKeyedOnPkVal(
             $postsModel->getSelect()->where(' post_id < 3 ')   
         );
-        $this->assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $firstTwoPosts);
-        $this->assertCount(2, $firstTwoPosts);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $firstTwoPosts);
+        self::assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $firstTwoPosts);
+        self::assertCount(2, $firstTwoPosts);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $firstTwoPosts);
         // test that the results are keyed on PK
-        $this->assertEquals(['1', '2'], array_values($firstTwoPosts->getKeys()));
+        self::assertEquals(['1', '2'], array_values($firstTwoPosts->getKeys()));
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             array_values($firstTwoPosts->getColVals('post_id'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             array_values($firstTwoPosts->getColVals('author_id'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post 1', 'Post 2'],
             array_values($firstTwoPosts->getColVals('title'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post Body 1', 'Post Body 2'],
             array_values($firstTwoPosts->getColVals('body'))
         );
@@ -2106,26 +2142,26 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $postsModel->fetchRecordsIntoCollectionKeyedOnPkVal(
                 null, [ 'author', 'comments', 'summary', 'posts_tags', 'tags' ]
             );
-        $this->assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPostsWithAllRelateds);
-        $this->assertCount(4, $allPostsWithAllRelateds);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithAllRelateds);
+        self::assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPostsWithAllRelateds);
+        self::assertCount(4, $allPostsWithAllRelateds);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithAllRelateds);
         // test that the results are keyed on PK
-        $this->assertEquals(static::POST_POST_IDS, array_values($allPostsWithAllRelateds->getKeys()));
+        self::assertEquals(static::POST_POST_IDS, array_values($allPostsWithAllRelateds->getKeys()));
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             array_values($allPostsWithAllRelateds->getColVals('post_id'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             array_values($allPostsWithAllRelateds->getColVals('author_id'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             array_values($allPostsWithAllRelateds->getColVals('title'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             array_values($allPostsWithAllRelateds->getColVals('body'))
         );
@@ -2135,25 +2171,25 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         foreach($allPostsWithAllRelateds as $postRecord) {
             
             // author of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
             
             // post's comments
-            $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);
-            $this->assertCount(1, $postRecord->comments);
-            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
+            self::assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);
+            self::assertCount(1, $postRecord->comments);
+            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
             // summary of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
+            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
             
             // post's posts_tags
-            $this->assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
-            $this->assertCount(1, $postRecord->posts_tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
+            self::assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
+            self::assertCount(1, $postRecord->posts_tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
             
             // post's tags
-            $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
-            $this->assertCount(1, $postRecord->tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
+            self::assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
+            self::assertCount(1, $postRecord->tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         unset($allPostsWithAllRelateds);
     }
@@ -2165,26 +2201,26 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Not eager loading related records during fetch will lead to lots of 
         // queries when looping through records & accessing their related records
         $allPostsWithoutRelateds = $postsModel->fetchRecordsIntoCollectionKeyedOnPkVal();
-        $this->assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPostsWithoutRelateds);
-        $this->assertCount(4, $allPostsWithoutRelateds);
-        $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithoutRelateds);
+        self::assertInstanceOf(\LeanOrm\TestObjects\PostsCollection::class, $allPostsWithoutRelateds);
+        self::assertCount(4, $allPostsWithoutRelateds);
+        self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostRecord::class, $allPostsWithoutRelateds);
         // test that the results are keyed on PK
-        $this->assertEquals(static::POST_POST_IDS, array_values($allPostsWithoutRelateds->getKeys()));
+        self::assertEquals(static::POST_POST_IDS, array_values($allPostsWithoutRelateds->getKeys()));
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             array_values($allPostsWithoutRelateds->getColVals('post_id'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             array_values($allPostsWithoutRelateds->getColVals('author_id'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             array_values($allPostsWithoutRelateds->getColVals('title'))
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             array_values($allPostsWithoutRelateds->getColVals('body'))
         );
@@ -2194,25 +2230,25 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         foreach($allPostsWithoutRelateds as $postRecord) {
             
             // author of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
+            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
             
             // post's comments
-            $this->assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);  
-            $this->assertCount(1, $postRecord->comments);
-            $this->assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
+            self::assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments);  
+            self::assertCount(1, $postRecord->comments);
+            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
             // summary of the post
-            $this->assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
+            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
             
             // post's posts_tags
-            $this->assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
-            $this->assertCount(1, $postRecord->posts_tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
+            self::assertInstanceOf(\LeanOrm\TestObjects\PostsTagsCollection::class, $postRecord->posts_tags);
+            self::assertCount(1, $postRecord->posts_tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\PostTagRecord::class, $postRecord->posts_tags);
             
             // post's tags
-            $this->assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
-            $this->assertCount(1, $postRecord->tags);
-            $this->assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
+            self::assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags);
+            self::assertCount(1, $postRecord->tags);
+            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         
         unset($allPostsWithoutRelateds);
@@ -2222,29 +2258,29 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         // Test with empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
-        $this->assertEquals([], $emptyModel->fetchRowsIntoArray());
+        self::assertEquals([], $emptyModel->fetchRowsIntoArray());
         
         ////////////////////////////////////////////////////////////////////////
         $postsModel = new LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
         $allPosts = $postsModel->fetchRowsIntoArray();
-        $this->assertIsArray($allPosts);
-        $this->assertCount(4, $allPosts);
+        self::assertIsArray($allPosts);
+        self::assertCount(4, $allPosts);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             array_column($allPosts, 'post_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             array_column($allPosts, 'author_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             array_column($allPosts, 'title')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             array_column($allPosts, 'body')
         );
@@ -2257,23 +2293,23 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $postsModel->getSelect()->where(' post_id < 3 ')   
         );
         
-        $this->assertIsArray($firstTwoPosts);
-        $this->assertCount(2, $firstTwoPosts);
+        self::assertIsArray($firstTwoPosts);
+        self::assertCount(2, $firstTwoPosts);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             array_column($firstTwoPosts, 'post_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             array_column($firstTwoPosts, 'author_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post 1', 'Post 2'],
             array_column($firstTwoPosts, 'title')
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post Body 1', 'Post Body 2'],
             array_column($firstTwoPosts, 'body')
         );
@@ -2286,23 +2322,23 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $postsModel->fetchRowsIntoArray(
                 null, [ 'author', 'comments', 'summary', 'posts_tags', 'tags' ]
             );
-        $this->assertIsArray($allPostsWithAllRelateds);
-        $this->assertCount(4, $allPostsWithAllRelateds);
+        self::assertIsArray($allPostsWithAllRelateds);
+        self::assertCount(4, $allPostsWithAllRelateds);
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             array_column($allPostsWithAllRelateds, 'post_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             array_column($allPostsWithAllRelateds, 'author_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             array_column($allPostsWithAllRelateds, 'title')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             array_column($allPostsWithAllRelateds, 'body')
         );
@@ -2311,31 +2347,31 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         /** @var LeanOrm\TestObjects\PostRecord $postRecord */
         foreach($allPostsWithAllRelateds as $postRecord) {
             
-            $this->assertArrayHasAllKeys(
+            self::assertArrayHasAllKeys(
                 $postRecord, 
                 ['post_id', 'author_id', 'datetime', 'title', 'body', 'm_timestamp', 'date_created']
             );
             
             // author of the post
-            $this->assertIsArray($postRecord['author']);
+            self::assertIsArray($postRecord['author']);
             
             // post's comments
-            $this->assertIsArray($postRecord['comments']);
-            $this->assertCount(1, $postRecord['comments']);
-            $this->assertContainsOnly('array', $postRecord['comments']);
+            self::assertIsArray($postRecord['comments']);
+            self::assertCount(1, $postRecord['comments']);
+            self::assertContainsOnly('array', $postRecord['comments']);
             
             // summary of the post
-            $this->assertIsArray($postRecord['summary']);
+            self::assertIsArray($postRecord['summary']);
             
             // post's posts_tags
-            $this->assertIsArray($postRecord['posts_tags']);
-            $this->assertCount(1, $postRecord['posts_tags']);
-            $this->assertContainsOnly('array', $postRecord['posts_tags']);
+            self::assertIsArray($postRecord['posts_tags']);
+            self::assertCount(1, $postRecord['posts_tags']);
+            self::assertContainsOnly('array', $postRecord['posts_tags']);
             
             // post's tags
-            $this->assertIsArray($postRecord['tags']);
-            $this->assertCount(1, $postRecord['tags']);
-            $this->assertContainsOnly('array', $postRecord['tags']);
+            self::assertIsArray($postRecord['tags']);
+            self::assertCount(1, $postRecord['tags']);
+            self::assertContainsOnly('array', $postRecord['tags']);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         unset($allPostsWithAllRelateds);
     }
@@ -2344,32 +2380,32 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         // Test with empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
-        $this->assertEquals([], $emptyModel->fetchRowsIntoArrayKeyedOnPkVal());
+        self::assertEquals([], $emptyModel->fetchRowsIntoArrayKeyedOnPkVal());
         
         ////////////////////////////////////////////////////////////////////////
         $postsModel = new LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
         $allPosts = $postsModel->fetchRowsIntoArrayKeyedOnPkVal();
-        $this->assertIsArray($allPosts);
-        $this->assertCount(4, $allPosts);
+        self::assertIsArray($allPosts);
+        self::assertCount(4, $allPosts);
         // test that the results are keyed on PK
-        $this->assertEquals(static::POST_POST_IDS, array_keys($allPosts));
+        self::assertEquals(static::POST_POST_IDS, array_keys($allPosts));
         
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             array_column($allPosts, 'post_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             array_column($allPosts, 'author_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             array_column($allPosts, 'title')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             array_column($allPosts, 'body')
         );
@@ -2382,25 +2418,25 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $postsModel->getSelect()->where(' post_id < 3 ')   
         );
         
-        $this->assertIsArray($firstTwoPosts);
-        $this->assertCount(2, $firstTwoPosts);
+        self::assertIsArray($firstTwoPosts);
+        self::assertCount(2, $firstTwoPosts);
         // test that the results are keyed on PK
-        $this->assertEquals(['1', '2'], array_keys($firstTwoPosts));
+        self::assertEquals(['1', '2'], array_keys($firstTwoPosts));
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             array_column($firstTwoPosts, 'post_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['1', '2'],
             array_column($firstTwoPosts, 'author_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post 1', 'Post 2'],
             array_column($firstTwoPosts, 'title')
         );
-        $this->assertEquals(
+        self::assertEquals(
             ['Post Body 1', 'Post Body 2'],
             array_column($firstTwoPosts, 'body')
         );
@@ -2413,25 +2449,25 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $postsModel->fetchRowsIntoArrayKeyedOnPkVal(
                 null, [ 'author', 'comments', 'summary', 'posts_tags', 'tags' ]
             );
-        $this->assertIsArray($allPostsWithAllRelateds);
-        $this->assertCount(4, $allPostsWithAllRelateds);
+        self::assertIsArray($allPostsWithAllRelateds);
+        self::assertCount(4, $allPostsWithAllRelateds);
         // test that the results are keyed on PK
-        $this->assertEquals(static::POST_POST_IDS, array_keys($allPostsWithAllRelateds));
+        self::assertEquals(static::POST_POST_IDS, array_keys($allPostsWithAllRelateds));
         
         // verify that the records contain expected data
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_POST_IDS,
             array_column($allPostsWithAllRelateds, 'post_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_AUTHOR_IDS,
             array_column($allPostsWithAllRelateds, 'author_id')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_TITLES,
             array_column($allPostsWithAllRelateds, 'title')
         );
-        $this->assertEquals(
+        self::assertEquals(
             static::POST_BODIES,
             array_column($allPostsWithAllRelateds, 'body')
         );
@@ -2440,31 +2476,31 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         /** @var LeanOrm\TestObjects\PostRecord $postRecord */
         foreach($allPostsWithAllRelateds as $postRecord) {
             
-            $this->assertArrayHasAllKeys(
+            self::assertArrayHasAllKeys(
                 $postRecord, 
                 ['post_id', 'author_id', 'datetime', 'title', 'body', 'm_timestamp', 'date_created']
             );
             
             // author of the post
-            $this->assertIsArray($postRecord['author']);
+            self::assertIsArray($postRecord['author']);
             
             // post's comments
-            $this->assertIsArray($postRecord['comments']);
-            $this->assertCount(1, $postRecord['comments']);
-            $this->assertContainsOnly('array', $postRecord['comments']);
+            self::assertIsArray($postRecord['comments']);
+            self::assertCount(1, $postRecord['comments']);
+            self::assertContainsOnly('array', $postRecord['comments']);
             
             // summary of the post
-            $this->assertIsArray($postRecord['summary']);
+            self::assertIsArray($postRecord['summary']);
             
             // post's posts_tags
-            $this->assertIsArray($postRecord['posts_tags']);
-            $this->assertCount(1, $postRecord['posts_tags']);
-            $this->assertContainsOnly('array', $postRecord['posts_tags']);
+            self::assertIsArray($postRecord['posts_tags']);
+            self::assertCount(1, $postRecord['posts_tags']);
+            self::assertContainsOnly('array', $postRecord['posts_tags']);
             
             // post's tags
-            $this->assertIsArray($postRecord['tags']);
-            $this->assertCount(1, $postRecord['tags']);
-            $this->assertContainsOnly('array', $postRecord['tags']);
+            self::assertIsArray($postRecord['tags']);
+            self::assertCount(1, $postRecord['tags']);
+            self::assertContainsOnly('array', $postRecord['tags']);
         } // foreach($allPostsWithAllRelateds as $postRecord)
         unset($allPostsWithAllRelateds);
     }
@@ -2476,41 +2512,41 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // test without any agurments, should return the value in the first row
         // & first column (in this case author_id) of the authors table 
         // associated with the \LeanOrm\TestObjects\AuthorsModel
-        $this->assertEquals('1', $authorsModel->fetchValue().'');
+        self::assertEquals('1', $authorsModel->fetchValue().'');
         
         // test with a query that matches more than one row, should return the
         // value in the first row & column of the result set.
-        $this->assertEquals(
+        self::assertEquals(
             '6', 
             $authorsModel->fetchValue(
                 $authorsModel->getSelect()->where(' author_id > 5 ')
             ).''
         );
         
-        $this->assertEquals(
+        self::assertEquals(
             '10', 
             $authorsModel->fetchValue( $authorsModel->getSelect()->where(' author_id > 9 ') ).''
         );
         
         // test with a query that matches no row, should return null
-        $this->assertNull($authorsModel->fetchValue($authorsModel->getSelect()->where(' author_id > 777 ')));
+        self::assertNull($authorsModel->fetchValue($authorsModel->getSelect()->where(' author_id > 777 ')));
         
         // test with a query that returns the result of an aggregate function
-        $this->assertEquals(
+        self::assertEquals(
             '10', 
             $authorsModel->fetchValue( $authorsModel->getSelect()->cols([' MAX(author_id) ']) ).''
         );
         
         // Test with empty table
         $emptyModel = new LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
-        $this->assertNull($emptyModel->fetchValue());
+        self::assertNull($emptyModel->fetchValue());
     }
     
     public function testThatGetCurrentConnectionInfoWorksAsExpected() {
         
         $authorsModel = new LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
-        $this->assertArrayHasAllKeys(
+        self::assertArrayHasAllKeys(
             $authorsModel->getCurrentConnectionInfo(), 
             [
                 'database_server_info', 'connection_is_persistent',
@@ -2523,7 +2559,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     public function testThatGetDefaultColValsWorksAsExpected() {
         
         $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
-        $this->assertArrayHasAllKeys(
+        self::assertArrayHasAllKeys(
             $commentsModel->getDefaultColVals(), 
             $commentsModel->getTableColNames()
         );
@@ -2532,22 +2568,22 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     public function testThatGetLoggerWorksAsExpected() {
         
         $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
-        $this->assertNull($commentsModel->getLogger());
+        self::assertNull($commentsModel->getLogger());
         
         $commentsModel->setLogger(static::$psrLogger);
-        $this->assertSame(static::$psrLogger, $commentsModel->getLogger());
+        self::assertSame(static::$psrLogger, $commentsModel->getLogger());
     }
     
     public function testThatGetPDOWorksAsExpected() {
         
         $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
-        $this->assertInstanceOf(\PDO::class, $commentsModel->getPDO());
+        self::assertInstanceOf(\PDO::class, $commentsModel->getPDO());
     }
     
     public function testThatGetPdoDriverNameWorksAsExpected() {
         
         $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
-        $this->assertEquals(
+        self::assertEquals(
             static::$atlasPdo->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME), 
             $commentsModel->getPdoDriverName()
         );
@@ -2572,13 +2608,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         foreach($commentsModel->getQueryLog() as $commentQueryLogEntry){
             
-            $this->assertArrayHasAllKeys(
+            self::assertArrayHasAllKeys(
                 $commentQueryLogEntry, 
                 ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
             );
         }
         
-        $this->assertEquals([], $postsModel->getQueryLog());
+        self::assertEquals([], $postsModel->getQueryLog());
         \LeanOrm\Model::clearQueryLogForAllInstances();
     }
     
@@ -2605,16 +2641,16 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         ////////////////////////////////////////////////////////////////////////
         $logForAllInstances = \LeanOrm\Model::getQueryLogForAllInstances();
         $keysToCheck = [
-            static::$dsn . '::' . get_class($commentsModel),
-            static::$dsn . '::' . get_class($postsModel),
+            $commentsModel->getDsn() . '::' . get_class($commentsModel),
+            $postsModel->getDsn() . '::' . get_class($postsModel),
         ];
-        $this->assertArrayHasAllKeys($logForAllInstances, $keysToCheck);
-        $this->assertArrayNotHasKey(static::$dsn . '::' . get_class($tagsModel), $logForAllInstances);
+        self::assertArrayHasAllKeys($logForAllInstances, $keysToCheck);
+        self::assertArrayNotHasKey(static::$dsn . '::' . get_class($tagsModel), $logForAllInstances);
         
         foreach($logForAllInstances as $dsnModelNameKey => $queryLogEntriesForDsnAndModelName){
             
             foreach($queryLogEntriesForDsnAndModelName as $queryLogEntry) {
-                $this->assertArrayHasAllKeys(
+                self::assertArrayHasAllKeys(
                     $queryLogEntry,
                     ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
                 );
@@ -2623,10 +2659,10 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         ////////////////////////////////////////////////////////////////////////
         $logForCommentsModel = 
-            \LeanOrm\Model::getQueryLogForAllInstances(static::$dsn, $commentsModel);
+            \LeanOrm\Model::getQueryLogForAllInstances($commentsModel);
         
         foreach($logForCommentsModel as $queryLogEntry) {
-            $this->assertArrayHasAllKeys(
+            self::assertArrayHasAllKeys(
                 $queryLogEntry,
                 ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
             );
@@ -2634,17 +2670,17 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         ////////////////////////////////////////////////////////////////////////
         $logForPostsModel = 
-            \LeanOrm\Model::getQueryLogForAllInstances(static::$dsn, $postsModel);
+            \LeanOrm\Model::getQueryLogForAllInstances($postsModel);
         
         foreach($logForPostsModel as $queryLogEntry) {
-            $this->assertArrayHasAllKeys(
+            self::assertArrayHasAllKeys(
                 $queryLogEntry,
                 ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
             );
         }
         
         ////////////////////////////////////////////////////////////////////////
-        $this->assertEquals([], \LeanOrm\Model::getQueryLogForAllInstances(static::$dsn, $tagsModel));
+        self::assertEquals([], \LeanOrm\Model::getQueryLogForAllInstances($tagsModel));
 
         ////////////////////////////////////////////////////////////////////////
         \LeanOrm\Model::clearQueryLogForAllInstances();
@@ -2671,29 +2707,29 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         ////////////////////////////////////////////////////////////////////////
         $logForAllInstances = \LeanOrm\Model::getQueryLogForAllInstances();
-        $this->assertCount(2, $logForAllInstances);
+        self::assertCount(2, $logForAllInstances);
         
         ////////////////////////////////////////////////////////////////////////
         \LeanOrm\Model::clearQueryLogForAllInstances();
-        $this->assertCount(0, \LeanOrm\Model::getQueryLogForAllInstances());
+        self::assertCount(0, \LeanOrm\Model::getQueryLogForAllInstances());
     }
     
     public function testThatsetLoggerWorksAsExpected() {
         
         $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
-        $this->assertNull($commentsModel->getLogger());
+        self::assertNull($commentsModel->getLogger());
         
         // test fluent return
-        $this->assertSame($commentsModel, $commentsModel->setLogger(static::$psrLogger));
+        self::assertSame($commentsModel, $commentsModel->setLogger(static::$psrLogger));
         
         // test that the setter worked as expected
-        $this->assertSame(static::$psrLogger, $commentsModel->getLogger());
+        self::assertSame(static::$psrLogger, $commentsModel->getLogger());
     }
     
     public function testThatGetSelectWorksAsExpected() {
         
         $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
-        $this->assertInstanceOf(
+        self::assertInstanceOf(
             get_class(static::$auraQueryFactory->newSelect()),
             $commentsModel->getSelect()
         );
@@ -2712,7 +2748,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $list_of_tables_and_views_as_keys_from_fetch = array_flip($commentsModel->fetchTableListFromDBPublic());
         
         // make sure every expected table and view was returned by fetchTableListFromDBPublic
-        $this->assertArrayHasAllKeys($list_of_tables_and_views_as_keys_from_fetch, $list_of_tables_and_views_in_test_db);
+        self::assertArrayHasAllKeys($list_of_tables_and_views_as_keys_from_fetch, $list_of_tables_and_views_in_test_db);
     }
     
     public function testThatProtectedFetchTableColsFromDBWorksAsExpected() {
@@ -2728,17 +2764,1040 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         ];
         
         // make sure fetchTableColsFromDBPublic works for both tables & views
-        $this->assertArrayHasAllKeys($authorsModel->fetchTableColsFromDBPublic('authors'), $authors_table_col_names);
-        $this->assertArrayHasAllKeys($authorsModel->fetchTableColsFromDBPublic('v_authors'), $v_authors_view_col_names);
+        self::assertArrayHasAllKeys($authorsModel->fetchTableColsFromDBPublic('authors'), $authors_table_col_names);
+        self::assertArrayHasAllKeys($authorsModel->fetchTableColsFromDBPublic('v_authors'), $v_authors_view_col_names);
     }
-    
     
     public function testThatInsertWorksAsExpected() {
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value'
+        );
 
-        $this->assertFalse($model->insert());
-        $this->assertFalse($model->insert([]));
+        //$isRunningOnSqlite = strtolower($model->getPdoDriverName()) === 'sqlite';
+        $isRunningOnPostgresql = strtolower($model->getPdoDriverName()) === 'pgsql';
+
+        // Empty array should return false
+        self::assertFalse($model->insert());
+        self::assertFalse($model->insert([]));
+        
+        // None of the keys in the data array is an actual table col should return false
+        self::assertFalse($model->insert(['non_existent_col'=>'some value']));
+        
+        ///////////////////////////////////////////////////////////////////////////
+        // Some of the keys in the data array are actual table cols are table cols
+        $dateTime = date('Y-m-d H:i:s');
+        $data2Save = [
+            'key_name'          => 'Test Key',
+            'value'             => 'Test Value',
+            'blankable_value'   => 'Test Blankable Value',
+            'm_timestamp'       => $dateTime,
+            'date_created'      => $dateTime,
+            'non_existent_col'  => 'some value'
+        ];
+        $result1 = $model->insert($data2Save);
+
+        // make sure all valid column names were returned
+        self::assertArrayHasAllKeys(
+            $result1,
+            ['key_name', 'value', 'blankable_value', 'm_timestamp', 'date_created']
+        );
+        
+        // make sure correct column values were returned
+        self::assertArrayHasAllKeys(
+            array_flip($result1),
+            ['Test Key', 'Test Value', 'Test Blankable Value', $dateTime, $dateTime]
+        );
+        
+        // make sure non-existent column was not returned
+        self::assertArrayNotHasKey('non_existent_col', $result1);
+
+        // Check that the primary key value was returned in the result
+        self::assertArrayHasKey('id', $result1);
+        
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        // test bool, null and number values & a stringable object's string value are saved properly
+        $stringableObj = new StringableObject();
+        $stringValOfObj = $stringableObj->__toString();
+        $data2Save = [
+            'key_name'          => $stringableObj,  // stringable object
+            'value'             => 777,             // number integer
+            'blankable_value'   => null,            // null
+            'm_timestamp'       => $dateTime,
+            'date_created'      => $dateTime,
+            'non_existent_col'  => 'some value'
+        ];
+        $result2 = $model->insert($data2Save);
+        
+        // make sure correct column values were returned
+        
+        // was stringable object saved as string
+        self::assertContains( $stringValOfObj, $result2 );
+        
+        // was integer value saved properly
+        self::assertContains( '777', $result2 );
+        
+        // was null value saved properly
+        self::assertContains( null, $result2 );
+        
+        $data2Save = [
+            'key_name'          => 'Another Key',
+            'value'             => 777.777,         // number float
+            'blankable_value'   => true,            // boolean true
+            'm_timestamp'       => $dateTime,
+            'date_created'      => $dateTime,
+            'non_existent_col'  => 'some value'
+        ];
+        $result3 = $model->insert($data2Save);
+
+        // was float value saved properly
+        self::assertContains( '777.777', $result3 );
+        
+        if($isRunningOnPostgresql) {
+            
+            // was boolean true value saved properly
+            self::assertContains( 't', $result3 );
+            
+        } else {
+            // was boolean true value saved properly
+            self::assertContains( '1', $result3 );
+        }
+        
+        $data2Save = [
+            'key_name'          => 'Another Key',
+            'value'             => 777.888,
+            'blankable_value'   => false,            // boolean false
+            'm_timestamp'       => $dateTime,
+            'date_created'      => $dateTime,
+            'non_existent_col'  => 'some value'
+        ];
+        $result4 = $model->insert($data2Save);
+        
+        if($isRunningOnPostgresql) {
+            
+            // was boolean false value saved properly
+            self::assertContains( 'f', $result4 );
+            
+        } else {
+            
+            // was boolean false value saved properly
+            self::assertContains( '0', $result4 );
+        }
+        
+        // Check that the primary key value is returned in the result
+        // and that it's not null when a null primary key value is supplied
+        $data2Save = [
+            'id'                => null, // null id value
+            'key_name'          => 'Test Key 2',
+            'value'             => 'Test Value 2',
+            'blankable_value'   => 'Test Blankable Value 2',
+            'm_timestamp'       => $dateTime,
+            'date_created'      => $dateTime,
+            'non_existent_col'  => 'some value'
+        ];
+        $result5 = $model->insert($data2Save);
+        self::assertArrayHasKey('id', $result5);
+        self::assertNotNull($result5['id']);
+        self::assertIsNumeric($result5['id']);
+        self::assertEquals(
+            $model->fetchValue($model->getSelect()->cols([' MAX(id) as max_id '])) , 
+            $result5['id']
+        );
+        
+        // Check that the primary key value is returned in the result
+        // and that it's not null when a null primary key value is supplied
+        $model2 = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 
+            'id', 'key_value_no_auto_inc_pk'
+        );
+        $data2Save = [
+            'id'                => 25, // null id value
+            'key_name'          => 'Test Key 23',
+            'value'             => 'Test Value 23',
+            'blankable_value'   => 'Test Blankable Value 23',
+            'm_timestamp'       => $dateTime,
+            'date_created'      => $dateTime,
+            'non_existent_col'  => 'some value'
+        ];
+        $result6 = $model2->insert($data2Save);
+        self::assertArrayHasKey('id', $result6);
+        self::assertEquals('25', ''.$result6['id']);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Test the created_timestamp_column_name & updated_timestamp_column_name
+        // auto timestamp addition to insert data works as expected
+        $data2Save = [
+            'key_name'          => 'Test Key 222',
+            'value'             => 'Test Value 222',
+            'blankable_value'   => 'Test Blankable Value 222',
+            //'m_timestamp'       => $dateTime,
+            //'date_created'      => $dateTime,
+            'non_existent_col'  => 'some value'
+        ];
+        $model->setCreatedTimestampColumnName('date_created');
+        $model->setUpdatedTimestampColumnName('m_timestamp');
+        
+        // saving data without specified values for the 
+        // created_timestamp_column_name & updated_timestamp_column_name
+        $result7 = $model->insert($data2Save);
+        
+        // make sure that the insert method auto populated those fields
+        self::assertArrayHasKey('date_created', $result7);
+        self::assertArrayHasKey('m_timestamp', $result7);
+        self::assertIsString($result7['date_created']);
+        self::assertIsString($result7['m_timestamp']);
+        self::assertNotEmpty($result7['date_created']);
+        self::assertNotEmpty($result7['m_timestamp']);
+        
+        // saving data with specified values for the 
+        // created_timestamp_column_name & updated_timestamp_column_name
+        // saves the specified timestamp values, meaning that auto-population
+        // of those fields did not kick in as expected.
+        $data2Save = [
+            'key_name'          => 'Test Key 222',
+            'value'             => 'Test Value 222',
+            'blankable_value'   => 'Test Blankable Value 222',
+            'm_timestamp'       => $dateTime,
+            'date_created'      => $dateTime,
+            'non_existent_col'  => 'some value'
+        ];
+        $result8 = $model->insert($data2Save);
+        self::assertArrayHasKey('date_created', $result8);
+        self::assertArrayHasKey('m_timestamp', $result8);
+        // make sure that the insert method used specified values instead of
+        // auto populated values
+        self::assertEquals($dateTime, $result8['date_created']);
+        self::assertEquals($dateTime, $result8['m_timestamp']);
+        
+        
+        
+        // saving data with empty specified values for the 
+        // created_timestamp_column_name & updated_timestamp_column_name
+        // saves with auto-populated timestamp values, meaning that 
+        // auto-population of those fields kicked in as expected.
+        $data2Save = [
+            'key_name'          => 'Test Key 222',
+            'value'             => 'Test Value 222',
+            'blankable_value'   => 'Test Blankable Value 222',
+            'm_timestamp'       => null,
+            'date_created'      => null,
+            'non_existent_col'  => 'some value'
+        ];
+        $result9 = $model->insert($data2Save);
+        self::assertArrayHasKey('date_created', $result9);
+        self::assertArrayHasKey('m_timestamp', $result9);
+        self::assertIsString($result9['date_created']);
+        self::assertIsString($result9['m_timestamp']);
+        self::assertNotEmpty($result9['date_created']);
+        self::assertNotEmpty($result9['m_timestamp']);
+    }
+    
+    public function testThatUpdateMatchingDbTableRowsWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $isRunningOnPostgresql = strtolower($model->getPdoDriverName()) === 'pgsql';
+        
+        $this->clearDbTable($model);
+        
+        self::assertSame($model, $model->updateMatchingDbTableRows([]));
+        self::assertSame($model, $model->updateMatchingDbTableRows([], []));
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(
+                ['non_existent_col1'  => 'some value1', 'non_existent_col2'  => 'some value1'], 
+                []
+            )
+        );
+        self::assertSame(
+            $model, 
+            $model->updateMatchingDbTableRows(
+                ['non_existent_col1'  => 'some value1', 'non_existent_col2'  => 'some value1'], 
+                ['key_name' => ['Test Key'],]
+            )
+        );
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(
+                ['non_existent_col1'  => 'some value1', 'non_existent_col2'  => 'some value1'], 
+                ['key_name' => 'Test Key',]
+            )
+        );
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(
+                ['key_name' => 'Test Key',],
+                ['non_existent_col1'  => 'some value1', 'non_existent_col2'  => 'some value1']                
+            )
+        );
+        
+        //////////////////
+        // Add some data
+        //////////////////
+        $dateTime = date('Y-m-d H:i:s', strtotime("+4 minutes"));
+        $dataPrototype = [
+            'key_name' => 'Test Key', 
+            'value' => 'Test Value', 
+            'blankable_value' => 'Test Blankable Value',
+            'm_timestamp' => $dateTime,
+            'date_created' => $dateTime,
+            'non_existent_col' => 'some value'
+        ];
+        $stringableObj = new \StringableObject();
+        
+        $i = 0;
+        $dataToInsert = [
+            $dataPrototype, $dataPrototype, $dataPrototype, 
+            $dataPrototype, $dataPrototype, $dataPrototype
+        ];
+        
+        foreach (array_keys($dataToInsert) as $key) {
+            
+            $dataToInsert[$key]['key_name'] .= ''.$i;
+            $dataToInsert[$key]['value'] .= ''.$i;
+            $i++;
+        }
+        
+        $model->insertMany($dataToInsert);
+        
+        //////////////////////////////////////
+        // Test that if empty array is passed as 2nd arg
+        // with valid update data as first arg, all rows
+        // get updated.
+        $newDateTime = date('Y-m-d H:i:s', strtotime("+20 minutes"));
+        $newDateTime2 = date('Y-m-d H:i:s', strtotime("+40 minutes"));
+        $newDateTime3 = date('Y-m-d H:i:s', strtotime("+50 minutes"));
+        self::assertSame(
+            $model, 
+            $model->updateMatchingDbTableRows(['m_timestamp' => $newDateTime])
+        );
+        
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            self::assertEquals($newDateTime, $dbRecord['m_timestamp']);
+        }
+        
+        self::assertSame(
+            $model, 
+            $model->updateMatchingDbTableRows(['m_timestamp' => $newDateTime2], [])
+        );
+        
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            self::assertEquals($newDateTime2, $dbRecord['m_timestamp']);
+        }
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Make sure primary key value never gets updated even if new primary key 
+        // value is supplied
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(
+                ['m_timestamp' => $newDateTime3, 'id' => 777]
+            )
+        );
+        
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            self::assertEquals($newDateTime3, $dbRecord['m_timestamp']);
+            self::assertNotEquals('777', ''.$dbRecord['id']);
+        }
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Test updating a column to 
+        // bool, null, number, *object with __toString
+        
+        // bool true
+        self::assertSame(
+            $model, 
+            $model->updateMatchingDbTableRows(['blankable_value' => true])
+        );
+        
+        $idsOfAllRecords = [null, null];
+        
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            $idsOfAllRecords[] = $dbRecord['id'];
+            
+            self::assertEquals(
+                $isRunningOnPostgresql ? 't' : '1' , 
+                $dbRecord['blankable_value'].''
+            );
+        }
+        
+        // bool false
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(
+                ['blankable_value' => false],
+                ['id' => $idsOfAllRecords] // valid ids mixed with nulls
+            )
+        );
+        
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            self::assertEquals(
+                $isRunningOnPostgresql ? 'f' : '0' , 
+                $dbRecord['blankable_value'].''
+            );
+        }
+        
+        // null
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(['blankable_value' => null])
+        );
+        
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            self::assertEquals(
+                null, 
+                $dbRecord['blankable_value']
+            );
+        }
+        
+        // integer
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(['blankable_value' => 777])
+        );
+        
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            self::assertEquals(
+                777, 
+                $dbRecord['blankable_value']
+            );
+        }
+        
+        // float
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(['blankable_value' => 777.888])
+        );
+        
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            self::assertEquals(
+                777.888, 
+                $dbRecord['blankable_value']
+            );
+        }
+        
+        // stringable object
+        self::assertSame(
+            $model, 
+            $model->updateMatchingDbTableRows(['blankable_value' => $stringableObj])
+        );
+        
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            self::assertIsString( 
+                $dbRecord['blankable_value']
+            );
+            
+            self::assertFalse( 
+                \LeanOrm\Utils::isEmptyString($dbRecord['blankable_value'])
+            );
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        // Test updating a column using  
+        // bool, null, number, *object with __toString
+        // in the WHERE clause, " WHERE Col IN " or " WHERE Col = ? "
+        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, true);
+        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, false);
+        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, null);
+        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, 777);
+        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, 777.888);
+        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, $stringableObj);
+        
+        // Test that the updated_timestamp_column_name functionality works as expected
+        //$dateTime = date('Y-m-d H:i:s', strtotime("+4 minutes"));
+        $dateTimeTenMinsAgo = date('Y-m-d H:i:s', strtotime("-10 minutes")); // e.g "2022-12-05 07:30:57"
+        $aRecordFromDB = $model->fetchOneRecord();
+        $aRecordFromDB->m_timestamp = $dateTimeTenMinsAgo;
+        $aRecordFromDB->save();
+        
+        $refreshRecord = function($aRecordFromDB) use ($model): \LeanOrm\Model\Record {
+            return $model->fetchOneRecord(
+                        $model->getSelect()
+                              ->where(
+                                    " {$aRecordFromDB->getPrimaryCol()} = ? ", 
+                                    $aRecordFromDB->getPrimaryVal()
+                                )
+                    );
+        };
+        self::assertEquals($dateTimeTenMinsAgo, $refreshRecord($aRecordFromDB)->m_timestamp);
+        $model->setUpdatedTimestampColumnName('m_timestamp');
+        
+        // Now update a column of the DB table without explicitly specifying a value
+        // for m_timestamp. Result: m_timestamp should be automatically updated too
+        $model->updateMatchingDbTableRows(['blankable_value' => 'A new value']);
+        self::assertNotEquals($dateTimeTenMinsAgo, $refreshRecord($aRecordFromDB)->m_timestamp);
+        
+        $dateTimeFromLastRefreshedRecord = 
+            DateTime::createFromFormat('Y-m-d H:i:s', $refreshRecord($aRecordFromDB)->m_timestamp);
+                
+        self::assertTrue(
+            DateTime::createFromFormat('Y-m-d H:i:s', $dateTimeTenMinsAgo)
+            <  $dateTimeFromLastRefreshedRecord
+        );
+        
+        // Do another update, this time include m_timestamp with a null & '' value
+        sleep(1); // sleep for one second to make sure updated timestamp is different
+        $model->updateMatchingDbTableRows(
+            ['blankable_value' => 'A new value', 'm_timestamp' => null ]
+        ); // m_timestamp should be auto populated under the hood
+        
+        self::assertTrue(
+            $dateTimeFromLastRefreshedRecord
+            <  DateTime::createFromFormat('Y-m-d H:i:s', $refreshRecord($aRecordFromDB)->m_timestamp)
+        );
+        
+        $dateTimeFromLastRefreshedRecord = 
+            DateTime::createFromFormat('Y-m-d H:i:s', $refreshRecord($aRecordFromDB)->m_timestamp);
+        
+        ////////////////////////////////////////////////////////////////////////
+        sleep(1); // sleep for one second to make sure updated timestamp is different
+        $model->updateMatchingDbTableRows(
+            ['blankable_value' => 'A new value', 'm_timestamp' => '' ]
+        ); // m_timestamp should be auto populated under the hood
+        
+        self::assertTrue(
+            $dateTimeFromLastRefreshedRecord
+            <  DateTime::createFromFormat('Y-m-d H:i:s', $refreshRecord($aRecordFromDB)->m_timestamp)
+        );
+        
+        $dateTimeFromLastRefreshedRecord = 
+            DateTime::createFromFormat('Y-m-d H:i:s', $refreshRecord($aRecordFromDB)->m_timestamp);
+        
+        ////////////////////////////////////////////////////////////////////////
+        $dateTimeTwentyMinsAgo = date('Y-m-d H:i:s', strtotime("-20 minutes"));
+        
+        $model->updateMatchingDbTableRows(
+            [
+                'blankable_value' => 'A new value', 
+                'm_timestamp' => $dateTimeTwentyMinsAgo 
+            ]
+        ); // m_timestamp should not be auto populated under the hood
+           // because we have explicitly set it to a non-empty value
+        
+        self::assertTrue(
+            $dateTimeFromLastRefreshedRecord
+             >  DateTime::createFromFormat('Y-m-d H:i:s', $refreshRecord($aRecordFromDB)->m_timestamp)
+        ); 
+    }
+    
+    public function testThatUpdateSpecifiedRecordWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        
+        // Injecting a newly Created & never saved record
+        self::assertSame($model, $model->updateSpecifiedRecord($model->createNewRecord()));
+        
+        // Injecting an existing record without any changes
+        self::assertSame($model, $model->updateSpecifiedRecord($model->fetchOneRecord()));
+
+        $existingRecord = $model->fetchOneRecord();
+        $existingRecord->value = 'A New Value';
+        $existingRecord->blankable_value = 'A New Blankable Value';
+        
+        // Injecting an existing record with changes should return true
+        self::assertSame($model, $model->updateSpecifiedRecord($existingRecord));
+        
+        // verify that the just updated record was properly updated
+        $refetchedRecord = 
+            $model->fetchOneRecord(
+                        $model->getSelect()
+                              ->where(
+                                    " {$existingRecord->getPrimaryCol()} = ? ", 
+                                    $existingRecord->getPrimaryVal()
+                                )
+                    );
+                                    
+        self::assertEquals('A New Value', $refetchedRecord->value);
+        self::assertEquals('A New Blankable Value', $refetchedRecord->blankable_value);
+    }
+    
+    public function testThatUpdateSpecifiedRecordThrowsExceptionWithReadOnlyRecord() {
+        
+        // acceptable insert values are
+        // *bool, *null, *number, *string, *object with __toString
+        // Any value outside of these is considered invalid for insert
+        $this->expectException(\LeanOrm\CantUpdateReadOnlyRecordException::class);
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
+        
+        $model->updateSpecifiedRecord($model->createNewRecord()); // will throw exception
+    }
+    
+    public function testThatUpdateSpecifiedRecordThrowsExceptionWithRecordBelongingToDifferentTable() {
+        
+        // acceptable insert values are
+        // *bool, *null, *number, *string, *object with __toString
+        // Any value outside of these is considered invalid for insert
+        $this->expectException(\GDAO\ModelInvalidUpdateValueSuppliedException::class);
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
+        
+        $model->updateSpecifiedRecord(
+            $this->testModelObjects['authors_with_specialized_collection_and_record']->createNewRecord()
+        ); // will throw exception
+    }
+    
+    protected function runScalarWhereParamValsTestsForUpdateMatchingDbTableRows(
+        LeanOrm\Model $model, $scalarVal  
+    ): void {
+        
+        // Set all values under the blankable_value col 
+        // to a random value that is not $scalarVal
+        $model->updateMatchingDbTableRows(
+            ['blankable_value' => date('Y-m-d H:i:s') . random_int(1, 999) ]
+        );
+        
+        // " WHERE Col = ? "  and " WHERE Col = ? " when ? is bool true
+        // At this point the column contains a string value, where clause would 
+        // return 0 records affected
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(
+                ['blankable_value' => 'A Val'],
+                ['blankable_value' => $scalarVal]
+            ) // " where blankable_value = ? " ? === true
+        );
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(
+                ['blankable_value' => 'A Val'],
+                ['blankable_value' => [$scalarVal, $scalarVal]]
+            )  // " where blankable_value IN (?, ?) " ? === $scalarVal
+        );
+
+        // Now set all values under the blankable_value col 
+        // to the desired value of $scalarVal
+        $model->updateMatchingDbTableRows(
+            ['blankable_value' => $scalarVal]
+        );
+        
+        // At this point the column contains the value $scalarVal, 
+        // where clause would return $numRecsInTable records affected
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(
+                ['blankable_value' => 'A Val'],
+                ['blankable_value' => $scalarVal]
+            ) // " where blankable_value = ? " ? === $scalarVal
+        );
+        
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            self::assertEquals( 
+                'A Val', $dbRecord['blankable_value']
+            );
+        }
+        
+        // Now set all values under the blankable_value col 
+        // to the desired value of $scalarVal again
+        $model->updateMatchingDbTableRows(
+            ['blankable_value' => $scalarVal]
+        );
+        
+        self::assertSame(
+            $model,
+            $model->updateMatchingDbTableRows(
+                ['blankable_value' => 'A Val'],
+                ['blankable_value' => [$scalarVal, $scalarVal]]
+            )  // " where blankable_value IN (?, ?) " ? === $scalarVal
+        );
+
+        foreach ($model->fetchRowsIntoArray() as $dbRecord) {
+            
+            self::assertEquals( 
+                'A Val', $dbRecord['blankable_value']
+            );
+        }
+    }
+
+
+    public function testThatInsertManyWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value'
+        );
+
+        $isRunningOnPostgresql = strtolower($model->getPdoDriverName()) === 'pgsql';
+
+        // Empty arrays should return false
+        self::assertFalse($model->insertMany());
+        self::assertFalse($model->insertMany([]));
+        self::assertFalse($model->insertMany([[],[],[]]));
+        
+        // Non-existent columns should return false
+        self::assertFalse(
+            $model->insertMany(
+                [
+                    ['non_existent_col1'  => 'some value1', 'non_existent_col2'  => 'some value1'],
+                    ['non_existent_col1'  => 'some value2', 'non_existent_col2'  => 'some value2'],
+                    ['non_existent_col1'  => 'some value3', 'non_existent_col2'  => 'some value3']
+                ]
+            )
+        );
+        
+        $this->clearDbTable($model);
+        
+        ///////////////////////////////////////////////////////
+        // do some inserts with valid data types, ie:
+        // bool, null, number, string, object with __toString
+        $dateTime = date('Y-m-d H:i:s', strtotime("+4 minutes"));
+        $dataPrototype = [
+            'key_name' => 'Test Key', 
+            'value' => 'Test Value', 
+            'blankable_value' => 'Test Blankable Value',
+            'm_timestamp' => $dateTime,
+            'date_created' => $dateTime,
+            'non_existent_col' => 'some value'
+        ];
+        $stringableObj = new StringableObject();
+        $stringValOfObj = $stringableObj->__toString();
+        
+        $dataWithBoolTrue   = $dataPrototype;
+        $dataWithBoolFalse  = $dataPrototype;
+        $dataWithNull       = $dataPrototype;
+        $dataWithInteger    = $dataPrototype;
+        $dataWithFloat      = $dataPrototype;
+        $dataWithStringable = $dataPrototype;
+        
+        $dataWithBoolTrue['blankable_value']    = true;
+        $dataWithBoolFalse['blankable_value']   = false;
+        $dataWithNull['blankable_value']        = null;
+        $dataWithInteger['blankable_value']     = 777;
+        $dataWithFloat['blankable_value']       = 777.888;
+        $dataWithStringable['blankable_value']  = $stringableObj;
+        
+        $i = 0;
+        $dataToInsert = [
+            $dataWithBoolTrue, $dataWithBoolFalse, $dataWithNull, 
+            $dataWithInteger, $dataWithFloat, $dataWithStringable
+        ];
+        
+        foreach (array_keys($dataToInsert) as $key) {
+            
+            $dataToInsert[$key]['key_name'] .= ''.$i;
+            $dataToInsert[$key]['value'] .= ''.$i;
+            $i++;
+        }
+        
+        $result1 = $model->insertMany($dataToInsert);
+        
+        // insertMany returned true which is what we want
+        self::assertTrue($result1);
+        
+        // let's verify each row from the DB
+        foreach ($dataToInsert as $potentiallySavedData) {
+            
+            $dbRecord = $model->fetchOneRecord(
+                            $model->getSelect()
+                                  ->where(
+                                        ' key_name = ? ', 
+                                        $potentiallySavedData['key_name']
+                                    ) 
+                        )->getData();
+            
+            self::assertEquals($dbRecord['value'], $potentiallySavedData['value']);
+            self::assertEquals($dbRecord['m_timestamp'], $dateTime);
+            self::assertEquals($dbRecord['date_created'], $dateTime);
+
+            if(is_bool($potentiallySavedData['blankable_value']) ) {
+                
+                if($potentiallySavedData['blankable_value']) {
+                    
+                    // true value
+                    self::assertEquals(
+                        $dbRecord['blankable_value'].'', 
+                        $isRunningOnPostgresql ? 't' : '1'
+                    );
+
+                } else {
+                    
+                    // false value
+                    self::assertEquals(
+                        $dbRecord['blankable_value'].'', 
+                        $isRunningOnPostgresql ? 'f' : '0'
+                    );
+                }
+                
+            } elseif(is_object($potentiallySavedData['blankable_value'])){
+                
+                self::assertEquals(
+                    $dbRecord['blankable_value'], 
+                    $stringValOfObj
+                );
+                
+            } else {
+                
+                self::assertEquals(
+                    $dbRecord['blankable_value'], 
+                    $potentiallySavedData['blankable_value']
+                );
+            } // if(is_bool($potentiallySavedData['blankable_value']) )
+        } // foreach ($dataToInsert as $potentiallySavedData)
+        
+        $this->clearDbTable($model); //empty the table again
+        
+        ///////////////////////////////////////////////////////////////////////
+        // Going to test the created_timestamp_column_name
+        // & updated_timestamp_column_name auto-populating
+        // feature. Also test that when null values are set 
+        // for the primary key column in a table that has
+        // an auto-incrementing primary key column, the data
+        // gets saved correctly.
+        ///////////////////////////////////////////////////////////////////////
+        $model->setCreatedTimestampColumnName('date_created');
+        $model->setUpdatedTimestampColumnName('m_timestamp');
+        
+        $dataWithTimestampsSpecified                = $dataPrototype; // already set in $dataPrototype
+        $dataWithTimestampsSpecifiedWithNull        = $dataPrototype;
+        $dataWithTimestampsSpecifiedWithEmptyString = $dataPrototype;
+        $dataWithoutTimestampFields                 = $dataPrototype;
+        
+        $i = 0;
+        $dataWithTimestampsSpecified;
+        $dataWithTimestampsSpecified['id'] = null; // testing null pk val
+        $dataWithTimestampsSpecified['key_name'] .= ''.$i;
+        $dataWithTimestampsSpecified['value'] .= ''.$i++;
+
+        $dataWithTimestampsSpecifiedWithNull['id']                  = null; // testing null pk val
+        $dataWithTimestampsSpecifiedWithNull['m_timestamp']         = null;
+        $dataWithTimestampsSpecifiedWithNull['date_created']        = null;
+        $dataWithTimestampsSpecifiedWithNull['key_name'] .= ''.$i;
+        $dataWithTimestampsSpecifiedWithNull['value'] .= ''.$i++;
+        
+        $dataWithTimestampsSpecifiedWithEmptyString['id']           = null; // testing null pk val
+        $dataWithTimestampsSpecifiedWithEmptyString['m_timestamp']  = '';
+        $dataWithTimestampsSpecifiedWithEmptyString['date_created'] = '';
+        $dataWithTimestampsSpecifiedWithEmptyString['key_name'] .= ''.$i;
+        $dataWithTimestampsSpecifiedWithEmptyString['value'] .= ''.$i++;
+        
+        unset($dataWithoutTimestampFields['m_timestamp']);
+        unset($dataWithoutTimestampFields['date_created']);
+        $dataWithoutTimestampFields['id']           = null; // testing null pk val
+        $dataWithoutTimestampFields['key_name']    .= ''.$i;
+        $dataWithoutTimestampFields['value']       .= ''.$i++;
+        
+        $dataToInsert = [
+            $dataWithTimestampsSpecified, $dataWithTimestampsSpecifiedWithNull, 
+            $dataWithTimestampsSpecifiedWithEmptyString, $dataWithoutTimestampFields
+        ];
+        
+        $result2 = $model->insertMany($dataToInsert);
+        
+        // insertMany returned true which is what we want
+        self::assertTrue($result2);
+        
+        
+        // let's verify each row from the DB
+        foreach ($dataToInsert as $potentiallySavedData) {
+            
+            $dbRecord = $model->fetchOneRecord(
+                            $model->getSelect()
+                                  ->where(
+                                        ' key_name = ? ', 
+                                        $potentiallySavedData['key_name']
+                                    ) 
+                        )->getData();
+            
+            if($potentiallySavedData === $dataWithTimestampsSpecified) {
+                
+                // this is the only record that had its timestamp fields
+                // set properly. Verify that the set values are present
+                // in the record just fetched from the db
+                self::assertEquals($dateTime, $dbRecord['date_created']);
+                self::assertEquals($dateTime, $dbRecord['m_timestamp']);
+                
+            } else {
+                
+                // every other record either did not have timestamp values
+                // set or they were set with nulls or empty strings.
+                self::assertNotEquals($dateTime, $dbRecord['date_created']);
+                self::assertNotEquals($dateTime, $dbRecord['m_timestamp']);
+            }
+        }
+        
+        ///////////////////////////////////////////////////////////////////////
+        // We are now going to save data into a table without a 
+        // non-auto-incrementing primary key column. This table requires
+        // that primary key values be specified in each row to insert.
+        ///////////////////////////////////////////////////////////////////////
+        $model2 = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'id', 'key_value_no_auto_inc_pk'
+        );
+        
+        $this->clearDbTable($model2); //empty the table
+        
+        $data2Insert = [
+            [
+                'id'                => 777,
+                'key_name'          => 'Test Key 1', 
+                'value'             => 'Test Value 1', 
+                'blankable_value'   => 'Test Blankable Value 1',
+                'm_timestamp'       => $dateTime,
+                'date_created'      => $dateTime,
+                'non_existent_col'  => 'some value'
+            ],
+            [
+                'id'                => 778,
+                'key_name'          => 'Test Key 2', 
+                'value'             => 'Test Value 2', 
+                'blankable_value'   => 'Test Blankable Value 2',
+                'm_timestamp'       => $dateTime,
+                'date_created'      => $dateTime,
+                'non_existent_col'  => 'some value'
+            ],
+            
+        ];
+        self::assertTrue($model2->insertMany($data2Insert));
+        $idsFromDB = $model2->fetchCol($model2->getSelect()->cols(['id']));
+        
+        // check that the primary key values we set in the data we just inserted
+        // were saved to the DB
+        self::assertEquals(
+            $isRunningOnPostgresql ? [777, 778] : ['777', '778'], 
+            $idsFromDB
+        );
+    }
+    
+    public function testThatInsertThrowsExceptionWithUnacceptableInsertValue() {
+        
+        // acceptable insert values are
+        // *bool, *null, *number, *string, *object with __toString
+        // Any value outside of these is considered invalid for insert
+        $this->expectException(\GDAO\ModelInvalidInsertValueSuppliedException::class);
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        
+        ///////////////////////////////////////////////////////////////////////////
+        // Some of the keys in the data array are actual table cols are table cols
+        $dateTime = date('Y-m-d H:i:s');
+        $data2Save = [
+            'key_name'          => 'Test Key',
+            'value'             => 'Test Value',
+            'blankable_value'   => ['Test Blankable Value'], // invalid value
+            'm_timestamp'       => $dateTime,
+            'date_created'      => $dateTime,
+            'non_existent_col'  => 'some value'
+        ];
+        $model->insert($data2Save); // will throw exception
+    }
+    
+    public function testThatInsertManyThrowsExceptionWithUnacceptableInsertValueForAColumnInARow() {
+        
+        // acceptable insert values are
+        // *bool, *null, *number, *string, *object with __toString
+        // Any value outside of these is considered invalid for insert
+        $this->expectException(\GDAO\ModelInvalidInsertValueSuppliedException::class);
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        
+        ///////////////////////////////////////////////////////////////////////////
+        // Some of the keys in the data array are actual table cols are table cols
+        $dateTime = date('Y-m-d H:i:s');
+        $data2Save = [
+            [
+                'key_name'          => 'Test Key',
+                'value'             => 'Test Value',
+                'blankable_value'   => ['Test Blankable Value'], // invalid value
+                'm_timestamp'       => $dateTime,
+                'date_created'      => $dateTime,
+                'non_existent_col'  => 'some value'
+            ]
+        ];
+        $model->insertMany($data2Save); // will throw exception
+    }
+    
+    public function testThatInsertManyThrowsExceptionWithNonArrayInsideArrayParameter() {
+        
+        // acceptable insert values are
+        // *bool, *null, *number, *string, *object with __toString
+        // Any value outside of these is considered invalid for insert
+        $this->expectException(\GDAO\ModelInvalidInsertValueSuppliedException::class);
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        
+        ///////////////////////////////////////////////////////////////////////////
+        // Some of the keys in the data array are actual table cols are table cols
+        $dateTime = date('Y-m-d H:i:s');
+        $data2Save = [
+            "non array value", // this should trigger an exception
+            [
+                'key_name'          => 'Test Key 5',
+                'value'             => 'Test Value 5',
+                'blankable_value'   => 'Test Blankable Value 5', 
+                'm_timestamp'       => $dateTime,
+                'date_created'      => $dateTime,
+                'non_existent_col'  => 'some value'
+            ]
+        ];
+        $model->insertMany($data2Save); // will throw exception
+    }
+    
+    
+    public function testThatUpdateMatchingDbTableRowsThrowsExceptionWithUnacceptableUpdateWhereParam() {
+        
+        // acceptable insert values are
+        // *bool, *null, *number, *string, *object with __toString
+        // Any value outside of these is considered invalid for insert
+        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $update_vals = ['key_name' => 'Test Key New',];
+        $update_query = [
+            'key_name'          => 'Test Key',
+            'value'             => 'Test Value',
+            'blankable_value'   => [
+                                        'Test Blankable Value', 
+                                        [], // invalid sub array value
+                                   ], 
+        ];
+        $model->updateMatchingDbTableRows($update_vals, $update_query); // will throw exception
+    }
+    
+    public function testThatUpdateMatchingDbTableRowsThrowsExceptionWithUnacceptableUpdateWhereParam2() {
+        
+        // acceptable insert values are
+        // *bool, *null, *number, *string, *object with __toString
+        // Any value outside of these is considered invalid for insert
+        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $update_vals = ['key_name' => 'Test Key New',];
+        $update_query = [
+            'key_name'          => 'Test Key',
+            'value'             => 'Test Value',
+            'blankable_value'   => function(){}, // invalid value 
+        ];
+        $model->updateMatchingDbTableRows($update_vals, $update_query); // will throw exception
+    }
+    
+    public function testThatUpdateMatchingDbTableRowsThrowsExceptionWithUnacceptableUpdateParam() {
+        
+        // acceptable insert values are
+        // *bool, *null, *number, *string, *object with __toString
+        // Any value outside of these is considered invalid for insert
+        $this->expectException(\GDAO\ModelInvalidUpdateValueSuppliedException::class);
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $update_vals = [
+            'key_name' => 'Test Key New',
+            'blankable_value'   => function(){}, // invalid value 
+        ];
+        $update_query = [
+            'key_name'          => 'Test Key',
+            'value'             => 'Test Value',
+        ];
+        $model->updateMatchingDbTableRows($update_vals, $update_query); // will throw exception
     }
     
     protected function insertDataIntoTable(string $tableName, array $tableData) {
@@ -2753,11 +3812,22 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $sth->execute($insertBuilder->getBindValues());
     }
     
+    protected function clearDbTable(\LeanOrm\Model $model):void {
+            
+        // grab all the ids 
+        $ids = $model->fetchCol($model->getSelect()->cols([$model->getPrimaryCol()]));
+        
+        if(count($ids) > 0) {
+            // delete using all the ids, which leads to all rows being deleted
+            $model->deleteMatchingDbTableRows([$model->getPrimaryCol()=>$ids]);
+        }
+    }
+    
     protected function assertArrayHasAllKeys(array $arrayToTest, array $keysToCheck): void {
         
         foreach ($keysToCheck as $key) {
             
-            $this->assertArrayHasKey($key, $arrayToTest);
+            self::assertArrayHasKey($key, $arrayToTest);
         }
     }
 }

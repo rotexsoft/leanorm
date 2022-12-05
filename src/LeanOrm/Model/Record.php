@@ -269,7 +269,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function getPrimaryCol(): string {
 
-        return $this->getModel()->getPrimaryColName();
+        return $this->getModel()->getPrimaryCol();
     }
 
     /**
@@ -559,7 +559,10 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function setStateToNew(): self {
 
-        unset($this[$this->getPrimaryCol()]);
+        $this->data = [];
+        $this->related_data = [];
+        $this->initial_data = null;
+        $this->non_table_col_and_non_related_data = [];
         $this->markAsNew();
         
         return $this;
@@ -616,12 +619,9 @@ class Record implements \GDAO\Model\RecordInterface
                 if( $this->isChanged() ) {
                     
                     //update
-                    $result = $this->getModel()->updateSpecifiedRecord($this);
-                    
-                    if( $result === true ) {
-                        
-                        $this->initial_data = $this->data;
-                    }
+                    $this->getModel()->updateSpecifiedRecord($this);
+                    $this->initial_data = $this->data;
+                    $result = true;
                 }
             }
         }

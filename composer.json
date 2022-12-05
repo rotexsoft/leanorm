@@ -15,7 +15,7 @@
     ],
     "require": {
         "php": ">=7.4",
-        "rotexsoft/gdao": "2.1.0-RC4",
+        "rotexsoft/gdao": "2.1.0-RC5",
         "aura/sqlquery": "^2.4",
         "aura/sqlschema": "^2.0",
         "psr/log": "^1.1",

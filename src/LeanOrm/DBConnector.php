@@ -210,13 +210,13 @@ class DBConnector {
      * 
      * @param string $query The raw SQL query
      * @param array  $parameters Optional bound parameters
-     * @param bool $return_pdo_statement true to add the \PDOStatement object used by this function to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
+     * @param bool $return_pdo_stmt_and_exec_time true to add the \PDOStatement object used by this function & time in seconds it took the query to execute to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
      * 
      * @return bool|array bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
      */
-    public function executeQuery(string $query, array $parameters=[], bool $return_pdo_statement=false) {
+    public function executeQuery(string $query, array $parameters=[], bool $return_pdo_stmt_and_exec_time=false) {
 
-        return static::_execute($query, $parameters, $return_pdo_statement, $this->connection_name);
+        return static::_execute($query, $parameters, $return_pdo_stmt_and_exec_time, $this->connection_name);
     }
 
    /**

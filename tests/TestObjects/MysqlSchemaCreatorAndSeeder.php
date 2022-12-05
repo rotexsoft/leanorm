@@ -78,6 +78,10 @@ class MysqlSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
         ");
         
         $this->connection->query("
+            DROP TABLE IF EXISTS `key_value_no_auto_inc_pk`;
+        ");
+        
+        $this->connection->query("
             CREATE TABLE key_value (
                 id int unsigned NOT NULL AUTO_INCREMENT,
                 key_name TEXT NOT NULL,
