@@ -398,7 +398,6 @@ class Model extends \GDAO\Model {
 
     /**
      * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
-     * @return void
      */
     public function loadRelationshipData($rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false): self {
 
@@ -495,7 +494,6 @@ class Model extends \GDAO\Model {
     
     /**
      * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
-     * @return void
      */
     protected function loadHasMany( 
         string $rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false 
@@ -573,7 +571,6 @@ class Model extends \GDAO\Model {
     
     /**
      * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
-     * @return void
      */
     protected function loadHasManyTrough( 
         string $rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false 
@@ -734,7 +731,6 @@ SELECT {$foreign_table_name}.*,
     
     /**
      * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
-     * @return void
      */
     protected function loadHasOne( 
         string $rel_name, &$parent_data, bool $wrap_row_in_a_record=false
@@ -815,7 +811,6 @@ SELECT {$foreign_table_name}.*
     
     /**
      * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
-     * @return void
      */
     protected function loadBelongsTo(string $rel_name, &$parent_data, bool $wrap_row_in_a_record=false): void {
 
@@ -1006,21 +1001,16 @@ SELECT {$foreign_table_name}.*
     ): array {
         $col_vals = [];
 
-        if(
-            $parent_data instanceof \GDAO\Model\CollectionInterface
-            || is_array($parent_data)
-        ) {
-            if ( is_array($parent_data) ) {
+        if ( is_array($parent_data) ) {
 
-                foreach($parent_data as $data) {
+            foreach($parent_data as $data) {
 
-                    $col_vals[] = $data[$fkey_col_in_my_table];
-                }
-
-            } else {
-
-                $col_vals = $parent_data->getColVals($fkey_col_in_my_table);
+                $col_vals[] = $data[$fkey_col_in_my_table];
             }
+
+        } elseif($parent_data instanceof \GDAO\Model\CollectionInterface) {
+
+            $col_vals = $parent_data->getColVals($fkey_col_in_my_table);
         }
 
         return $col_vals;
@@ -2418,7 +2408,7 @@ SELECT {$foreign_table_name}.*
     }
     
     protected function checkThatRelationNameIsNotAnActualColumnName(string $relationName): void {
-        
+
         $tableCols = $this->getTableColNames();
         $tableColsLowerCase = array_map('strtolower', $tableCols);
 
