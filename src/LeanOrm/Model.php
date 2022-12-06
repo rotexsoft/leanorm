@@ -137,37 +137,37 @@ class Model extends \GDAO\Model {
                 $dsn_n_tname_to_schema_def_map = [];
             }
 
-            if( array_key_exists($dsn.$this->table_name, $dsn_n_tname_to_schema_def_map) ) {
+            if( array_key_exists($dsn.$this->getTableName(), $dsn_n_tname_to_schema_def_map) ) {
 
                 // use cached schema definition for the dsn and table name combo
-                $schema_definitions = $dsn_n_tname_to_schema_def_map[$dsn.$this->table_name];
+                $schema_definitions = $dsn_n_tname_to_schema_def_map[$dsn.$this->getTableName()];
 
             } else {
 
-                // let's make sure that $this->table_name is an actual table / view in the db
-                if( !$this->tableExistsInDB($this->table_name) ) {
+                // let's make sure that $this->getTableName() is an actual table / view in the db
+                if( !$this->tableExistsInDB($this->getTableName()) ) {
 
-                    $msg = "ERROR: Table name `{$this->table_name}` supplied to " 
+                    $msg = "ERROR: Table name `{$this->getTableName()}` supplied to " 
                             . get_class($this) . '::' . __FUNCTION__ . '(...)'
                             . ' does not exist as a table or view in the database';
                     throw new BadModelTableNameException($msg);
                 }
 
                 $this->table_cols = [];
-                $schema_definitions = $this->fetchTableColsFromDB($this->table_name);
+                $schema_definitions = $this->fetchTableColsFromDB($this->getTableName());
 
                 // cache schema definition for the current dsn and table combo
-                $dsn_n_tname_to_schema_def_map[$dsn.$this->table_name] = $schema_definitions;
+                $dsn_n_tname_to_schema_def_map[$dsn.$this->getTableName()] = $schema_definitions;
 
-            } // if( array_key_exists($dsn.$this->table_name, $dsn_n_tname_to_schema_def_map) )
+            } // if( array_key_exists($dsn.$this->getTableName(), $dsn_n_tname_to_schema_def_map) )
 
             if( 
                 $primary_col_name !== ''
-                && !$this->columnExistsInDbTable($this->table_name, $primary_col_name) 
+                && !$this->columnExistsInDbTable($this->getTableName(), $primary_col_name) 
             ) {
                 $msg = "ERROR: The Primary Key column name `{$primary_col_name}` supplied to " 
                         . get_class($this) . '::' . __FUNCTION__ . '(...)'
-                        . " does not exist as an actual column in the supplied table `{$this->table_name}`.";
+                        . " does not exist as an actual column in the supplied table `{$this->getTableName()}`.";
                 throw new BadModelPrimaryColumnNameException($msg);
             }
 
@@ -273,7 +273,7 @@ class Model extends \GDAO\Model {
         if(strtolower($this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) ===  'pgsql') {
             
             // Calculate schema name for postgresql
-            $schema_and_table_name = explode('.', $this->table_name);
+            $schema_and_table_name = explode('.', $this->getTableName());
             $schema_name = 'public';
             
             if(count($schema_and_table_name) === 2 ) {
@@ -324,7 +324,7 @@ class Model extends \GDAO\Model {
 
         $selectObj = (new QueryFactory($this->getPdoDriverName()))->newSelect();
 
-        $selectObj->from($this->table_name);
+        $selectObj->from($this->getTableName());
 
         return $selectObj;
     }
@@ -355,7 +355,7 @@ class Model extends \GDAO\Model {
      * 
      * @param array $params an array of parameters passed to a fetch*() method
      * @param array $disallowed_keys list of keys in $params not to be used to build the query object 
-     * @param string $table_name name of the table to select from (will default to $this->table_name if empty)
+     * @param string $table_name name of the table to select from (will default to $this->getTableName() if empty)
      * @return \Aura\SqlQuery\Common\Select or any of its descendants
      */
     protected function createQueryObjectIfNullAndAddColsToQuery(
@@ -367,7 +367,7 @@ class Model extends \GDAO\Model {
 
         if( $table_name === '' ) {
 
-            $table_name = $this->table_name;
+            $table_name = $this->getTableName();
         }
 
         if($initiallyNull || !$select_obj->hasCols()) {
@@ -396,7 +396,11 @@ class Model extends \GDAO\Model {
         return $default_colvals;
     }
 
-    public function loadRelationshipData($rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false): self {
+    /**
+     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
+     * @return void
+     */
+    public function loadRelationshipData($rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false): self {
 
         if( 
             array_key_exists($rel_name, $this->relations) 
@@ -428,6 +432,9 @@ class Model extends \GDAO\Model {
     
     protected function validateRelatedModelClassName(string $model_class_name): bool {
         
+        // DO NOT use static::class here, we always want self::class
+        // Subclasses can override this method to redefine their own
+        // Valid Related Model Class logic.
         $parent_model_class_name = self::class;
         
         if( !is_a($model_class_name, $parent_model_class_name, true) ) {
@@ -486,18 +493,17 @@ class Model extends \GDAO\Model {
         return true;
     }
     
+    /**
+     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
+     * @return void
+     */
     protected function loadHasMany( 
-        string $rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false 
+        string $rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false 
     ): void {
         if( 
             array_key_exists($rel_name, $this->relations) 
             && $this->relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY
         ) {
-            [
-                $fkey_col_in_foreign_table, $fkey_col_in_my_table, 
-                $foreign_model_obj, $related_data
-            ] = $this->getBelongsToOrHasOneOrHasManyData($rel_name, $parent_data);
-
             /*
                 -- BASIC SQL For Fetching the Related Data
 
@@ -513,6 +519,10 @@ class Model extends \GDAO\Model {
                   FROM {$foreign_table_name}
                  WHERE {$foreign_table_name}.{$fkey_col_in_foreign_table} = {$parent_data->$fkey_col_in_my_table}
             */
+            [
+                $fkey_col_in_foreign_table, $fkey_col_in_my_table, 
+                $foreign_model_obj, $related_data
+            ] = $this->getBelongsToOrHasOneOrHasManyData($rel_name, $parent_data);
 
             if ( 
                 $parent_data instanceof \GDAO\Model\CollectionInterface
@@ -561,8 +571,12 @@ class Model extends \GDAO\Model {
         } // if( array_key_exists($rel_name, $this->relations) )
     }
     
+    /**
+     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
+     * @return void
+     */
     protected function loadHasManyTrough( 
-        string $rel_name, &$parent_data, $wrap_each_row_in_a_record=false, $wrap_records_in_collection=false 
+        string $rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false 
     ): void {
         if( 
             array_key_exists($rel_name, $this->relations) 
@@ -718,8 +732,12 @@ SELECT {$foreign_table_name}.*,
         } // if( array_key_exists($rel_name, $this->relations) )
     }
     
+    /**
+     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
+     * @return void
+     */
     protected function loadHasOne( 
-        string $rel_name, &$parent_data, $wrap_row_in_a_record=false
+        string $rel_name, &$parent_data, bool $wrap_row_in_a_record=false
     ): void {
         if( 
             array_key_exists($rel_name, $this->relations) 
@@ -795,7 +813,11 @@ SELECT {$foreign_table_name}.*
         } // if( array_key_exists($rel_name, $this->relations) )
     }
     
-    protected function loadBelongsTo(string $rel_name, &$parent_data, $wrap_row_in_a_record=false): void {
+    /**
+     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
+     * @return void
+     */
+    protected function loadBelongsTo(string $rel_name, &$parent_data, bool $wrap_row_in_a_record=false): void {
 
         if( 
             array_key_exists($rel_name, $this->relations) 
@@ -813,8 +835,9 @@ SELECT {$foreign_table_name}.*
             $this->relations[$rel_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
         }
     }
-
+    
     /**
+     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
      * @return mixed[]
      */
     protected function getBelongsToOrHasOneOrHasManyData(string $rel_name, &$parent_data): array {
@@ -975,10 +998,11 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
+     * @param \GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
      * @return mixed[]
      */
     protected function getColValsFromArrayOrCollection(
-        &$parent_data, $fkey_col_in_my_table
+        &$parent_data, string $fkey_col_in_my_table
     ): array {
         $col_vals = [];
 
@@ -1003,8 +1027,8 @@ SELECT {$foreign_table_name}.*
     }
 
     protected function wrapRelatedDataInsideRecordsAndCollection(
-        &$matching_related_records, Model $foreign_model_obj, 
-        $wrap_each_row_in_a_record, $wrap_records_in_collection
+        array &$matching_related_records, Model $foreign_model_obj, 
+        bool $wrap_each_row_in_a_record, bool $wrap_records_in_collection
     ): void {
         
         if( $wrap_each_row_in_a_record ) {
@@ -1012,6 +1036,9 @@ SELECT {$foreign_table_name}.*
             //wrap into records of the appropriate class
             foreach ($matching_related_records as $key=>$rec_data) {
                 
+                // Mark as not new because this is a related row of data that 
+                // already exists in the db as opposed to a row of data that
+                // has never been saved to the db
                 $matching_related_records[$key] = 
                     $foreign_model_obj->createNewRecord($rec_data)
                                       ->markAsNotNew();
@@ -1301,7 +1328,7 @@ SELECT {$foreign_table_name}.*
 
             //delete statement
             $del_qry_obj = (new QueryFactory($this->getPdoDriverName()))->newDelete();
-            $del_qry_obj->from($this->table_name);
+            $del_qry_obj->from($this->getTableName());
             $table_cols = $this->getTableColNames();
 
             foreach ($cols_n_vals as $colname => $colval) {
@@ -1368,11 +1395,11 @@ SELECT {$foreign_table_name}.*
     /**
      * @return never
      */
-    protected function throwExceptionForInvalidDeleteQueryArg($val, $cols_n_vals): void {
+    protected function throwExceptionForInvalidDeleteQueryArg($val, array $cols_n_vals): void {
 
         $msg = "ERROR: the value "
              . PHP_EOL . var_export($val, true) . PHP_EOL
-             . " you are trying to use to bulid the where clause for deleting from the table `{$this->table_name}`"
+             . " you are trying to use to bulid the where clause for deleting from the table `{$this->getTableName()}`"
              . " is not acceptable ('".  gettype($val) . "'"
              . " supplied). Boolean, NULL, numeric or string value expected."
              . PHP_EOL
@@ -1612,7 +1639,7 @@ SELECT {$foreign_table_name}.*
 
                 $msg = "ERROR: the value "
                      . PHP_EOL . var_export($val, true) . PHP_EOL
-                     . " you are trying to insert into `{$this->table_name}`."
+                     . " you are trying to insert into `{$this->getTableName()}`."
                      . "`{$key}` is not acceptable ('".  gettype($val) . "'"
                      . " supplied). Boolean, NULL, numeric or string value expected."
                      . PHP_EOL
@@ -1689,8 +1716,8 @@ SELECT {$foreign_table_name}.*
                 } elseif(is_null($processed_val) && $this->getPrimaryCol() !== $col) {
 
                     $select->where(" {$col} IS NULL ");
-                }
-            }
+                } // if(is_string($processed_val) || is_numeric($processed_val))
+            } // foreach ($data_2_insert as $col => $val)
 
             $matching_rows = $this->fetchRowsIntoArray($select);
 
@@ -1723,7 +1750,7 @@ SELECT {$foreign_table_name}.*
 
                 //Insert statement
                 $insrt_qry_obj = (new QueryFactory($this->getPdoDriverName()))->newInsert();
-                $insrt_qry_obj->into($this->table_name)->cols($data_2_insert);
+                $insrt_qry_obj->into($this->getTableName())->cols($data_2_insert);
 
                 $insrt_qry_sql = $insrt_qry_obj->__toString();
                 $insrt_qry_params = $insrt_qry_obj->getBindValues();
@@ -1750,14 +1777,14 @@ SELECT {$foreign_table_name}.*
                             empty($pk_val_4_new_record) ? null : $pk_val_4_new_record;
 
                         $this->updateInsertDataArrayWithTheNewlyInsertedRecordFromDB(
-                                $data_2_insert, $table_cols
-                            );
+                            $data_2_insert, $table_cols
+                        );
 
                     } else {
 
                         $this->updateInsertDataArrayWithTheNewlyInsertedRecordFromDB(
-                                $data_2_insert, $table_cols
-                            );
+                            $data_2_insert, $table_cols
+                        );
 
                     } // if($has_autoinc_pkey_col)
 
@@ -1766,7 +1793,7 @@ SELECT {$foreign_table_name}.*
 
                 } // if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) )
             } // if(count($data_2_insert) > 0 ) 
-        }
+        } // if ( $data_2_insert !== [] )
 
         return $result;
     }
@@ -1795,7 +1822,7 @@ SELECT {$foreign_table_name}.*
                          . PHP_EOL . var_export($rows_of_data_2_insert[$key], true) 
                          . PHP_EOL . PHP_EOL . "Data supplied to "
                          . get_class($this) . '::' . __FUNCTION__ . '(...).' 
-                         . " for insertion into the db table `{$this->table_name}`:"
+                         . " for insertion into the db table `{$this->getTableName()}`:"
                          . PHP_EOL . var_export($rows_of_data_2_insert, true) . PHP_EOL
                          . PHP_EOL;
 
@@ -1822,7 +1849,7 @@ SELECT {$foreign_table_name}.*
                 $insrt_qry_obj = (new QueryFactory($this->getPdoDriverName()))->newInsert();
 
                 //Batch all the data into one insert query.
-                $insrt_qry_obj->into($this->table_name)->addRows($rows_of_data_2_insert);           
+                $insrt_qry_obj->into($this->getTableName())->addRows($rows_of_data_2_insert);           
                 $insrt_qry_sql = $insrt_qry_obj->__toString();
                 $insrt_qry_params = $insrt_qry_obj->getBindValues();
 
@@ -1842,7 +1869,7 @@ SELECT {$foreign_table_name}.*
 
         $msg = "ERROR: the value "
              . PHP_EOL . var_export($val, true) . PHP_EOL
-             . " you are trying to use to bulid the where clause for updating the table `{$this->table_name}`"
+             . " you are trying to use to bulid the where clause for updating the table `{$this->getTableName()}`"
              . " is not acceptable ('".  gettype($val) . "'"
              . " supplied). Boolean, NULL, numeric or string value expected."
              . PHP_EOL
@@ -1895,7 +1922,7 @@ SELECT {$foreign_table_name}.*
 
                     $msg = "ERROR: the value "
                          . PHP_EOL . var_export($val, true) . PHP_EOL
-                         . " you are trying to update `{$this->table_name}`.`{$key}`."
+                         . " you are trying to update `{$this->getTableName()}`.`{$key}`."
                          . "{$key} with is not acceptable ('".  gettype($val) . "'"
                          . " supplied). Boolean, NULL, numeric or string value expected."
                          . PHP_EOL
@@ -1915,7 +1942,7 @@ SELECT {$foreign_table_name}.*
 
                 //update statement
                 $update_qry_obj = (new QueryFactory($this->getPdoDriverName()))->newUpdate();
-                $update_qry_obj->table($this->table_name);
+                $update_qry_obj->table($this->getTableName());
                 $update_qry_obj->cols($col_names_n_vals_2_save);
 
                 foreach ($col_names_n_vals_2_match as $colname => $colval) {
@@ -2032,7 +2059,6 @@ SELECT {$foreign_table_name}.*
 
             $cols_n_vals_2_match = [$record->getPrimaryCol()=>$pri_key_val];
             $data_2_save = $record->getData();
-            
             $this->updateMatchingDbTableRows(
                 $data_2_save, 
                 $cols_n_vals_2_match
@@ -2063,7 +2089,7 @@ SELECT {$foreign_table_name}.*
 
         // if there are one or more null values in the array,
         // we need to unset them and add an
-        // OR $colname IS NULL 
+        //      OR $colname IS NULL 
         // clause to the query
         $keys_for_null_vals = array_keys($colvals, null, true);
 
@@ -2098,7 +2124,6 @@ SELECT {$foreign_table_name}.*
             // (count($keys_for_null_vals) === 0 && count($colval) === 0) //impossible scenario
 
             // Only generate WHERE COL IN ()
-
             $colval_placeholders = array_fill(0, count($colvals), '?');
             //  we are trying to do something like this 
             // ->where('id IN (?, ?, ?)', 1, 2, 3)
@@ -2121,6 +2146,7 @@ SELECT {$foreign_table_name}.*
      */
     public function getCurrentConnectionInfo(): array {
 
+        $pdo_obj = $this->getPDO();
         $attributes = [
             'database_server_info' => 'SERVER_INFO',
             'driver_name' => 'DRIVER_NAME',
@@ -2130,11 +2156,9 @@ SELECT {$foreign_table_name}.*
             'connection_is_persistent' => 'PERSISTENT',
         ];
 
-        $pdo_obj = $this->getPDO();
-
         foreach ($attributes as $key => $value) {
             
-            try{
+            try {
                 
                 $attributes[ $key ] = $pdo_obj->getAttribute(constant(\PDO::class .'::ATTR_' . $value));
                 
@@ -2177,7 +2201,7 @@ SELECT {$foreign_table_name}.*
         
         return ($obj === null)
                 ? static::$all_instances_query_log 
-                : 
+                :
                 (
                     array_key_exists($key, static::$all_instances_query_log) 
                     ? static::$all_instances_query_log[$key] : [] 
@@ -2253,7 +2277,7 @@ SELECT {$foreign_table_name}.*
         $this->validateRelatedRecordClassName($foreign_models_record_class_name);
         $this->validateTableName($foreign_table_name);
         
-        $this->validateThatTableHasColumn($this->table_name, $foreign_key_col_in_this_models_table);
+        $this->validateThatTableHasColumn($this->getTableName(), $foreign_key_col_in_this_models_table);
         $this->validateThatTableHasColumn($foreign_table_name, $foreign_key_col_in_foreign_table);
         $this->validateThatTableHasColumn($foreign_table_name, $primary_key_col_in_foreign_table);
         
@@ -2290,7 +2314,7 @@ SELECT {$foreign_table_name}.*
         $this->validateRelatedRecordClassName($foreign_models_record_class_name);
         $this->validateTableName($foreign_table_name);
         
-        $this->validateThatTableHasColumn($this->table_name, $foreign_key_col_in_this_models_table);
+        $this->validateThatTableHasColumn($this->getTableName(), $foreign_key_col_in_this_models_table);
         $this->validateThatTableHasColumn($foreign_table_name, $foreign_key_col_in_foreign_table);
         $this->validateThatTableHasColumn($foreign_table_name, $primary_key_col_in_foreign_table);
         
@@ -2327,7 +2351,7 @@ SELECT {$foreign_table_name}.*
         $this->validateRelatedRecordClassName($foreign_models_record_class_name);
         $this->validateTableName($foreign_table_name);
         
-        $this->validateThatTableHasColumn($this->table_name, $foreign_key_col_in_this_models_table);
+        $this->validateThatTableHasColumn($this->getTableName(), $foreign_key_col_in_this_models_table);
         $this->validateThatTableHasColumn($foreign_table_name, $foreign_key_col_in_foreign_table);
         $this->validateThatTableHasColumn($foreign_table_name, $primary_key_col_in_foreign_table);
         
@@ -2368,7 +2392,7 @@ SELECT {$foreign_table_name}.*
         $this->validateTableName($foreign_table_name);
         $this->validateTableName($join_table);
         
-        $this->validateThatTableHasColumn($this->table_name, $col_in_my_table_linked_to_join_table);
+        $this->validateThatTableHasColumn($this->getTableName(), $col_in_my_table_linked_to_join_table);
         $this->validateThatTableHasColumn($join_table, $col_in_join_table_linked_to_my_table);
         $this->validateThatTableHasColumn($join_table, $col_in_join_table_linked_to_foreign_table);
         $this->validateThatTableHasColumn($foreign_table_name, $col_in_foreign_table_linked_to_join_table);
@@ -2411,7 +2435,7 @@ SELECT {$foreign_table_name}.*
                  . PHP_EOL;
 
             throw new \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
-        }
+        } // if( in_array(strtolower($relationName), $tableColsLowerCase) ) 
     }
     
     protected function validateTableName(string $table_name): bool {
@@ -2423,14 +2447,14 @@ SELECT {$foreign_table_name}.*
                  . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
             throw new BadModelTableNameException($msg);
-        }
+        } // if(!$this->tableExistsInDB($table_name))
         
         return true;
     }
     
     protected function validateThatTableHasColumn(string $table_name, string $column_name): bool {
         
-        if( !$this->columnExistsInDbTable($table_name, $column_name) ) {
+        if(!$this->columnExistsInDbTable($table_name, $column_name)) {
 
             //throw exception
             $msg = "ERROR: The specified table `{$table_name}` in the DB"
@@ -2438,7 +2462,7 @@ SELECT {$foreign_table_name}.*
                  . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
             throw new BadModelColumnNameException($msg);
-        }
+        } // if(!$this->columnExistsInDbTable($table_name, $column_name))
         
         return true;
     }
