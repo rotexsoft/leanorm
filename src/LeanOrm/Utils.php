@@ -40,7 +40,7 @@ class Utils {
      * Search for a specified value with a specified integer key within each sub-array.
      * Each sub-array whose value at the specified key in that sub-array matches 
      * the specified value will be added to the results array.
-     * 
+     *
      * For example, given
      * $array = [
      *     [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
@@ -50,24 +50,23 @@ class Utils {
      *     'Some Val',
      * ];
      * $results = [];
-     * 
+     *
      * then
-     * 
+     *
      * \LeanOrm\Utils::search2D($array, 'a', 'aaa0', $results);
-     * 
+     *
      * leads to
-     * 
+     *
      * $results = [
      *     [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
      *     [ 'a' => 'aaa0', 'zero1', 'b' => 'bbb1', 'one1', 'c' => [ 'ccc' ] ],
      * ];
-     * 
-     * 
+     *
+     *
      * @param array<int|string, array> $array   array of arrays to search
      * @param int|string $key                   key in each sub-array whose value is to be searched to search
      * @param mixed $value                      value to search for at the specified key in each sub-array
      * @param array<int|string, mixed> $results array where search results will be stored
-     * @return void
      */
     public static function search2D(array &$array, $key, $value, array &$results): void {
 
