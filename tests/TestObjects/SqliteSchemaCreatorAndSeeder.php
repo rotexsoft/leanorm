@@ -61,6 +61,10 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
     protected function createEmptyDataTable(): void {
         
         $this->connection->query("
+            DROP TABLE IF EXISTS empty_data;
+        ");
+        
+        $this->connection->query("
             CREATE TABLE empty_data (
                 id INTEGER PRIMARY KEY,
                 name TEXT,
@@ -73,6 +77,10 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
     protected function createKeyValueTable(): void {
         
         $this->connection->query("
+            DROP TABLE IF EXISTS key_value;
+        ");
+        
+        $this->connection->query("
             CREATE TABLE key_value (
                 id INTEGER PRIMARY KEY,
                 key_name TEXT NOT NULL,
@@ -81,6 +89,10 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
                 m_timestamp TEXT NOT NULL,
                 date_created TEXT NOT NULL
             )
+        ");
+        
+        $this->connection->query("
+            DROP TABLE IF EXISTS key_value_no_auto_inc_pk;
         ");
         
         if($this->cantUseWithoutRowid()) {
@@ -114,6 +126,14 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
     protected function createAuthorsTableAndView(): void {
         
         $this->connection->query("
+            DROP VIEW IF EXISTS v_authors;
+        ");
+        
+        $this->connection->query("
+            DROP TABLE IF EXISTS authors;
+        ");
+        
+        $this->connection->query("
             CREATE TABLE authors (
                 author_id INTEGER PRIMARY KEY,
                 name TEXT,
@@ -138,6 +158,10 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
     protected function createCommentsTable(): void {
         
         $this->connection->query("
+            DROP TABLE IF EXISTS comments;
+        ");
+        
+        $this->connection->query("
             CREATE TABLE comments (
               comment_id INTEGER PRIMARY KEY,
               post_id INTEGER NOT NULL,
@@ -153,6 +177,10 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
     }
     
     protected function createPostsTable(): void {
+        
+        $this->connection->query("
+            DROP TABLE IF EXISTS posts;
+        ");
         
         $this->connection->query("
             CREATE TABLE posts (
@@ -171,6 +199,10 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
     protected function createSummariesTable(): void {
         
         $this->connection->query("
+            DROP TABLE IF EXISTS summaries;
+        ");
+        
+        $this->connection->query("
             CREATE TABLE summaries (
               summary_id INTEGER PRIMARY KEY,
               post_id INTEGER NOT NULL,
@@ -187,6 +219,10 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
     protected function createTagsTable(): void {
         
         $this->connection->query("
+            DROP TABLE IF EXISTS tags;
+        ");
+        
+        $this->connection->query("
             CREATE TABLE tags (
               tag_id INTEGER PRIMARY KEY,
               name TEXT NOT NULL,
@@ -197,6 +233,10 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
     }
     
     protected function createPostsTagsTable(): void {
+        
+        $this->connection->query("
+            DROP TABLE IF EXISTS posts_tags;
+        ");
         
         $this->connection->query("
             CREATE TABLE posts_tags (
