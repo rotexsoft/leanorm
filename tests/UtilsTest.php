@@ -28,8 +28,7 @@ class UtilsTest extends \PHPUnit\Framework\TestCase {
         self::assertNull(Utils::arrayGet($array, "non-existent-key"));
         
         self::assertEquals(
-            'default_val', 
-            Utils::arrayGet($array, "non-existent-key", 'default_val')
+            'default_val', Utils::arrayGet($array, "non-existent-key", 'default_val')
         );
         
         self::assertEquals('aaa', Utils::arrayGet($array, 'a'));
