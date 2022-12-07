@@ -980,13 +980,13 @@ SELECT {$foreign_table_name}.*
             // Transfer logger settings from this model
             // to the newly created model
             $related_model->enableQueryLogging();
-            
-            if( 
-                $this->getLogger() !== null
-                && $related_model->getLogger() === null
-            ) {
-                $related_model->setLogger($this->getLogger());
-            }
+        }
+        
+        if( 
+            $this->getLogger() !== null
+            && $related_model->getLogger() === null
+        ) {
+            $related_model->setLogger($this->getLogger());
         }
         
         return $related_model;
@@ -2043,32 +2043,44 @@ SELECT {$foreign_table_name}.*
         }
 
         $pri_key_val = $record->getPrimaryVal();
-
-        //test if the record object has data and is not a new record
-        if( count($record) > 0 && !empty($pri_key_val) && is_numeric($pri_key_val)) {
-
+        
+        if( 
+            count($record) > 0  // There is data in the record
+            && !$record->isNew() // This is not a new record that wasn't fetched from the DB
+            && !Utils::isEmptyString(''.$pri_key_val) // Record has a primary key value
+            && $record->isChanged() // The data in the record has changed from the state it was when initially fetched from DB
+        ) {
             $cols_n_vals_2_match = [$record->getPrimaryCol()=>$pri_key_val];
+
+            if($this->getUpdatedTimestampColumnName() !== null) {
+
+                // Record has changed value(s) & must definitely be updated.
+                // Set the value of the $this->getUpdatedTimestampColumnName()
+                // field to an empty string, force updateMatchingDbTableRows
+                // to add a new updated timestamp value during the update.
+                $record->{$this->getUpdatedTimestampColumnName()} = '';
+            }
+
             $data_2_save = $record->getData();
             $this->updateMatchingDbTableRows(
                 $data_2_save, 
                 $cols_n_vals_2_match
             );
-            
-            if(
-                $this->getUpdatedTimestampColumnName() !== null
-                && !array_key_exists($this->getUpdatedTimestampColumnName(), $data_2_save)
-            ) { // if user did not specify a value for the $this->getUpdatedTimestampColumnName() field
 
-                $record->{$this->getUpdatedTimestampColumnName()} = 
-                    $this->fetchValue(
+            if($this->getUpdatedTimestampColumnName() !== null) {
+
+                // update the record with the new updated copy from the DB
+                // which will contain the new updated timestamp value.
+                $record = 
+                    $this->fetchOneRecord(
                         $this->getSelect()
                              ->where(
                                     " {$record->getPrimaryCol()} = ? ", 
                                     $record->getPrimaryVal()
                                 )
                     );
-            }
-        }
+            } // if($this->getUpdatedTimestampColumnName() !== null)
+        } // if( count($record) > 0 && !$record->isNew()........
 
         return $this;
     }
