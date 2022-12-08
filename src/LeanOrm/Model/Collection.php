@@ -232,13 +232,7 @@ class Collection implements \GDAO\Model\CollectionInterface
 
             foreach ( $this->data as $key => $record ) {
 
-                if( $record instanceof ReadOnlyRecord ) {
-
-                    $msg = "ERROR: Can't save ReadOnlyRecord in Collection to"
-                         . " the database in " . get_class($this) . '::' . __FUNCTION__ . '(...).'
-                         . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
-                    throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
-                }
+                $this->throwExceptionOnSaveOfReadOnlyRecord($record, __FUNCTION__);
                 
                 if( $record->isNew()) {
                     
@@ -273,6 +267,8 @@ class Collection implements \GDAO\Model\CollectionInterface
             
             foreach ( $this->data as $key=>$record ) {
                 
+                $this->throwExceptionOnSaveOfReadOnlyRecord($record, __FUNCTION__);
+                
                 if( $record->save() === false ) {
                     
                     $keys_4_unsuccessfully_saved_records[] = $key;
@@ -288,6 +284,19 @@ class Collection implements \GDAO\Model\CollectionInterface
         $this->postSaveAll($result, $group_inserts_together);
 
         return $result;
+    }
+    
+    protected function throwExceptionOnSaveOfReadOnlyRecord(
+        \GDAO\Model\RecordInterface $record, string $calling_function
+    ): void {
+        
+        if( $record instanceof ReadOnlyRecord ) {
+
+            $msg = "ERROR: Can't save ReadOnlyRecord in Collection to"
+                 . " the database in " . get_class($this) . '::' . $calling_function . '(...).'
+                 . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
+            throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+        }
     }
     
     /**
