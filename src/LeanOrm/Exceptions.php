@@ -11,7 +11,7 @@ namespace LeanOrm {
     class BadRecordClassNameForFetchingRelatedDataException extends \Exception{}
     class RelatedModelNotCreatedException extends \Exception{}
     class CantDeleteReadOnlyRecordFromDBException extends \Exception{}
-    class CantUpdateReadOnlyRecordException extends \Exception{}
+    class CantSaveReadOnlyRecordException extends \Exception{}
     class KeyingFetchResultsByPrimaryKeyFailedException extends \Exception{}
     class InvalidArgumentException extends \InvalidArgumentException{}
 }
@@ -20,4 +20,5 @@ namespace LeanOrm\Model {
 
     class RecordOperationNotSupportedByDriverException extends \Exception { }
     class NoSuchPropertyForRecordException extends \Exception { }
+    class TableNameMismatchInCollectionSaveAllException extends \Exception { }
 }
