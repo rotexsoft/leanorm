@@ -904,6 +904,12 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function __unset($key): void {
         
+        if( array_key_exists($key, $this->initial_data) ) {
+            
+            unset($this->initial_data[$key]);
+            $this->initial_data[$key] = null;
+        }
+        
         if( array_key_exists($key, $this->data) ) {
             
             unset($this->data[$key]);
