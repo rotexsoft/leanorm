@@ -1437,14 +1437,32 @@ SELECT {$foreign_table_name}.*
         if ( count($record) > 0 ) { //test if the record object has data
 
             $pri_key_val = $record->getPrimaryVal();
-            $cols_n_vals = [$this->getPrimaryCol() => $pri_key_val];
+            $cols_n_vals = [$record->getPrimaryCol() => $pri_key_val];
 
             $succesfully_deleted = 
                 $this->deleteMatchingDbTableRows($cols_n_vals);
 
             if ( $succesfully_deleted === 1 ) {
-
-                $record->setStateToNew();
+                
+                $record->markAsNew();
+                
+                foreach ($this->getRelationNames() as $relation_name) {
+                    
+                    // Remove all the related data since the primary key of the 
+                    // record may change or there may be ON DELETE CASACADE 
+                    // constraints that may have triggred those records being 
+                    // deleted from the db because of the deletion of this record
+                    unset($record[$relation_name]);
+                }
+                
+                if(
+                    $this->table_cols[$record->getPrimaryCol()]['autoinc']
+                ) {
+                    // unset the primary key value for auto-incrementing
+                    // primary key cols. It is actually set to null via
+                    // Record::offsetUnset(..)
+                    unset($record[$this->getPrimaryCol()]); 
+                }
                 
             } elseif($succesfully_deleted === 0) {
                 
@@ -1751,7 +1769,6 @@ SELECT {$foreign_table_name}.*
                     // insert was successful, we are now going to try to 
                     // fetch the inserted record from the db to get and 
                     // return the db representation of the data
-
                     if($has_autoinc_pkey_col) {
 
                         $last_insert_sequence_name = 
@@ -2025,7 +2042,7 @@ SELECT {$foreign_table_name}.*
             $msg = "ERROR: Can't save a ReadOnlyRecord to the database in " 
                  . get_class($this) . '::' . __FUNCTION__ . '(...).'
                  . PHP_EOL .'Unupdated record' . var_export($record, true) . PHP_EOL;
-            throw new \LeanOrm\CantUpdateReadOnlyRecordException($msg);
+            throw new \LeanOrm\CantSaveReadOnlyRecordException($msg);
         }
         
         if( $record->getModel()->getTableName() !== $this->getTableName() ) {
