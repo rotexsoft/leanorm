@@ -229,12 +229,40 @@ class Collection implements \GDAO\Model\CollectionInterface
         if ( $group_inserts_together ) {
             
             $data_2_save_4_new_records = [];
-
+            
+            /** @var \GDAO\Model\RecordInterface $record */
             foreach ( $this->data as $key => $record ) {
 
                 $this->throwExceptionOnSaveOfReadOnlyRecord($record, __FUNCTION__);
                 
                 if( $record->isNew()) {
+                    
+                    // Let's make sure that the table name associated with the
+                    // model this record was created with is the same as the 
+                    // table name of the model this collection was created with
+                    // because the bulk insert will be performed via the 
+                    // insertMany method of the model this collection was 
+                    // created with.
+                    if(
+                        $record->getModel()->getTableName() 
+                        !== $this->getModel()->getTableName()
+                    ) {
+                        $record_class_name = get_class($record);
+                        $record_table_name = $record->getModel()->getTableName();
+                        
+                        $collection_class_name = get_class($this);
+                        $collection_table_name = $this->getModel()->getTableName();
+                        
+                        $method_name = __FUNCTION__;
+                        
+                        $msg = "ERROR: Can't save a record of type `{$record_class_name}`"
+                            . " belonging to table `{$record_table_name}` in the database via the " 
+                            . " `{$method_name}` method in a Collection of type `{$collection_class_name}`"
+                            . " whose model is associated with the table `{$collection_table_name}` in the"
+                            . " database. " . PHP_EOL .  get_class($this) . '::' . $method_name . '(...).'
+                            . PHP_EOL .'Unsaved record' . var_export($record, true) . PHP_EOL;
+                        throw new TableNameMismatchInCollectionSaveAllException($msg);
+                    }
                     
                     //The record is new and must be inserted into the db.
                     //Get the data to insert, whilst preserving its 
@@ -295,7 +323,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             $msg = "ERROR: Can't save ReadOnlyRecord in Collection to"
                  . " the database in " . get_class($this) . '::' . $calling_function . '(...).'
                  . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
-            throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+            throw new \LeanOrm\CantSaveReadOnlyRecordException($msg);
         }
     }
     
@@ -323,7 +351,14 @@ class Collection implements \GDAO\Model\CollectionInterface
      */
     public function toArray(): array {
 
-        return get_object_vars($this);
+        $result = [];
+        
+        foreach ($this as $key=>$record) {
+            
+            $result[$key] = $record->getData();
+        }
+        
+        return $result;
     }
     
     /////////////////////
