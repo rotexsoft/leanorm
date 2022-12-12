@@ -72,16 +72,15 @@ class Collection implements \GDAO\Model\CollectionInterface
             //generate list of keys of records in this collection
             //that were not successfully saved.
 
-            foreach( $this->data as $record ) {
-
-                $primary_key = $record->getPrimaryVal();
+            foreach( $this->data as $key=>$record ) {
+                
                 $delete_result = $record->delete();
 
                 if( !$delete_result && $delete_result !== null ) {
 
                     //record still exists in the db table
                     //it wasn't successfully deleted.
-                    $result[] = $primary_key;
+                    $result[] = $key;
                 }
             }
 
