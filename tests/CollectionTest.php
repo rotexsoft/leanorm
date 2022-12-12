@@ -33,7 +33,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             // records injected are still in the collection
             self::assertContains($record, $collection2);
         }
-    }
+    } // public function testThatConstructorWorksAsExpected()
     
     public function testThatDeleteAllWorksAsExpected() {
         
@@ -91,7 +91,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         self::assertCount(2, $collection3); // 2 records in this collection
         $deleteAllResults = $collection3->deleteAll();
         self::assertCount(2, $deleteAllResults); // 2 items in the result
-        self::assertEquals([1,2], $deleteAllResults); // Ids of undeleted records returned
+        self::assertEquals([0,1], $deleteAllResults); // Collection keys of undeleted records returned
         
         foreach ($records as $record) {
             
@@ -126,6 +126,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             self::assertContains($record, $collection4);
         } 
         
+        ///////////////////////////////////////////////////////////////
         // Test that deleting records with data that were in the db
         // also returns true & try re-fetching the records from the db
         // to make sure they are no longer there.
@@ -174,7 +175,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
                 }
             } // foreach ($record as $col_name => $col_val)
         } // foreach($collection5Copy as $key => $record)
-    }
+    } // public function testThatDeleteAllWorksAsExpected()
     
     public function testThatDeleteAllOnCollectionWithAtLeastOneReadOnlyRecordThrowsException() {
         
@@ -192,8 +193,10 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($model, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
+        // Throws \LeanOrm\CantDeleteReadOnlyRecordFromDBException
+        // because a ReadOnlyRecord exists in the collection
         $collection->deleteAll();
-    }
+    } // public function testThatDeleteAllOnCollectionWithAtLeastOneReadOnlyRecordThrowsException()
     
     public function testThatGetColValsWorksAsExpected() {
         
@@ -212,7 +215,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             self::POST_POST_IDS_KEYED_ON_POST_ID, 
             $model->fetchRecordsIntoCollectionKeyedOnPkVal()->getColVals('post_id')
         );
-    }
+    } // public function testThatGetColValsWorksAsExpected()
     
     public function testThatGetKeysWorksAsExpected() {
         
@@ -231,7 +234,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             array_keys(self::POST_POST_IDS_KEYED_ON_POST_ID), 
             $model->fetchRecordsIntoCollectionKeyedOnPkVal()->getKeys()
         );
-    }
+    } // public function testThatGetKeysWorksAsExpected()
     
     public function testThatGetModelWorksAsExpected() {
         
@@ -245,7 +248,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         self::assertSame(
             $model, $model->fetchRecordsIntoCollection()->getModel()
         );
-    }
+    } // public function testThatGetModelWorksAsExpected()
     
     public function testThatIsEmptyWorksAsExpected() {
         
@@ -264,7 +267,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         self::assertFalse(
             $collection->isEmpty()
         );
-    }
+    } // public function testThatIsEmptyWorksAsExpected()
     
     public function testThatLoadDataWorksAsExpected() {
         
@@ -283,7 +286,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             $collection->loadData(...$records)->isEmpty()
         );
         self::assertSame($collection, $collection->loadData(...$records));
-    }
+    } // public function testThatLoadDataWorksAsExpected()
     
     public function testThatRemoveAllWorksAsExpected() {
         
@@ -302,7 +305,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         self::assertFalse($collection->isEmpty());
         self::assertSame($collection, $collection->removeAll());
         self::assertTrue($collection->isEmpty());
-    }
+    } // public function testThatRemoveAllWorksAsExpected()
     
     public function testThatSaveAllWorksAsExpected() {
         
@@ -588,8 +591,10 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($model, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
+        // Throws \LeanOrm\CantSaveReadOnlyRecordException
+        // because the collection collects a ReadOnlyRecord
         $collection->saveAll(false);
-    }
+    } // public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords1()
     
     public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords2() {
         
@@ -607,8 +612,10 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($model, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
+        // Throws \LeanOrm\CantSaveReadOnlyRecordException
+        // because the collection collects a ReadOnlyRecord
         $collection->saveAll(true);
-    }
+    } // public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords2()
     
     public function testThatSaveAllThrowsExceptionOnTryingToSaveRecordBelongingToDifferentTableNameFromCollectionsModel() {
         
@@ -629,8 +636,11 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($authorsModel, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
+        // Throws \LeanOrm\Model\TableNameMismatchInCollectionSaveAllException
+        // because there's a record belonging to the posts table in this
+        // collection whose model is associated with the authors table
         $collection->saveAll(true);
-    }
+    } // public function testThatSaveAllThrowsExceptionOnTryingToSaveRecordBelongingToDifferentTableNameFromCollectionsModel()
     
     protected function runCommonSaveAllTests(bool $groupInsertsTogether) {
         
@@ -720,9 +730,9 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         // Collection with both new & existing records, should return true
         ///////////////////////////////////////////////////////////////////
         $collection = $model->fetchRecordsIntoCollection(); // fetch existing records
-        $numberOfExistingRecords = $collection->count();
+        $numberOfExistingRecordsPreSaveAll = $collection->count();
         
-        self::assertGreaterThan(0, $numberOfExistingRecords);
+        self::assertGreaterThan(0, $numberOfExistingRecordsPreSaveAll);
         
         $numOfNewRecords = 2;
 
@@ -753,9 +763,9 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         // Re-fetch records to verify that modified names were saved        
         $refetchedRecords = $model->fetchRecordsIntoCollection();
         
-        self::assertGreaterThan($numberOfExistingRecords, $refetchedRecords->count());
+        self::assertGreaterThan($numberOfExistingRecordsPreSaveAll, $refetchedRecords->count());
         self::assertEquals(
-            $numberOfExistingRecords + $numOfNewRecords, 
+            $numberOfExistingRecordsPreSaveAll + $numOfNewRecords, 
             $refetchedRecords->count()
         ); // Make sure the total number of records fetched from the DB is the number
            // of initially existing records plus the new records we just saved
@@ -765,5 +775,5 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             
             self::assertStringEndsWith('###'.($i++), $record->name);
         }
-    }
+    } // protected function runCommonSaveAllTests(bool $groupInsertsTogether)
 }
