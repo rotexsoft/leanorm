@@ -343,6 +343,19 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             [PDO::ATTR_PERSISTENT => true], 'author_id', 'authors'
         );
         
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Scenario 1: create a new collection with a model that can save to the
+        // DB & put 
+        //  - 3 records (2 new & 1 existing) created & fetched by a model that can save to the DB
+        //  - 3 records (2 new & 1 existing) created & fetched by a model that can't save to the DB
+        //  
+        // When saveAll is called with false as argument on the collection created with a model that can save to the DB,
+        // 1. the 3 records in this collection (created & fetched by a model that can save to the DB) will be successfully 
+        // saved to the DB, 
+        // 2. while the keys in this collection for the 3 records in this collection created & fetched by a model that can't 
+        // save to the DB, will be returned & these 3 records would not have been saved to the DB
+        // 
         [
             $unsavableNewRecord1, $savableNewRecord1,
             $unsavableNewRecord2, $savableNewRecord2,
@@ -461,7 +474,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         // saveAll
         foreach ($collectionCreatedByUnsavableModel as $record) {
             
-            $record->name .= '__SecondCollectionCreatedByTheUnsavableModel';
+            $record->name .= '__FirstCollectionCreatedByTheUnsavableModel';
         }
 
         // 3 savable (1 existing & 2 new) records should still be saved
@@ -475,7 +488,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         // Verify that the savable records were actually saved
         self::assertStringContainsString(
-            "__SecondCollectionCreatedByTheUnsavableModel", 
+            "__FirstCollectionCreatedByTheUnsavableModel", 
             $alwaysFalseOnSaveModel->fetchOneRecord(
                 $alwaysFalseOnSaveModel->getSelect()->orderBy(['author_id asc'])
             )->name
@@ -483,14 +496,14 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $refetchedSavableNewRecord1B = $alwaysFalseOnSaveModel->fetchOneRecord(
             $alwaysFalseOnSaveModel->getSelect()
-                                   ->where(' name = ? ', 'Author savable 333__SecondCollectionCreatedByTheUnsavableModel')  
+                                   ->where(' name = ? ', 'Author savable 333__FirstCollectionCreatedByTheUnsavableModel')  
         );
         self::assertInstanceOf(GDAO\Model\RecordInterface::class, $refetchedSavableNewRecord1B);
         
         
         $refetchedSavableNewRecord2B = $alwaysFalseOnSaveModel->fetchOneRecord(
             $alwaysFalseOnSaveModel->getSelect()
-                                   ->where(' name = ? ', 'Author savable 444__SecondCollectionCreatedByTheUnsavableModel')  
+                                   ->where(' name = ? ', 'Author savable 444__FirstCollectionCreatedByTheUnsavableModel')  
         );
         self::assertInstanceOf(GDAO\Model\RecordInterface::class, $refetchedSavableNewRecord2B);
         
@@ -498,13 +511,13 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         self::assertNull(
             $alwaysFalseOnSaveModel->fetchOneRecord(
                 $alwaysFalseOnSaveModel->getSelect()
-                                       ->where(' name = ? ', 'Author unsavable 1__SecondCollectionCreatedByTheUnsavableModel')  
+                                       ->where(' name = ? ', 'Author unsavable 1__FirstCollectionCreatedByTheUnsavableModel')  
             )
         );
         self::assertNull(
             $alwaysFalseOnSaveModel->fetchOneRecord(
                 $alwaysFalseOnSaveModel->getSelect()
-                                       ->where(' name = ? ', 'Author unsavable 2__SecondCollectionCreatedByTheUnsavableModel')  
+                                       ->where(' name = ? ', 'Author unsavable 2__FirstCollectionCreatedByTheUnsavableModel')  
             )
         );
         
@@ -512,41 +525,42 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         self::assertNull(
             $alwaysFalseOnSaveModel->fetchOneRecord(
                 $alwaysFalseOnSaveModel->getSelect()
-                                       ->where(' name = ? ', 'user_1 unsavableExistingRecord__SecondCollectionCreatedByTheUnsavableModel')  
+                                       ->where(' name = ? ', 'user_1 unsavableExistingRecord__FirstCollectionCreatedByTheUnsavableModel')  
             )
         );
         
         /////////////////////////////////////////////////////////////////////////
         // Let's call saveAll with bulk insert set to true, we should still get
         // a different result
-        $unsavableModelsResult = $collectionCreatedByUnsavableModel->saveAll(true);
-//var_dump($unsavableModelsResult);exit;
+        $secondCollectionCreatedByUnsavableModel = $alwaysFalseOnSaveModel->createNewCollection();
+        
+        [
+            $unsavableNewRecord1C, $savableNewRecord1C,
+            $unsavableNewRecord2C, $savableNewRecord2C,
+            $unsavableExistingRecordC, $savableExistingRecordC
+        ] = $this->createSavableAndUnsavableRecords($alwaysFalseOnSaveModel, $modelThatCanSave);
+        
+        $secondCollectionCreatedByUnsavableModel[1] = $unsavableNewRecord1C;
+        $secondCollectionCreatedByUnsavableModel[2] = $savableNewRecord1C;
+        $secondCollectionCreatedByUnsavableModel[3] = $unsavableNewRecord2C;
+        $secondCollectionCreatedByUnsavableModel[4] = $savableNewRecord2C;
+        $secondCollectionCreatedByUnsavableModel[5] = $unsavableExistingRecordC;
+        $secondCollectionCreatedByUnsavableModel[6] = $savableExistingRecordC;
+        
+        ///////////////////////////////////////////////////////////////////////
+        // Let's tweak all the records in this new collection before calling
+        // saveAll
+        foreach ($secondCollectionCreatedByUnsavableModel as $record) {
+            
+            $record->name .= '__SecondCollectionCreatedByTheUnsavableModel';
+        }
+        $unsavableModelsResult = $secondCollectionCreatedByUnsavableModel->saveAll(true);
+var_dump($unsavableModelsResult);exit;
         // Make sure unsavable records were not saved
-        self::assertContains(1, $unsavableModelsResult);
-        self::assertContains(3, $unsavableModelsResult);
-        self::assertContains(5, $unsavableModelsResult);
-        
-        // make sure that the two new unsavable records were not saved
-        self::assertNull(
-            $alwaysFalseOnSaveModel->fetchOneRecord(
-                $alwaysFalseOnSaveModel->getSelect()
-                                       ->where(' name = ? ', 'Author unsavable 1__SecondCollectionCreatedByTheUnsavableModel')  
-            )
-        );
-        self::assertNull(
-            $alwaysFalseOnSaveModel->fetchOneRecord(
-                $alwaysFalseOnSaveModel->getSelect()
-                                       ->where(' name = ? ', 'Author unsavable 2__SecondCollectionCreatedByTheUnsavableModel')  
-            )
-        );
-        
-        // the one existing unsavable record also should not have been updated
-        self::assertNull(
-            $alwaysFalseOnSaveModel->fetchOneRecord(
-                $alwaysFalseOnSaveModel->getSelect()
-                                       ->where(' name = ? ', 'user_1 unsavableExistingRecord__SecondCollectionCreatedByTheUnsavableModel')  
-            )
-        );
+//        self::assertContains(1, $unsavableModelsResult);
+//        self::assertContains(3, $unsavableModelsResult);
+//        self::assertContains(5, $unsavableModelsResult);
+
     }
     
     protected function createSavableAndUnsavableRecords(
