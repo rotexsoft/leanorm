@@ -343,45 +343,11 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             [PDO::ATTR_PERSISTENT => true], 'author_id', 'authors'
         );
         
-        $unsavableNewRecord1 = $alwaysFalseOnSaveModel->createNewRecord([
-            //'author_id'     => 777, // new record, no need for primary key
-            'name'          => 'Author unsavable 1',
-            'm_timestamp'   => date('Y-m-d H:i:s'),
-            'date_created'  => date('Y-m-d H:i:s'),
-        ]);
-        
-        $unsavableNewRecord2 = $alwaysFalseOnSaveModel->createNewRecord([
-            //'author_id'     => 777, // new record, no need for primary key
-            'name'          => 'Author unsavable 2',
-            'm_timestamp'   => date('Y-m-d H:i:s'),
-            'date_created'  => date('Y-m-d H:i:s'),
-        ]);
-        
-        $savableExistingRecord = $modelThatCanSave->fetchOneRecord(
-            $modelThatCanSave->getSelect()->orderBy(['author_id asc'])
-        );
-        // Change a field so it can be saved
-        $savableExistingRecord->name .= " savableExistingRecord";
-        
-        $unsavableExistingRecord = $alwaysFalseOnSaveModel->fetchOneRecord(
-            $alwaysFalseOnSaveModel->getSelect()->orderBy(['author_id asc'])
-        );
-        // Change a field, but it won't be saved because it is an unsavable record
-        $unsavableExistingRecord->name .= " unsavableExistingRecord";
-        
-        $savableNewRecord1 = $modelThatCanSave->createNewRecord([
-            //'author_id'     => 777, // new record, no need for primary key
-            'name'          => 'Author savable 333',
-            'm_timestamp'   => date('Y-m-d H:i:s'),
-            'date_created'  => date('Y-m-d H:i:s'),
-        ]);
-        
-        $savableNewRecord2 = $modelThatCanSave->createNewRecord([
-            //'author_id'     => 777, // new record, no need for primary key
-            'name'          => 'Author savable 444',
-            'm_timestamp'   => date('Y-m-d H:i:s'),
-            'date_created'  => date('Y-m-d H:i:s'),
-        ]);
+        [
+            $unsavableNewRecord1, $savableNewRecord1,
+            $unsavableNewRecord2, $savableNewRecord2,
+            $unsavableExistingRecord, $savableExistingRecord
+        ] = $this->createSavableAndUnsavableRecords($alwaysFalseOnSaveModel, $modelThatCanSave);
         
         $collectionCreatedBySavableModel = $modelThatCanSave->createNewCollection();
         $collectionCreatedBySavableModel[1] = $unsavableNewRecord1;
@@ -474,12 +440,19 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         //      it's record class always returns false on save.
         
         $collectionCreatedByUnsavableModel = $alwaysFalseOnSaveModel->createNewCollection();
-        $collectionCreatedByUnsavableModel[1] = $unsavableNewRecord1;
-        $collectionCreatedByUnsavableModel[2] = $savableNewRecord1;
-        $collectionCreatedByUnsavableModel[3] = $unsavableNewRecord2;
-        $collectionCreatedByUnsavableModel[4] = $savableNewRecord2;
-        $collectionCreatedByUnsavableModel[5] = $unsavableExistingRecord;
-        $collectionCreatedByUnsavableModel[6] = $savableExistingRecord;
+        
+        [
+            $unsavableNewRecord1B, $savableNewRecord1B,
+            $unsavableNewRecord2B, $savableNewRecord2B,
+            $unsavableExistingRecordB, $savableExistingRecordB
+        ] = $this->createSavableAndUnsavableRecords($alwaysFalseOnSaveModel, $modelThatCanSave);
+        
+        $collectionCreatedByUnsavableModel[1] = $unsavableNewRecord1B;
+        $collectionCreatedByUnsavableModel[2] = $savableNewRecord1B;
+        $collectionCreatedByUnsavableModel[3] = $unsavableNewRecord2B;
+        $collectionCreatedByUnsavableModel[4] = $savableNewRecord2B;
+        $collectionCreatedByUnsavableModel[5] = $unsavableExistingRecordB;
+        $collectionCreatedByUnsavableModel[6] = $savableExistingRecordB;
         
         self::assertCount(6, $collectionCreatedByUnsavableModel);
         
@@ -508,18 +481,18 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             )->name
         );
         
-        $refetchedSavableNewRecord1 = $alwaysFalseOnSaveModel->fetchOneRecord(
+        $refetchedSavableNewRecord1B = $alwaysFalseOnSaveModel->fetchOneRecord(
             $alwaysFalseOnSaveModel->getSelect()
                                    ->where(' name = ? ', 'Author savable 333__SecondCollectionCreatedByTheUnsavableModel')  
         );
-        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $refetchedSavableNewRecord1);
+        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $refetchedSavableNewRecord1B);
         
         
-        $refetchedSavableNewRecord2 = $alwaysFalseOnSaveModel->fetchOneRecord(
+        $refetchedSavableNewRecord2B = $alwaysFalseOnSaveModel->fetchOneRecord(
             $alwaysFalseOnSaveModel->getSelect()
                                    ->where(' name = ? ', 'Author savable 444__SecondCollectionCreatedByTheUnsavableModel')  
         );
-        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $refetchedSavableNewRecord2);
+        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $refetchedSavableNewRecord2B);
         
         // make sure that the two new unsavable records were not saved
         self::assertNull(
@@ -543,6 +516,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             )
         );
         
+        /////////////////////////////////////////////////////////////////////////
         // Let's call saveAll with bulk insert set to true, we should still get
         // a different result
         $unsavableModelsResult = $collectionCreatedByUnsavableModel->saveAll(true);
@@ -573,6 +547,58 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
                                        ->where(' name = ? ', 'user_1 unsavableExistingRecord__SecondCollectionCreatedByTheUnsavableModel')  
             )
         );
+    }
+    
+    protected function createSavableAndUnsavableRecords(
+        \LeanOrm\Model $alwaysFalseOnSaveModel, 
+        \LeanOrm\Model $modelThatCanSave   
+    ): array {
+        
+        $unsavableNewRecord1 = $alwaysFalseOnSaveModel->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author unsavable 1',
+            'm_timestamp'   => date('Y-m-d H:i:s'),
+            'date_created'  => date('Y-m-d H:i:s'),
+        ]);
+        
+        $savableNewRecord1 = $modelThatCanSave->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author savable 333',
+            'm_timestamp'   => date('Y-m-d H:i:s'),
+            'date_created'  => date('Y-m-d H:i:s'),
+        ]);
+        
+        $unsavableNewRecord2 = $alwaysFalseOnSaveModel->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author unsavable 2',
+            'm_timestamp'   => date('Y-m-d H:i:s'),
+            'date_created'  => date('Y-m-d H:i:s'),
+        ]);
+        
+        $savableNewRecord2 = $modelThatCanSave->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author savable 444',
+            'm_timestamp'   => date('Y-m-d H:i:s'),
+            'date_created'  => date('Y-m-d H:i:s'),
+        ]);
+        
+        $unsavableExistingRecord = $alwaysFalseOnSaveModel->fetchOneRecord(
+            $alwaysFalseOnSaveModel->getSelect()->orderBy(['author_id asc'])
+        );
+        // Change a field, but it won't be saved because it is an unsavable record
+        $unsavableExistingRecord->name .= " unsavableExistingRecord";
+        
+        $savableExistingRecord = $modelThatCanSave->fetchOneRecord(
+            $modelThatCanSave->getSelect()->orderBy(['author_id asc'])
+        );
+        // Change a field so it can be saved
+        $savableExistingRecord->name .= " savableExistingRecord";
+        
+        return [
+            $unsavableNewRecord1, $savableNewRecord1,
+            $unsavableNewRecord2, $savableNewRecord2,
+            $unsavableExistingRecord, $savableExistingRecord
+        ];
     }
     
     public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords1() {
