@@ -16,7 +16,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], 'author_id', 'authors'
+            [], 'author_id', 'authors'
         );
         
         $collection = new \LeanOrm\Model\Collection($model);
@@ -39,7 +39,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], 'author_id', 'authors'
+            [], 'author_id', 'authors'
         );
         
         ////////////////////
@@ -183,7 +183,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], '', 'authors'
+            [], '', 'authors'
         );
         
         $records = [
@@ -202,7 +202,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], 'post_id', 'posts'
+            [], 'post_id', 'posts'
         );
         $emptyCollection = new \LeanOrm\Model\Collection($model);
         
@@ -221,7 +221,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], 'post_id', 'posts'
+            [], 'post_id', 'posts'
         );
         $emptyCollection = new \LeanOrm\Model\Collection($model);
         
@@ -240,7 +240,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], 'post_id', 'posts'
+            [], 'post_id', 'posts'
         );
         $emptyCollection = new \LeanOrm\Model\Collection($model);
         
@@ -254,7 +254,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], 'post_id', 'posts'
+            [], 'post_id', 'posts'
         );
         $emptyCollection = new \LeanOrm\Model\Collection($model);
         $records = [$model->createNewRecord(), $model->createNewRecord(),];
@@ -273,7 +273,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], 'post_id', 'posts'
+            [], 'post_id', 'posts'
         );
         $emptyCollection = new \LeanOrm\Model\Collection($model);
         $records = [$model->createNewRecord(), $model->createNewRecord(),];
@@ -292,7 +292,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], 'post_id', 'posts'
+            [], 'post_id', 'posts'
         );
         $emptyCollection = new \LeanOrm\Model\Collection($model);
         $records = [$model->createNewRecord(), $model->createNewRecord(),];
@@ -340,227 +340,243 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         ///////////////////////////////////////
         $modelThatCanSave = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], 'author_id', 'authors'
+            [], 'author_id', 'authors'
         );
         
-        
         ////////////////////////////////////////////////////////////////////////
-        // Scenario 1: create a new collection with a model that can save to the
-        // DB & put 
-        //  - 3 records (2 new & 1 existing) created & fetched by a model that can save to the DB
-        //  - 3 records (2 new & 1 existing) created & fetched by a model that can't save to the DB
-        //  
-        // When saveAll is called with false as argument on the collection created with a model that can save to the DB,
-        // 1. the 3 records in this collection (created & fetched by a model that can save to the DB) will be successfully 
-        // saved to the DB, 
-        // 2. while the keys in this collection for the 3 records in this collection created & fetched by a model that can't 
-        // save to the DB, will be returned & these 3 records would not have been saved to the DB
+        ////////////////////////////////////////////////////////////////////////
+        // In each of the 4 calls below to $this->performOtherSaveAllTests(...),   
+        // a new collection with 6 records is created
+        //  - 3 records (2 new & 1 existing) created & fetched 
+        //    by a model that can save to the DB. 
+        //    Their keys in the collection are always 2, 4 & 6 respectively
+        //  - Another 3 records (2 new & 1 existing) created & fetched 
+        //    by a model that can't save to the DB.
+        //    Their keys in the collection are always 1, 3 & 5 respectively
+        ////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////
+        
+        // The call below to $this->performOtherSaveAllTests(...) 
+        // will lead to $modelThatCanSave to be used to create the collection
+        // that saveAll(false) will be called on, which should lead to all the 
+        // records created or fetched by a model that can save to the DB with 
+        // keys 2, 4 & 6 in the collection saveAll is being called on getting 
+        // saved to the DB.
         // 
+        // Also all the records created or fetched by a model that CANNOT save 
+        // to the DB with keys 1, 3 & 5 in the collection saveAll is being called 
+        // on will not get saved to the DB, meaning that saveAll(false) will return
+        // [1, 3, 5].
+        $this->performOtherSaveAllTests(
+            $alwaysFalseOnSaveModel, 
+            $modelThatCanSave, 
+            true,  // use $modelThatCanSave->saveAll(...)
+            false, // NO bulk insert
+            [1, 3, 5]
+        );
+        
+        $this->setUp(); // restore db to baseline
+        
+        // The call below to $this->performOtherSaveAllTests(...) 
+        // will lead to $modelThatCanSave to be used to create the collection
+        // that saveAll(true) will be called on, which should lead to all the 
+        // records created or fetched by a model that can save to the DB with 
+        // keys 2, 4 & 6 in the collection saveAll is being called on and also
+        // the two new records created by a model that CANNOT save to the DB
+        // with keys 1 & 3 getting saved to the DB. The two new records created 
+        // by a model that CANNOT save to the DB will get saved because we are
+        // doing a bulk insert in this call & the model $modelThatCanSave that 
+        // was used to create the collection we are calling saveAll(true) on is
+        // also the model that will be used under the hood to perfform the
+        // bulk insert.
+        // 
+        // The one existing record fetched by a model that CANNOT save to the DB
+        // with key 5 in the collection saveAll(true) is being called on will not 
+        // get saved to the DB because that record would be atempted to be saved 
+        // to the DB using the $alwaysFalseOnSaveModel under the hood, meaning that 
+        // saveAll(true) will return [5], the only key of the record that was not saved.
+        $this->performOtherSaveAllTests(
+            $alwaysFalseOnSaveModel, 
+            $modelThatCanSave, 
+            true, // use $modelThatCanSave->saveAll(...)
+            true, // bulk insert 
+            [5]
+        );
+        
+        $this->setUp(); // restore db to baseline
+        
+        // The call below to $this->performOtherSaveAllTests(...) 
+        // will lead to $alwaysFalseOnSaveModel to be used to create the collection
+        // that saveAll(false) will be called on, which should lead to all the 
+        // records created or fetched by a model that can save to the DB with 
+        // keys 2, 4 & 6 in the collection saveAll is being called on getting 
+        // saved to the DB.
+        // 
+        // Also all the records created or fetched by a model that CANNOT save 
+        // to the DB with keys 1, 3 & 5 in the collection saveAll is being called 
+        // on will not get saved to the DB, meaning that saveAll(false) will return
+        // [1, 3, 5].
+        $this->performOtherSaveAllTests(
+            $alwaysFalseOnSaveModel, 
+            $modelThatCanSave, 
+            false, // use $alwaysFalseOnSaveModel->saveAll(...)
+            false, // NO bulk insert 
+            [1, 3, 5]
+        );
+        
+        $this->setUp(); // restore db to baseline
+        
+        // The call below to $this->performOtherSaveAllTests(...) 
+        // will lead to $alwaysFalseOnSaveModel to be used to create the collection
+        // that saveAll(true) will be called on, which should lead to all the 
+        // records created or fetched by a model that can save to the DB with 
+        // keys 2, 4 & 6 in the collection saveAll is being called on and also
+        // the two new records created by a model that CANNOT save to the DB
+        // with keys 1 & 3 NOT getting saved to the DB. This is because, the
+        // collection saveAll(true) is being called on uses $alwaysFalseOnSaveModel
+        // under the hood to try to perform the bulk insert of the 4 new records
+        // and that bulk insert will fail because the model being used CANNOT save
+        // to the DB. Also, the 1 existing record fetched by the model that CANNOT
+        // save that is also in the collection will not get saved to the DB. 
+        // This leads to saveAll(true) returning [1, 2, 3, 4, 5] (the keys in the
+        // collection for the unsaved records) in this scenario.
+        // 
+        // Only the one existing record fetched by a model that can save to the DB
+        // with key 6 in the collection saveAll(true) is being called on will get 
+        // saved to the DB because that record would be atempted to be saved 
+        // to the DB using the $modelThatCanSave under the hood, and that save
+        // operation will succeed.
+        $this->performOtherSaveAllTests(
+            $alwaysFalseOnSaveModel, 
+            $modelThatCanSave, 
+            false, // use $alwaysFalseOnSaveModel->saveAll(...)
+            true,  // bulk insert 
+            [1, 2, 3, 4, 5]
+        );        
+    }
+
+    protected function performOtherSaveAllTests(
+        \LeanOrm\Model $alwaysFalseOnSaveModel,
+        \LeanOrm\Model $modelThatCanSave,
+        bool $useSavableModelToCreateCollection,
+        bool $groupInserts,
+        array $keysInCollectionOfUnsavedRecords
+    ): void {
         [
             $unsavableNewRecord1, $savableNewRecord1,
             $unsavableNewRecord2, $savableNewRecord2,
             $unsavableExistingRecord, $savableExistingRecord
         ] = $this->createSavableAndUnsavableRecords($alwaysFalseOnSaveModel, $modelThatCanSave);
-        
-        $collectionCreatedBySavableModel = $modelThatCanSave->createNewCollection();
-        $collectionCreatedBySavableModel[1] = $unsavableNewRecord1;
-        $collectionCreatedBySavableModel[2] = $savableNewRecord1;
-        $collectionCreatedBySavableModel[3] = $unsavableNewRecord2;
-        $collectionCreatedBySavableModel[4] = $savableNewRecord2;
-        $collectionCreatedBySavableModel[5] = $unsavableExistingRecord;
-        $collectionCreatedBySavableModel[6] = $savableExistingRecord;
-        
-        $keysForUnsavableRecords = [1, 3, 5];
-        
-        self::assertCount(6, $collectionCreatedBySavableModel);
-        
-        // 3 savable (1 existing & 2 new) records should be saved
-        // 3 unsavable (1 existing & 2 new) records should NOT be saved,
-        // the keys to the unsaved unsavable records in the collection 
-        // should be returned in an array.
-        $savableModelsResult = $collectionCreatedBySavableModel->saveAll();
-        
-        //////////////////////////////////////////////////////////////
-        // Make sure unsavable records were not saved
-        self::assertCount(3, $savableModelsResult);
-        
-        // The unsavable records have the ff keys in the collection: 1, 3 & 5
-        // These keys should be returned by saveAll
-        self::assertContains(1, $savableModelsResult);
-        self::assertContains(3, $savableModelsResult);
-        self::assertContains(5, $savableModelsResult);
-        
-        // Verify that the savable records were actually saved
-        self::assertStringContainsString(
-            " savableExistingRecord", 
-            $modelThatCanSave->fetchOneRecord(
-                $modelThatCanSave->getSelect()->orderBy(['author_id asc'])
-            )->name 
-        );  // Check that substring above is contained in the name from the 
-            // first existing record re-fetched from the db indicating a 
-            // successful update of that record by saveAll
-        
-        $refetchedSavableNewRecord1 = $modelThatCanSave->fetchOneRecord(
-            $modelThatCanSave->getSelect()
-                             ->where(' name = ? ', 'Author savable 333')  
-        ); // re-fetch the first new savable record & make sure it is an instance of record
-        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $refetchedSavableNewRecord1);
-        
-        $refetchedSavableNewRecord2 = $modelThatCanSave->fetchOneRecord(
-            $modelThatCanSave->getSelect()
-                             ->where(' name = ? ', 'Author savable 444')  
-        ); // re-fetch the second new savable record & make sure it is an instance of record
-        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $refetchedSavableNewRecord2);
-        
-        // make sure that the two new unsavable records were not saved
-        self::assertNull(
-            $modelThatCanSave->fetchOneRecord(
-                $modelThatCanSave->getSelect()
-                                 ->where(' name = ? ', 'Author unsavable 1')  
-            )
-        );
-        self::assertNull(
-            $modelThatCanSave->fetchOneRecord(
-                $modelThatCanSave->getSelect()
-                                 ->where(' name = ? ', 'Author unsavable 2')  
-            )
-        );
-        
-        // the one existing unsavable record also should not have been updated
-        self::assertNull(
-            $modelThatCanSave->fetchOneRecord(
-                $modelThatCanSave->getSelect()
-                                 ->where(' name = ? ', 'user_1 unsavableExistingRecord')  
-            )
-        );
-        
-        ///////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////
-        // We are now going to create a 2nd collection, update the name field of
-        // each record and then call saveAll on this 2nd collection to save the 
-        // records again.
-        // 
-        // This 2nd collection will be created via the Model whose insert methods 
-        // always return false & whose Record class always returns false on save.
-        //  
-        // The result of calling saveAll on this new collection would be that:
-        // 
-        //      - The 3 savable records (1 existing & 2 new) will still be saved 
-        //      because the model associated with those records allows saving.
-        //      
-        //      - The 3 unsavable records will still not be saved because the 
-        //      model they were created with always returns false on insert* &
-        //      it's record class always returns false on save.
-        
-        $collectionCreatedByUnsavableModel = $alwaysFalseOnSaveModel->createNewCollection();
-        
-        [
-            $unsavableNewRecord1B, $savableNewRecord1B,
-            $unsavableNewRecord2B, $savableNewRecord2B,
-            $unsavableExistingRecordB, $savableExistingRecordB
-        ] = $this->createSavableAndUnsavableRecords($alwaysFalseOnSaveModel, $modelThatCanSave);
-        
-        $collectionCreatedByUnsavableModel[1] = $unsavableNewRecord1B;
-        $collectionCreatedByUnsavableModel[2] = $savableNewRecord1B;
-        $collectionCreatedByUnsavableModel[3] = $unsavableNewRecord2B;
-        $collectionCreatedByUnsavableModel[4] = $savableNewRecord2B;
-        $collectionCreatedByUnsavableModel[5] = $unsavableExistingRecordB;
-        $collectionCreatedByUnsavableModel[6] = $savableExistingRecordB;
-        
-        self::assertCount(6, $collectionCreatedByUnsavableModel);
-        
-        ///////////////////////////////////////////////////////////////////////
-        // Let's tweak all the records in the second collection before calling
-        // saveAll
-        foreach ($collectionCreatedByUnsavableModel as $record) {
-            
-            $record->name .= '__FirstCollectionCreatedByTheUnsavableModel';
-        }
 
-        // 3 savable (1 existing & 2 new) records should still be saved
-        // 3 unsavable (1 existing & 2 new) records should NOT be saved,
-        // the keys to the unsaved unsavable records in the collection 
-        // should still be returned in an array.
-        $unsavableModelsResult = $collectionCreatedByUnsavableModel->saveAll(false);
+        $collectionToPerfomSaveAll = 
+            ($useSavableModelToCreateCollection)
+                ? $modelThatCanSave->createNewCollection()
+                : $alwaysFalseOnSaveModel->createNewCollection();
         
-        // Make sure unsavable records were not saved
-        self::assertEquals($keysForUnsavableRecords, $unsavableModelsResult);
+        $collectionRecordsDataB4SaveAllAsArrays = [];
         
-        // Verify that the savable records were actually saved
-        self::assertStringContainsString(
-            "__FirstCollectionCreatedByTheUnsavableModel", 
-            $alwaysFalseOnSaveModel->fetchOneRecord(
-                $alwaysFalseOnSaveModel->getSelect()->orderBy(['author_id asc'])
-            )->name
-        );
+        $collectionToPerfomSaveAll[1] = $unsavableNewRecord1;
+        $collectionRecordsDataB4SaveAllAsArrays[1] = $unsavableNewRecord1->getData();
         
-        $refetchedSavableNewRecord1B = $alwaysFalseOnSaveModel->fetchOneRecord(
-            $alwaysFalseOnSaveModel->getSelect()
-                                   ->where(' name = ? ', 'Author savable 333__FirstCollectionCreatedByTheUnsavableModel')  
-        );
-        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $refetchedSavableNewRecord1B);
+        $collectionToPerfomSaveAll[2] = $savableNewRecord1;
+        $collectionRecordsDataB4SaveAllAsArrays[2] = $savableNewRecord1->getData();
         
+        $collectionToPerfomSaveAll[3] = $unsavableNewRecord2;
+        $collectionRecordsDataB4SaveAllAsArrays[3] = $unsavableNewRecord2->getData();
         
-        $refetchedSavableNewRecord2B = $alwaysFalseOnSaveModel->fetchOneRecord(
-            $alwaysFalseOnSaveModel->getSelect()
-                                   ->where(' name = ? ', 'Author savable 444__FirstCollectionCreatedByTheUnsavableModel')  
-        );
-        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $refetchedSavableNewRecord2B);
+        $collectionToPerfomSaveAll[4] = $savableNewRecord2;
+        $collectionRecordsDataB4SaveAllAsArrays[4] = $savableNewRecord2->getData();
         
-        // make sure that the two new unsavable records were not saved
-        self::assertNull(
-            $alwaysFalseOnSaveModel->fetchOneRecord(
-                $alwaysFalseOnSaveModel->getSelect()
-                                       ->where(' name = ? ', 'Author unsavable 1__FirstCollectionCreatedByTheUnsavableModel')  
-            )
-        );
-        self::assertNull(
-            $alwaysFalseOnSaveModel->fetchOneRecord(
-                $alwaysFalseOnSaveModel->getSelect()
-                                       ->where(' name = ? ', 'Author unsavable 2__FirstCollectionCreatedByTheUnsavableModel')  
-            )
-        );
+        $collectionToPerfomSaveAll[5] = $unsavableExistingRecord;
+        $collectionRecordsDataB4SaveAllAsArrays[5] = $unsavableExistingRecord->getData();
         
-        // the one existing unsavable record also should not have been updated
-        self::assertNull(
-            $alwaysFalseOnSaveModel->fetchOneRecord(
-                $alwaysFalseOnSaveModel->getSelect()
-                                       ->where(' name = ? ', 'user_1 unsavableExistingRecord__FirstCollectionCreatedByTheUnsavableModel')  
-            )
-        );
-        
-        /////////////////////////////////////////////////////////////////////////
-        // Let's call saveAll with bulk insert set to true, we should still get
-        // a different result
-        $secondCollectionCreatedByUnsavableModel = $alwaysFalseOnSaveModel->createNewCollection();
-        
-        [
-            $unsavableNewRecord1C, $savableNewRecord1C,
-            $unsavableNewRecord2C, $savableNewRecord2C,
-            $unsavableExistingRecordC, $savableExistingRecordC
-        ] = $this->createSavableAndUnsavableRecords($alwaysFalseOnSaveModel, $modelThatCanSave);
-        
-        $secondCollectionCreatedByUnsavableModel[1] = $unsavableNewRecord1C;
-        $secondCollectionCreatedByUnsavableModel[2] = $savableNewRecord1C;
-        $secondCollectionCreatedByUnsavableModel[3] = $unsavableNewRecord2C;
-        $secondCollectionCreatedByUnsavableModel[4] = $savableNewRecord2C;
-        $secondCollectionCreatedByUnsavableModel[5] = $unsavableExistingRecordC;
-        $secondCollectionCreatedByUnsavableModel[6] = $savableExistingRecordC;
-        
-        ///////////////////////////////////////////////////////////////////////
-        // Let's tweak all the records in this new collection before calling
-        // saveAll
-        foreach ($secondCollectionCreatedByUnsavableModel as $record) {
-            
-            $record->name .= '__SecondCollectionCreatedByTheUnsavableModel';
-        }
-        $unsavableModelsResult = $secondCollectionCreatedByUnsavableModel->saveAll(true);
-var_dump($unsavableModelsResult);exit;
-        // Make sure unsavable records were not saved
-//        self::assertContains(1, $unsavableModelsResult);
-//        self::assertContains(3, $unsavableModelsResult);
-//        self::assertContains(5, $unsavableModelsResult);
+        $collectionToPerfomSaveAll[6] = $savableExistingRecord;
+        $collectionRecordsDataB4SaveAllAsArrays[6] = $savableExistingRecord->getData();
 
+        // make sure the number of items in the new collection is as expected
+        self::assertCount(6, $collectionToPerfomSaveAll);
+
+        $saveAllResult = $collectionToPerfomSaveAll->saveAll($groupInserts);
+
+        // Because there are unsavable records in the collection,
+        // saveAll must return an array of the collection keys of
+        // the records that were not saved to the DB
+        self::assertIsArray($saveAllResult);
+
+        // Assert that there are as many expected items in the array returned by saveAll
+        self::assertEquals(
+            count($keysInCollectionOfUnsavedRecords), 
+            count($saveAllResult)
+        );
+        
+        // Assert that the expected keys were returned by saveAll
+        foreach($keysInCollectionOfUnsavedRecords as $key) {
+            
+            self::assertContains($key, $saveAllResult);
+        } // foreach($keysInCollectionOfUnsavedRecords as $key)
+
+        foreach($collectionToPerfomSaveAll as $key => $record) {
+            
+            if(!in_array($key, $keysInCollectionOfUnsavedRecords)) {
+                
+                /////////////////////////////////////////////////
+                // This is a record that should have been saved
+                /////////////////////////////////////////////////
+                
+                // Try to fetch the record by name, if it is returned from the
+                // fetch, that means the record was successfully saved.
+                $refetchedPotentiallySavedRecord = $record->getModel()->fetchOneRecord(
+                    $record->getModel()
+                           ->getSelect()
+                           ->where(' name = ? ', $collectionRecordsDataB4SaveAllAsArrays[$key]['name'])
+                );
+                
+                // if the result is a record, then the saveAll successfully saved this record
+                self::assertInstanceOf(
+                    GDAO\Model\RecordInterface::class, 
+                    $refetchedPotentiallySavedRecord
+                );
+            } else {
+                
+                ///////////////////////////////////////////////////////////////////////
+                // This is a record that is not expected to have been saved to the DB
+                ///////////////////////////////////////////////////////////////////////
+                
+                if(
+                    array_key_exists('author_id', $collectionRecordsDataB4SaveAllAsArrays[$key])
+                ) { 
+                    
+                    // if author_id is present in the data for the record before
+                    // saveAll was called, then it's an existing record, not a new one
+                    
+                    // we use the same query that was used to fetch each
+                    // existing record in $this->createSavableAndUnsavableRecords(...)
+                    $existingRecord = $record->getModel()->fetchOneRecord(
+                        $record->getModel()->getSelect()->orderBy(['author_id asc'])
+                    );
+                    self::assertInstanceOf(GDAO\Model\RecordInterface::class, $existingRecord);
+                    
+                    // Because this is an existing record that is not expected to
+                    // have been saved, modification to the value of the name
+                    // field in the record should NOT have been saved to the DB
+                    self::assertNotEquals($existingRecord->name, $collectionRecordsDataB4SaveAllAsArrays[$key]['name']);
+                    
+                } else {
+                    
+                    // if author_id is NOT present in the data for the record before
+                    // saveAll was called, then it's a new one. The record should not
+                    // be fetchable by name.
+                    self::assertNull(
+                        $record->getModel()->fetchOneRecord(
+                            $record->getModel()
+                                   ->getSelect()
+                                   ->where(' name = ? ', $collectionRecordsDataB4SaveAllAsArrays[$key]['name'])
+                        )
+                    );
+                    
+                } // if(array_key_exists('author_id', $collectionRecordsDataAsArrays[$key]))
+            } // if(!in_array($key, $keysInCollectionOfUnsavedRecords))
+        } // foreach($collectionToPerfomSaveAll as $key => $record)
     }
     
     protected function createSavableAndUnsavableRecords(
@@ -621,7 +637,7 @@ var_dump($unsavableModelsResult);exit;
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], '', 'authors'
+            [], '', 'authors'
         );
         
         $records = [
@@ -642,7 +658,7 @@ var_dump($unsavableModelsResult);exit;
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], '', 'authors'
+            [], '', 'authors'
         );
         
         $records = [
@@ -686,7 +702,7 @@ var_dump($unsavableModelsResult);exit;
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], 'author_id', 'authors'
+            [], 'author_id', 'authors'
         );
         
         /////////////////////////////////////////////////////////
@@ -816,4 +832,32 @@ var_dump($unsavableModelsResult);exit;
             self::assertStringEndsWith('###'.($i++), $record->name);
         }
     } // protected function runCommonSaveAllTests(bool $groupInsertsTogether)
+    
+    
+    public function testThatSetModelWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'post_id', 'posts'
+        );
+        $emptyCollection = new \LeanOrm\Model\Collection($model);
+        
+        self::assertSame($model, $emptyCollection->getModel());
+        
+        $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
+        
+        //test return $this
+        self::assertSame(
+            $emptyCollection, 
+            $emptyCollection->setModel($authorsModel)
+        );
+        
+        self::assertSame(
+            $authorsModel, 
+            $emptyCollection->getModel()
+        );
+    } // public function testThatSetModelWorksAsExpected()
 }

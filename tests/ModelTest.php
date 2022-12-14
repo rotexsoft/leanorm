@@ -71,12 +71,12 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // when an empty primary key value is passed to the constructor
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [PDO::ATTR_PERSISTENT => true], '', 'authors'
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION], '', 'authors'
         );
         self::assertEquals('author_id', $model->getPrimaryCol());
-        self::assertEquals([PDO::ATTR_PERSISTENT => true], $model->getPdoDriverOpts());
+        self::assertEquals([PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION], $model->getPdoDriverOpts());
     }
-
+    
     public function testCreateNewCollection() {
         
         $modelWithMockCollAndRec = $this->testModelObjects['authors_with_specialized_collection_and_record'];

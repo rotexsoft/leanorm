@@ -191,9 +191,6 @@ trait CommonPropertiesAndMethodsTrait {
         
         $sqliteFile = __DIR__.DIRECTORY_SEPARATOR .'DbFiles'.DIRECTORY_SEPARATOR .'blog.sqlite';
 
-        // delete previously existing sqlite db file
-        if(file_exists($sqliteFile)) { unlink($sqliteFile); }
-
         try {
             //create sqlite file & create $dsn connection for it
             $dsn = "sqlite:" . $sqliteFile;
