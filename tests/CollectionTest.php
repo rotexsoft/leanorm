@@ -1101,4 +1101,17 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         self::assertEquals(3, $collection->count());
     }
+    
+    public function testThatGetIteratorWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        self::assertIsNotArray($collection);
+        self::assertIsIterable($collection);
+        self::assertInstanceOf(\Traversable::class, $collection);
+        self::assertInstanceOf(\Iterator::class, $collection->getIterator());
+    }
 }

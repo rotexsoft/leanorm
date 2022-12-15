@@ -40,7 +40,10 @@
         "classmap": ["src/", "demo/", "tests/"]
     },
     "scripts": {
-        "test": "vendor/bin/phpunit --coverage-text",
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "vendor/bin/phpunit --coverage-text"
+        ],
         "rector-clear": "vendor/bin/rector --clear-cache",
         "rector": "vendor/bin/rector process src --dry-run -vvv",
         "psalm": "vendor/bin/psalm --threads=1",
