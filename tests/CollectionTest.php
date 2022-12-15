@@ -9,8 +9,8 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
     
     use CommonPropertiesAndMethodsTrait;
     
-    protected const POST_POST_IDS =                  [ '1', '2', '3', '4', ];
-    protected const POST_POST_IDS_KEYED_ON_POST_ID = [ 1=>'1', 2=>'2', 3=>'3', 4=>'4', ];
+    protected const POST_POST_IDS                   = [ '1', '2', '3', '4', ];
+    protected const POST_POST_IDS_KEYED_ON_POST_ID  = [ 1=>'1', 2=>'2', 3=>'3', 4=>'4', ];
     
     public function testThatConstructorWorksAsExpected() {
         
@@ -317,7 +317,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         // We want to test that failed saves causes Collection->saveAll to return 
         // an array of keys in the collection of the unsaved records. To do this, 
         // we are going to create records from a Model whose insert* methods always
-        // returns false & it's record class always returns false on save. We will
+        // returns false & its record class always returns false on save. We will
         // also add some savable records from a good Model class to this same 
         // collection.
         $alwaysFalseOnSaveModel = 
@@ -335,7 +335,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
                     return false;
                 }
             };
-        $alwaysFalseOnSaveModel->setRecordClassName(AlwaysFalseOnSaveRecord::class);
+        $alwaysFalseOnSaveModel->setRecordClassName(\AlwaysFalseOnSaveRecord::class);
         
         ///////////////////////////////////////
         $modelThatCanSave = new \LeanOrm\Model(
@@ -356,6 +356,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         ////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
         
+        ////////////////////////////////////////////////////////////////////////
         // The call below to $this->performOtherSaveAllTests(...) 
         // will lead to $modelThatCanSave to be used to create the collection
         // that saveAll(false) will be called on, which should lead to all the 
@@ -377,6 +378,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $this->setUp(); // restore db to baseline
         
+        ////////////////////////////////////////////////////////////////////////
         // The call below to $this->performOtherSaveAllTests(...) 
         // will lead to $modelThatCanSave to be used to create the collection
         // that saveAll(true) will be called on, which should lead to all the 
@@ -387,7 +389,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         // by a model that CANNOT save to the DB will get saved because we are
         // doing a bulk insert in this call & the model $modelThatCanSave that 
         // was used to create the collection we are calling saveAll(true) on is
-        // also the model that will be used under the hood to perfform the
+        // also the model that will be used under the hood to perform the
         // bulk insert.
         // 
         // The one existing record fetched by a model that CANNOT save to the DB
@@ -405,12 +407,20 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         $this->setUp(); // restore db to baseline
         
+        ////////////////////////////////////////////////////////////////////////
         // The call below to $this->performOtherSaveAllTests(...) 
         // will lead to $alwaysFalseOnSaveModel to be used to create the collection
         // that saveAll(false) will be called on, which should lead to all the 
         // records created or fetched by a model that can save to the DB with 
         // keys 2, 4 & 6 in the collection saveAll is being called on getting 
         // saved to the DB.
+        // 
+        // These records will get saved even though we are in a collection created 
+        // by $alwaysFalseOnSaveModel because these records were created by 
+        // $modelThatCanSave & during the saveAll(false) call on the collection 
+        // created by $alwaysFalseOnSaveModel, these records will actually get 
+        // saved using the $modelThatCanSave model object they were created with.
+        // 
         // 
         // Also all the records created or fetched by a model that CANNOT save 
         // to the DB with keys 1, 3 & 5 in the collection saveAll is being called 
@@ -519,9 +529,9 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             
             if(!in_array($key, $keysInCollectionOfUnsavedRecords)) {
                 
-                /////////////////////////////////////////////////
-                // This is a record that should have been saved
-                /////////////////////////////////////////////////
+                ////////////////////////////////////////////////////
+                // This is a record that we believe has been saved
+                ////////////////////////////////////////////////////
                 
                 // Try to fetch the record by name, if it is returned from the
                 // fetch, that means the record was successfully saved.
@@ -544,8 +554,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
                 
                 if(
                     array_key_exists('author_id', $collectionRecordsDataB4SaveAllAsArrays[$key])
-                ) { 
-                    
+                ) {
                     // if author_id is present in the data for the record before
                     // saveAll was called, then it's an existing record, not a new one
                     
@@ -577,7 +586,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
                 } // if(array_key_exists('author_id', $collectionRecordsDataAsArrays[$key]))
             } // if(!in_array($key, $keysInCollectionOfUnsavedRecords))
         } // foreach($collectionToPerfomSaveAll as $key => $record)
-    }
+    } // protected function performOtherSaveAllTests(...
     
     protected function createSavableAndUnsavableRecords(
         \LeanOrm\Model $alwaysFalseOnSaveModel, 
@@ -629,7 +638,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             $unsavableNewRecord2, $savableNewRecord2,
             $unsavableExistingRecord, $savableExistingRecord
         ];
-    }
+    } // protected function createSavableAndUnsavableRecords(...
     
     public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords1() {
         
@@ -652,7 +661,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection->saveAll(false);
     } // public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords1()
     
-    public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords2() {
+    public function testThatSaveAllWithBulkInsertThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords() {
         
         $this->expectException(\LeanOrm\CantSaveReadOnlyRecordException::class);
         
@@ -671,7 +680,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         // Throws \LeanOrm\CantSaveReadOnlyRecordException
         // because the collection collects a ReadOnlyRecord
         $collection->saveAll(true);
-    } // public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords2()
+    } // public function testThatSaveAllWithBulkInsertThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords()
     
     public function testThatSaveAllThrowsExceptionOnTryingToSaveRecordBelongingToDifferentTableNameFromCollectionsModel() {
         
@@ -833,7 +842,6 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         }
     } // protected function runCommonSaveAllTests(bool $groupInsertsTogether)
     
-    
     public function testThatSetModelWorksAsExpected() {
         
         $model = new \LeanOrm\Model(
@@ -855,9 +863,242 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             $emptyCollection->setModel($authorsModel)
         );
         
+        //test that the model we set is now associated with the collection
         self::assertSame(
             $authorsModel, 
             $emptyCollection->getModel()
         );
     } // public function testThatSetModelWorksAsExpected()
+    
+    public function testThatToArrayWorksAsExpected() {
+
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        // empty collection
+        self::assertEquals([], $collection->toArray());
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[777] = $newRecord1;
+        $collection[888] = $newRecord2;
+        $expectedToArrayResult = [
+            777 => $newRecord1->getData(), 888 => $newRecord2->getData(),
+        ];
+        
+        // non-empty collection should return expected array data
+        self::assertEquals($expectedToArrayResult, $collection->toArray());
+    }
+    
+    public function testThatOffsetExistsWorksAsExpected() {
+
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        // empty collection
+        self::assertFalse($collection->offsetExists(777));
+        self::assertFalse($collection->offsetExists('Yabadabadoo'));
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[777] = $newRecord1;
+        $collection['Yabadabadoo'] = $newRecord2;
+        
+        // non-empty collection
+        self::assertTrue($collection->offsetExists(777));
+        self::assertTrue($collection->offsetExists('Yabadabadoo'));
+    }
+    
+    public function testThatOffGetWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[777] = $newRecord1;
+        $collection['Yabadabadoo'] = $newRecord2;
+        
+        // non-empty collection
+        self::assertSame($newRecord1, $collection->offsetGet(777));
+        self::assertSame($newRecord2, $collection->offsetGet('Yabadabadoo'));
+    }
+    
+    public function testThatOffGetThrowsException() {
+        
+        $this->expectException(\GDAO\Model\ItemNotFoundInCollectionException::class);
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        // empty collection will throw exception
+        $collection->offsetGet(777);
+    }
+    
+    public function testThatOffSetWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection->offsetSet(777, $newRecord1);
+        $collection->offsetSet('Yabadabadoo', $newRecord2);
+        
+        // non-empty collection
+        self::assertSame($newRecord1, $collection->offsetGet(777));
+        self::assertSame($newRecord2, $collection->offsetGet('Yabadabadoo'));
+    }
+    
+    public function testThatOffSetThrowsException() {
+        
+        $this->expectException(\GDAO\Model\CollectionCanOnlyContainGDAORecordsException::class);
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        // Adding an item that is not an instance of \GDAO\Model\RecordInterface
+        // will throw exception
+        $collection->offsetSet(777, new \ArrayObject());
+    }
+    
+    public function testThatOffUnsetWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection->offsetSet(777, $newRecord1);
+        $collection->offsetSet('Yabadabadoo', $newRecord2);
+        
+        // non-empty collection
+        self::assertSame($newRecord1, $collection->offsetGet(777));
+        self::assertSame($newRecord2, $collection->offsetGet('Yabadabadoo'));
+        
+        self:: assertCount(2, $collection);
+        
+        $collection->offsetUnset(777);
+        $collection->offsetUnset('Yabadabadoo');
+        
+        // collection is now empty because of the unset
+        self:: assertCount(0, $collection);
+    }
+    
+    public function testThatCountWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        self::assertEquals(0, $collection->count());
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[777] =  $newRecord1;
+        $collection['Yabadabadoo'] =  $newRecord2;
+        
+        // non-empty collection
+        self::assertSame($newRecord1, $collection->offsetGet(777));
+        self::assertSame($newRecord2, $collection->offsetGet('Yabadabadoo'));
+        
+        self::assertEquals(2, $collection->count());
+        
+        // update an item 
+        $collection[777] =  $newRecord2;
+        
+        self::assertEquals(2, $collection->count());
+        
+        // add another item
+        $collection[888] =  $model->createNewRecord();
+        
+        self::assertEquals(3, $collection->count());
+    }
 }

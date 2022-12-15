@@ -95,13 +95,13 @@ trait CommonPropertiesAndMethodsTrait {
         // connection
         unset($schemaCreatorAndSeeder);
         unset($connection);
-        $schemaCreatorAndSeeder = null; // this was referencing $connection
-        $connection = null; // This had a pdo object inside it that is no longer
-                            // referenced by any other variable, meaning that 
-                            // $schemaCreatorAndSeeder, $connection & the pdo
-                            // object inside $connection are all ready for 
-                            // garbage collection, since they are no longer
-                            // being referenced by any variable.
+        $schemaCreatorAndSeeder = null; // This was referencing $connection
+        $connection = null;             // This had a pdo object inside it that is no longer
+                                        // referenced by any other variable, meaning that 
+                                        // $schemaCreatorAndSeeder, $connection & the pdo
+                                        // object inside $connection are all ready for 
+                                        // garbage collection, since they are no longer
+                                        // being referenced by any variable.
         \gc_enable();
         \gc_collect_cycles();
         
