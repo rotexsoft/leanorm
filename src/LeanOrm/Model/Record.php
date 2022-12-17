@@ -80,9 +80,8 @@ class Record implements \GDAO\Model\RecordInterface
         unset($this->data);
         unset($this->initial_data);
         unset($this->is_new);
-        unset($this->related_data);
         unset($this->non_table_col_and_non_related_data);
-
+        unset($this->related_data);
         //Don't unset $this->model, it may still be referenced by other 
         //Record and / or Collection objects.
     }
