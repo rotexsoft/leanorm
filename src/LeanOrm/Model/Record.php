@@ -76,7 +76,6 @@ class Record implements \GDAO\Model\RecordInterface
     public function __destruct() {
 
         //print "Destroying Record with Primary key Value: " . $this->getPrimaryVal() . "<br>";
-
         unset($this->data);
         unset($this->initial_data);
         unset($this->is_new);
