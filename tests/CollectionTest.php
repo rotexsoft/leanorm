@@ -937,7 +937,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         self::assertTrue($collection->offsetExists('Yabadabadoo'));
     }
     
-    public function testThatOffGetWorksAsExpected() {
+    public function testThatOffsetGetWorksAsExpected() {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
@@ -966,7 +966,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         self::assertSame($newRecord2, $collection->offsetGet('Yabadabadoo'));
     }
     
-    public function testThatOffGetThrowsException() {
+    public function testThatOffsetGetThrowsException() {
         
         $this->expectException(\GDAO\Model\ItemNotFoundInCollectionException::class);
         
@@ -979,7 +979,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection->offsetGet(777);
     }
     
-    public function testThatOffSetWorksAsExpected() {
+    public function testThatOffsetSetWorksAsExpected() {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
@@ -1008,7 +1008,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         self::assertSame($newRecord2, $collection->offsetGet('Yabadabadoo'));
     }
     
-    public function testThatOffSetThrowsException() {
+    public function testThatOffsetSetThrowsException() {
         
         $this->expectException(\GDAO\Model\CollectionCanOnlyContainGDAORecordsException::class);
         
@@ -1022,7 +1022,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection->offsetSet(777, new \ArrayObject());
     }
     
-    public function testThatOffUnsetWorksAsExpected() {
+    public function testThatOffsetUnsetWorksAsExpected() {
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
@@ -1113,5 +1113,186 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         self::assertIsIterable($collection);
         self::assertInstanceOf(\Traversable::class, $collection);
         self::assertInstanceOf(\Iterator::class, $collection->getIterator());
+    }
+    
+    public function testThat__GetWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection->_777 = $newRecord1;
+        $collection->Yabadabadoo = $newRecord2;
+        
+        // non-empty collection
+        self::assertSame($newRecord1, $collection->__get('_777'));
+        self::assertSame($newRecord2, $collection->__get('Yabadabadoo'));
+    }
+    
+    public function testThat__GetThrowsException() {
+        
+        $this->expectException(\GDAO\Model\ItemNotFoundInCollectionException::class);
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        // empty collection will throw exception
+        $collection->__get(777);
+    }
+    
+    public function testThat__issetWorksAsExpected() {
+
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        // empty collection
+        self::assertFalse($collection->__isset(777));
+        self::assertFalse($collection->__isset('Yabadabadoo'));
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection->_777 = $newRecord1;
+        $collection['Yabadabadoo'] = $newRecord2;
+        
+        // non-empty collection
+        self::assertTrue($collection->__isset('_777'));
+        self::assertTrue($collection->__isset('Yabadabadoo'));
+    }
+    
+    public function testThat__setWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection->__set(777, $newRecord1);
+        $collection->__set('Yabadabadoo', $newRecord2);
+        
+        // non-empty collection
+        self::assertSame($newRecord1, $collection->offsetGet(777));
+        self::assertSame($newRecord2, $collection->offsetGet('Yabadabadoo'));
+    }
+    
+    public function testThat__toStringWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        ////////////////////////////////////////////////////
+        // __toString() returns a var_export representation 
+        // of the array returned by the toArray() method
+        ////////////////////////////////////////////////////
+        
+        $emptyCollectionAsArray = $collection->toArray();
+        $emptyCollectionTostringAsArray = eval(' return ' . $collection->__toString() . ';');
+        
+        self::assertEquals($emptyCollectionAsArray, $emptyCollectionTostringAsArray);
+        
+        // add 2 records to the collection
+        $collection[] = $newRecord1;
+        $collection[] = $newRecord2;
+        
+        $nonEmptyCollectionAsArray = $collection->toArray();
+        $nonEmptyCollectionTostringAsArray = eval(' return ' . $collection->__toString() . ';');
+
+        self::assertEquals($nonEmptyCollectionAsArray, $nonEmptyCollectionTostringAsArray);
+    }
+    
+    public function testThat__unsetWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[777]            = $newRecord1;
+        $collection['Yabadabadoo']  = $newRecord2;
+        
+        // non-empty collection
+        self:: assertCount(2, $collection);
+        self::assertSame($newRecord1, $collection[777]);
+        self::assertSame($newRecord2, $collection['Yabadabadoo']);
+        
+        $collection->__unset(777);
+        $collection->__unset('Yabadabadoo');
+        
+        // collection is now empty because of the unset
+        self:: assertCount(0, $collection);
     }
 }

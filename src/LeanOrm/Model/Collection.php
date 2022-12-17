@@ -405,7 +405,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      */
     public function offsetSet($key, $val): void {
-
+        
         if( !($val instanceof \GDAO\Model\RecordInterface) ) {
             
             $msg = "ERROR: Only instances of " . \GDAO\Model\RecordInterface::class . " or its"
@@ -509,7 +509,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      *   
      */
     public function __set($key, \GDAO\Model\RecordInterface $val): void {
-       
+        
         // set the value
         $this->data[$key] = $val;
     }
