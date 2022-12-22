@@ -956,4 +956,31 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         self::assertEquals([], $record1->getNonTableColAndNonRelatedData());
         self::assertNull($record1->getInitialData());
     }
+    
+    public function testThatSaveWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
+        $timestamp = date('Y-m-d H:i:s');
+        
+        $record = new LeanOrm\Model\Record(
+            [
+                'author_id' => 888, 
+                'name' => 'Author 1', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $model
+        );
+        
+        // Fetching an existing record should return a non-new record
+        $record1 = $model->fetchOneRecord(
+            $model->getSelect()->orderBy(['author_id asc'])
+        );
+        
+    }
 }
