@@ -187,7 +187,9 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function &getInitialDataByRef(): array {
         
-        return $this->initial_data ?? [];
+        $this->initial_data ??= []; // assign to variable because we are returning a reference
+        
+        return $this->initial_data;
     }
     
     /**
@@ -389,7 +391,10 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * This method partially or completely overwrites pre-existing data and 
      * replaces it with the new data. Related data should also be loaded if 
-     * $data_2_load is an instance of \GDAO\Model\RecordInterface. 
+     * $data_2_load is an instance of \GDAO\Model\RecordInterface. However,
+     * because of the way __get is implemented, there's no need to load
+     * relationship data here, __get will load that data on-demand if not 
+     * already loaded.
      * 
      * Note if $cols_2_load === null all data should be replaced, else only
      * replace data for the cols in $cols_2_load.
@@ -516,7 +521,7 @@ class Record implements \GDAO\Model\RecordInterface
     
     /**
      * 
-     * Set the _is_new attribute of this record to true (meaning that the data
+     * Set the is_new attribute of this record to true (meaning that the data
      * for this record has never been saved to the db).
      * 
      */
@@ -529,7 +534,7 @@ class Record implements \GDAO\Model\RecordInterface
     
     /**
      * 
-     * Set the _is_new attribute of this record to false (meaning that the data
+     * Set the is_new attribute of this record to false (meaning that the data
      * for this record has been saved to the db or was read from the db).
      * 
      */
@@ -648,44 +653,37 @@ class Record implements \GDAO\Model\RecordInterface
     public function saveInTransaction($data_2_save = null): ?bool {
 
         $pdo_obj = $this->getModel()->getPDO();
+        
+        // start the transaction
+        $pdo_obj->beginTransaction();
 
-        if ($pdo_obj instanceof \PDO) {
+        try {
 
-            // start the transaction
-            $pdo_obj->beginTransaction();
+            $save_status = $this->save($data_2_save);
 
-            try {
+            // attempt the save
+            if ($save_status === true) {
 
-                $save_status = $this->save($data_2_save);
+                // entire save was valid, keep it
+                $pdo_obj->commit();
+                return true;
 
-                // attempt the save
-                if ($save_status === true) {
+            } elseif ($save_status === false) {
 
-                    // entire save was valid, keep it
-                    $pdo_obj->commit();
-                    return true;
-                    
-                } elseif ($save_status === false) {
-
-                    // at least one part of the save was *not* valid.
-                    // throw it all away.
-                    $pdo_obj->rollBack();
-                    return false;
-                    
-                } else {
-
-                    return null; //$save_status === null nothing was done
-                }
-            } catch (\Exception $exception) {
-
-                // roll back and throw the exception
+                // at least one part of the save was *not* valid.
+                // throw it all away.
                 $pdo_obj->rollBack();
-                throw $exception;
-            }
-        } else {
+                return false;
 
-            $msg = get_class($this) . ' Does Not Support ' . __FUNCTION__.'(...)';
-            throw new RecordOperationNotSupportedByDriverException($msg);
+            } else {
+
+                return null; //$save_status === null nothing was done
+            }
+        } catch (\Exception $exception) {
+
+            // roll back and throw the exception
+            $pdo_obj->rollBack();
+            throw $exception;
         }
     }
 
