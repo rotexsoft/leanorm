@@ -846,4 +846,114 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
             $record->getData()
         );
     }
+    
+    public function testThatMarkAsNewWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
+        $timestamp = date('Y-m-d H:i:s');
+        
+        $record = new LeanOrm\Model\Record(
+            [
+                'author_id' => 888, 
+                'name' => 'Author 1', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $model
+        );
+        
+        self::assertTrue($record->isNew());
+        self::assertSame($record, $record->markAsNew());
+        self::assertTrue($record->isNew());
+        
+        // Fetching an existing record should return a non-new record
+        $record1 = $model->fetchOneRecord(
+            $model->getSelect()->orderBy(['author_id asc'])
+        );
+        
+        self::assertFalse($record1->isNew());
+        self::assertSame($record1, $record1->markAsNew());
+        self::assertTrue($record1->isNew());
+    }
+    
+    public function testThatMarkAsNotNewWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
+        $timestamp = date('Y-m-d H:i:s');
+        
+        $record = new LeanOrm\Model\Record(
+            [
+                'author_id' => 888, 
+                'name' => 'Author 1', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $model
+        );
+        
+        self::assertTrue($record->isNew());
+        self::assertSame($record, $record->markAsNotNew());
+        self::assertFalse($record->isNew());
+        
+        // Fetching an existing record should return a non-new record
+        $record1 = $model->fetchOneRecord(
+            $model->getSelect()->orderBy(['author_id asc'])
+        );
+        
+        self::assertFalse($record1->isNew());
+        self::assertSame($record1, $record1->markAsNotNew());
+        self::assertFalse($record1->isNew());
+    }
+    
+    public function testThatSetStateToNewWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
+        $timestamp = date('Y-m-d H:i:s');
+        
+        $record = new LeanOrm\Model\Record(
+            [
+                'author_id' => 888, 
+                'name' => 'Author 1', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $model
+        );
+        
+        self::assertTrue($record->isNew());
+        self::assertSame($record, $record->setStateToNew());
+        self::assertTrue($record->isNew());
+        self::assertEquals([], $record->getData());
+        self::assertEquals([], $record->getRelatedData());
+        self::assertEquals([], $record->getNonTableColAndNonRelatedData());
+        self::assertNull($record->getInitialData());
+        
+        // Fetching an existing record should return a non-new record
+        $record1 = $model->fetchOneRecord(
+            $model->getSelect()->orderBy(['author_id asc'])
+        );
+        
+        self::assertFalse($record1->isNew());
+        self::assertSame($record1, $record1->setStateToNew());
+        self::assertTrue($record1->isNew());
+        self::assertEquals([], $record1->getData());
+        self::assertEquals([], $record1->getRelatedData());
+        self::assertEquals([], $record1->getNonTableColAndNonRelatedData());
+        self::assertNull($record1->getInitialData());
+    }
 }

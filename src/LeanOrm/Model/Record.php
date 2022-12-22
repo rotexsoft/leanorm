@@ -137,9 +137,9 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @return array a copy of the initial data loaded into this record.
      */
-    public function getInitialData(): array {
+    public function getInitialData(): ?array {
         
-        return $this->initial_data ?? [];
+        return $this->initial_data;
     }
     
     
@@ -185,9 +185,7 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @return array a reference to the initial data loaded into this record.
      */
-    public function &getInitialDataByRef(): array {
-        
-        $this->initial_data ??= []; // assign to variable because we are returning a reference
+    public function &getInitialDataByRef(): ?array {
         
         return $this->initial_data;
     }
