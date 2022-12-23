@@ -2084,19 +2084,15 @@ SELECT {$foreign_table_name}.*
                 $cols_n_vals_2_match
             );
 
-            if($this->getUpdatedTimestampColumnName() !== null) {
-
-                // update the record with the new updated copy from the DB
-                // which will contain the new updated timestamp value.
-                $record = 
-                    $this->fetchOneRecord(
+            // update the record with the new updated copy from the DB
+            // which will contain the new updated timestamp value.
+            $record = $this->fetchOneRecord(
                         $this->getSelect()
                              ->where(
                                     " {$record->getPrimaryCol()} = ? ", 
                                     $record->getPrimaryVal()
                                 )
                     );
-            } // if($this->getUpdatedTimestampColumnName() !== null)
         } // if( count($record) > 0 && !$record->isNew()........
 
         return $this;
