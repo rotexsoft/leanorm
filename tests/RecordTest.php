@@ -965,6 +965,268 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         );
         $timestamp = date('Y-m-d H:i:s');
         
+        ////////////////////////////////////////////////////////////////////////
+        // New Record without data
+        ////////////////////////////////////////////////////////////////////////
+        $recordWithNoData = new LeanOrm\Model\Record([], $model);
+        self::assertNull($recordWithNoData->save());
+        
+        ////////////////////////////////////////////////////////////////////////
+        // New Record with data
+        ////////////////////////////////////////////////////////////////////////
+        $newRecordWithData = new LeanOrm\Model\Record(
+            [ 
+                'name' => 'Author 888', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $model
+        );
+        self::assertTrue($newRecordWithData->isNew());
+        self::assertTrue($newRecordWithData->save());
+        self::assertFalse($newRecordWithData->isNew());
+        
+        // verify that the data was really saved to the DB
+        $newlySavedRecordFromDb = $model->fetchOneRecord(
+            $model->getSelect()->where(' name = ? ', 'Author 888')
+        );
+        self::assertInstanceOf(\LeanOrm\Model\Record::class, $newlySavedRecordFromDb);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Update Existing Record with new data
+        ////////////////////////////////////////////////////////////////////////
+        // Fetching an existing record should return a non-new record
+        $existingRecord = $model->fetchOneRecord(
+            $model->getSelect()->orderBy(['author_id asc'])
+        );
+        
+        self::assertFalse($existingRecord->isNew());
+        self::assertTrue(
+            $existingRecord->save([ 
+                'name' => 'Author 9999', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ])
+        );
+        self::assertFalse($existingRecord->isNew());
+        
+        // verify that the data was really saved to the DB
+        $updatedExistingRecordFromDb = $model->fetchOneRecord(
+            $model->getSelect()->where(' name = ? ', 'Author 9999')
+        );
+        self::assertInstanceOf(\LeanOrm\Model\Record::class, $updatedExistingRecordFromDb);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Save new Record with new data via Model that always returns false
+        // on save
+        ////////////////////////////////////////////////////////////////////////
+        $alwaysFalseOnSaveModel = 
+            new class(
+                    static::$dsn, 
+                    static::$username ?? "", 
+                    static::$password ?? "", 
+                    [], 'author_id', 'authors'
+                ) extends \LeanOrm\Model {
+            
+                public function insert(array $data_2_insert = []) {
+                    return false;
+                }
+                public function insertMany(array $rows_of_data_2_insert = []): bool {
+                    return false;
+                }
+            };
+        
+        $newRecordWithData2 = new LeanOrm\Model\Record(
+            [ 
+                'name' => 'Author 1999', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $alwaysFalseOnSaveModel
+        );
+        self::assertTrue($newRecordWithData2->isNew());
+        self::assertFalse($newRecordWithData2->save());
+        self::assertTrue($newRecordWithData2->isNew()); // still new because not saved
+        
+        // The record cannot be fetched because the save failed
+        self::assertNull(
+            $model->fetchOneRecord(
+                $model->getSelect()->where(' name = ? ', 'Author 1999')
+            )
+        );
+            
+        ////////////////////////////////////////////////////////////////////////
+        // Save existing Record with new data via Model that always returns false
+        // on save. 
+        // 
+        // I can't test this scenario because Model->updateSpecifiedRecord
+        // returns $this, so no way for Record->save() to know if the underlying
+        // call to Model->updateSpecifiedRecord() did not save.
+        ////////////////////////////////////////////////////////////////////////
+    }
+    
+    public function testThatSaveInTransactionWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
+        $timestamp = date('Y-m-d H:i:s');
+        
+        ////////////////////////////////////////////////////////////////////////
+        // New Record without data
+        ////////////////////////////////////////////////////////////////////////
+        $recordWithNoData = new LeanOrm\Model\Record([], $model);
+        self::assertNull($recordWithNoData->saveInTransaction());
+        
+        ////////////////////////////////////////////////////////////////////////
+        // New Record with data
+        ////////////////////////////////////////////////////////////////////////
+        $newRecordWithData = new LeanOrm\Model\Record(
+            [ 
+                'name' => 'Author 888', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $model
+        );
+        self::assertTrue($newRecordWithData->isNew());
+        self::assertTrue($newRecordWithData->saveInTransaction());
+        self::assertFalse($newRecordWithData->isNew());
+        
+        // verify that the data was really saved to the DB
+        $newlySavedRecordFromDb = $model->fetchOneRecord(
+            $model->getSelect()->where(' name = ? ', 'Author 888')
+        );
+        self::assertInstanceOf(\LeanOrm\Model\Record::class, $newlySavedRecordFromDb);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Update Existing Record with new data
+        ////////////////////////////////////////////////////////////////////////
+        // Fetching an existing record should return a non-new record
+        $existingRecord = $model->fetchOneRecord(
+            $model->getSelect()->orderBy(['author_id asc'])
+        );
+        
+        self::assertFalse($existingRecord->isNew());
+        self::assertTrue(
+            $existingRecord->saveInTransaction([ 
+                'name' => 'Author 9999', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ])
+        );
+        self::assertFalse($existingRecord->isNew());
+        
+        // verify that the data was really saved to the DB
+        $updatedExistingRecordFromDb = $model->fetchOneRecord(
+            $model->getSelect()->where(' name = ? ', 'Author 9999')
+        );
+        self::assertInstanceOf(\LeanOrm\Model\Record::class, $updatedExistingRecordFromDb);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Save new Record with new data via Model that always returns false
+        // on save
+        ////////////////////////////////////////////////////////////////////////
+        $alwaysFalseOnSaveModel = 
+            new class(
+                    static::$dsn, 
+                    static::$username ?? "", 
+                    static::$password ?? "", 
+                    [], 'author_id', 'authors'
+                ) extends \LeanOrm\Model {
+            
+                public function insert(array $data_2_insert = []) {
+                    return false;
+                }
+                public function insertMany(array $rows_of_data_2_insert = []): bool {
+                    return false;
+                }
+            };
+        
+        $newRecordWithData2 = new LeanOrm\Model\Record(
+            [ 
+                'name' => 'Author 1999', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $alwaysFalseOnSaveModel
+        );
+        self::assertTrue($newRecordWithData2->isNew());
+        self::assertFalse($newRecordWithData2->saveInTransaction());
+        self::assertTrue($newRecordWithData2->isNew()); // still new because not saved
+        
+        // The record cannot be fetched because the save failed
+        self::assertNull(
+            $model->fetchOneRecord(
+                $model->getSelect()->where(' name = ? ', 'Author 1999')
+            )
+        );
+    }
+    
+    public function testThatSaveInTransactionThrowsException() {
+
+        $this->expectException(\Exception::class);
+
+        $exceptionThrowingOnInsertModel = 
+            new class(
+                    static::$dsn, 
+                    static::$username ?? "", 
+                    static::$password ?? "", 
+                    [], 'author_id', 'authors'
+                ) extends \LeanOrm\Model {
+
+                public function insert(array $data_2_insert = []) {
+
+                    throw new \Exception('Yabadabadoo');
+
+                    return false;
+                }
+                public function insertMany(array $rows_of_data_2_insert = []): bool {
+                    return false;
+                }
+            };
+
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecordWithData = new \LeanOrm\Model\Record(
+            [ 
+                'name' => 'Author 1999', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $exceptionThrowingOnInsertModel
+        );
+
+        $newRecordWithData->saveInTransaction(); // will throw exception
+    }
+    
+    public function testThatSetModelWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
+        
+        $postsModel = new LeanOrm\TestObjects\PostsModel(
+            static::$dsn, static::$username ?? "", static::$password ?? ""
+        );
+        
+        $timestamp = date('Y-m-d H:i:s');
+        
         $record = new LeanOrm\Model\Record(
             [
                 'author_id' => 888, 
@@ -977,10 +1239,8 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
             $model
         );
         
-        // Fetching an existing record should return a non-new record
-        $record1 = $model->fetchOneRecord(
-            $model->getSelect()->orderBy(['author_id asc'])
-        );
-        
+        self::assertSame($model, $record->getModel());
+        self::assertSame($record, $record->setModel($postsModel));
+        self::assertSame($postsModel, $record->getModel());
     }
 }
