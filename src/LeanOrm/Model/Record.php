@@ -643,20 +643,19 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @param \GDAO\Model\RecordInterface|array $data_2_save
      * 
-     * @throws \LeanOrm\Model\RecordOperationNotSupportedByDriverException
-     * 
      * @return bool|null true for a successful save, false for failed save, null: no changed data to save
      * 
+     * @throws \Exception throws exception if an error occurred during transaction
      */
     public function saveInTransaction($data_2_save = null): ?bool {
 
         $pdo_obj = $this->getModel()->getPDO();
-        
         // start the transaction
         $pdo_obj->beginTransaction();
-
+        
         try {
 
+            
             $save_status = $this->save($data_2_save);
 
             // attempt the save
@@ -674,13 +673,19 @@ class Record implements \GDAO\Model\RecordInterface
                 return false;
 
             } else {
-
+                
+                $pdo_obj->commit();
                 return null; //$save_status === null nothing was done
             }
         } catch (\Exception $exception) {
 
-            // roll back and throw the exception
-            $pdo_obj->rollBack();
+            if($pdo_obj->inTransaction()) {
+                
+                // roll back
+                $pdo_obj->rollBack();
+            }
+            
+            // throw the exception
             throw $exception;
         }
     }
