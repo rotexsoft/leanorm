@@ -735,7 +735,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         $cols2Load = [];
         
         $initialData = &$record->getInitialDataByRef();
-        $initialData = null; // set it to null, so it can be set again by loadData below
+        $initialData = []; // set it to [], so it can be set again by loadData below
         $result = $record->loadData($data2Load, $cols2Load);
         
         self::assertSame($record, $result); // test fluent return
@@ -941,7 +941,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         self::assertEquals([], $record->getData());
         self::assertEquals([], $record->getRelatedData());
         self::assertEquals([], $record->getNonTableColAndNonRelatedData());
-        self::assertNull($record->getInitialData());
+        self::assertEquals([], $record->getInitialData());
         
         // Fetching an existing record should return a non-new record
         $record1 = $model->fetchOneRecord(
@@ -954,7 +954,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         self::assertEquals([], $record1->getData());
         self::assertEquals([], $record1->getRelatedData());
         self::assertEquals([], $record1->getNonTableColAndNonRelatedData());
-        self::assertNull($record1->getInitialData());
+        self::assertEquals([], $record1->getInitialData());
     }
     
     public function testThatSaveWorksAsExpected() {
@@ -1243,4 +1243,404 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         self::assertSame($record, $record->setModel($postsModel));
         self::assertSame($postsModel, $record->getModel());
     }
+    
+    public function testThatToArrayWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $record = new LeanOrm\Model\Record(
+            [
+                'author_id' => 888, 
+                'name' => 'Author 1', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $model
+        );
+        
+        $recordAsArray = $record->toArray();
+        
+        self::assertArrayHasAllKeys(
+            $recordAsArray, 
+            [
+                'data', 
+                'non_table_col_and_non_related_data', 
+                'initial_data', 
+                'related_data', 
+                'is_new', 
+                'model',
+            ]
+        );
+        self::assertEquals(
+            [
+                'author_id' => 888, 
+                'name' => 'Author 1', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+            ], 
+            $recordAsArray['data']
+        );
+        self::assertEquals(
+            [
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ], 
+            $recordAsArray['non_table_col_and_non_related_data']
+        );
+        self::assertEquals(
+            [
+                'author_id' => 888, 
+                'name' => 'Author 1', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+            ], 
+            $recordAsArray['initial_data']
+        );
+        self::assertEquals(
+            [], 
+            $recordAsArray['related_data']
+        );
+        
+        self::assertIsBool($recordAsArray['is_new']);
+        self::assertTrue($recordAsArray['is_new']);
+        
+        self::assertSame($model, $recordAsArray['model']);
+    }
+    
+    public function testThatOffsetExistsWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
+        $timestamp = date('Y-m-d H:i:s');
+        $record = new LeanOrm\Model\Record(
+            [
+                'author_id' => 888, 
+                'name' => 'Author 1', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $model
+        );
+        
+        self::assertTrue($record->offsetExists('name'));
+        self::assertTrue($record->offsetExists('non_existent_col_1'));
+        self::assertFalse($record->offsetExists('non_existent'));
+    }
+    
+    public function testThatOffsetGetWorksAsExpected() {
+        
+        $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+
+        $emptyRecord = $authorsModel->createNewRecord();
+        self::assertNull($emptyRecord->offsetGet('posts'));
+        self::assertNull($emptyRecord->offsetGet('name'));
+        
+        $firstAuthorInTheTable = $authorsModel->fetchOneRecord();
+        
+        // this is a non-eager loaded relationship
+        self::assertInstanceOf(GDAO\Model\CollectionInterface::class, $firstAuthorInTheTable->offsetGet('posts'));
+        
+        ////////////////////////////////////////////////////////////////////////
+        // fetch Author with author_id = 2 & include posts during the fetch
+        // fetch first record in the table
+        $secondAuthorInTheTable = $authorsModel->fetchOneRecord(
+            $authorsModel->getSelect()->where(' author_id =  2 '), ['posts']
+        );
+        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $secondAuthorInTheTable);
+        
+        self::assertEquals('user_2', $secondAuthorInTheTable->offsetGet('name'));
+        self::assertEquals('2', ''.$secondAuthorInTheTable->offsetGet('author_id'));
+        
+        // get eager loaded relationship data
+        self::assertInstanceOf(GDAO\Model\CollectionInterface::class, $secondAuthorInTheTable->offsetGet('posts'));
+        
+        $secondAuthorInTheTable->non_table_col = 'a val';
+        self::assertEquals('a val', $secondAuthorInTheTable->offsetGet('non_table_col'));
+    }
+    
+    public function testThatOffsetGetThrowsException() {
+        
+        $this->expectException(\LeanOrm\Model\NoSuchPropertyForRecordException::class);
+        $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(
+            static::$dsn, static::$username ?? "", static::$password ?? ""
+        );
+        $emptyRecord = $authorsModel->createNewRecord();
+        
+        // Not a table col, or relationship name or non-table col that was explicitly set
+        $emptyRecord->offsetGet('non_existent_property');
+    }
+    
+    public function testThatOffsetSetWorksAsExpected() {
+        
+        $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+
+        $emptyRecord = $authorsModel->createNewRecord();
+        $emptyRecord->offsetSet('posts', $authorsModel->createNewCollection());
+        $emptyRecord->offsetSet('name', 'Author Name');
+        $emptyRecord->offsetSet('non_table_and_non_relation_name', 'Other data');
+        
+        self::assertInstanceOf(\GDAO\Model\CollectionInterface::class, $emptyRecord->offsetGet('posts'));
+        self::assertCount(0, $emptyRecord->offsetGet('posts'));
+        
+        self::assertInstanceOf(\GDAO\Model\CollectionInterface::class, $emptyRecord->getRelatedData()['posts']);
+        self::assertCount(0, $emptyRecord->getRelatedData()['posts']);
+        
+        self::assertEquals('Author Name', $emptyRecord->offsetGet('name'));
+        self::assertEquals('Other data', $emptyRecord->offsetGet('non_table_and_non_relation_name'));
+        
+        self::assertEquals('Author Name', $emptyRecord->getData()['name']);
+        self::assertEquals('Other data', $emptyRecord->getNonTableColAndNonRelatedData()['non_table_and_non_relation_name']);
+    }
+    
+    public function testThatOffsetUnsetWorksAsExpected() {
+        
+        $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+
+        $emptyRecordOnCreation = $authorsModel->createNewRecord();
+        
+        $emptyRecordOnCreation->offsetSet('name', 'Author Name');
+        $emptyRecordOnCreation->offsetSet('posts', $authorsModel->createNewCollection());
+        $emptyRecordOnCreation->offsetSet('non_table_and_non_relation_name', 'Other data');
+        
+        self::assertTrue($emptyRecordOnCreation->offsetExists('posts'));
+        self::assertTrue($emptyRecordOnCreation->offsetExists('name'));
+        self::assertTrue($emptyRecordOnCreation->offsetExists('non_table_and_non_relation_name'));
+        
+        $emptyRecordOnCreation->offsetUnset('posts');
+        $emptyRecordOnCreation->offsetUnset('name');
+        $emptyRecordOnCreation->offsetUnset('non_table_and_non_relation_name');
+        
+        self::assertNull($emptyRecordOnCreation->offsetGet('posts'));
+        self::assertNull($emptyRecordOnCreation->offsetGet('name'));
+        self::assertNull($emptyRecordOnCreation->offsetGet('non_table_and_non_relation_name'));
+        
+        self::assertEquals([], $emptyRecordOnCreation->getInitialData());
+        self::assertEquals(['name'=>null], $emptyRecordOnCreation->getData());
+        self::assertEquals(['posts'=>null], $emptyRecordOnCreation->getRelatedData());
+        self::assertEquals(['non_table_and_non_relation_name'=>null], $emptyRecordOnCreation->getNonTableColAndNonRelatedData());
+        
+        ////////////////////////////////////////////////////////////////////////
+        $nonEmptyRecordOnCreation = $authorsModel->createNewRecord(['name' => 'Author Name 2']);
+        
+        self::assertTrue($nonEmptyRecordOnCreation->offsetExists('name'));
+        
+        $nonEmptyRecordOnCreation->offsetUnset('name');
+        self::assertNull($nonEmptyRecordOnCreation->offsetGet('name'));
+        
+        self::assertArrayHasKey('name', $nonEmptyRecordOnCreation->getInitialData());
+        self::assertNull($nonEmptyRecordOnCreation->getInitialData()['name']);
+        
+        self::assertEquals(['name'=>null], $nonEmptyRecordOnCreation->getData());
+        self::assertEquals([], $nonEmptyRecordOnCreation->getRelatedData());
+        self::assertEquals([], $nonEmptyRecordOnCreation->getNonTableColAndNonRelatedData());
+    }
+    
+    public function testThatCountWorksAsExpected() {
+        
+        $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+
+        $emptyRecord = $authorsModel->createNewRecord();
+        
+        // count returns the number of table col fields that have been set
+        
+        self::assertEquals(0, $emptyRecord->count());
+        
+        // set a table col
+        $emptyRecord->offsetSet('name', 'Author Name');
+        self::assertEquals(1, $emptyRecord->count());
+        
+        // set a relation
+        $emptyRecord->offsetSet('posts', $authorsModel->createNewCollection());
+        self::assertEquals(1, $emptyRecord->count());
+        
+        // set a non-table col & non-relation
+        $emptyRecord->offsetSet('non_table_and_non_relation_name', 'Other data');
+        self::assertEquals(1, $emptyRecord->count());
+        
+        // set another table col
+        $emptyRecord->offsetSet('author_id', 777);
+        self::assertEquals(2, $emptyRecord->count());
+    }
+    
+    public function testThatGetIteratorWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $record = $model->createNewRecord();
+        
+        self::assertIsNotArray($record);
+        self::assertIsIterable($record);
+        self::assertInstanceOf(\Traversable::class, $record);
+        self::assertInstanceOf(\Iterator::class, $record->getIterator());
+    }
+    
+    
+    public function testThat__GetWorksAsExpected() {
+        
+        $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+
+        $emptyRecord = $authorsModel->createNewRecord();
+        self::assertNull($emptyRecord->__get('posts'));
+        self::assertNull($emptyRecord->__get('name'));
+        
+        $firstAuthorInTheTable = $authorsModel->fetchOneRecord();
+        
+        // this is a non-eager loaded relationship
+        self::assertInstanceOf(GDAO\Model\CollectionInterface::class, $firstAuthorInTheTable->__get('posts'));
+        
+        ////////////////////////////////////////////////////////////////////////
+        // fetch Author with author_id = 2 & include posts during the fetch
+        // fetch first record in the table
+        $secondAuthorInTheTable = $authorsModel->fetchOneRecord(
+            $authorsModel->getSelect()->where(' author_id =  2 '), ['posts']
+        );
+        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $secondAuthorInTheTable);
+        
+        self::assertEquals('user_2', $secondAuthorInTheTable->__get('name'));
+        self::assertEquals('2', ''.$secondAuthorInTheTable->__get('author_id'));
+        
+        // get eager loaded relationship data
+        self::assertInstanceOf(GDAO\Model\CollectionInterface::class, $secondAuthorInTheTable->__get('posts'));
+        
+        $secondAuthorInTheTable->non_table_col = 'a val';
+        self::assertEquals('a val', $secondAuthorInTheTable->__get('non_table_col'));
+    }
+    
+    public function testThat__GetThrowsException() {
+        
+        $this->expectException(\LeanOrm\Model\NoSuchPropertyForRecordException::class);
+        $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(
+            static::$dsn, static::$username ?? "", static::$password ?? ""
+        );
+        $emptyRecord = $authorsModel->createNewRecord();
+        
+        // Not a table col, or relationship name or non-table col that was explicitly set
+        $emptyRecord->__get('non_existent_property');
+    }
+    
+    public function testThat__issetWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
+        $timestamp = date('Y-m-d H:i:s');
+        $record = new LeanOrm\Model\Record(
+            [
+                'author_id' => 888, 
+                'name' => 'Author 1', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $model
+        );
+        
+        self::assertTrue($record->__isset('name'));
+        self::assertTrue($record->__isset('non_existent_col_1'));
+        self::assertFalse($record->__isset('non_existent'));
+    }
+    
+    public function testThat__setWorksAsExpected() {
+        
+        $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+
+        $emptyRecord = $authorsModel->createNewRecord();
+        $emptyRecord->__set('posts', $authorsModel->createNewCollection());
+        $emptyRecord->__set('name', 'Author Name');
+        $emptyRecord->__set('non_table_and_non_relation_name', 'Other data');
+        
+        self::assertInstanceOf(\GDAO\Model\CollectionInterface::class, $emptyRecord->offsetGet('posts'));
+        self::assertCount(0, $emptyRecord->offsetGet('posts'));
+        
+        self::assertInstanceOf(\GDAO\Model\CollectionInterface::class, $emptyRecord->getRelatedData()['posts']);
+        self::assertCount(0, $emptyRecord->getRelatedData()['posts']);
+        
+        self::assertEquals('Author Name', $emptyRecord->offsetGet('name'));
+        self::assertEquals('Other data', $emptyRecord->offsetGet('non_table_and_non_relation_name'));
+        
+        self::assertEquals('Author Name', $emptyRecord->getData()['name']);
+        self::assertEquals('Other data', $emptyRecord->getNonTableColAndNonRelatedData()['non_table_and_non_relation_name']);
+    }
+    
+    public function testThat__unsetWorksAsExpected() {
+        
+        $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+
+        $emptyRecordOnCreation = $authorsModel->createNewRecord();
+        
+        $emptyRecordOnCreation->offsetSet('name', 'Author Name');
+        $emptyRecordOnCreation->offsetSet('posts', $authorsModel->createNewCollection());
+        $emptyRecordOnCreation->offsetSet('non_table_and_non_relation_name', 'Other data');
+        
+        self::assertTrue($emptyRecordOnCreation->offsetExists('posts'));
+        self::assertTrue($emptyRecordOnCreation->offsetExists('name'));
+        self::assertTrue($emptyRecordOnCreation->offsetExists('non_table_and_non_relation_name'));
+        
+        $emptyRecordOnCreation->__unset('posts');
+        $emptyRecordOnCreation->__unset('name');
+        $emptyRecordOnCreation->__unset('non_table_and_non_relation_name');
+        
+        self::assertNull($emptyRecordOnCreation->offsetGet('posts'));
+        self::assertNull($emptyRecordOnCreation->offsetGet('name'));
+        self::assertNull($emptyRecordOnCreation->offsetGet('non_table_and_non_relation_name'));
+        
+        self::assertEquals([], $emptyRecordOnCreation->getInitialData());
+        self::assertEquals(['name'=>null], $emptyRecordOnCreation->getData());
+        self::assertEquals(['posts'=>null], $emptyRecordOnCreation->getRelatedData());
+        self::assertEquals(['non_table_and_non_relation_name'=>null], $emptyRecordOnCreation->getNonTableColAndNonRelatedData());
+        
+        ////////////////////////////////////////////////////////////////////////
+        $nonEmptyRecordOnCreation = $authorsModel->createNewRecord(['name' => 'Author Name 2']);
+        
+        self::assertTrue($nonEmptyRecordOnCreation->offsetExists('name'));
+        
+        $nonEmptyRecordOnCreation->__unset('name');
+        self::assertNull($nonEmptyRecordOnCreation->offsetGet('name'));
+        
+        self::assertArrayHasKey('name', $nonEmptyRecordOnCreation->getInitialData());
+        self::assertNull($nonEmptyRecordOnCreation->getInitialData()['name']);
+        
+        self::assertEquals(['name'=>null], $nonEmptyRecordOnCreation->getData());
+        self::assertEquals([], $nonEmptyRecordOnCreation->getRelatedData());
+        self::assertEquals([], $nonEmptyRecordOnCreation->getNonTableColAndNonRelatedData());
+    }
+    
+//    public function testThat__toStringWorksAsExpected() {
+//        
+//        $model = new \LeanOrm\Model(
+//            static::$dsn, static::$username ?? "", static::$password ?? "", 
+//            [], 'author_id', 'authors'
+//        );
+//        $timestamp = date('Y-m-d H:i:s');
+//        $record = new LeanOrm\Model\Record(
+//            [
+//                'author_id' => 888, 
+//                'name' => 'Author 1', 
+//                'm_timestamp' => $timestamp, 
+//                'date_created' => $timestamp,
+//                'non_existent_col_1' => 'Some Data 1',
+//                'non_existent_col_2' => 'Some Data 2',
+//            ],
+//            $model
+//        );
+//        
+//        $recordAsArray = $record->toArray();
+//        // $record->__toString() is just a string representation of $record->toArray()
+//        $recordToStringAsArray = eval(' return ' . $record->__toString() . ';');
+//        
+//        self::assertEquals($recordAsArray, $recordToStringAsArray);
+//    }
 }

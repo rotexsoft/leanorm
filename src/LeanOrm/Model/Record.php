@@ -31,7 +31,7 @@ class Record implements \GDAO\Model\RecordInterface
      * Copy of the initial data loaded into this record or data for this record immediately after an insert or update.
      * 
      */
-    protected ?array $initial_data = null;
+    protected array $initial_data = [];
     
     /**
      * 
@@ -137,7 +137,7 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @return array a copy of the initial data loaded into this record.
      */
-    public function getInitialData(): ?array {
+    public function getInitialData(): array {
         
         return $this->initial_data;
     }
@@ -185,7 +185,7 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @return array a reference to the initial data loaded into this record.
      */
-    public function &getInitialDataByRef(): ?array {
+    public function &getInitialDataByRef(): array {
         
         return $this->initial_data;
     }
@@ -501,17 +501,13 @@ class Record implements \GDAO\Model\RecordInterface
             } // foreach ( $cols_2_load as $col_name )
         }// elseif ( is_array($cols_2_load) && $cols_2_load !== [] )
 
-        if ($this->initial_data === null) {
-             
-            $initial_data = [];
-
+        if ($this->initial_data === [] && $this->data !== []) {
+            
             foreach($table_col_names_4_my_model as $col_name) {
 
-                $initial_data[$col_name] = 
+                $this->initial_data[$col_name] = 
                     array_key_exists($col_name, $this->data)? $this->data[$col_name] : '';
             }
-            
-            $this->initial_data = $initial_data;
         }
         
         return $this;
@@ -550,19 +546,19 @@ class Record implements \GDAO\Model\RecordInterface
      *  - call $this->markAsNew()
      *  - etc.
      * 
-     * The _data & _initial_data properties can be updated as needed by the 
+     * The data & initial_data properties can be updated as needed by the 
      * implementing sub-class. 
      * For example:
      *  - they could be left as is 
-     *  - or the value of _data could be copied to _initial_data
-     *  - or the value of _initial_data could be copied to _data
+     *  - or the value of _data could be copied to initial_data
+     *  - or the value of initial_data could be copied to _data
      *  - etc.
      */
     public function setStateToNew(): self {
 
         $this->data = [];
         $this->related_data = [];
-        $this->initial_data = null;
+        $this->initial_data = [];
         $this->non_table_col_and_non_related_data = [];
         $this->markAsNew();
         
@@ -821,14 +817,20 @@ class Record implements \GDAO\Model\RecordInterface
             
             return $this->data[$key];
             
-        } elseif( 
+        } elseif(
             $this->getModel() instanceof \GDAO\Model 
             && in_array($key, $this->getModel()->getRelationNames()) 
         ) {
-            //$key is a valid relation name in the model for this record but the 
-            //related data needs to be loaded for this particular record.
-            $this->getModel()->loadRelationshipData($key, $this, true, true);
-            
+            if($this->data !== []) {
+                //$key is a valid relation name in the model for this record but the 
+                //related data needs to be loaded for this particular record.
+                $this->getModel()->loadRelationshipData($key, $this, true, true);
+                
+            } else {
+                
+                // $this->related_data[$key] === [], meaning we can't fetch related data
+                $this->related_data[$key] = null;
+            }
             //return loaded data
             return $this->related_data[$key];
             

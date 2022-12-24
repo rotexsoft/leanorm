@@ -4,7 +4,6 @@ use Atlas\Pdo\Connection;
 use Aura\SqlQuery\QueryFactory;
 
 /**
- *
  * @author rotimi
  */
 trait CommonPropertiesAndMethodsTrait {
@@ -290,7 +289,7 @@ trait CommonPropertiesAndMethodsTrait {
         } // if(count($ids) > 0)
     }
     
-    protected function assertArrayHasAllKeys(array $arrayToTest, array $keysToCheck): void {
+    protected static function assertArrayHasAllKeys(array $arrayToTest, array $keysToCheck): void {
         
         foreach ($keysToCheck as $key) {
             

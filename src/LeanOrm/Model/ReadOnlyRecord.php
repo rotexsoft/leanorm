@@ -6,7 +6,7 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
 
 /**
  * This is a record class that is lighter weight than \LeanOrm\Model\Record.
- * It does not have an _initial_data array for tracking changes made to a record
+ * It does not have an initial_data array for tracking changes made to a record
  * and it does not allow changing the values of a record's fields once the data
  * has been retreived from the database. It is intended for scenarios where you
  * are only reading data from the database for display purposes and do not plan
@@ -541,19 +541,20 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public function __get($key) {
 
+
         if ( array_key_exists($key, $this->data) ) {
             
             return $this->data[$key];
             
-        } else if ( array_key_exists($key, $this->related_data) ) {
+        } elseif ( array_key_exists($key, $this->related_data) ) {
 
             return $this->related_data[$key];
             
-        } else if ( array_key_exists($key, $this->non_table_col_and_non_related_data) ) { 
+        } elseif ( array_key_exists($key, $this->non_table_col_and_non_related_data) ) { 
             
             return $this->non_table_col_and_non_related_data[$key];
             
-        } else if ( 
+        } elseif ( 
             $this->getModel() instanceof \GDAO\Model 
             && in_array($key, $this->getModel()->getTableColNames()) 
         ) {
@@ -564,14 +565,20 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
             
             return $this->data[$key];
             
-        } else if( 
+        } elseif(
             $this->getModel() instanceof \GDAO\Model 
             && in_array($key, $this->getModel()->getRelationNames()) 
         ) {
-            //$key is a valid relation name in the model for this record but the 
-            //related data needs to be loaded for this particular record.
-            $this->getModel()->loadRelationshipData($key, $this, true, true);
-            
+            if($this->data !== []) {
+                //$key is a valid relation name in the model for this record but the 
+                //related data needs to be loaded for this particular record.
+                $this->getModel()->loadRelationshipData($key, $this, true, true);
+                
+            } else {
+                
+                // $this->related_data[$key] === [], meaning we can't fetch related data
+                $this->related_data[$key] = null;
+            }
             //return loaded data
             return $this->related_data[$key];
             
