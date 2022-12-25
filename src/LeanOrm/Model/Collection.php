@@ -354,7 +354,7 @@ class Collection implements \GDAO\Model\CollectionInterface
         
         foreach ($this as $key=>$record) {
             
-            $result[$key] = $record->getData();
+            $result[$key] = $record->toArray();
         }
         
         return $result;

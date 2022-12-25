@@ -1273,8 +1273,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
                 'non_table_col_and_non_related_data', 
                 'initial_data', 
                 'related_data', 
-                'is_new', 
-                'model',
+                'is_new',
             ]
         );
         self::assertEquals(
@@ -1309,8 +1308,6 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         
         self::assertIsBool($recordAsArray['is_new']);
         self::assertTrue($recordAsArray['is_new']);
-        
-        self::assertSame($model, $recordAsArray['model']);
     }
     
     public function testThatOffsetExistsWorksAsExpected() {
@@ -1618,29 +1615,29 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         self::assertEquals([], $nonEmptyRecordOnCreation->getNonTableColAndNonRelatedData());
     }
     
-//    public function testThat__toStringWorksAsExpected() {
-//        
-//        $model = new \LeanOrm\Model(
-//            static::$dsn, static::$username ?? "", static::$password ?? "", 
-//            [], 'author_id', 'authors'
-//        );
-//        $timestamp = date('Y-m-d H:i:s');
-//        $record = new LeanOrm\Model\Record(
-//            [
-//                'author_id' => 888, 
-//                'name' => 'Author 1', 
-//                'm_timestamp' => $timestamp, 
-//                'date_created' => $timestamp,
-//                'non_existent_col_1' => 'Some Data 1',
-//                'non_existent_col_2' => 'Some Data 2',
-//            ],
-//            $model
-//        );
-//        
-//        $recordAsArray = $record->toArray();
-//        // $record->__toString() is just a string representation of $record->toArray()
-//        $recordToStringAsArray = eval(' return ' . $record->__toString() . ';');
-//        
-//        self::assertEquals($recordAsArray, $recordToStringAsArray);
-//    }
+    public function testThat__toStringWorksAsExpected() {
+        
+        $model = new \LeanOrm\TestObjects\AuthorsModel(
+            static::$dsn, static::$username ?? "", static::$password ?? ""
+        );
+            
+        $timestamp = date('Y-m-d H:i:s');
+        $record = new LeanOrm\Model\Record(
+            [
+                'author_id' => 888, 
+                'name' => 'Author 1', 
+                'm_timestamp' => $timestamp, 
+                'date_created' => $timestamp,
+                'non_existent_col_1' => 'Some Data 1',
+                'non_existent_col_2' => 'Some Data 2',
+            ],
+            $model
+        );
+        
+        $recordAsArray = $record->toArray();
+
+        $recordToStringAsArray = eval(' return ' . $record->__toString() . ';');
+                
+        self::assertEquals($recordAsArray, $recordToStringAsArray);
+    }
 }

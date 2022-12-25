@@ -897,7 +897,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection[777] = $newRecord1;
         $collection[888] = $newRecord2;
         $expectedToArrayResult = [
-            777 => $newRecord1->getData(), 888 => $newRecord2->getData(),
+            777 => $newRecord1->toArray(), 888 => $newRecord2->toArray(),
         ];
         
         // non-empty collection should return expected array data
