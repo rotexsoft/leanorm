@@ -5,7 +5,8 @@ namespace LeanOrm\Model;
 /**
  * This trait contains code shared between ReadOnlyRecord & Record
  * 
- * @author rotimi
+ * @author Rotimi Adegbamigbe
+ * @copyright (c) 2022, Rotexsoft
  */
 trait CommonRecordCodeTrait {
     
