@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 namespace LeanOrm;
-
 use Closure;
 
 /**
@@ -61,7 +60,6 @@ class Utils {
      *     [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
      *     [ 'a' => 'aaa0', 'zero1', 'b' => 'bbb1', 'one1', 'c' => [ 'ccc' ] ],
      * ];
-     *
      *
      * @param array<int|string, array> $array   array of arrays to search
      * @param int|string $key                   key in each sub-array whose value is to be searched to search

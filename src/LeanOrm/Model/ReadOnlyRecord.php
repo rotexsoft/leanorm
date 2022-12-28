@@ -55,7 +55,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      */
     public final function &getInitialDataByRef(): array {
         
-        return [];
+        $result = [];
+        
+        return $result;
     }
 
     /**

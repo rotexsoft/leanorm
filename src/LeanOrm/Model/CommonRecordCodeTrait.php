@@ -3,6 +3,8 @@ declare(strict_types=1);
 namespace LeanOrm\Model;
 
 /**
+ * This trait contains code shared between ReadOnlyRecord & Record
+ * 
  * @author rotimi
  */
 trait CommonRecordCodeTrait {
