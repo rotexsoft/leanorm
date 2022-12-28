@@ -455,7 +455,7 @@ class Record implements \GDAO\Model\RecordInterface
                 return false;
 
             } else {
-                
+
                 $pdo_obj->commit();
                 return null; //$save_status === null nothing was done
             }

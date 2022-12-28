@@ -556,6 +556,58 @@ class ReadOnlyRecordTest extends \PHPUnit\Framework\TestCase {
         self::assertFalse($record->isNew());
     }
     
+    public function testThatSaveWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        $model->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $recordData = [
+            'author_id' => 888, 
+            'name' => 'Author 1', 
+            'm_timestamp' => $timestamp, 
+            'date_created' => $timestamp,
+            'non_existent_col_1' => 'Some Data 1',
+            'non_existent_col_2' => 'Some Data 2',
+        ];
+        $readOnlyRecord = new \LeanOrm\Model\ReadOnlyRecord([], $model);
+        $readOnlyRecord2 = new \LeanOrm\Model\ReadOnlyRecord($recordData, $model);
+        
+        self::assertNull($readOnlyRecord->save(null)); // null arg on empty record
+        
+        $readOnlyRecord->loadData($recordData);
+        
+        self::assertNull($readOnlyRecord->save(null)); // null arg on record with data
+        self::assertNull($readOnlyRecord->save($recordData)); // array arg
+        self::assertNull($readOnlyRecord->save($readOnlyRecord2)); // record arg
+    }
+    
+    public function testThatSaveInTransactionWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        $model->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $recordData = [
+            'author_id' => 888, 
+            'name' => 'Author 1', 
+            'm_timestamp' => $timestamp, 
+            'date_created' => $timestamp,
+            'non_existent_col_1' => 'Some Data 1',
+            'non_existent_col_2' => 'Some Data 2',
+        ];
+        $readOnlyRecord = new \LeanOrm\Model\ReadOnlyRecord([], $model);
+        $readOnlyRecord2 = new \LeanOrm\Model\ReadOnlyRecord($recordData, $model);
+        
+        self::assertNull($readOnlyRecord->saveInTransaction(null)); // null arg on empty record
+        
+        $readOnlyRecord->loadData($recordData);
+        
+        self::assertNull($readOnlyRecord->saveInTransaction(null)); // null arg on record with data
+        self::assertNull($readOnlyRecord->saveInTransaction($recordData)); // array arg
+        self::assertNull($readOnlyRecord->saveInTransaction($readOnlyRecord2)); // record arg
+    }
+    
     public function testThat__SetThrowsException() {
         
         $this->expectException(\GDAO\Model\RecordOperationNotSupportedException::class);

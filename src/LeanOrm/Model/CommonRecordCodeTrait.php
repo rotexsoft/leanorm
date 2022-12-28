@@ -52,16 +52,17 @@ trait CommonRecordCodeTrait {
 
         //print "Destroying Record with Primary key Value: " . $this->getPrimaryVal() . "<br>";
         unset($this->data);
-        
+
         if(property_exists($this, 'initial_data')) {
-            
+
             unset($this->initial_data);
         }
+
         if(property_exists($this, 'is_new')) {
-            
+
             unset($this->is_new);
         }
-        
+
         unset($this->non_table_col_and_non_related_data);
         unset($this->related_data);
         //Don't unset $this->model, it may still be referenced by other 
@@ -194,7 +195,7 @@ trait CommonRecordCodeTrait {
     /**
      * Set the \GDAO\Model object for this record
      * 
-     * @param \GDAO\Model $model
+     * @param \GDAO\Model $model A model object that will be used by this record to communicate with the DB
      */
     public function setModel(\GDAO\Model $model): self {
         
@@ -303,7 +304,7 @@ trait CommonRecordCodeTrait {
             
         } elseif ( 
             $this->getModel() instanceof \GDAO\Model 
-            && in_array($key, $this->getModel()->getTableColNames()) 
+            && in_array($key, $this->getModel()->getTableColNames())
         ) {
             //$key is a valid db column in the db table assoiciated with this 
             //model's record. Initialize it to a null value since it has not 
@@ -322,10 +323,11 @@ trait CommonRecordCodeTrait {
                 $this->getModel()->loadRelationshipData($key, $this, true, true);
                 
             } else {
-                
+               
                 // $this->related_data[$key] === [], meaning we can't fetch related data
                 $this->related_data[$key] = null;
             }
+            
             //return loaded data
             return $this->related_data[$key];
             
