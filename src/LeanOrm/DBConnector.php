@@ -102,7 +102,7 @@ class DBConnector {
      * required to use DBConnector). If you have more than one setting
      * you wish to configure, another shortcut is to pass an array
      * of settings (and omit the second argument).
-     * @param string|array $key_or_settings
+     * @param array<int|string, mixed>|string $key_or_settings
      * @param mixed $value
      * @param string $connection_name Which connection to use
      */

@@ -99,7 +99,7 @@ class Model extends \GDAO\Model {
         string $primary_col_name='',
         string $table_name=''
     ) {
-        $pri_col_not_set_exception = null;
+        $pri_col_not_set_exception_msg = '';
 
         try {
 
@@ -109,7 +109,7 @@ class Model extends \GDAO\Model {
 
             //$this->primary_col (primary key colun has not yet been set)
             //hold this exception for later if necessary
-            $pri_col_not_set_exception = $e;
+            $pri_col_not_set_exception_msg = $e->getMessage();
         }
         
         DBConnector::configure($dsn, null, $dsn);//use $dsn as connection name in 3rd parameter
@@ -195,7 +195,7 @@ class Model extends \GDAO\Model {
         //if $this->getPrimaryCol() is still '' at this point, throw an exception.
         if( $this->getPrimaryCol() === '' ) {
 
-            throw $pri_col_not_set_exception;
+            throw new \GDAO\ModelPrimaryColNameNotSetDuringConstructionException($pri_col_not_set_exception_msg);
         }
     }
     
