@@ -37,7 +37,17 @@ If you are using Sqlite, version sqlite 3.7.11 or higher is required.
  * Old versions have branches corresponding to their version numbers (e.g. 1.X) 
 while the most current / actively being developed version is on the master branch
 
-![LeanORM Classes & GDAO Classes & Interfaces](class-diagram.svg)
+### GDAO Classes & Interfaces
+
+![GDAO Classes & Interfaces](https://raw.githubusercontent.com/rotexsoft/gdao/master/class-diagram.svg)
+
+### LeanORM Classes
+
+* **\LeanOrm\Model** extends the abstract **\GDAO\Model** class
+* **\LeanOrm\Model\Record** & **\LeanOrm\Model\ReadOnlyRecord** both implement **\GDAO\Model\RecordInterface**
+* **\LeanOrm\Model\Collection** implements **\GDAO\Model\CollectionInterface**
+
+![LeanORM Classes](class-diagram.svg)
 
 ## Concepts
 
