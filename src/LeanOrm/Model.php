@@ -273,13 +273,7 @@ class Model extends \GDAO\Model {
         if(strtolower($this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) ===  'pgsql') {
             
             // Calculate schema name for postgresql
-            $schema_and_table_name = explode('.', $this->getTableName());
-            $schema_name = 'public';
-            
-            if(count($schema_and_table_name) === 2 ) {
-                
-                $schema_name = array_shift($schema_and_table_name);
-            }
+            $schema_name = $this->db_connector->dbFetchValue('SELECT CURRENT_SCHEMA');
             
             return $schema->fetchTableList($schema_name);
         }
