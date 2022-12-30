@@ -13,6 +13,7 @@
     <img alt="Libraries.io dependency status for GitHub repo" src="https://img.shields.io/librariesio/github/rotexsoft/leanorm">
 </a>
 
+# LeanOrm
 
 ##### A Generic Data Objects ( https://github.com/rotexsoft/gdao ) implementation based on a stripped down version of idiorm (\\LeanOrm\\DBConnector). A light-weight, highly performant PHP data access library. 
 
