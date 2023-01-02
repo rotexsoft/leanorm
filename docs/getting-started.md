@@ -334,5 +334,29 @@ If you want to fetch key value pair from two columns in a database table, use th
 <?php
 $authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
 
+// $keyValPairs will be an array whose keys have values from the first column (i.e. author_id)
+// of the authors table and whose corresponding values have values from the second column (i.e. name)
+// of the authors table.
+$keyValPairs = $authorsModel->fetchPairs();
 
+// $keyValPairs will be an array whose keys have values from the first specified column (i.e. author_id)
+// of the authors table and whose corresponding values have values from the second specified column (i.e. date_created)
+// of the authors table where the author_id <= 5
+$keyValPairs = $authorsModel->fetchPairs(
+                $authorsModel->getSelect()
+                             ->cols(['author_id', 'date_created'])
+                             ->where(' author_id <= ? ', 5)
+            );
+
+// Similar to example above, except that the second specified column is an expression
+// (i.e. `concat(author_id, '-', 'name')` ). When using expressions in your fetch 
+// method calls, try to use expressions supported by mysql, postgres, sqlite &
+// sqlsrvr so that when you change your dsn to use any of the database engines
+// your code will still work, if not, you would have to manually update your code
+// to make it work when you change your dsn to a different database engine.
+$keyValPairs = $authorsModel->fetchPairs(
+                $authorsModel->getSelect()
+                             ->cols(['author_id', " concat(author_id, '-', 'name') "])
+                             ->where(' author_id <= ? ', 5)
+            );
 ```
