@@ -688,3 +688,85 @@ These are the ways of updating data in the database:
 4. By calling the Model class' **updateMatchingDbTableRows** method on any instance of the Model class. This method does not retrieve existing records from the database, it only generates & executes a SQL UPDATE statement with some equality criteria (e.g. WHERE colname = someval or colname in (val1,...,valN) or colname IS NULL) based on the arguments supplied to the method.
 
 5. By using the **PDO** object returned by the **getPDO** method of the Model class to execute an **UPDATE** SQL query directly on the database. You need to be very careful to make sure your **UPDATE** query targets the exact records you want to update so that you don't accidentally update data that should not be updated.
+
+Below are some code samples demonstrating how to update data:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+
+// first insert 6 records into the authors table
+ $authorsModel->insertMany(
+    [
+        ['name' => 'Joe Blow'],
+        ['name' => 'Jill Blow'],
+        ['name' => 'Jack Doe'],
+        ['name' => 'Jane Doe'],
+        ['name' => 'Jack Bauer'],
+        ['name' => 'Jane Bauer'],
+    ]
+);
+ 
+///////////////////////////////////////////////////////////////////
+$joeBlowRecord = $authorsModel->fetchOneRecord(
+                    $authorsModel->getSelect()
+                                 ->where(' name = ? ', 'Joe Blow')
+                );
+
+// Prepend a title to Joe Blow's name
+$joeBlowRecord->name = 'Mr. ' . $joeBlowRecord->name;
+$joeBlowRecord->save(); // update the record
+
+///////////////////////////////////////////////////////////////////
+$jackAndJaneDoe = $authorsModel->fetchRecordsIntoCollection(
+                    $authorsModel->getSelect()
+                                 ->where(
+                                        ' name IN (?, ?) ', 
+                                        'Jack Doe', 
+                                        'Jane Doe'
+                                    )
+                );
+
+foreach ($jackAndJaneDoe as $record){
+
+    // reverse the name of each record
+    $record->name = strrev($record->name); 
+}
+
+// update all the modified records in the collection
+$jackAndJaneDoe->saveAll();
+
+///////////////////////////////////////////////////////////////////
+$jillBlowRecord = $authorsModel->fetchOneRecord(
+                    $authorsModel->getSelect()
+                                 ->where(' name = ? ', 'Jill Blow')
+                );
+
+// reverse the name for this record
+$jillBlowRecord->name = strrev($jillBlowRecord->name);
+
+// update the record
+$authorsModel->updateSpecifiedRecord($jillBlowRecord);
+
+///////////////////////////////////////////////////////////////////
+
+// Generates and executes the sql query below:
+//  UPDATE authors set date_created = '20 minutes before now' where name in ('Jack Bauer', 'Jane Bauer');
+$authorsModel->updateMatchingDbTableRows(
+                [ 
+                    'date_created' => date('Y-m-d H:i:s', strtotime("-20 minutes")) 
+                ],
+                [
+                    'name' => ['Jack Bauer', 'Jane Bauer']
+                ]
+            );
+
+///////////////////////////////////////////////////////////////////
+
+// For more complicated UPDATE queries, use the PDO object
+$pdo = $authorsModel->getPDO();
+$data = ['start'=> '2022-12-31 21:10:20', 'end' => '2022-12-31 21:08:20'];
+$sql = "UPDATE authors SET name = CONCAT(author_id, '-', name) WHERE date_created < :start AND m_timestamp < :end";
+$pdo->prepare($sql)->execute($data);
+```
