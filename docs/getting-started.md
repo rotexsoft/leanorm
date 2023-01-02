@@ -9,6 +9,7 @@
         - [Fetching data from the Database via fetchOneRecord](#fetching-data-from-the-database-via-fetchonerecord)
         - [Fetching data from the Database via fetchPairs](#fetching-data-from-the-database-via-fetchpairs)
         - [Fetching data from the Database via fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray)
+        - [Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrecordsintoarraykeyedonpkval)
 
 ## Design Considerations
 
@@ -395,3 +396,7 @@ $records = $authorsModel->fetchRecordsIntoArray(
             ['posts'] // eager fetch posts for all the matching authors
         );
 ```
+
+#### Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal
+
+If you want to fetch rows of data from a database table as record objects stored in an array whose keys are the primary key values of the matching rows of data in the database table, then use the fetchRecordsIntoArrayKeyedOnPkVal method. This method works exactly like [fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray), except that the key values in the returned array of records are different.
