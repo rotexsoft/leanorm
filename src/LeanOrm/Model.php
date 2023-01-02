@@ -1428,7 +1428,7 @@ SELECT {$foreign_table_name}.*
             );
         }
 
-        if ( count($record) > 0 ) { //test if the record object has data
+        if ( count($record->getData()) > 0 ) { //test if the record object has data
 
             $pri_key_val = $record->getPrimaryVal();
             $cols_n_vals = [$record->getPrimaryCol() => $pri_key_val];

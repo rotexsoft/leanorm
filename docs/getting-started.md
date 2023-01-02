@@ -202,25 +202,25 @@ $allSuccessfullyInserted = $authorsModel->insertMany(
 
 The following methods for fetching data from the database are defined in **\GDAO\Model** which is extended by **\LeanOrm\Model**:
 
-- __**fetchCol(?object $query = null): array**__
+- [__**fetchCol(?object $query = null): array**__](#fetching-data-from-the-database-via-fetchcol)
 > selects data from a single database table's column and returns an array of the column values. By default, it selects data from the first column in a database table.
 
-- __**fetchOneRecord(?object $query = null, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**__
+- [__**fetchOneRecord(?object $query = null, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**__](#fetching-data-from-the-database-via-fetchonerecord)
 > selects a single row of data from a database table and returns it as an instance of **\LeanOrm\Model\Record** (or any of its subclasses). By default, it fetches the first row of data in a database table into a Record object.
 
-- __**fetchPairs(?object $query = null): array**__
+- [__**fetchPairs(?object $query = null): array**__](#fetching-data-from-the-database-via-fetchpairs)
 > selects data from two database table columns and returns an array whose keys are values from the first column and whose values are the values from the second column. By default, it selects data from the first two columns in a database table.
 
-- __**fetchRecordsIntoArray(?object $query = null, array $relations_to_include = []): array**__
+- [__**fetchRecordsIntoArray(?object $query = null, array $relations_to_include = []): array**__](#fetching-data-from-the-database-via-fetchrecordsintoarray)
 > selects one or more rows of data from a database table and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an array. By default, it selects all rows of data in a database table and returns them as an array of record objects.
 
-- __**fetchRecordsIntoCollection(?object $query = null, array $relations_to_include = []): \GDAO\Model\CollectionInterface**__
+- [__**fetchRecordsIntoCollection(?object $query = null, array $relations_to_include = []): \GDAO\Model\CollectionInterface**__](#fetching-data-from-the-database-via-fetchrecordsintocollection)
 > selects one or more rows of data from a database table and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an instance of **\LeanOrm\Model\Collection** (or any of its subclasses). By default, it selects all rows of data in a database table and returns them as a collection of record objects.
 
-- __**function fetchRowsIntoArray(?object $query = null, array $relations_to_include = []): array**__
+- [__**function fetchRowsIntoArray(?object $query = null, array $relations_to_include = []): array**__](#fetching-data-from-the-database-via-fetchrowsintoarray)
 > selects one or more rows of data from a database table and returns them as associative arrays inside an array. By default, it selects all rows of data in a database table and returns them as associative arrays inside an array.
 
-- __**fetchValue(?object $query = null): mixed**__
+- [__**fetchValue(?object $query = null): mixed**__](#fetching-data-from-the-database-via-fetchvalue)
 > selects a single value from a single column of a single row of data from a database table and returns the value (eg. as a string, or an appropriate data type). By default, it selects the value of the first column of the first row of data from a database table.
 
 All these fetch methods accept a first argument which is a query object. LeanOrm uses [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md) as its query object. You can create a query object to inject into each fetch method using the **getSelect(): \Aura\SqlQuery\Common\Select** method in **\LeanOrm\Model**. Read the documentation for [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md) to figure out how to customize the sql queries executed by each fetch method. Some examples will be shown later on below.
@@ -548,12 +548,12 @@ $value = $authorsModel->fetchValue(
 #### Fetching data from the Database via fetch
 
 The fetch method is a convenience method that you can use when you know the primary key values of the records you want to fetch from a database table. You just supply the primary key values (in an array) of the records you want to fetch, as its first argument. You can also inject a query object to further customize the query that's used to fetch the desired data under the hood. It calls one of the following methods below depending on the other arguments supplied to it when it's called:
-- **fetchRecordsIntoCollection**
-- **fetchRecordsIntoCollectionKeyedOnPkVal**
-- **fetchRecordsIntoArray**
-- **fetchRecordsIntoArrayKeyedOnPkVal**
-- **fetchRowsIntoArray**
-- **fetchRowsIntoArrayKeyedOnPkVal**
+- [**fetchRecordsIntoCollection**](#fetching-data-from-the-database-via-fetchrecordsintocollection)
+- [**fetchRecordsIntoCollectionKeyedOnPkVal**](#fetching-data-from-the-database-via-fetchrecordsintocollectionkeyedonpkval)
+- [**fetchRecordsIntoArray**](#fetching-data-from-the-database-via-fetchrecordsintoarray)
+- [**fetchRecordsIntoArrayKeyedOnPkVal**](#fetching-data-from-the-database-via-fetchrecordsintoarraykeyedonpkval)
+- [**fetchRowsIntoArray**](#fetching-data-from-the-database-via-fetchrowsintoarray)
+- [**fetchRowsIntoArrayKeyedOnPkVal**](#fetching-data-from-the-database-via-fetchrowsintoarraykeyedonpkval)
 
 See source code documentation for **\LeanOrm\Model::fetch** to understand how to use this method. The query object that you can inject as a second argument to this method works exactly like all the query objects in the prior code samples above.
 
