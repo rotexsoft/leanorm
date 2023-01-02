@@ -61,4 +61,6 @@ Version 1.X of this package never got a stable release. Please use version 2.X+ 
 ![LeanORM Classes](class-diagram.svg)
 
 ## Documentation
-Documentation can be found [here](docs/index.md).
+Documentation can be found [here](docs/index.md). 
+Please submit an issue (preferably with a pull request) to address mistakes 
+or ommissions in the documentation or to propose improvements to the documentation. 
