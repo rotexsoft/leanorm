@@ -4,6 +4,7 @@
 - [How it works](#how-it-works)
     - [Defining and Creating Model Objects](#defining-and-creating-model-objects)
     - [Creating Records & Inserting Data into the Database](#creating-records--inserting-data-into-the-database)
+    - [Methods for Fetching data from the Database](#methods-for-fetching-data-from-the-database)
 
 ## Design Considerations
 
@@ -168,3 +169,87 @@ $allSuccessfullyInserted = $authorsModel->insertMany(
 //      See the documentation for Collections for more details.
 ////////////////////////////////////////////////////////////////////////////////
 ```
+
+### Methods for Fetching data from the Database
+
+The following methods for fetching data from the database are defined in **\GDAO\Model** which is extended by **\LeanOrm\Model**:
+
+- __**fetchCol(?object $query = null): array**__
+> selects data from a single database table's column and returns an array of the column values. By default, it selects data from the first column in a database table.
+
+- __**fetchOneRecord(?object $query = null, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**__
+> selects a single row of data from a database table and returns it as an instance of **\LeanOrm\Model\Record** (or any of its subclasses). By default, it fetches the first row of data in a database table into a Record object.
+
+- __**fetchPairs(?object $query = null): array**__
+> selects data from two database table columns and returns an array whose keys are values from the first column and whose values are the values from the second column. By default, it selects data from the first two columns in a database table.
+
+- __**fetchRecordsIntoArray(?object $query = null, array $relations_to_include = []): array**__
+> selects one or more rows of data from a database table and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an array. By default, it selects all rows of data in a database table and returns them as an array of record objects.
+
+- __**fetchRecordsIntoCollection(?object $query = null, array $relations_to_include = []): \GDAO\Model\CollectionInterface**__
+> selects one or more rows of data from a database table and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an instance of **\LeanOrm\Model\Collection** (or any of its subclasses). By default, it selects all rows of data in a database table and returns them as a collection of record objects.
+
+- __**function fetchRowsIntoArray(?object $query = null, array $relations_to_include = []): array**__
+> selects one or more rows of data from a database table and returns them as associative arrays inside an array.
+
+- __**fetchValue(?object $query = null): mixed**__
+> selects a single value from a single column of a single row of data from a database table and returns the value (eg. as a string, or an appropriate data type). 
+
+All these fetch methods accept a first argument which is a query object. LeanOrm uses [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md) as its query object. You can create a query object to inject into each fetch method using the **getSelect(): \Aura\SqlQuery\Common\Select** method in **\LeanOrm\Model**. Read the documentation for [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md) to figure out how to customize the sql queries executed by each fetch method. Some examples will be shown later on below.
+
+Some of these fetch methods also accept a second argument called **$relations_to_include**. It is basically an array of relationship names for related data defined in the Model class. When you specify these relationship names in a fetch method, the fetch method will eager load the related data which would eliminate the need to issues N queries to fetch the related data for a specified defined relation for each fetched record which leads to the N+1 problem. For example, when fetching records from the authors table via the AuthorsModel, each author record / row can have one or more posts associated with it. If you do not specify that the posts for the author records be eager fetched during a fetch, then when you loop through the returned author records, additional queries will be issued to fetch the posts for each author. If we have 3 authors in the database, then doing a fetch without eager loading posts will lead to the following queries being issued when you loop through the authors and try to access the posts associated with each of them:
+
+```sql
+select * from authors
+select * from posts where author_id = 1
+select * from posts where author_id = 2
+select * from posts where author_id = 3
+```
+
+If we eager load the posts during the call to the fetch method, then only the two queries below will be issued regardless of how many author records exist in the authors table. 
+
+```sql
+select * from authors
+select * from posts where author_id IN ( ids of all the authors we are fetching)
+```
+
+The second query above is pseudo-code. It is used to grab all the posts needed and the fetch method will stitch the associated posts to the matching author records. This is the better and efficient way to load related data.
+
+The following methods for fetching data from the database are NOT defined in **\GDAO\Model** but are only defined in **\LeanOrm\Model** (other Model classes directly extending **\GDAO\Model** may not implement them):
+
+```php
+public function fetch(
+    array $ids, 
+    ?\Aura\SqlQuery\Common\Select $select_obj=null, 
+    array $relations_to_include=[], 
+    bool $use_records=false, 
+    bool $use_collections=false, 
+    bool $use_p_k_val_as_key=false
+): array|\LeanOrm\Model\Collection
+```
+> Selects one or more rows of data from a database table whose primary key values in the database table matches the primary key values specified in the **$ids** and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an array or an instance of **\LeanOrm\Model\Collection** (or any of its subclasses) or returns them as an array of arrays.
+
+
+```php
+public function fetchRecordsIntoArrayKeyedOnPkVal(
+    ?\Aura\SqlQuery\Common\Select $select_obj=null, 
+    array $relations_to_include=[]
+): array
+```
+> Works exactly like **fetchRecordsIntoArray**, except that each record in the returned array has a key whose value is the value of the record's primary key field, as opposed to the sequential 0 to N-1 keys which are present in the array returned by **fetchRecordsIntoArray**
+
+```php
+public function fetchRecordsIntoCollectionKeyedOnPkVal(
+    ?\Aura\SqlQuery\Common\Select $select_obj=null, 
+    array $relations_to_include=[]
+): \GDAO\Model\CollectionInterface
+```
+> Works exactly like **fetchRecordsIntoCollection**, except that each record in the returned collection has a key whose value is the value of the record's primary key field, as opposed to the sequential 0 to N-1 keys which are present in the collection returned by **fetchRecordsIntoCollection**
+
+```php
+public function fetchRowsIntoArrayKeyedOnPkVal(
+    ?\Aura\SqlQuery\Common\Select $select_obj=null, 
+    array $relations_to_include=[]
+): array
+```
+> Works exactly like **fetchRowsIntoArray**, except that each row in the returned array has a key whose value is the value of the row's primary key field, as opposed to the sequential 0 to N-1 keys which are present in the array returned by **fetchRowsIntoArray**
