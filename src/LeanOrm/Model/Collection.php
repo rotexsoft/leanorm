@@ -177,7 +177,6 @@ class Collection implements \GDAO\Model\CollectionInterface
         
         foreach( $keys as $key ) {
             
-            $this->data[$key]->setStateToNew();
             $this->data[$key] = null;
             unset($this->data[$key]);
         }
