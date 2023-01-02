@@ -15,6 +15,8 @@
         - [Fetching data from the Database via fetchRowsIntoArray](#fetching-data-from-the-database-via-fetchrowsintoarray)
         - [Fetching data from the Database via fetchRowsIntoArrayKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrowsintoarraykeyedonpkval)
         - [Fetching data from the Database via fetchValue](#fetching-data-from-the-database-via-fetchvalue)
+        - [Fetching data from the Database via fetch](#fetching-data-from-the-database-via-fetch)
+    - [Deleting Data](#deleting-data)
 
 ## Design Considerations
 
@@ -195,6 +197,8 @@ $allSuccessfullyInserted = $authorsModel->insertMany(
 ```
 
 ### Methods for Fetching data from the Database
+
+> **WARNING:** When fetching data & trying to eager load related data, make sure the primary key column is amongst the columns you have specified to be selected in the fetch query because values from that primary key column would be needed to fetch the various related data.
 
 The following methods for fetching data from the database are defined in **\GDAO\Model** which is extended by **\LeanOrm\Model**:
 
@@ -406,9 +410,11 @@ $records = $authorsModel->fetchRecordsIntoArray(
 
 #### Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal
 
-If you want to fetch rows of data from a database table as record objects stored in an array whose keys are the primary key values of the matching rows of data in the database table, then use the fetchRecordsIntoArrayKeyedOnPkVal method. 
+If you want to fetch rows of data from a database table as record objects stored in an array whose keys are the primary key values of the matching rows of data in the database table, then use the fetchRecordsIntoArrayKeyedOnPkVal method.
 
 This method works exactly like [fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray), except that the key values in the returned array of records are different.
+
+> **NOTE:** This method is implemented in **\LeanOrm\Model** & not a part of **\GDAO\Model**. Sub-classes of **\GDAO\Model** that are not also sub-classes of **\LeanOrm\Model** are not guaranteed to implement it.
 
 #### Fetching data from the Database via fetchRecordsIntoCollection
 
@@ -454,6 +460,7 @@ Using this method allows you to be able call collection class methods on the col
 
 This method works exactly like [fetchRecordsIntoCollection](#fetching-data-from-the-database-via-fetchrecordsintocollection), except that the key values in the returned collection of records are different.
 
+> **NOTE:** This method is implemented in **\LeanOrm\Model** & not a part of **\GDAO\Model**. Sub-classes of **\GDAO\Model** that are not also sub-classes of **\LeanOrm\Model** are not guaranteed to implement it.
 
 #### Fetching data from the Database via fetchRowsIntoArray
 
@@ -497,6 +504,8 @@ If you want to fetch rows of data from a database table as associative arrays st
 
 This method works exactly like [fetchRowsIntoArray](#fetching-data-from-the-database-via-fetchrowsintoarray), except that the key values in the returned array of associative arrays are different.
 
+> **NOTE:** This method is implemented in **\LeanOrm\Model** & not a part of **\GDAO\Model**. Sub-classes of **\GDAO\Model** that are not also sub-classes of **\LeanOrm\Model** are not guaranteed to implement it.
+
 #### Fetching data from the Database via fetchValue
 
 If you want to fetch a single value from a single column of a single row of data from a database table or a computed value from a database table, then use the fetchValue method. Below are a few examples of how to use this method:
@@ -536,7 +545,19 @@ $value = $authorsModel->fetchValue(
 //       data, then fetchValue will return NULL
 ```
 
+#### Fetching data from the Database via fetch
+
+The fetch method is a convenience method that you can use when you know the primary key values of the records you want to fetch from a database table. You just supply the primary key values (in an array) of the records you want to fetch, as its first argument. You can also inject a query object to further customize the query that's used to fetch the desired data under the hood. It calls one of the following methods below depending on the other arguments supplied to it when it's called:
+- **fetchRecordsIntoCollection**
+- **fetchRecordsIntoCollectionKeyedOnPkVal**
+- **fetchRecordsIntoArray**
+- **fetchRecordsIntoArrayKeyedOnPkVal**
+- **fetchRowsIntoArray**
+- **fetchRowsIntoArrayKeyedOnPkVal**
+
+See source code documentation for **\LeanOrm\Model::fetch** to understand how to use this method. The query object that you can inject as a second argument to this method works exactly like all the query objects in the prior code samples above.
+
+> **NOTE:** This method is implemented in **\LeanOrm\Model** & not a part of **\GDAO\Model**. Sub-classes of **\GDAO\Model** that are not also sub-classes of **\LeanOrm\Model** are not guaranteed to implement it.
 
 
-
-> **WARNING:** When fetching data & trying to eager load related data, make sure the primary key column is amongst the columns you have specified to be selected in the fetch query because values from that primary key column would be needed to fetch the various related data.
+### Deleting Data
