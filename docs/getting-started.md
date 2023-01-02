@@ -17,6 +17,7 @@
         - [Fetching data from the Database via fetchValue](#fetching-data-from-the-database-via-fetchvalue)
         - [Fetching data from the Database via fetch](#fetching-data-from-the-database-via-fetch)
     - [Deleting Data](#deleting-data)
+    - [Updating Data](#updating-data)
 
 ## Design Considerations
 
@@ -187,6 +188,18 @@ $allSuccessfullyInserted = $authorsModel->insertMany(
                                     ['name' => 'Jane Doe']
                                 ]
                             );
+
+// For Model classes that have their $created_timestamp_column_name 
+// & $updated_timestamp_column_name properties set to valid database
+// column names whose data type is a datetime data type, LeanORM will
+// automatically populate those fields with the current timestamp
+// computed via date('Y-m-d H:i:s') when each new record for that
+// Model is inserted into the database.
+//
+// When existing records are saved via the save methods on a record object, 
+// or via the saveAll method on a collection object or via the update* 
+// methods on a Model object, the $updated_timestamp_column_name column in 
+// the database automatically gets updated with the current timestamp.
 
 ////////////////////////////////////////////////////////////////////////////////
 //NOTE: if you have a collection (an instance of \LeanOrm\Model\Collection) 
@@ -662,3 +675,16 @@ $data = ['start'=> '2022-12-31 21:10:20', 'end' => '2022-12-31 21:08:20'];
 $sql = "DELETE FROM authors WHERE date_created < :start AND m_timestamp < :end";
 $pdo->prepare($sql)->execute($data);
 ```
+### Updating Data
+
+These are the ways of updating data in the database:
+
+1. By fetching one or more existing records, modifying them & calling either the **save** or **saveInTransaction** method on each record.
+
+2. By fetching one or more records into a Collection object, modifying those record objects contained in the collection & then calling the **saveAll** method on the collection object.
+
+3. By fetching one or more records & calling the Model class' **updateSpecifiedRecord** method on each record. The Record class' **save** methods actually use **updateSpecifiedRecord** under the hood to save existing records, so you really should not need to be using the Model class' **updateSpecifiedRecord** method to update existing records.
+
+4. By calling the Model class' **updateMatchingDbTableRows** method on any instance of the Model class. This method does not retrieve existing records from the database, it only generates & executes a SQL UPDATE statement with some equality criteria (e.g. WHERE colname = someval or colname in (val1,...,valN) or colname IS NULL) based on the arguments supplied to the method.
+
+5. By using the **PDO** object returned by the **getPDO** method of the Model class to execute an **UPDATE** SQL query directly on the database. You need to be very careful to make sure your **UPDATE** query targets the exact records you want to update so that you don't accidentally update data that should not be updated.
