@@ -562,7 +562,7 @@ See source code documentation for **\LeanOrm\Model::fetch** to understand how to
 
 ### Deleting Data
 
-There are three ways of deleting data from the database:
+There are four ways of deleting data from the database:
 
 1. By fetching one or more existing records from the database into record objects and then calling the **delete** method on each Record object (NOTE: the data is deleted from the database but the Record object still contains the data and is automatically marked as new. To make sure the data is both deleted from the database and cleared out of the Record object the **delete** method on the Record object must be called with a boolean value of **true** as its first parameter). 
 
