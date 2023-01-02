@@ -10,6 +10,11 @@
         - [Fetching data from the Database via fetchPairs](#fetching-data-from-the-database-via-fetchpairs)
         - [Fetching data from the Database via fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray)
         - [Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrecordsintoarraykeyedonpkval)
+        - [Fetching data from the Database via fetchRecordsIntoCollection](#fetching-data-from-the-database-via-fetchrecordsintocollection)
+        - [Fetching data from the Database via fetchRecordsIntoCollectionKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrecordsintocollectionkeyedonpkval)
+        - [Fetching data from the Database via fetchRowsIntoArray](#fetching-data-from-the-database-via-fetchrowsintoarray)
+        - [Fetching data from the Database via fetchRowsIntoArrayKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrowsintoarraykeyedonpkval)
+        - [Fetching data from the Database via fetchValue](#fetching-data-from-the-database-via-fetchvalue)
 
 ## Design Considerations
 
@@ -209,10 +214,10 @@ The following methods for fetching data from the database are defined in **\GDAO
 > selects one or more rows of data from a database table and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an instance of **\LeanOrm\Model\Collection** (or any of its subclasses). By default, it selects all rows of data in a database table and returns them as a collection of record objects.
 
 - __**function fetchRowsIntoArray(?object $query = null, array $relations_to_include = []): array**__
-> selects one or more rows of data from a database table and returns them as associative arrays inside an array.
+> selects one or more rows of data from a database table and returns them as associative arrays inside an array. By default, it selects all rows of data in a database table and returns them as associative arrays inside an array.
 
 - __**fetchValue(?object $query = null): mixed**__
-> selects a single value from a single column of a single row of data from a database table and returns the value (eg. as a string, or an appropriate data type). 
+> selects a single value from a single column of a single row of data from a database table and returns the value (eg. as a string, or an appropriate data type). By default, it selects the value of the first column of the first row of data from a database table.
 
 All these fetch methods accept a first argument which is a query object. LeanOrm uses [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md) as its query object. You can create a query object to inject into each fetch method using the **getSelect(): \Aura\SqlQuery\Common\Select** method in **\LeanOrm\Model**. Read the documentation for [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md) to figure out how to customize the sql queries executed by each fetch method. Some examples will be shown later on below.
 
@@ -365,7 +370,9 @@ $keyValPairs = $authorsModel->fetchPairs(
 
 #### Fetching data from the Database via fetchRecordsIntoArray
 
-If you want to fetch rows of data from a database table as record objects stored in an array whose keys start from 0 and end at N-1, then use the fetchRecordsIntoArray method. Below are a few examples of how to use this method:
+If you want to fetch rows of data from a database table as record objects stored in an array whose keys start from 0 and end at N-1, then use the fetchRecordsIntoArray method. 
+
+This method is slightly more memory efficient than fetchRecordsIntoCollection because the returned records & the related data (if any) are not injected into collection objects. You however lose the ability to call collection class methods on the returned result, but would have to individually call the record class methods on each record in the returned array to do things like save or delete each record after modification. Below are a few examples of how to use this method:
 
 ```php
 <?php
@@ -386,7 +393,7 @@ $records = $authorsModel->fetchRecordsIntoArray(
 // $records is an array containing the all rows of data as record objects returned by
 //   select authors.author_id, authors.name from authors where author_id <= 5;
 //      
-// Each record will also contain a collection of associated posts records returned by
+// Each record will also contain an array of associated posts records returned by
 //   select posts.* from posts where author_id in 
 //      (select authors.author_id from authors where author_id <= 5);
 $records = $authorsModel->fetchRecordsIntoArray(
@@ -399,4 +406,137 @@ $records = $authorsModel->fetchRecordsIntoArray(
 
 #### Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal
 
-If you want to fetch rows of data from a database table as record objects stored in an array whose keys are the primary key values of the matching rows of data in the database table, then use the fetchRecordsIntoArrayKeyedOnPkVal method. This method works exactly like [fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray), except that the key values in the returned array of records are different.
+If you want to fetch rows of data from a database table as record objects stored in an array whose keys are the primary key values of the matching rows of data in the database table, then use the fetchRecordsIntoArrayKeyedOnPkVal method. 
+
+This method works exactly like [fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray), except that the key values in the returned array of records are different.
+
+#### Fetching data from the Database via fetchRecordsIntoCollection
+
+If you want to fetch rows of data from a database table as record objects stored in a collection whose keys start from 0 and end at N-1, then use the fetchRecordsIntoCollection method. 
+
+This method uses slightly more memory than other fetch methods that return multiple rows of data because every row of data (including related data) in the result returned by this method is stored in a record object and the record objects are stored in applicable collection objects. Using this method, however, allows you to be able call collection class methods on the collection returned by this method to do things like save all the records in the collection after performing some operations on the the records or delete all the records from the database if they are no longer needed, and so on, this also applies to the related data stored in collection objects for each record. Below are a few examples of how to use this method:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+// $records is a collection object containing the all rows of data as record objects returned by
+// select authors.* from authors;
+$records = $authorsModel->fetchRecordsIntoCollection();
+
+// $records is a collection object containing the all rows of data as record objects returned by
+// select authors.author_id, authors.name from authors where author_id <= 5;
+$records = $authorsModel->fetchRecordsIntoCollection(
+            $authorsModel->getSelect()
+                         ->cols(['author_id', 'name'])
+                         ->where(' author_id <= ? ', 5)
+        );
+
+// $records is a collection object containing the all rows of data as record objects returned by
+//   select authors.author_id, authors.name from authors where author_id <= 5;
+//      
+// Each record will also contain a collection object of associated posts records returned by
+//   select posts.* from posts where author_id in 
+//      (select authors.author_id from authors where author_id <= 5);
+$records = $authorsModel->fetchRecordsIntoCollection(
+            $authorsModel->getSelect()
+                         ->cols(['author_id', 'name'])
+                         ->where(' author_id <= ? ', 5),
+            ['posts'] // eager fetch posts for all the matching authors
+        );
+```
+
+#### Fetching data from the Database via fetchRecordsIntoCollectionKeyedOnPkVal
+
+If you want to fetch rows of data from a database table as record objects stored in a collection object whose keys are the primary key values of the matching rows of data in the database table, then use the fetchRecordsIntoCollectionKeyedOnPkVal method. 
+
+Using this method allows you to be able call collection class methods on the collection returned by this method to do things like save all the records in the collection after performing some operations on the the records or delete all the records from the database if they are no longer needed, and so on.
+
+This method works exactly like [fetchRecordsIntoCollection](#fetching-data-from-the-database-via-fetchrecordsintocollection), except that the key values in the returned collection of records are different.
+
+
+#### Fetching data from the Database via fetchRowsIntoArray
+
+If you want to fetch rows of data from a database table as associative arrays stored in an array whose keys start from 0 and end at N-1, then use the fetchRowsIntoArray method. 
+
+This method is the most memory efficient method to fetch multiple rows of data from a database table because all the data are returned as native php arrays as opposed to other fetch methods that return each row of data as record objects and puts all those records into a collection or an array. Use this method if you just want to display the fetched data & don't need to update & save or delete the fetched data after processing. Below are a few examples of how to use this method:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+// $records is an array containing the all rows of data as associative arrays returned by
+// select authors.* from authors;
+$records = $authorsModel->fetchRowsIntoArray();
+
+// $records is an array containing the all rows of data as associative arrays returned by
+// select authors.author_id, authors.name from authors where author_id <= 5;
+$records = $authorsModel->fetchRowsIntoArray(
+            $authorsModel->getSelect()
+                         ->cols(['author_id', 'name'])
+                         ->where(' author_id <= ? ', 5)
+        );
+
+// $records is an array containing the all rows of data as record objects returned by
+//   select authors.author_id, authors.name from authors where author_id <= 5;
+//      
+// Each record will also contain an array of associated posts records returned by
+//   select posts.* from posts where author_id in 
+//      (select authors.author_id from authors where author_id <= 5);
+$records = $authorsModel->fetchRowsIntoArray(
+            $authorsModel->getSelect()
+                         ->cols(['author_id', 'name'])
+                         ->where(' author_id <= ? ', 5),
+            ['posts'] // eager fetch posts for all the matching authors
+        );
+```
+
+#### Fetching data from the Database via fetchRowsIntoArrayKeyedOnPkVal
+
+If you want to fetch rows of data from a database table as associative arrays stored in an array whose keys are the primary key values of the matching rows of data in the database table, then use the fetchRowsIntoArrayKeyedOnPkVal method. 
+
+This method works exactly like [fetchRowsIntoArray](#fetching-data-from-the-database-via-fetchrowsintoarray), except that the key values in the returned array of associative arrays are different.
+
+#### Fetching data from the Database via fetchValue
+
+If you want to fetch a single value from a single column of a single row of data from a database table or a computed value from a database table, then use the fetchValue method. Below are a few examples of how to use this method:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+// $value is the value in the first column (i.e. author_id) and first row returned by
+// select authors.* from authors;
+$value = $authorsModel->fetchValue();
+
+// $value is the value in the first column (i.e. name) and first row returned by
+// select authors.name from authors;
+$value = $authorsModel->fetchValue(
+            $authorsModel->getSelect()
+                         ->cols(['name'])
+        );
+
+// $value is the computed value returned by
+// select max(author_id) from authors;
+$value = $authorsModel->fetchValue(
+            $authorsModel->getSelect()
+                         ->cols([' max(author_id) '])
+        );
+
+// $value is the computed value returned by
+// select max(author_id) from authors where author_id <= 5;
+// Obviously, this value will always be <= 5
+$value = $authorsModel->fetchValue(
+            $authorsModel->getSelect()
+                         ->cols(['max(author_id)'])
+                         ->where(' author_id <= ? ', 5)
+        );
+
+// NOTE: if the database table is empty or the select query returns no row(s) of 
+//       data, then fetchValue will return NULL
+```
+
+
+
+
+> **WARNING:** When fetching data & trying to eager load related data, make sure the primary key column is amongst the columns you have specified to be selected in the fetch query because values from that primary key column would be needed to fetch the various related data.
