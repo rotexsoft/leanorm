@@ -1,4 +1,4 @@
-# Getting Started
+# Comprehensive Guide
 
 - [Design Considerations](#design-considerations)
 - [How it works](#how-it-works)
@@ -561,3 +561,17 @@ See source code documentation for **\LeanOrm\Model::fetch** to understand how to
 
 
 ### Deleting Data
+
+There are three ways of deleting data from the database:
+
+1. By fetching one or more existing records from the database into record objects and then calling the **delete** method on each Record object (NOTE: the data is deleted from the database but the Record object still contains the data and is automatically marked as new. To make sure the data is both deleted from the database and cleared out of the Record object the **delete** method on the Record object must be called with a boolean value of **true** as its first parameter). 
+
+2. By fetching one or more existing records from the database into record objects stored in a Collection object, and then calling the **deleteAll** method on the Collection object. This will cause all the records in the collection to be deleted from the database, but the Record objects will still be in the Collection object with their data intact. **removeAll** should additionally be called on the Collection object to clear the Record objects and their data from the Collection object, this will free up the memory those records were using.
+
+3. By calling the **deleteMatchingDbTableRows** method on a Model object. This method does not involve the retrieval of Record objects, rather only the conditions for matching the rows of data in the database table to be deleted needs to be supplied to **deleteMatchingDbTableRows**. It accepts an associative array whose keys should be the names of the database table column names & whose values are the values to use in an equality test to match against the corresponding database column names. If you need more fine grained criteria other than an equality test to match records that need to be deleted, you should consider the fourth option below.
+
+    >Note: there is also a **deleteSpecifiedRecord** method in the Model class which accepts a Record object as parameter and deletes the database row associated with the Record object, sets the primary key value of the Record object to null and also sets the _is_new property of the Record object to the boolean value of true (NOTE: it does not clear all the other data in the Record object). The **deleteSpecifiedRecord** method does not really need to be called, since the delete method in the Record class calls it internally when **delete** is called on a Record object that needs to be deleted.
+
+4. By using the **PDO** object returned by the **getPDO** method of the Model class to execute a delete SQL query directly on the database. You need to be very careful to make sure your deletion query targets the exact records you want to delete so that you don't accidentally delete data that should not be deleted.
+
+> **NOTE:** You can use the Record class' **delete** method & the Collection class' **deleteAll** & **removeAll** methods to also delete fetched related data. 
