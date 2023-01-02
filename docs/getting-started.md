@@ -340,8 +340,8 @@ $authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd
 $keyValPairs = $authorsModel->fetchPairs();
 
 // $keyValPairs will be an array whose keys have values from the first specified column (i.e. author_id)
-// of the authors table and whose corresponding values have values from the second specified column (i.e. date_created)
-// of the authors table where the author_id <= 5
+// of the authors table and whose corresponding values have values from the second specified column 
+// (i.e. date_created) of the authors table where the author_id <= 5
 $keyValPairs = $authorsModel->fetchPairs(
                 $authorsModel->getSelect()
                              ->cols(['author_id', 'date_created'])
