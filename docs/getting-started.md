@@ -575,3 +575,90 @@ There are four ways of deleting data from the database:
 4. By using the **PDO** object returned by the **getPDO** method of the Model class to execute a delete SQL query directly on the database. You need to be very careful to make sure your deletion query targets the exact records you want to delete so that you don't accidentally delete data that should not be deleted.
 
 > **NOTE:** You can use the Record class' **delete** method & the Collection class' **deleteAll** & **removeAll** methods to also delete fetched related data. 
+
+Below are some code samples demonstrating how to delete data:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+// first insert 6 records into the authors table
+ $authorsModel->insertMany(
+    [
+        ['name' => 'Joe Blow'],
+        ['name' => 'Jill Blow'],
+        ['name' => 'Jack Doe'],
+        ['name' => 'Jane Doe'],
+        ['name' => 'Jack Bauer'],
+        ['name' => 'Jane Bauer'],
+    ]
+);
+ 
+///////////////////////////////////////////////////////////////////
+$joeBlowRecord = $authorsModel->fetchOneRecord(
+                    $authorsModel->getSelect()
+                                 ->where(' name = ? ', 'Joe Blow')
+                );
+// - Deletes record from the database table 
+// - Flags the record object as new
+// - Clears related data associated with the record object 
+//      - (does not delete them from the database)
+// - Removes the primary key field from the record object, 
+//      - if it's an auto-incrementing field in the database table
+// - Other remaining data in the record remains 
+$joeBlowRecord->delete(false);
+
+///////////////////////////////////////////////////////////////////
+$jillBlowRecord = $authorsModel->fetchOneRecord(
+                    $authorsModel->getSelect()
+                                 ->where(' name = ? ', 'Jill Blow')
+                );
+// - Deletes record from the database table 
+// - Flags the record object as new
+// - Clears all data associated with the record object
+$jillBlowRecord->delete(true);
+
+///////////////////////////////////////////////////////////////////
+$jackAndJaneDoe = $authorsModel->fetchRecordsIntoCollection(
+                    $authorsModel->getSelect()
+                                 ->where(
+                                        ' name IN (?, ?) ', 
+                                        'Jack Doe', 
+                                        'Jane Doe'
+                                    )
+                );
+
+// - Delete records from the database 
+// - Flags each record object as new
+// - Clears related data associated with each record object 
+//      - (does not delete them from the database)
+// - Removes the primary key field from each record object, 
+//      - if it's an auto-incrementing field in the database table
+// - Other remaining data in each record remains 
+// - Record objects remain in the collection
+$jackAndJaneDoe->deleteAll();
+
+// Removes all the record objects from the collection object
+// If those record objects are not referenced via any other variable,
+// they will be garbage collected when next PHP's garbage collection
+// mechanism kicks in.
+$jackAndJaneDoe->removeAll();
+
+///////////////////////////////////////////////////////////////////
+
+// Generates and executes the sql query below:
+//  DELETE from authors where name in ('Jack Bauer', 'Jane Bauer');
+$authorsModel->deleteMatchingDbTableRows(
+                [
+                    'name' => ['Jack Bauer', 'Jane Bauer']
+                ]
+            );
+
+///////////////////////////////////////////////////////////////////
+
+// For more complicated DELETE queries, use the PDO object
+$pdo = $authorsModel->getPDO();
+$data = ['start'=> '2022-12-31 21:10:20', 'end' => '2022-12-31 21:08:20'];
+$sql = "DELETE FROM authors WHERE date_created < :start AND m_timestamp < :end";
+$pdo->prepare($sql)->execute($data);
+```
