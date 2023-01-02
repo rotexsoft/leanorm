@@ -8,6 +8,7 @@
         - [Fetching data from the Database via fetchCol](#fetching-data-from-the-database-via-fetchcol)
         - [Fetching data from the Database via fetchOneRecord](#fetching-data-from-the-database-via-fetchonerecord)
         - [Fetching data from the Database via fetchPairs](#fetching-data-from-the-database-via-fetchpairs)
+        - [Fetching data from the Database via fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray)
 
 ## Design Considerations
 
@@ -359,4 +360,38 @@ $keyValPairs = $authorsModel->fetchPairs(
                              ->cols(['author_id', " concat(author_id, '-', 'name') "])
                              ->where(' author_id <= ? ', 5)
             );
+```
+
+#### Fetching data from the Database via fetchRecordsIntoArray
+
+If you want to fetch rows of data from a database table as record objects stored in an array whose keys start from 0 and end at N-1, then use the fetchRecordsIntoArray method. Below are a few examples of how to use this method:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+// $records is an array containing the all rows of data as record objects returned by
+// select authors.* from authors;
+$records = $authorsModel->fetchRecordsIntoArray();
+
+// $records is an array containing the all rows of data as record objects returned by
+// select authors.author_id, authors.name from authors where author_id <= 5;
+$records = $authorsModel->fetchRecordsIntoArray(
+            $authorsModel->getSelect()
+                         ->cols(['author_id', 'name'])
+                         ->where(' author_id <= ? ', 5)
+        );
+
+// $records is an array containing the all rows of data as record objects returned by
+//   select authors.author_id, authors.name from authors where author_id <= 5;
+//      
+// Each record will also contain a collection of associated posts records returned by
+//   select posts.* from posts where author_id in 
+//      (select authors.author_id from authors where author_id <= 5);
+$records = $authorsModel->fetchRecordsIntoArray(
+            $authorsModel->getSelect()
+                         ->cols(['author_id', 'name'])
+                         ->where(' author_id <= ? ', 5),
+            ['posts'] // eager fetch posts for all the matching authors
+        );
 ```
