@@ -5,6 +5,9 @@
     - [Defining and Creating Model Objects](#defining-and-creating-model-objects)
     - [Creating Records & Inserting Data into the Database](#creating-records--inserting-data-into-the-database)
     - [Methods for Fetching data from the Database](#methods-for-fetching-data-from-the-database)
+        - [Fetching data from the Database via fetchCol](#fetching-data-from-the-database-via-fetchcol)
+        - [Fetching data from the Database via fetchOneRecord](#fetching-data-from-the-database-via-fetchonerecord)
+        - [Fetching data from the Database via fetchPairs](#fetching-data-from-the-database-via-fetchpairs)
 
 ## Design Considerations
 
@@ -48,8 +51,16 @@ $authorsModel =
 // $authorsModel->hasMany(...);
 // $authorsModel->hasManyThrough(...);
 // $authorsModel->hasOne(...);
-// $authorsModel->setCollectionClassName(...)
-//              ->setRecordClassName(...);
+
+// Set collection class to use for this instance. 
+// Instances of this collection class will be  
+// returned by Model methods that return a collection
+// $authorsModel->setCollectionClassName(...);
+
+// Set record class to use for this instance. 
+// Instances of this record class will be  
+// returned by Model methods that return a record
+// $authorsModel->setRecordClassName(...);
 ```
 
 2. Or you could create Model classes for each database table in your application's database. Each of these classes must extend **\LeanOrm\Model**. This is the recommended approach for large applications. There is a [tool](https://github.com/rotexsoft/leanorm-cli) you can use to automatically generate Model, Record & Collection classes for each of the tables & views in your database. Below are examples of a Model, Collection & Record classes associated with an **authors** table in the database:
@@ -62,8 +73,14 @@ declare(strict_types=1);
 
 class AuthorsModel extends \LeanOrm\Model {
     
-    protected ?string $collection_class_name = AuthorsCollection::class;    
+    // you can change this during runtime by calling 
+    // setCollectionClassName(...) on an instance of this class
+    protected ?string $collection_class_name = AuthorsCollection::class;
+    
+    // you can change this during runtime by calling 
+    // setRecordClassName(...) on an instance of this class
     protected ?string $record_class_name = AuthorRecord::class;
+
     protected ?string $created_timestamp_column_name = 'date_created';
     protected ?string $updated_timestamp_column_name = 'm_timestamp';
     protected string $primary_col = 'author_id';
@@ -253,3 +270,69 @@ public function fetchRowsIntoArrayKeyedOnPkVal(
 ): array
 ```
 > Works exactly like **fetchRowsIntoArray**, except that each row in the returned array has a key whose value is the value of the row's primary key field, as opposed to the sequential 0 to N-1 keys which are present in the array returned by **fetchRowsIntoArray**
+
+#### Fetching data from the Database via fetchCol
+
+If you want to grab all the values for a specific database column in a database table, use the fetchCol method. Below are a few examples of how to use this method:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+
+// $colVals will contain all the values in the first column (i.e. author_id)
+// of the authors table
+$colVals = $authorsModel->fetchCol();
+
+// $colVals will contain all the values in the specified column (i.e. name)
+// of the authors table where the author_id <= 5
+$colVals = $authorsModel->fetchCol(
+                $authorsModel->getSelect()
+                             ->cols(['name'])
+                             ->where(' author_id <= ? ', 5)
+            );
+```
+
+#### Fetching data from the Database via fetchOneRecord
+
+If you want to fetch just one row of data from a database table into a record object, use the fetchOneRecord method. Below are a few examples of how to use this method:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+// $record will contain the first row of data returned by
+// select authors.* from authors Limit 1;
+$record = $authorsModel->fetchOneRecord();
+
+// $record will contain the first row of data returned by
+// select authors.author_id, authors.name from authors where author_id = 5;
+$record = $authorsModel->fetchOneRecord(
+            $authorsModel->getSelect()
+                         ->cols(['author_id', 'name'])
+                         ->where(' author_id = ? ', 5)
+        );
+
+// $record will contain the first row of data returned by
+//   select authors.author_id, authors.name from authors where author_id = 5;
+//      
+// It will also contain a collection of posts records returned by
+//   select posts.* from posts where author_id = 5;
+$record = $authorsModel->fetchOneRecord(
+            $authorsModel->getSelect()
+                         ->cols(['author_id', 'name'])
+                         ->where(' author_id = ? ', 5),
+            ['posts'] // eager fetch posts for the author
+        );
+```
+
+#### Fetching data from the Database via fetchPairs
+
+If you want to fetch key value pair from two columns in a database table, use the fetchPairs method. A good example of when to use this method is when you want to generate a drop-down list of authors in your application where the author_id will be the value of each select option item and the author's name will be the display text for each select option item. Below are a few examples of how to use this method:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+
+```
