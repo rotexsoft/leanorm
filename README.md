@@ -21,6 +21,8 @@
 
 PHP 7.4+.
 
+[Composer](https://getcomposer.org/)
+
 Version 2.X of this package has been rigorously tested against sqlite 3.7.11+, 
 MySQL 8.0.29+ & Postgresql 15.1+. 
 
@@ -32,9 +34,13 @@ If you are using Sqlite, version sqlite 3.7.11 or higher is required.
 
 Version 1.X of this package never got a stable release. Please use version 2.X+ of this package.
 
+## Installation
+
+    `composer require rotexsoft/leanorm`
+
 ## Running Tests
 
-  `./vendor/bin/phpunit --coverage-text`
+    `./vendor/bin/phpunit --coverage-text`
 
 > You can set the environment variable **LEANORM_PDO_DSN** with a valid $dsn string for pdo e.g. LEANORM_PDO_DSN=sqlite::memory:
 
