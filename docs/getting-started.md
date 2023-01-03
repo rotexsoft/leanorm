@@ -3,6 +3,7 @@
 - [Design Considerations](#design-considerations)
 - [How it works](#how-it-works)
     - [Defining and Creating Model Objects](#defining-and-creating-model-objects)
+        - [Using a Factory Function to Instantiate & Retrieve Models](#using-a-factory-function-to-instantiate-and-retrieve-models)
     - [Creating Records & Inserting Data into the Database](#creating-records--inserting-data-into-the-database)
     - [Methods for Fetching data from the Database](#methods-for-fetching-data-from-the-database)
         - [Fetching data from the Database via fetchCol](#fetching-data-from-the-database-via-fetchcol)
@@ -149,6 +150,57 @@ class AuthorRecord extends \LeanOrm\Model\Record {
     //put your code here
 }
 ```
+
+#### Using a Factory Function to Instantiate and Retrieve Models
+
+If you have many tables and views in your database, it may become tedious to have to keep manually adding instances of each Model class needed by your application to a dependencies file or a container. You could simply write a function to create new Models based of the specified class name. Below is a simple implementation of a function that creates a single instance of a model per Model class name and always returns that instance when called. You can write something similar to manage the creation of Model objects in your application.
+
+```php
+<?php
+
+// This function creates a single instance of a model class 
+// for each specified model class and returns that instance 
+// every time this function is called.
+$createOrGetModel = function(
+    string $modelName, 
+    string $tableName='', 
+    string $primaryColName=''
+): \LeanOrm\Model {
+    
+    static $models;
+    
+    if(!$models) {
+        
+        $models = [];
+    }
+    
+    if(array_key_exists($modelName, $models)) {
+        
+        return $models[$modelName];
+    }
+
+    if(!is_a($modelName, \LeanOrm\Model::class, true)) {
+        
+        throw new \Exception(
+            "ERROR: The class name `{$modelName}` supplied for creating a new model is not "
+           . "`" . \LeanOrm\Model::class . "` or any of its sub-classes!"
+        );
+    }
+    
+    $models[$modelName] = new $modelName(
+        'mysql:host=hostname;dbname=blog', 'user', 'passwd',
+        [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'],
+        $primaryColName, $tableName
+    );
+    
+    return $models[$modelName];
+};
+
+// You just call the function to create & retrieve an 
+// instance of a model class like so:
+$authorsModel = $createOrGetModel(AuthorsModel::class);
+```
+
 
 ### Creating Records & Inserting Data into the Database
 
