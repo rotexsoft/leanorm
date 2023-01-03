@@ -36,11 +36,11 @@ Version 1.X of this package never got a stable release. Please use version 2.X+ 
 
 ## Installation
 
-    `composer require rotexsoft/leanorm`
+    >`composer require rotexsoft/leanorm`
 
 ## Running Tests
 
-    `./vendor/bin/phpunit --coverage-text`
+    >`./vendor/bin/phpunit --coverage-text`
 
 > You can set the environment variable **LEANORM_PDO_DSN** with a valid $dsn string for pdo e.g. LEANORM_PDO_DSN=sqlite::memory:
 
