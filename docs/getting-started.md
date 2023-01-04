@@ -187,6 +187,10 @@ $createOrGetModel = function(
         );
     }
     
+    // NOTE: You should use a function like getenv() or similar 
+    // to inject the dsn, username and password values into the 
+    // constructor call below so you don't commit live credentials
+    // into the repository for your project.
     $models[$modelName] = new $modelName(
         'mysql:host=hostname;dbname=blog', 'user', 'passwd',
         [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'],
