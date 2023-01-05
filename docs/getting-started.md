@@ -226,6 +226,11 @@ $newRecord->save([ 'name' => 'Joe Blow']); // inject data to the save method
 $newRecord = $authorsModel->createNewRecord([ 'name' => 'Joe Blow']);
 $newRecord->save();
 
+// NOTE: the save method for Record objects returns 
+// - true: successful save, 
+// - false: failed save, 
+// - null: no changed data to save
+
 //Method 4:
 $insertedData = $authorsModel->insert([ 'name' => 'Joe Blow']); // save to the DB
 // $insertedData is an associative array of the data just inserted into the
@@ -292,7 +297,7 @@ The following methods for fetching data from the database are defined in **\GDAO
 - [__**fetchValue(?object $query = null): mixed**__](#fetching-data-from-the-database-via-fetchvalue)
 > selects a single value from a single column of a single row of data from a database table and returns the value (eg. as a string, or an appropriate data type). By default, it selects the value of the first column of the first row of data from a database table.
 
-All these fetch methods accept a first argument which is a query object. LeanOrm uses [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md) as its query object. You can create a query object to inject into each fetch method using the **getSelect(): \Aura\SqlQuery\Common\Select** method in **\LeanOrm\Model**. Read the documentation for [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md) to figure out how to customize the sql queries executed by each fetch method. Some examples will be shown later on below.
+All these fetch methods accept a first argument which is a query object. LeanOrm uses [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md#select) as its query object. You can create a query object to inject into each fetch method using the **getSelect(): \Aura\SqlQuery\Common\Select** method in **\LeanOrm\Model**. Read the documentation for [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md#select) to figure out how to customize the sql queries executed by each fetch method. Some examples will be shown later on below.
 
 Some of these fetch methods also accept a second argument called **$relations_to_include**. It is basically an array of relationship names for related data defined in the Model class. When you specify these relationship names in a fetch method, the fetch method will eager load the related data which would eliminate the need to issues N queries to fetch the related data for a specified defined relation for each fetched record which leads to the N+1 problem. For example, when fetching records from the authors table via the AuthorsModel, each author record / row can have one or more posts associated with it. If you do not specify that the posts for the author records be eager fetched during a fetch, then when you loop through the returned author records, additional queries will be issued to fetch the posts for each author. If we have 3 authors in the database, then doing a fetch without eager loading posts will lead to the following queries being issued when you loop through the authors and try to access the posts associated with each of them:
 
@@ -375,7 +380,7 @@ $colVals = $authorsModel->fetchCol(
 
 #### Fetching data from the Database via fetchOneRecord
 
-If you want to fetch just one row of data from a database table into a record object, use the fetchOneRecord method. Below are a few examples of how to use this method:
+If you want to fetch just one row of data from a database table into a record object, use the fetchOneRecord method. This method returns null if the table or view is empty or the query doesn't match any record. Below are a few examples of how to use this method:
 
 ```php
 <?php
