@@ -38,6 +38,10 @@ Version 1.X of this package never got a stable release. Please use version 2.X+ 
 
 >`composer require rotexsoft/leanorm`
 
+There's an accompanying [command-line tool](https://github.com/rotexsoft/leanorm-cli) that can be used to automatically generate Model, Record & Collection classes for the tables and views in a database. To install this tool, just run the command below. Read the [documentation](https://github.com/rotexsoft/leanorm-cli/blob/main/README.md) for the tool for more information.
+
+> `composer require --dev rotexsoft/leanorm-cli`
+
 ## Running Tests
 
 >`./vendor/bin/phpunit --coverage-text`
