@@ -19,6 +19,7 @@
         - [Fetching data from the Database via fetch](#fetching-data-from-the-database-via-fetch)
     - [Deleting Data](#deleting-data)
     - [Updating Data](#updating-data)
+    - [Defining Relationships between Models and Working with Related Data](#defining-relationships-between-models-and-working-with-related-data)
 
 ## Design Considerations
 
@@ -837,3 +838,24 @@ $data = ['start'=> '2022-12-31 21:10:20', 'end' => '2022-12-31 21:08:20'];
 $sql = "UPDATE authors SET name = CONCAT(author_id, '-', name) WHERE date_created < :start AND m_timestamp < :end";
 $pdo->prepare($sql)->execute($data);
 ```
+
+### Defining Relationships between Models and Working with Related Data
+
+LeanOrm allows you to define relationships between Model classes. These relationships usually mirror the foreign key relationships between the underlying database tables associated with the models. You can also define relationships between Model classes that represent database views, even though views don't have foreign key definitions at the database levels.
+
+The schema below will be used in the examples to demonstrate how to define relationships.
+
+![Blog Schema](../demo/blog-db.png)
+
+Four types of relationships are supported:
+
+1. **Belongs-To:** each row of data in a database table / view belongs to only one row of data in another database table / view. For example, if you have two tables, authors and posts, an author record would belong to a post if there is an post_id field in the authors table. If the authors table doesn't have a post_id field (which is the case in the schema diagram above) and instead the posts table has an author_id field (which is also the case in the schema diagram above, then a post record would belong to an author. Where the foreign key column is located is what determines which entity belongs to the other.
+2. **Has-One:** each row of data in a database table / view has zero or only one row of data in another database table / view. For example, if you have two tables, authors and posts, an post record has one author if there is a post_id field in the authors table. If the authors table doesn't have a post_id field (which is the case in the schema diagram above) and instead the posts table has an author_id field (which is also the case in the schema diagram above), then an author record has one account. Where the foreign key column is located is what determines which entity owns the other. This type of relationship is also a variant of **Has-Many**, in which the many is just one and only one record.
+3. **Has-Many:** each row in a Table A, is related to zero or more rows in another Table B. Each row in table B is related to only one row in Table A. 
+    - Each row in Table A is related to zero or many (has many) rows in Table B 
+    - Each row in Table B, belongs to exactly one row in Table A.
+4. **Has-Many-Through a.k.a Many to Many):**
+
+For the purpose of this documentation, we will call the Model class that we are trying to define a relationship on as the native Model and the other Model (whose row(s) / record(s) are to be returned when the relationship is executed) as the foreign Model.
+
+
