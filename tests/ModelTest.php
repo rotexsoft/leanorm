@@ -270,10 +270,12 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->belongsTo(
             'author2', 'author_id', 'authors', 'author_id', 'author_id', \LeanOrm\Model::class,
-            \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, $callback
+            \LeanOrm\TestObjects\PostRecord::class, \LeanOrm\TestObjects\PostsCollection::class, $callback
         );
         self::assertEquals(['author', 'author2'], $postsModel->getRelationNames());
         self::assertEquals($callback, $postsModel->getRelations()['author2']['sql_query_modifier']);
+        self::assertEquals(\LeanOrm\TestObjects\PostRecord::class, $postsModel->getRelations()['author2']['foreign_models_record_class_name']);
+        self::assertEquals(\LeanOrm\TestObjects\PostsCollection::class, $postsModel->getRelations()['author2']['foreign_models_collection_class_name']);
     }
     
     public function testThatHasOneThrowsExceptionWhenRelationNameCollidesWithColumnName() {
@@ -393,10 +395,12 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasOne(
             'author2', 'author_id', 'authors', 'author_id', 'author_id', \LeanOrm\Model::class,
-            \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, $callback
+            \LeanOrm\TestObjects\AuthorRecord::class, \LeanOrm\TestObjects\AuthorsCollection::class, $callback
         );
         self::assertEquals(['author', 'author2'], $postsModel->getRelationNames());
         self::assertEquals($callback, $postsModel->getRelations()['author2']['sql_query_modifier']);
+        self::assertEquals(\LeanOrm\TestObjects\AuthorRecord::class, $postsModel->getRelations()['author2']['foreign_models_record_class_name']);
+        self::assertEquals(\LeanOrm\TestObjects\AuthorsCollection::class, $postsModel->getRelations()['author2']['foreign_models_collection_class_name']);
     }
     
     public function testThatHasManyThrowsExceptionWhenRelationNameCollidesWithColumnName() {
@@ -519,10 +523,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasMany(
             'comments2', 'post_id', 'comments', 'post_id', 'comment_id', \LeanOrm\Model::class,
-            \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, $callback
+            \LeanOrm\TestObjects\CommentRecord::class, \LeanOrm\TestObjects\CommentsCollection::class, 
+            $callback
         );
         self::assertEquals(['comments', 'comments2'], $postsModel->getRelationNames());
         self::assertEquals($callback, $postsModel->getRelations()['comments2']['sql_query_modifier']);
+        self::assertEquals(\LeanOrm\TestObjects\CommentRecord::class, $postsModel->getRelations()['comments2']['foreign_models_record_class_name']);
+        self::assertEquals(\LeanOrm\TestObjects\CommentsCollection::class, $postsModel->getRelations()['comments2']['foreign_models_collection_class_name']);
     }
     
     public function testThatHasManyThroughThrowsExceptionWhenRelationNameCollidesWithColumnName() {
@@ -695,10 +702,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasManyThrough(
             'tags2',  'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
-            \LeanOrm\Model::class, \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, $callback
+            \LeanOrm\TestObjects\TagsModel::class, \LeanOrm\TestObjects\TagRecord::class, 
+            \LeanOrm\TestObjects\TagsCollection::class, $callback
         );
         self::assertEquals(['tags', 'tags2'], $postsModel->getRelationNames());
         self::assertEquals($callback, $postsModel->getRelations()['tags2']['sql_query_modifier']);
+        self::assertEquals(\LeanOrm\TestObjects\TagRecord::class, $postsModel->getRelations()['tags2']['foreign_models_record_class_name']);
+        self::assertEquals(\LeanOrm\TestObjects\TagsCollection::class, $postsModel->getRelations()['tags2']['foreign_models_collection_class_name']);
     }
     
     public function testThatCanLogQueriesWorksAsExpected() {

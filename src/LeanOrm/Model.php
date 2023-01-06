@@ -599,7 +599,7 @@ class Model extends \GDAO\Model {
                 Utils::arrayGet($rel_info, 'col_in_join_table_linked_to_foreign_table');
 
             $sql_query_modifier = 
-                    Utils::arrayGet($rel_info, 'sql_query_modifier', null);
+                Utils::arrayGet($rel_info, 'sql_query_modifier', null);
 
             $foreign_model_obj = 
                 $this->createRelatedModelObject(
@@ -607,7 +607,23 @@ class Model extends \GDAO\Model {
                     $pri_key_col_in_foreign_models_table,
                     $foreign_table_name
                 );
-
+            
+            $foreign_models_collection_class_name = 
+                Utils::arrayGet($rel_info, 'foreign_models_collection_class_name', '');
+            
+            $foreign_models_record_class_name = 
+                Utils::arrayGet($rel_info, 'foreign_models_record_class_name', '');
+            
+            if($foreign_models_collection_class_name !== '') {
+                
+                $foreign_model_obj->setCollectionClassName($foreign_models_collection_class_name);
+            }
+            
+            if($foreign_models_record_class_name !== '') {
+                
+                $foreign_model_obj->setRecordClassName($foreign_models_record_class_name);
+            }
+            
             $query_obj = $foreign_model_obj->getSelect();
 
             $query_obj->cols( [" {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} ", " {$foreign_table_name}.* "] );
@@ -855,6 +871,22 @@ SELECT {$foreign_table_name}.*
                                         $pri_key_col_in_foreign_models_table,
                                         $foreign_table_name
                                     );
+        
+        $foreign_models_collection_class_name = 
+            Utils::arrayGet($rel_info, 'foreign_models_collection_class_name', '');
+
+        $foreign_models_record_class_name = 
+            Utils::arrayGet($rel_info, 'foreign_models_record_class_name', '');
+
+        if($foreign_models_collection_class_name !== '') {
+
+            $foreign_model_obj->setCollectionClassName($foreign_models_collection_class_name);
+        }
+
+        if($foreign_models_record_class_name !== '') {
+
+            $foreign_model_obj->setRecordClassName($foreign_models_record_class_name);
+        }
 
         $query_obj = $foreign_model_obj->getSelect();
 
@@ -2276,14 +2308,23 @@ SELECT {$foreign_table_name}.*
         string $foreign_key_col_in_foreign_table,
         string $primary_key_col_in_foreign_table,
         string $foreign_models_class_name = \LeanOrm\Model::class,
-        string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
-        string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
+        string $foreign_models_record_class_name = '',
+        string $foreign_models_collection_class_name = '',
         ?callable $sql_query_modifier = null
     ): self {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
         $this->validateRelatedModelClassName($foreign_models_class_name);
-        $this->validateRelatedCollectionClassName($foreign_models_collection_class_name);
-        $this->validateRelatedRecordClassName($foreign_models_record_class_name);
+        
+        if($foreign_models_collection_class_name !== '') {
+            
+            $this->validateRelatedCollectionClassName($foreign_models_collection_class_name);
+        }
+        
+        if($foreign_models_record_class_name !== '') {
+            
+            $this->validateRelatedRecordClassName($foreign_models_record_class_name);
+        }
+        
         $this->validateTableName($foreign_table_name);
         
         $this->validateThatTableHasColumn($this->getTableName(), $foreign_key_col_in_this_models_table);
@@ -2313,14 +2354,23 @@ SELECT {$foreign_table_name}.*
         string $foreign_key_col_in_foreign_table,
         string $primary_key_col_in_foreign_table,
         string $foreign_models_class_name = \LeanOrm\Model::class,
-        string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
-        string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
+        string $foreign_models_record_class_name = '',
+        string $foreign_models_collection_class_name = '',
         ?callable $sql_query_modifier = null
     ): self {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
         $this->validateRelatedModelClassName($foreign_models_class_name);
-        $this->validateRelatedCollectionClassName($foreign_models_collection_class_name);
-        $this->validateRelatedRecordClassName($foreign_models_record_class_name);
+        
+        if($foreign_models_collection_class_name !== '') {
+        
+            $this->validateRelatedCollectionClassName($foreign_models_collection_class_name);
+        }
+        
+        if($foreign_models_record_class_name !== '') {
+            
+            $this->validateRelatedRecordClassName($foreign_models_record_class_name);
+        }
+        
         $this->validateTableName($foreign_table_name);
         
         $this->validateThatTableHasColumn($this->getTableName(), $foreign_key_col_in_this_models_table);
@@ -2350,14 +2400,24 @@ SELECT {$foreign_table_name}.*
         string $foreign_key_col_in_foreign_table,
         string $primary_key_col_in_foreign_table,
         string $foreign_models_class_name = \LeanOrm\Model::class,
-        string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
-        string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
+        string $foreign_models_record_class_name = '',
+        string $foreign_models_collection_class_name = '',
         ?callable $sql_query_modifier = null
     ): self {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
         $this->validateRelatedModelClassName($foreign_models_class_name);
-        $this->validateRelatedCollectionClassName($foreign_models_collection_class_name);
-        $this->validateRelatedRecordClassName($foreign_models_record_class_name);
+        
+        if($foreign_models_collection_class_name !== '') {
+            
+            $this->validateRelatedCollectionClassName($foreign_models_collection_class_name);
+        }
+            
+        if($foreign_models_record_class_name !== '') {
+            
+            $this->validateRelatedRecordClassName($foreign_models_record_class_name);
+        }
+            
+        
         $this->validateTableName($foreign_table_name);
         
         $this->validateThatTableHasColumn($this->getTableName(), $foreign_key_col_in_this_models_table);
@@ -2390,14 +2450,23 @@ SELECT {$foreign_table_name}.*
         string $col_in_foreign_table_linked_to_join_table,
         string $primary_key_col_in_foreign_table,
         string $foreign_models_class_name = \LeanOrm\Model::class,
-        string $foreign_models_record_class_name = \LeanOrm\Model\Record::class,
-        string $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class,
+        string $foreign_models_record_class_name = '',
+        string $foreign_models_collection_class_name = '',
         ?callable $sql_query_modifier = null
     ): self {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
         $this->validateRelatedModelClassName($foreign_models_class_name);
-        $this->validateRelatedCollectionClassName($foreign_models_collection_class_name);
-        $this->validateRelatedRecordClassName($foreign_models_record_class_name);
+        
+        if ($foreign_models_collection_class_name !== '') {
+            
+            $this->validateRelatedCollectionClassName($foreign_models_collection_class_name);
+        }
+        
+        if ($foreign_models_record_class_name !== '') {
+            
+            $this->validateRelatedRecordClassName($foreign_models_record_class_name);
+        }
+        
         $this->validateTableName($foreign_table_name);
         $this->validateTableName($join_table);
         
