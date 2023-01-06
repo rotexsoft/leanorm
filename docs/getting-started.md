@@ -283,25 +283,25 @@ $allSuccessfullyInserted = $authorsModel->insertMany(
 The following methods for fetching data from the database are defined in **\GDAO\Model** which is extended by **\LeanOrm\Model**:
 
 - [__**fetchCol(?object $query = null): array**__](#fetching-data-from-the-database-via-fetchcol)
-> selects data from a single database table's column and returns an array of the column values. By default, it selects data from the first column in a database table.
+> selects data from a single database table's / view's column and returns an array of the column values. By default, it selects data from the first column in a database table / view.
 
 - [__**fetchOneRecord(?object $query = null, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**__](#fetching-data-from-the-database-via-fetchonerecord)
-> selects a single row of data from a database table and returns it as an instance of **\LeanOrm\Model\Record** (or any of its subclasses). By default, it fetches the first row of data in a database table into a Record object. This method returns null if the table or view is empty or the query doesn't match any record.
+> selects a single row of data from a database table / view and returns it as an instance of **\LeanOrm\Model\Record** (or any of its subclasses). By default, it fetches the first row of data in a database table / view into a Record object. This method returns null if the table or view is empty or the query doesn't match any record.
 
 - [__**fetchPairs(?object $query = null): array**__](#fetching-data-from-the-database-via-fetchpairs)
-> selects data from two database table columns and returns an array whose keys are values from the first column and whose values are the values from the second column. By default, it selects data from the first two columns in a database table.
+> selects data from two database table / view columns and returns an array whose keys are values from the first column and whose values are the values from the second column. By default, it selects data from the first two columns in a database table / view.
 
 - [__**fetchRecordsIntoArray(?object $query = null, array $relations_to_include = []): array**__](#fetching-data-from-the-database-via-fetchrecordsintoarray)
-> selects one or more rows of data from a database table and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an array. By default, it selects all rows of data in a database table and returns them as an array of record objects.
+> selects one or more rows of data from a database table / view and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an array. By default, it selects all rows of data in a database table / view and returns them as an array of record objects.
 
 - [__**fetchRecordsIntoCollection(?object $query = null, array $relations_to_include = []): \GDAO\Model\CollectionInterface**__](#fetching-data-from-the-database-via-fetchrecordsintocollection)
-> selects one or more rows of data from a database table and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an instance of **\LeanOrm\Model\Collection** (or any of its subclasses). By default, it selects all rows of data in a database table and returns them as a collection of record objects.
+> selects one or more rows of data from a database table / view and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an instance of **\LeanOrm\Model\Collection** (or any of its subclasses). By default, it selects all rows of data in a database table / view and returns them as a collection of record objects.
 
 - [__**function fetchRowsIntoArray(?object $query = null, array $relations_to_include = []): array**__](#fetching-data-from-the-database-via-fetchrowsintoarray)
-> selects one or more rows of data from a database table and returns them as associative arrays inside an array. By default, it selects all rows of data in a database table and returns them as associative arrays inside an array.
+> selects one or more rows of data from a database table / view and returns them as associative arrays inside an array. By default, it selects all rows of data in a database table / view and returns them as associative arrays inside an array.
 
 - [__**fetchValue(?object $query = null): mixed**__](#fetching-data-from-the-database-via-fetchvalue)
-> selects a single value from a single column of a single row of data from a database table and returns the value (eg. as a string, or an appropriate data type). By default, it selects the value of the first column of the first row of data from a database table.
+> selects a single value from a single column of a single row of data from a database table / view and returns the value (eg. as a string, or an appropriate data type). By default, it selects the value of the first column of the first row of data from a database table / view.
 
 All these fetch methods accept a first argument which is a query object. LeanOrm uses [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md#select) as its query object. You can create a query object to inject into each fetch method using the **getSelect(): \Aura\SqlQuery\Common\Select** method in **\LeanOrm\Model**. Read the documentation for [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md#select) to figure out how to customize the sql queries executed by each fetch method. Some examples will be shown later on below.
 
@@ -335,7 +335,7 @@ public function fetch(
     bool $use_p_k_val_as_key=false
 ): array|\LeanOrm\Model\Collection
 ```
-> Selects one or more rows of data from a database table whose primary key values in the database table matches the primary key values specified in the **$ids** and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an array or an instance of **\LeanOrm\Model\Collection** (or any of its subclasses) or returns them as an array of arrays.
+> Selects one or more rows of data from a database table / view whose primary key values in the database table / view matches the primary key values specified in the **$ids** and returns them as instances of **\LeanOrm\Model\Record** (or any of its subclasses) inside an array or an instance of **\LeanOrm\Model\Collection** (or any of its subclasses) or returns them as an array of arrays.
 
 
 ```php
