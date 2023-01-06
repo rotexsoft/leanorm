@@ -158,9 +158,8 @@ If you have many tables and views in your database, it may become tedious to hav
 ```php
 <?php
 
-// This function creates a single instance of a model class 
-// for each specified model class and returns that instance 
-// every time this function is called.
+// This function creates a single instance of a model class for each specified 
+// model class and returns that instance every time this function is called.
 $createOrGetModel = function(
     string $modelName, 
     string $tableName='', 
@@ -257,6 +256,13 @@ $allSuccessfullyInserted = $authorsModel->insertMany(
 // computed via date('Y-m-d H:i:s') when each new record for that
 // Model is inserted into the database.
 //
+// After successfully inserting a new record into the database via method 1,
+// 2 or 3, the record object which save was invoked will be update with the 
+// primary key value of the new record if the record has an 
+// auto-incrementing primary key column. 
+// The timestamp values are also added to the record object if those fields
+// exist.
+//
 // When existing records are saved via the save methods on a record object, 
 // or via the saveAll method on a collection object or via the update* 
 // methods on a Model object, the $updated_timestamp_column_name column in 
@@ -272,7 +278,7 @@ $allSuccessfullyInserted = $authorsModel->insertMany(
 
 ### Methods for Fetching data from the Database
 
-> **WARNING:** When fetching data & trying to eager load related data, make sure the primary key column is amongst the columns you have specified to be selected in the fetch query because values from that primary key column would be needed to fetch the various related data.
+> **WARNING:** When fetching data & trying to eager load related data, make sure the column on which the relationship is defined is amongst the columns you have specified to be selected in the fetch query (if you have chosen to explicitly specify columns to be returned by the fetch* method) because values from that column would be needed to fetch related data. If you don't specify any columns, then all columns (including the column on which the relationship is defined) in the table/view are returned.
 
 The following methods for fetching data from the database are defined in **\GDAO\Model** which is extended by **\LeanOrm\Model**:
 
@@ -280,7 +286,7 @@ The following methods for fetching data from the database are defined in **\GDAO
 > selects data from a single database table's column and returns an array of the column values. By default, it selects data from the first column in a database table.
 
 - [__**fetchOneRecord(?object $query = null, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**__](#fetching-data-from-the-database-via-fetchonerecord)
-> selects a single row of data from a database table and returns it as an instance of **\LeanOrm\Model\Record** (or any of its subclasses). By default, it fetches the first row of data in a database table into a Record object.
+> selects a single row of data from a database table and returns it as an instance of **\LeanOrm\Model\Record** (or any of its subclasses). By default, it fetches the first row of data in a database table into a Record object. This method returns null if the table or view is empty or the query doesn't match any record.
 
 - [__**fetchPairs(?object $query = null): array**__](#fetching-data-from-the-database-via-fetchpairs)
 > selects data from two database table columns and returns an array whose keys are values from the first column and whose values are the values from the second column. By default, it selects data from the first two columns in a database table.
