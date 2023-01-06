@@ -36,8 +36,8 @@ class PostsModel extends \LeanOrm\Model{
                 'author_id', 
                 'author_id',
                 AuthorsModel::class,
-                AuthorRecord::class,
-                AuthorsCollection::class,
+                \RecordForTestingPublicAndProtectedMethods::class,
+                \CollectionForTestingPublicAndProtectedMethods::class,
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['author_id']); // just for testing that the query object gets manipulated
@@ -62,8 +62,8 @@ class PostsModel extends \LeanOrm\Model{
                 'post_id', 
                 'summary_id',
                 SummariesModel::class,
-                SummaryRecord::class,
-                SummariesCollection::class,
+                \RecordForTestingPublicAndProtectedMethods::class,
+                \CollectionForTestingPublicAndProtectedMethods::class,
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['summary_id']); // just for testing that the query object gets manipulated
@@ -88,8 +88,8 @@ class PostsModel extends \LeanOrm\Model{
                 'post_id', 
                 'comment_id',
                 CommentsModel::class,
-                CommentRecord::class,
-                CommentsCollection::class,
+                \RecordForTestingPublicAndProtectedMethods::class,
+                \CollectionForTestingPublicAndProtectedMethods::class,
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['comment_id']); // just for testing that the query object gets manipulated
@@ -130,8 +130,8 @@ class PostsModel extends \LeanOrm\Model{
                 'tag_id',
                 'tag_id',
                 TagsModel::class,
-                TagRecord::class,
-                TagsCollection::class,
+                \RecordForTestingPublicAndProtectedMethods::class,
+                \CollectionForTestingPublicAndProtectedMethods::class,
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
 
                     $selectObj->orderBy(['tags.tag_id']); // just for testing that the query object gets manipulated

@@ -1620,7 +1620,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             
             // author of the post
             self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
-            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author_with_callback);
+            self::assertInstanceOf(\RecordForTestingPublicAndProtectedMethods::class, $postRecord->author_with_callback);
             self::assertEquals($postRecord->author->getData(), $postRecord->author_with_callback->getData());
             
             // post's comments
@@ -1628,13 +1628,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             self::assertCount(1, $postRecord->comments);
             self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
-            self::assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments_with_callback);
+            self::assertInstanceOf(\CollectionForTestingPublicAndProtectedMethods::class, $postRecord->comments_with_callback);
             self::assertCount(1, $postRecord->comments_with_callback);
-            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments_with_callback);
+            self::assertContainsOnlyInstancesOf(\RecordForTestingPublicAndProtectedMethods::class, $postRecord->comments_with_callback);
             
             // summary of the post
             self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
-            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary_with_callback);
+            self::assertInstanceOf(\RecordForTestingPublicAndProtectedMethods::class, $postRecord->summary_with_callback);
             self::assertEquals($postRecord->summary->getData(), $postRecord->summary_with_callback->getData());
             
             // post's posts_tags
@@ -1647,9 +1647,9 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             self::assertCount(1, $postRecord->tags);
             self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
             
-            self::assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags_with_callback);
+            self::assertInstanceOf(\CollectionForTestingPublicAndProtectedMethods::class, $postRecord->tags_with_callback);
             self::assertCount(1, $postRecord->tags_with_callback);
-            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags_with_callback);
+            self::assertContainsOnlyInstancesOf(\RecordForTestingPublicAndProtectedMethods::class, $postRecord->tags_with_callback);
             
         } // foreach($allPostsWithAllRelateds as $postRecord)
         unset($allPostsWithAllRelateds);
@@ -1690,7 +1690,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             
             // author of the post
             self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author);
-            self::assertInstanceOf(\LeanOrm\TestObjects\AuthorRecord::class, $postRecord->author_with_callback);
+            self::assertInstanceOf(\RecordForTestingPublicAndProtectedMethods::class, $postRecord->author_with_callback);
             self::assertEquals($postRecord->author->getData(), $postRecord->author_with_callback->getData());
             
             // post's comments
@@ -1698,13 +1698,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             self::assertCount(1, $postRecord->comments);
             self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments);
             
-            self::assertInstanceOf(\LeanOrm\TestObjects\CommentsCollection::class, $postRecord->comments_with_callback);  
+            self::assertInstanceOf(\CollectionForTestingPublicAndProtectedMethods::class, $postRecord->comments_with_callback);  
             self::assertCount(1, $postRecord->comments_with_callback);
-            self::assertContainsOnlyInstancesOf(LeanOrm\TestObjects\CommentRecord::class, $postRecord->comments_with_callback);
+            self::assertContainsOnlyInstancesOf(\RecordForTestingPublicAndProtectedMethods::class, $postRecord->comments_with_callback);
             
             // summary of the post
             self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary);
-            self::assertInstanceOf(\LeanOrm\TestObjects\SummaryRecord::class, $postRecord->summary_with_callback);
+            self::assertInstanceOf(\RecordForTestingPublicAndProtectedMethods::class, $postRecord->summary_with_callback);
             self::assertEquals($postRecord->summary->getData(), $postRecord->summary_with_callback->getData());
             
             // post's posts_tags
@@ -1717,9 +1717,9 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             self::assertCount(1, $postRecord->tags);
             self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags);
             
-            self::assertInstanceOf(LeanOrm\TestObjects\TagsCollection::class, $postRecord->tags_with_callback);
+            self::assertInstanceOf(\CollectionForTestingPublicAndProtectedMethods::class, $postRecord->tags_with_callback);
             self::assertCount(1, $postRecord->tags_with_callback);
-            self::assertContainsOnlyInstancesOf(\LeanOrm\TestObjects\TagRecord::class, $postRecord->tags_with_callback);
+            self::assertContainsOnlyInstancesOf(\RecordForTestingPublicAndProtectedMethods::class, $postRecord->tags_with_callback);
             
         } // foreach($allPostsWithAllRelateds as $postRecord)
         
