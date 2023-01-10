@@ -20,6 +20,10 @@
     - [Deleting Data](#deleting-data)
     - [Updating Data](#updating-data)
     - [Defining Relationships between Models and Working with Related Data](#defining-relationships-between-models-and-working-with-related-data)
+        - [Belongs To](#belongs-to)
+        - [Has One](#has-one)
+        - [Has Many](#has-many)
+        - [Has Many Through](#has-many-through-aka-many-to-many)
 
 ## Design Considerations
 
@@ -849,15 +853,121 @@ The schema below will be used in the examples to demonstrate how to define relat
 
 Four types of relationships are supported:
 
-1. **Belongs-To:** each row of data in a database table / view belongs to only one row of data in another database table / view. For example, if you have two tables, authors and posts, an author record would belong to a post if there is a post_id field in the authors table. If the authors table doesn't have a post_id field (which is the case in the schema diagram above) and instead the posts table has an author_id field (which is also the case in the schema diagram above), then a post record would belong to an author. Where the foreign key column is located is what determines which entity belongs to the other.
-2. **Has-One:** each row of data in a database table / view has zero or only one row of data in another database table / view. For example, if you have two tables, posts and summaries, a summary record has one post if there is a summary_id field in the posts table. If the posts table doesn't have a summary_id field (which is the case in the schema diagram above) and instead the summaries table has a post_id field (which is also the case in the schema diagram above), this means that a post record has zero or one summary. Where the foreign key column is located is what determines which entity owns the other. This type of relationship is also a variant of **Has-Many**, in which the many is just one and only one record.
-3. **Has-Many:** each row in a Table A, is related to zero or more rows in another Table B. Each row in table B is related to only one row in Table A. 
+#### Belongs-To
+Each row of data in a database table / view belongs to only one row of data in another database table / view. For example, if you have two tables, authors and posts, an author record would belong to a post if there is a post_id field in the authors table. If the authors table doesn't have a post_id field (which is the case in the schema diagram above) and instead the posts table has an author_id field (which is also the case in the schema diagram above), then a post record would belong to an author. Where the foreign key column is located is what determines which entity belongs to the other.
+
+
+#### Has-One 
+Each row of data in a database table / view has zero or only one row of data in another database table / view. For example, if you have two tables, posts and summaries, a summary record has one post if there is a summary_id field in the posts table. If the posts table doesn't have a summary_id field (which is the case in the schema diagram above) and instead the summaries table has a post_id field (which is also the case in the schema diagram above), this means that a post record has zero or one summary. Where the foreign key column is located is what determines which entity owns the other. This type of relationship is also a variant of **Has-Many**, in which the many is just one and only one record.
+
+#### Has-Many
+Each row in a Table A, is related to zero or more rows in another Table B. Each row in table B is related to only one row in Table A. 
     - Each row in Table A is related to zero or many (has many) rows in Table B 
     - Each row in Table B, belongs to exactly one row in Table A
     - In the sample schema above, an author has many posts, while each post belongs to an author
-4. **Has-Many-Through a.k.a Many to Many):** This type of relationship requires at least three tables. Basically many records in Table A can be associated with many records in another Table C. Similarly many records in Table C can be associated with many records in Table A. The associations are defined in an intermediary Table B. 
+
+#### Has-Many-Through a.k.a Many to Many) 
+This type of relationship requires at least three tables. Basically many records in Table A can be associated with many records in another Table C. Similarly many records in Table C can be associated with many records in Table A. The associations are defined in an intermediary Table B. 
     - In the sample schema above, a **post** record can have many **tags** and a **tag** record can have many **posts** and these relationships are defined in the **posts_tags** table (also known as a join table).
 
-For the purpose of this documentation, we will call the Model class that we are trying to define a relationship on as the native Model and the other Model (whose row(s) / record(s) are to be returned when the relationship is executed) as the foreign Model.
+> For the purpose of this documentation, we will call the Model class that we are trying to define a relationship on as the native Model and the other Model (whose row(s) / record(s) are to be returned when the relationship is executed) as the foreign Model.
+
+#### LeanORM Relationship Definition and Accessing Related Data Code Samples 
+
+```php
+<?php
+// IT IS RECOMMENDED TO DEFINE THE RELATIONSHIPS IN A MODEL CLASS' CONSTRUCTOR METHOD, AS SHOWN IN THE EXAMPLES BELOW.
+
+// NOTE: RELATIONSHIPS COULD ALSO BE DEFINED ON INDIVIDUAL INSTANCES OF A MODEL CLASS.
+
+class PostsModel extends \LeanOrm\Model{
+    
+    protected ?string $collection_class_name = PostsCollection::class;
+    protected ?string $record_class_name = PostRecord::class;
+    protected ?string $created_timestamp_column_name = 'date_created';
+    protected ?string $updated_timestamp_column_name = 'm_timestamp';
+    protected string $primary_col = 'post_id';
+    protected string $table_name = 'posts';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+        
+        $this->belongsTo(
+                'author', 
+                'author_id', 
+                'authors', 
+                'author_id', 
+                'author_id',
+                AuthorsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
+                AuthorRecord::class,
+                AuthorsCollection::class,
+                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                    
+                    $selectObj->orderBy(['author_id']); // just for testing that the query object gets manipulated
+
+                    return $selectObj;
+                }
+            )
+            ->hasOne(
+                'summary', 
+                'post_id', 
+                'summaries', 
+                'post_id', 
+                'summary_id',
+                SummariesModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
+                SummaryRecord::class,
+                SummariesCollection::class,
+                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                    
+                    $selectObj->orderBy(['summary_id']); // just for testing that the query object gets manipulated
+
+                    return $selectObj;
+                } // optional callback to manipulate query object used to fetch related data
+            )
+            ->hasMany(
+                'comments', 
+                'post_id', 
+                'comments', 
+                'post_id', 
+                'comment_id',
+                CommentsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
+                CommentRecord::class, // optional record class to return each related row of data in
+                CommentsCollection::class, // optional collection class to return related records
+                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                    
+                    $selectObj->orderBy(['comment_id']); // just for testing that the query object gets manipulated
+
+                    return $selectObj;
+                } // optional callback to manipulate query object used to fetch related data
+            )
+            ->hasManyThrough(
+                'tags',
+                'post_id',
+                'posts_tags',
+                'post_id',
+                'tag_id',
+                'tags',
+                'tag_id',
+                'tag_id',
+                TagsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
+                TagRecord::class,
+                TagsCollection::class,
+                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+
+                    $selectObj->orderBy(['tags.tag_id']); // just for testing that the query object gets manipulated
+
+                    return $selectObj;
+                }
+            );
+    }
+}
 
 
+```
