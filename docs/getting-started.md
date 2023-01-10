@@ -898,7 +898,7 @@ class PostsModel extends \LeanOrm\Model{
         string $table_name = ''
     ) { 
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
-        
+
         $this->belongsTo(
                 'author', 
                 'author_id', 
@@ -910,7 +910,7 @@ class PostsModel extends \LeanOrm\Model{
                 AuthorsCollection::class,
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
-                    $selectObj->orderBy(['author_id']); // just for testing that the query object gets manipulated
+                    $selectObj->orderBy(['author_id']);
 
                     return $selectObj;
                 }
@@ -926,7 +926,7 @@ class PostsModel extends \LeanOrm\Model{
                 SummariesCollection::class,
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
-                    $selectObj->orderBy(['summary_id']); // just for testing that the query object gets manipulated
+                    $selectObj->orderBy(['summary_id']);
 
                     return $selectObj;
                 } // optional callback to manipulate query object used to fetch related data
@@ -942,7 +942,7 @@ class PostsModel extends \LeanOrm\Model{
                 CommentsCollection::class, // optional collection class to return related records
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
-                    $selectObj->orderBy(['comment_id']); // just for testing that the query object gets manipulated
+                    $selectObj->orderBy(['comment_id']);
 
                     return $selectObj;
                 } // optional callback to manipulate query object used to fetch related data
@@ -961,7 +961,7 @@ class PostsModel extends \LeanOrm\Model{
                 TagsCollection::class,
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
 
-                    $selectObj->orderBy(['tags.tag_id']); // just for testing that the query object gets manipulated
+                    $selectObj->orderBy(['tags.tag_id']);
 
                     return $selectObj;
                 }
