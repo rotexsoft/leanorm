@@ -24,6 +24,7 @@
         - [Has One](#has-one)
         - [Has Many](#has-many)
         - [Has Many Through](#has-many-through-aka-many-to-many)
+        - [LeanORM Relationship Definition and Accessing Related Data Code Samples](#leanorm-relationship-definition-and-accessing-related-data-code-samples)
 
 ## Design Considerations
 
