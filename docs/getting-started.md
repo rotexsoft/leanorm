@@ -901,14 +901,17 @@ class PostsModel extends \LeanOrm\Model{
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
 
         $this->belongsTo(
-                'author', 
-                'author_id', 
-                'authors', 
-                'author_id', 
-                'author_id',
+                'author',   // The property or field name via which related data will be 
+                            // accessed on each post record or on each array of posts table data
+                'author_id',// foreign key column in this Model's db table (i.e. posts table) 
+                'authors',  // foreign db table from which related data will be fetched 
+                'author_id',// foreign key column in foreign Model's db table (i.e. authors table)
+                'author_id',// primary key column in foreign Model's db table (i.e. authors table)
                 AuthorsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
-                AuthorRecord::class,
-                AuthorsCollection::class,
+                AuthorRecord::class, // Foreign Record Class, if blank, defaults to the Record class 
+                                     // associated with the foreign Model Class when related data is fetched
+                AuthorsCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
+                                          // associated with the foreign Model Class when related data is fetched
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['author_id']);
@@ -917,14 +920,17 @@ class PostsModel extends \LeanOrm\Model{
                 }
             )
             ->hasOne(
-                'summary', 
-                'post_id', 
-                'summaries', 
-                'post_id', 
-                'summary_id',
+                'summary',  // The property or field name via which related data will be 
+                            // accessed on each post record or on each array of posts table data
+                'post_id',  // foreign key column in this Model's db table (i.e. posts table)
+                'summaries',// foreign db table from which related data will be fetched 
+                'post_id',  // foreign key column in foreign Model's db table (i.e. summaries table)
+                'summary_id',// primary key column in foreign Model's db table (i.e. summaries table)
                 SummariesModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
-                SummaryRecord::class,
-                SummariesCollection::class,
+                SummaryRecord::class,  // Foreign Record Class, if blank, defaults to the Record class 
+                                       // associated with the foreign Model Class when related data is fetched
+                SummariesCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
+                                            // associated with the foreign Model Class when related data is fetched
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['summary_id']);
@@ -939,8 +945,10 @@ class PostsModel extends \LeanOrm\Model{
                 'post_id', 
                 'comment_id',
                 CommentsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
-                CommentRecord::class, // optional record class to return each related row of data in
-                CommentsCollection::class, // optional collection class to return related records
+                CommentRecord::class, // Foreign Record Class, if blank, defaults to the Record class 
+                                      // associated with the foreign Model Class when related data is fetched
+                CommentsCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
+                                          // associated with the foreign Model Class when related data is fetched
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['comment_id']);
@@ -958,8 +966,10 @@ class PostsModel extends \LeanOrm\Model{
                 'tag_id',
                 'tag_id',
                 TagsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
-                TagRecord::class,
-                TagsCollection::class,
+                TagRecord::class, // Foreign Record Class, if blank, defaults to the Record class 
+                                  // associated with the foreign Model Class when related data is fetched
+                TagsCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
+                                       // associated with the foreign Model Class when related data is fetched
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
 
                     $selectObj->orderBy(['tags.tag_id']);
