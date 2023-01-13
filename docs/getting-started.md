@@ -24,7 +24,8 @@
         - [Has One](#has-one)
         - [Has Many](#has-many)
         - [Has Many Through](#has-many-through-aka-many-to-many)
-        - [LeanORM Relationship Definition and Accessing Related Data Code Samples](#leanorm-relationship-definition-and-accessing-related-data-code-samples)
+        - [Relationship Definition Code Samples](#relationship-definition-code-samples)
+        - [Accessing Related Data Code Samples](#accessing-related-data-code-samples)
 
 ## Design Considerations
 
@@ -873,11 +874,16 @@ This type of relationship requires at least three tables. Basically many records
 
 > For the purpose of this documentation, we will call the Model class that we are trying to define a relationship on as the native Model and the other Model (whose row(s) / record(s) are to be returned when the relationship is executed) as the foreign Model.
 
-#### LeanORM Relationship Definition and Accessing Related Data Code Samples 
+#### Relationship Definition Code Samples 
 
 ```php
 <?php
-// IT IS RECOMMENDED TO DEFINE THE RELATIONSHIPS IN A MODEL CLASS' CONSTRUCTOR METHOD, AS SHOWN IN THE EXAMPLES BELOW.
+// IT IS RECOMMENDED TO DEFINE THE RELATIONSHIPS IN A MODEL CLASS' CONSTRUCTOR METHOD, 
+// AS SHOWN IN THE EXAMPLES BELOW.
+
+// The first argument (the relationship name) to any of the relationship definition methods 
+// (belongsTo, hasOne, hasMany & hasManyThrough) must be a string that adheres to php's
+// variable naming convention (https://www.php.net/manual/en/language.variables.basics.php)
 
 // NOTE: RELATIONSHIPS COULD ALSO BE DEFINED ON INDIVIDUAL INSTANCES OF A MODEL CLASS.
 
@@ -901,84 +907,161 @@ class PostsModel extends \LeanOrm\Model{
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
 
         $this->belongsTo(
-                'author',   // The property or field name via which related data will be 
-                            // accessed on each post record or on each array of posts table data
-                'author_id',// foreign key column in this Model's db table (i.e. posts table) 
-                'authors',  // foreign db table from which related data will be fetched 
-                'author_id',// foreign key column in foreign Model's db table (i.e. authors table)
-                'author_id',// primary key column in foreign Model's db table (i.e. authors table)
+                'author',    // The property or field name via which related data will be 
+                             // accessed on each post record or on each array of posts table data
+
+                'author_id', // Foreign key column in this Model's db table (i.e. posts table)
+
+                'authors',   // Foreign db table from which related data will be fetched
+
+                'author_id', // Foreign key column in foreign Model's db table (i.e. authors table)
+
+                'author_id', // Primary key column in foreign Model's db table (i.e. authors table)
+
                 AuthorsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
+
                 AuthorRecord::class, // Foreign Record Class, if blank, defaults to the Record class 
-                                     // associated with the foreign Model Class when related data is fetched
+                                     // set in the foreign Model Class when related data is fetched
+
                 AuthorsCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
-                                          // associated with the foreign Model Class when related data is fetched
+                                          // set in the foreign Model Class when related data is fetched
+
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['author_id']);
 
                     return $selectObj;
-                }
+                } // Optional callback to manipulate query object used to fetch related data
             )
             ->hasOne(
-                'summary',  // The property or field name via which related data will be 
-                            // accessed on each post record or on each array of posts table data
-                'post_id',  // foreign key column in this Model's db table (i.e. posts table)
-                'summaries',// foreign db table from which related data will be fetched 
-                'post_id',  // foreign key column in foreign Model's db table (i.e. summaries table)
-                'summary_id',// primary key column in foreign Model's db table (i.e. summaries table)
+                'summary',    // The property or field name via which related data will be 
+                              // accessed on each post record or on each array of posts table data
+
+                'post_id',    // Foreign key column in this Model's db table (i.e. posts table)
+
+                'summaries',  // Foreign db table from which related data will be fetched
+
+                'post_id',    // Foreign key column in foreign Model's db table (i.e. summaries table)
+
+                'summary_id', // Primary key column in foreign Model's db table (i.e. summaries table)
+
                 SummariesModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
+
                 SummaryRecord::class,  // Foreign Record Class, if blank, defaults to the Record class 
-                                       // associated with the foreign Model Class when related data is fetched
+                                       // set in the foreign Model Class when related data is fetched
+
                 SummariesCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
-                                            // associated with the foreign Model Class when related data is fetched
+                                            // set in the foreign Model Class when related data is fetched
+
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['summary_id']);
 
                     return $selectObj;
-                } // optional callback to manipulate query object used to fetch related data
+                } // Optional callback to manipulate query object used to fetch related data
             )
             ->hasMany(
-                'comments', 
-                'post_id', 
-                'comments', 
-                'post_id', 
-                'comment_id',
+                'comments', // The property or field name via which related data will be 
+                            // accessed on each post record or on each array of posts table data
+
+                'post_id',  // Foreign key column in this Model's db table (i.e. posts table)
+
+                'comments', // Foreign db table from which related data will be fetched
+
+                'post_id',  // Foreign key column in foreign Model's db table (i.e. comments table)
+
+                'comment_id', // Primary key column in foreign Model's db table (i.e. comments table)
+
                 CommentsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
+
                 CommentRecord::class, // Foreign Record Class, if blank, defaults to the Record class 
-                                      // associated with the foreign Model Class when related data is fetched
+                                      // set in the foreign Model Class when related data is fetched
+
                 CommentsCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
-                                          // associated with the foreign Model Class when related data is fetched
+                                           // set in the foreign Model Class when related data is fetched
+
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['comment_id']);
 
                     return $selectObj;
-                } // optional callback to manipulate query object used to fetch related data
+                } // Optional callback to manipulate query object used to fetch related data
             )
             ->hasManyThrough(
-                'tags',
-                'post_id',
-                'posts_tags',
-                'post_id',
-                'tag_id',
-                'tags',
-                'tag_id',
-                'tag_id',
+                'tags',         // The property or field name via which related data will be 
+                                // accessed on each post record or on each array of posts table data
+                
+                'post_id',      // Foreign key column in this Model's db table (i.e. posts table)
+                
+                'posts_tags',   // Foreign JOIN db table from which contains the associations between records in this
+                                // model's db table (i.e. the posts table) and the records in the foreign db table
+                                // (i.e. the tags table)
+                
+                'post_id',      // Join column in this Model's db table (i.e. posts table) linked to the 
+                                // foreign JOIN db table (i.e. posts_tags)
+                
+                'tag_id',       // Join column in foreign Model's db table (i.e. tags table) linked to the 
+                                // foreign JOIN db table (i.e. posts_tags)
+                
+                'tags',         // Foreign db table from which related data will be fetched
+                
+                'tag_id',       // Foreign key column in foreign Model's db table (i.e. tags table)
+                
+                'tag_id',       // Primary key column in foreign Model's db table (i.e. tags table)
+
                 TagsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
+
                 TagRecord::class, // Foreign Record Class, if blank, defaults to the Record class 
-                                  // associated with the foreign Model Class when related data is fetched
+                                  // set in the foreign Model Class when related data is fetched
+
                 TagsCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
-                                       // associated with the foreign Model Class when related data is fetched
+                                       // set in the foreign Model Class when related data is fetched
+
                 function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
 
                     $selectObj->orderBy(['tags.tag_id']);
 
                     return $selectObj;
-                }
+                } // Optional callback to manipulate query object used to fetch related data
             );
     }
 }
+```
+
+#### Accessing Related Data Code Samples
+
+The code samples in this section build on the code samples in the [Relationship Definition Code Samples](#relationship-definition-code-samples) section above.
+
+In order to access related data, you must call one of the **fetch*** methods that return any one of these:
+- a single record, 
+- array of records, 
+- collection of records 
+- or an array of arrays (with each sub-array representing a db table row of data)
+
+You can either 
+1. eager-load the related data when any of the earlier mentioned **fetch*** methods is called on an instance of any model class, which is the most efficient way of loading related data as it leads to only one additional query per relationship that you have specified to be eager loaded. For fetch methods that return arrays of arrays, you must eager-load the related data you want when the fetch method is called. This is the only way to make related data available in the array of arrays returned by fetch methods that return an array of arrays. 
+    * For example, using the relationships defined in the **PostsModel** class in the [Relationship Definition Code Samples](#relationship-definition-code-samples) section above, if you specify that you want the following (**author**, **summary**, **comments** & **tags**) related data to be eager-loaded when fetching post records or array of arrays containing posts table data, then
+        - one query would be issued to fetch the desired posts records
+        - one query would be issued to fetch the related **author** data for all the desired post records
+         one query would be issued to fetch the related **summary** data for all the desired post records
+        - one query would be issued to fetch the related **comments** data for all the desired post records
+        - one query would be issued to fetch the related **tags** data for all the desired post records
+        - finally leading to a total of 5 queries issued to fetch the desired post records and all the associated **author**, **summary**, **comments** & **tags** data. Note that the fetch method stitches the associated related data to each returned record or array representing a row of data from the posts db table.
+         
+2. load the related data for each record returned when any of the earlier mentioned **fetch*** methods is called and there were no relationship names specified for eager-loading when the fetch method was called on an instance of any model class. This option only applies to fetch methods that return a single record object, an array of record objects or a collection of record objects. This is an inefficient way of loading related data because an additional query is issued for each desired related data for each record.
+    - For example, if you fetched 5 records from the posts table without eager-loading any of their related data when the fetch method was called, when you loop through the 5 records, for each record,
+        - one extra query will be issued to get the related **author** data for  each post record if you access the **author** property on each post record object while looping
+        - one extra query will be issued to get the related **summary** data for  each post record if you access the **summary** property on each post record object while looping
+        - one extra query will be issued to get the related **comments** data for  each post record if you access the **comments** property on each post record object while looping
+        - one extra query will be issued to get the related **tags** data for  each post record if you access the **tags** property on each post record object while looping
+        - this means that 4 additional queries are issued to get the related data for each of the 5 post records which leads to a total of 1 + (5 x 4) = 21 queries to access the 5 post records and all their related **author**, **summary**, **comments** & **tags** data. The 1 is for the query issued by the fetch method to retrieve the 5 post records. This is clearly less efficient than eager-loading as eager loading all the four relationships (**author**, **summary**, **comments** & **tags**)  would have led to only 5 queries being issued to fetch the 5 post records and all the related data.
+
+Eager-loading code samples are shown below. If you remove the array of relationship names to eager-load (supplied to the fetch method calls in the code samples below) from each call to fetch methods that return a single record, array of records or collection of records, then the less-efficient non-eager-loading behavior described in point 2 above will kick in when you try to access each related data property of each record returned by the fetch method.
+
+```php
+<?php
+
+$postsModel = new PostsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
 
 
 ```
