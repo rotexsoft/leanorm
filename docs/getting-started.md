@@ -1056,12 +1056,334 @@ You can either
         - one extra query will be issued to get the related **tags** data for  each post record if you access the **tags** property on each post record object while looping
         - this means that 4 additional queries are issued to get the related data for each of the 5 post records which leads to a total of 1 + (5 x 4) = 21 queries to access the 5 post records and all their related **author**, **summary**, **comments** & **tags** data. The 1 is for the query issued by the fetch method to retrieve the 5 post records. This is clearly less efficient than eager-loading as eager loading all the four relationships (**author**, **summary**, **comments** & **tags**)  would have led to only 5 queries being issued to fetch the 5 post records and all the related data.
 
-Eager-loading code samples are shown below. If you remove the array of relationship names to eager-load (supplied to the fetch method calls in the code samples below) from each call to fetch methods that return a single record, array of records or collection of records, then the less-efficient non-eager-loading behavior described in point 2 above will kick in when you try to access each related data property of each record returned by the fetch method.
+Eager-loading code samples are shown below. If you remove the array of relationship names to eager-load (supplied to the various fetch method calls in the code samples below) from each call to fetch methods that return a single record, array of records or collection of records, then the less-efficient non-eager-loading behavior described in point 2 above will kick in when you try to access each related data property of each record returned by the fetch method. 
+
+> **NOTE:** You cannot eager-load related data when **fetchCol**, **fetchPairs** or **fetchValue** is called on any instance of **\LeanOrm\Model** or its sub-classes.
 
 ```php
 <?php
 
 $postsModel = new PostsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Fetching records & eager-loading related data via fetchRecordsIntoArray
+////////////////////////////////////////////////////////////////////////////////
+
+$allPostRecordsInAnArray = 
+    $postsModel->fetchRecordsIntoArray(
+        null, // we are not injecting a query obj, default
+              //    select * from posts 
+              // query will be issued
+        ['author', 'summary', 'comments', 'tags'] // related data to eager-load
+                                                  // 4 additional queries
+    );
+
+foreach ($allPostRecordsInAnArray as $postRecord) {
+    
+    echo 'Post: ' . $postRecord->title . PHP_EOL;
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // BelongsTo: a post belongs to an author, there can never be a post without 
+    // an author
+    ////////////////////////////////////////////////////////////////////////////
+    
+    echo 'Author: ' . $postRecord->author->name  . PHP_EOL;
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // HasOne: a post can have zero or one summary, there can be a post without 
+    // a summary. Check if a related summary record was found for the current 
+    // post record. If the post doesn't have a summary, $postRecord->summary 
+    // will be NULL.
+    ////////////////////////////////////////////////////////////////////////////
+    
+    if($postRecord->summary instanceof SummaryRecord) {
+        
+        echo 'Summary ID: ' . $postRecord->summary->summary_id  . PHP_EOL;
+        
+    } else {
+        
+        echo 'No Summary'  . PHP_EOL;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // HasMany: a post can have zero, one or more comments. Because we called 
+    // fetchRecordsIntoArray to fetch the post records, the hasMany related 
+    // data for each post record will also be records stored in an array and if
+    // in this case, a record does not have any comments, $postRecord->comments 
+    // will have a value of []
+    ////////////////////////////////////////////////////////////////////////////
+    
+    echo 'Comments: '  . PHP_EOL;
+    
+    /** @var CommentRecord $comment */
+    foreach($postRecord->comments as $comment) {
+        
+        echo "\tComment # {$comment->comment_id}: {$comment->name} "  . PHP_EOL;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // hasManyThrough: a post can have zero, one or more tags through the 
+    // associations defined in the posts_tags table. Because we called 
+    // fetchRecordsIntoArray to fetch the post records, the hasManyThrough 
+    // related data for each post record will also be records stored in an 
+    // array and if inthis case, a record does not have any tags,
+    // $postRecord->tags will have a value of []
+    ////////////////////////////////////////////////////////////////////////////
+    
+    echo 'Tags: '  . PHP_EOL;
+    
+    /** @var TagRecord $tag */
+    foreach($postRecord->tags as $tag) {
+        
+        echo "\tTag # {$tag->tag_id}: {$tag->name} "  . PHP_EOL;
+    }
+    
+    echo PHP_EOL;
+    
+} // foreach ($allPostRecordsInAnArray as $postRecord)
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Fetching records & eager-loading related data via fetchRecordsIntoCollection
+////////////////////////////////////////////////////////////////////////////////
+
+echo '//////////////////////////////////////////////////////////////' . PHP_EOL;
+
+$allPostRecordsInACollection = 
+    $postsModel->fetchRecordsIntoCollection(
+        null, // we are not injecting a query obj, default
+              //    select * from posts 
+              // query will be issued
+        ['author', 'summary', 'comments', 'tags'] // related data to eager-load
+                                                  // 4 additional queries
+    );
+
+foreach ($allPostRecordsInACollection as $postRecord) {
+    
+    echo 'Post: ' . $postRecord->title . PHP_EOL;
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // BelongsTo: a post belongs to an author, there can never be a post without 
+    // an author
+    ////////////////////////////////////////////////////////////////////////////
+    
+    echo 'Author: ' . $postRecord->author->name  . PHP_EOL;
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // HasOne: a post can have zero or one summary, there can be a post without 
+    // a summary. Check if a related summary record was found for the current 
+    // post record. If the post doesn't have a summary, $postRecord->summary 
+    // will be NULL.
+    ////////////////////////////////////////////////////////////////////////////
+    
+    if($postRecord->summary instanceof SummaryRecord) {
+        
+        echo 'Summary ID: ' . $postRecord->summary->summary_id  . PHP_EOL;
+        
+    } else {
+        
+        echo 'No Summary'  . PHP_EOL;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // HasMany: a post can have zero, one or more comments. Because we called 
+    // fetchRecordsIntoCollection to fetch the post records, the hasMany related 
+    // data for each post record will also be records stored in a collection 
+    // (an instance of CommentsCollection in this case) and if in this case, a 
+    // record does not have any comments, $postRecord->comments will still be a 
+    // collection (still an instance of CommentsCollection in this case) that 
+    // has no records. You can call collection methods on $postRecord->comments
+    ////////////////////////////////////////////////////////////////////////////
+    
+    echo 'Comments: '  . PHP_EOL;
+    
+    /** @var CommentRecord $comment */
+    foreach($postRecord->comments as $comment) {
+        
+        echo "\tComment # {$comment->comment_id}: {$comment->name} "  . PHP_EOL;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // hasManyThrough: a post can have zero, one or more tags through the 
+    // associations defined in the posts_tags table. Because we called 
+    // fetchRecordsIntoCollection to fetch the post records, the hasManyThrough 
+    // related data for each post record will also be records stored in a 
+    // collection (an instance of TagsCollection in this case) and if in this 
+    // case, a record does not have any tags, $postRecord->tags will still be a
+    // collection (still an instance of TagsCollection in this case) that
+    // has no records. You can call collection methods on $postRecord->tags
+    ////////////////////////////////////////////////////////////////////////////
+    
+    echo 'Tags: '  . PHP_EOL;
+    
+    /** @var TagRecord $tag */
+    foreach($postRecord->tags as $tag) {
+        
+        echo "\tTag # {$tag->tag_id}: {$tag->name} "  . PHP_EOL;
+    }
+    
+    echo PHP_EOL;
+    
+} // foreach ($allPostRecordsInACollection as $postRecord)
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// Fetching rows of post data & eager-loading related data via fetchRowsIntoArray
+//////////////////////////////////////////////////////////////////////////////////
+
+echo '//////////////////////////////////////////////////////////////' . PHP_EOL;
+
+$allPostRowsInAnArray = 
+    $postsModel->fetchRowsIntoArray(
+        null, // we are not injecting a query obj, default
+              //    select * from posts 
+              // query will be issued
+        ['author', 'summary', 'comments', 'tags'] // related data to eager-load
+                                                  // 4 additional queries
+    );
+
+foreach ($allPostRowsInAnArray as $postRow) {
+    
+    echo 'Post: ' . $postRow['title'] . PHP_EOL;
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // BelongsTo: a post belongs to an author, there can never be a post without
+    // an author
+    ////////////////////////////////////////////////////////////////////////////
+    
+    echo 'Author: ' . $postRow['author']['name']  . PHP_EOL;
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // HasOne: a post can have zero or one summary, there can be a post without 
+    // a summary. Check if a related summary row of data was found for the current 
+    // post row of data. If the post doesn't have a summary, 
+    // array_key_exists('summary', $postRow) will be false
+    ////////////////////////////////////////////////////////////////////////////
+    
+    if(array_key_exists('summary', $postRow)) {
+        
+        echo 'Summary ID: ' . $postRow['summary']['summary_id']  . PHP_EOL;
+        
+    } else {
+        
+        echo 'No Summary'  . PHP_EOL;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // HasMany: a post can have zero, one or more comments. Because we called 
+    // fetchRowsIntoArray to fetch the post rows of data, the hasMany related 
+    // data for each post record will also be rows of data stored in an array 
+    // and if in this case, a post does not have any comments, 
+    // $postRow['comments'] will be equal to []
+    ////////////////////////////////////////////////////////////////////////////
+    
+    echo 'Comments: '  . PHP_EOL;
+
+    foreach($postRow['comments'] as $comment) {
+        
+        echo "\tComment # {$comment['comment_id']}: {$comment['name']} "  . PHP_EOL;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // hasManyThrough: a post can have zero, one or more tags through the 
+    // associations defined in the posts_tags table. Because we called 
+    // fetchRowsIntoArray to fetch the post rows of data, the hasManyThrough 
+    // related data for each post rows of data will also be rows of data stored 
+    // in an array and if in this case, a record does not have any tags, 
+    // $postRow['tags'] will be equal to []
+    ////////////////////////////////////////////////////////////////////////////
+    
+    echo 'Tags: '  . PHP_EOL;
+    
+    foreach($postRow['tags'] as $tag) {
+        
+        echo "\tTag # {$tag['tag_id']}: {$tag['name']} "  . PHP_EOL;
+    }
+    
+    echo PHP_EOL;
+    
+} // foreach ($allPostRowsInAnArray as $postRow)
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Fetching a single row of post data as a record & eager-loading related data 
+// via fetchOneRecord
+////////////////////////////////////////////////////////////////////////////////
+
+echo '//////////////////////////////////////////////////////////////' . PHP_EOL;
+
+$postRecord = 
+    $postsModel->fetchOneRecord(
+        null, // we are not injecting a query obj, default
+              //    select * from posts 
+              // query will be issued
+        ['author', 'summary', 'comments', 'tags'] // related data to eager-load
+                                                  // 4 additional queries
+    );
+
+echo 'Post: ' . $postRecord->title . PHP_EOL;
+
+////////////////////////////////////////////////////////////////////////////
+// BelongsTo: a post belongs to an author, there can never be a post without 
+// an author
+////////////////////////////////////////////////////////////////////////////
+
+echo 'Author: ' . $postRecord->author->name  . PHP_EOL;
+
+////////////////////////////////////////////////////////////////////////////
+// HasOne: a post can have zero or one summary, there can be a post without 
+// a summary. Check if a related summary record was found for the current 
+// post record. If the post doesn't have a summary, $postRecord->summary 
+// will be NULL.
+////////////////////////////////////////////////////////////////////////////
+
+if($postRecord->summary instanceof SummaryRecord) {
+
+    echo 'Summary ID: ' . $postRecord->summary->summary_id  . PHP_EOL;
+
+} else {
+
+    echo 'No Summary'  . PHP_EOL;
+}
+
+////////////////////////////////////////////////////////////////////////////
+// HasMany: a post can have zero, one or more comments. Because we called 
+// fetchOneRecord to fetch the post records, the hasMany related 
+// data for each post record will also be records stored in a collection 
+// (an instance of CommentsCollection in this case) and if in this case, a 
+// record does not have any comments, $postRecord->comments will still be a 
+// collection (still an instance of CommentsCollection in this case) that 
+// has no records. You can call collection methods on $postRecord->comments
+////////////////////////////////////////////////////////////////////////////
+
+echo 'Comments: '  . PHP_EOL;
+
+/** @var CommentRecord $comment */
+foreach($postRecord->comments as $comment) {
+
+    echo "\tComment # {$comment->comment_id}: {$comment->name} "  . PHP_EOL;
+}
+
+////////////////////////////////////////////////////////////////////////////
+// hasManyThrough: a post can have zero, one or more tags through the 
+// associations defined in the posts_tags table. Because we called 
+// fetchOneRecord to fetch the post records, the hasManyThrough 
+// related data for each post record will also be records stored in a 
+// collection (an instance of TagsCollection in this case) and if in this 
+// case, a record does not have any tags, $postRecord->tags will still be a
+// collection (still an instance of TagsCollection in this case) that
+// has no records. You can call collection methods on $postRecord->tags
+////////////////////////////////////////////////////////////////////////////
+
+echo 'Tags: '  . PHP_EOL;
+
+/** @var TagRecord $tag */
+foreach($postRecord->tags as $tag) {
+
+    echo "\tTag # {$tag->tag_id}: {$tag->name} "  . PHP_EOL;
+}
+
+echo PHP_EOL;
 
 ```
