@@ -1033,10 +1033,10 @@ class PostsModel extends \LeanOrm\Model{
 The code samples in this section build on the code samples in the [Relationship Definition Code Samples](#relationship-definition-code-samples) section above.
 
 In order to access related data, you must call one of the **fetch*** methods that return any one of these:
-- a single record, 
-- array of records, 
-- collection of records 
-- or an array of arrays (with each sub-array representing a db table row of data)
+- a single record ([**fetchOneRecord**](#fetching-data-from-the-database-via-fetchonerecord)), 
+- array of records ([**fetchRecordsIntoArray**](#fetching-data-from-the-database-via-fetchrecordsintoarray)), 
+- collection of records ([**fetchRecordsIntoCollection**](#fetching-data-from-the-database-via-fetchrecordsintocollection))
+- or an array of arrays ([**fetchRowsIntoArray**](#fetching-data-from-the-database-via-fetchrowsintoarray). Each sub-array represents a db table row of data) 
 
 You can either 
 1. eager-load the related data when any of the earlier mentioned **fetch*** methods is called on an instance of any model class, which is the most efficient way of loading related data as it leads to only one additional query per relationship that you have specified to be eager loaded. For fetch methods that return arrays of arrays, you must eager-load the related data you want when the fetch method is called. This is the only way to make related data available in the array of arrays returned by fetch methods that return an array of arrays. 

@@ -607,23 +607,23 @@ class Model extends \GDAO\Model {
                     $pri_key_col_in_foreign_models_table,
                     $foreign_table_name
                 );
-            
+
             $foreign_models_collection_class_name = 
                 Utils::arrayGet($rel_info, 'foreign_models_collection_class_name', '');
-            
+
             $foreign_models_record_class_name = 
                 Utils::arrayGet($rel_info, 'foreign_models_record_class_name', '');
-            
+
             if($foreign_models_collection_class_name !== '') {
-                
+
                 $foreign_model_obj->setCollectionClassName($foreign_models_collection_class_name);
             }
-            
+
             if($foreign_models_record_class_name !== '') {
-                
+
                 $foreign_model_obj->setRecordClassName($foreign_models_record_class_name);
             }
-            
+
             $query_obj = $foreign_model_obj->getSelect();
 
             $query_obj->cols( [" {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} ", " {$foreign_table_name}.* "] );
