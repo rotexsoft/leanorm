@@ -160,7 +160,9 @@ class AuthorRecord extends \LeanOrm\Model\Record {
 
 #### Using a Factory Function to Instantiate and Retrieve Models
 
-If you have many tables and views in your database, it may become tedious to have to keep manually adding instances of each Model class needed by your application to a dependencies file or a container. You could simply write a function to create new Models based of the specified class name. Below is a simple implementation of a function that creates a single instance of a model per Model class name and always returns that instance when called. You can write something similar to manage the creation of Model objects in your application.
+If you have many tables and views in your database, it may become tedious to have to keep manually adding instances of each Model class needed by your application to a dependencies file or a container. You could simply write a function to create new Models based on the specified class name. 
+
+Below is a simple implementation of a function that creates a single instance of a model per Model class name and always returns that instance when called. You can write something similar to manage the creation of Model objects in your application.
 
 ```php
 <?php
@@ -222,15 +224,15 @@ $authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd
 $newRecord = $authorsModel->createNewRecord(); // create a blank new record
 $newRecord->name = 'Joe Blow'; // set a value for a column
 $newRecord['name'] = 'Joe Blow'; // also sets a value for a column
-$newRecord->save();
+$newRecord->save(); // saves the record to the authors table in the database
 
 //Method 2:
 $newRecord = $authorsModel->createNewRecord(); // create a blank new record
-$newRecord->save([ 'name' => 'Joe Blow']); // inject data to the save method
+$newRecord->save([ 'name' => 'Joe Blow']); // you can inject data into the save method
 
 //Method 3:
 $newRecord = $authorsModel->createNewRecord([ 'name' => 'Joe Blow']);
-$newRecord->save();
+$newRecord->save(); // saves the record to the authors table in the database
 
 // NOTE: the save method for Record objects returns 
 // - true: successful save, 
@@ -240,9 +242,13 @@ $newRecord->save();
 //Method 4:
 $insertedData = $authorsModel->insert([ 'name' => 'Joe Blow']); // save to the DB
 // $insertedData is an associative array of the data just inserted into the
-// database. This data will include an auto-generated primary key value.
+// database. This data will include an auto-generated primary key value, if
+// the database table we just inserted the record into has an 
+// auto-incrementing primary key column.
 $existingRecord = $authorsModel->createNewRecord($insertedData)
-                               ->markAsNotNew();
+                               ->markAsNotNew(); // mark record as not new
+
+// A new record is a record that has never been saved to the database
 
 //Multiple Inserts:
 //Below is the most efficient way insert multiple rows to the database.
@@ -264,9 +270,10 @@ $allSuccessfullyInserted = $authorsModel->insertMany(
 // Model is inserted into the database.
 //
 // After successfully inserting a new record into the database via method 1,
-// 2 or 3, the record object which save was invoked will be update with the 
+// 2 or 3, the record object which save was invoked will be updated with the 
 // primary key value of the new record if the record has an 
-// auto-incrementing primary key column. 
+// auto-incrementing primary key column.
+//
 // The timestamp values are also added to the record object if those fields
 // exist.
 //
@@ -426,7 +433,7 @@ $record = $authorsModel->fetchOneRecord(
 
 #### Fetching data from the Database via fetchPairs
 
-If you want to fetch key value pair from two columns in a database table, use the fetchPairs method. A good example of when to use this method is when you want to generate a drop-down list of authors in your application where the author_id will be the value of each select option item and the author's name will be the display text for each select option item. Below are a few examples of how to use this method:
+If you want to fetch key value pairs from two columns in a database table, use the fetchPairs method. A good example of when to use this method is when you want to generate a drop-down list of authors in your application where the author_id will be the value of each select option item and the author's name will be the display text for each select option item. Below are a few examples of how to use this method:
 
 ```php
 <?php
@@ -863,14 +870,14 @@ Each row of data in a database table / view belongs to only one row of data in a
 Each row of data in a database table / view has zero or only one row of data in another database table / view. For example, if you have two tables, posts and summaries, a summary record has one post if there is a summary_id field in the posts table. If the posts table doesn't have a summary_id field (which is the case in the schema diagram above) and instead the summaries table has a post_id field (which is also the case in the schema diagram above), this means that a post record has zero or one summary. Where the foreign key column is located is what determines which entity owns the other. This type of relationship is also a variant of **Has-Many**, in which the many is just one and only one record.
 
 #### Has-Many
-Each row in a Table A, is related to zero or more rows in another Table B. Each row in table B is related to only one row in Table A. 
-    - Each row in Table A is related to zero or many (has many) rows in Table B 
-    - Each row in Table B, belongs to exactly one row in Table A
-    - In the sample schema above, an author has many posts, while each post belongs to an author
+Each row in a Table A, is related to zero or more rows in another Table B. Each row in table B is related to only one row in Table A.
+- Each row in Table A is related to zero or many (has many) rows in Table B 
+- Each row in Table B, belongs to exactly one row in Table A
+- In the sample schema above, an author can have zero or many posts, while each post always only belongs to an author
 
 #### Has-Many-Through a.k.a Many to Many) 
 This type of relationship requires at least three tables. Basically many records in Table A can be associated with many records in another Table C. Similarly many records in Table C can be associated with many records in Table A. The associations are defined in an intermediary Table B. 
-    - In the sample schema above, a **post** record can have many **tags** and a **tag** record can have many **posts** and these relationships are defined in the **posts_tags** table (also known as a join table).
+- In the sample schema above, a **post** record can have many **tags** and a **tag** record can have many **posts** and these relationships are defined in the **posts_tags** table (also known as a join table).
 
 > For the purpose of this documentation, we will call the Model class that we are trying to define a relationship on as the native Model and the other Model (whose row(s) / record(s) are to be returned when the relationship is executed) as the foreign Model.
 
