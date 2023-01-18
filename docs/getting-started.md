@@ -856,6 +856,8 @@ $pdo->prepare($sql)->execute($data);
 
 LeanOrm allows you to define relationships between Model classes. These relationships usually mirror the foreign key relationships between the underlying database tables associated with the models. You can also define relationships between Model classes that represent database views, even though views don't have foreign key definitions at the database levels.
 
+> Just as LeanOrm does not work with tables with composite primary keys, it likewise does not support composite keys for defining relationship between tables, the relationships are defined on a single column in each table.
+
 The schema below will be used in the examples to demonstrate how to define relationships.
 
 ![Blog Schema](../demo/blog-db.png)
@@ -1000,7 +1002,7 @@ class PostsModel extends \LeanOrm\Model{
                 
                 'post_id',      // Foreign key column in this Model's db table (i.e. posts table)
                 
-                'posts_tags',   // Foreign JOIN db table from which contains the associations between records in this
+                'posts_tags',   // Foreign JOIN db table which contains the associations between records in this
                                 // model's db table (i.e. the posts table) and the records in the foreign db table
                                 // (i.e. the tags table)
                 
@@ -1134,7 +1136,7 @@ foreach ($allPostRecordsInAnArray as $postRecord) {
     // associations defined in the posts_tags table. Because we called 
     // fetchRecordsIntoArray to fetch the post records, the hasManyThrough 
     // related data for each post record will also be records stored in an 
-    // array and if inthis case, a record does not have any tags,
+    // array and if in this case, a record does not have any tags,
     // $postRecord->tags will have a value of []
     ////////////////////////////////////////////////////////////////////////////
     

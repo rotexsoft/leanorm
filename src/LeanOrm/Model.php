@@ -405,7 +405,7 @@ class Model extends \GDAO\Model {
             array_key_exists($rel_name, $this->relations) 
             && $this->relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH        
         ) {
-            $this->loadHasManyTrough($rel_name, $parent_data, $wrap_each_row_in_a_record, $wrap_records_in_collection);
+            $this->loadHasManyThrough($rel_name, $parent_data, $wrap_each_row_in_a_record, $wrap_records_in_collection);
 
         } else if (
             array_key_exists($rel_name, $this->relations) 
@@ -566,7 +566,7 @@ class Model extends \GDAO\Model {
     /**
      * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
      */
-    protected function loadHasManyTrough( 
+    protected function loadHasManyThrough( 
         string $rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false 
     ): void {
         if( 
