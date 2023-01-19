@@ -1410,6 +1410,9 @@ LeanOrm allows you to log the queries queries generated and executed when:
 
 > You may want to look into using a tool like [Debugbar](http://phpdebugbar.com/docs/base-collectors.html#pdo) to capture all queries in your application. Since LeanORM only ever creates a single PDO instance per unique dsn string for use across all model instances that are created with that dsn string, you only need to retrieve the PDO object for one of those models to bind it to Debugbar's PDO collector which would allow Debugbar to capture every single query executed via that PDO instance across all the model instances that share that PDO connection.
 
-LeanOrm allows injecting a 
+By default, LeanOrm logs queries into an internal array for each model class instance and another static internal array 
+    talk about the log entry array structure
+
+LeanOrm allows injecting a [PSR-3](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md) compliant logger object into each instance of the model class by calling **setLogger**. This logger is optional.
 
 LeanOrm has the following instance methods on the Model class 
