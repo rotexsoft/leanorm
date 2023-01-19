@@ -1396,3 +1396,20 @@ foreach($postRecord->tags as $tag) {
 echo PHP_EOL;
 
 ```
+
+### Query Logging
+
+LeanOrm allows you to log the queries queries generated and executed when:
+- delete methods are called on an instance of a model class
+- fetch methods are called on an instance of a model class
+- related data is fetched (either via eager-loading or non-eager-loading / lazy-loading)
+- insert methods are called on an instance of a model class
+- update methods are called on an instance of a model class
+
+> Queries you execute directly via the **PDO** object returned when **getPDO** is called on an instance of a model class are NOT logged by LeanORM. 
+
+> You may want to look into using a tool like [Debugbar](http://phpdebugbar.com/docs/base-collectors.html#pdo) to capture all queries in your application. Since LeanORM only ever creates a single PDO instance per unique dsn string for use across all model instances that are created with that dsn string, you only need to retrieve the PDO object for one of those models to bind it to Debugbar's PDO collector which would allow Debugbar to capture every single query executed via that PDO instance across all the model instances that share that PDO connection.
+
+LeanOrm allows injecting a 
+
+LeanOrm has the following instance methods on the Model class 
