@@ -26,6 +26,7 @@
         - [Has Many Through](#has-many-through-aka-many-to-many)
         - [Relationship Definition Code Samples](#relationship-definition-code-samples)
         - [Accessing Related Data Code Samples](#accessing-related-data-code-samples)
+    - [Query Logging](#query-logging)
 
 ## Design Considerations
 
@@ -1410,9 +1411,139 @@ LeanOrm allows you to log the queries queries generated and executed when:
 
 > You may want to look into using a tool like [Debugbar](http://phpdebugbar.com/docs/base-collectors.html#pdo) to capture all queries in your application. Since LeanORM only ever creates a single PDO instance per unique dsn string for use across all model instances that are created with that dsn string, you only need to retrieve the PDO object for one of those models to bind it to Debugbar's PDO collector which would allow Debugbar to capture every single query executed via that PDO instance across all the model instances that share that PDO connection.
 
-By default, LeanOrm logs queries into an internal array for each model class instance and another static internal array 
-    talk about the log entry array structure
+By default, LeanOrm logs queries into an internal array for each model class instance and another static internal array for all queries across all model instances. Each log entry is an array with the following keys:
+- **sql**: its corresponding value is a string representing the sql query that was logged
+- **bind_params**: its corresponding value is an array containing all the parameters (if any), that were bound to the sql query above
+- **date_executed**: its corresponding value is a string representing the full date and time the sql query was executed in `y-m-d H:i:s` format
+- **class_method**: its corresponding value is a string representing the name of the class and the method where the sql query was executed
+- **line_of_execution**: its corresponding value is a string representing the line number in the class where the query was logged
 
-LeanOrm allows injecting a [PSR-3](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md) compliant logger object into each instance of the model class by calling **setLogger**. This logger is optional.
+In addition to logging queries into the arrays described above, LeanOrm allows injecting a [PSR-3](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md) compliant logger object into each instance of the model class by calling **setLogger**. This allows you to log the query and it's related data described above to various destinations like a log file, standard output, etc. This logger is OPTIONAL.
 
-LeanOrm has the following instance methods on the Model class 
+LeanOrm has the following instance methods on the **\LeanOrm\Model** class that are related to logging:
+- **canLogQueries:** returns true if query logging is enabled on a particular instance of the Model class or any of its sub-classes or false if query logging is disabled on the model instance. It returns false by default.
+- **disableQueryLogging:** turns query logging off on the instance of the model class that it's called on. After calling this method, the instance of the model class which it is called on will stop logging queries.
+- **enableQueryLogging:** turns query logging on on the instance of the model class that it's called on. After calling this method, the instance of the model class which it is called on will start logging queries.
+- **getQueryLog:** returns an array containing all the logged query entries (each of which is also a sub-array described in the log entry section earlier above) for a particular instance of the model class.
+- **getLogger:** returns the [PSR-3](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md) compliant logger (if any was set) injected into the instance of the model class this method is being called on or it returns null if no logger was set.
+- **setLogger:** it is used to inject a [PSR-3](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md) compliant logger into the instance of the model class this method is being called on. It can also set the current logger to null if you want to stop using the currently set logger.
+
+LeanOrm has the following static methods on the **\LeanOrm\Model** class that are related to logging:
+- **clearQueryLogForAllInstances:** it clears the static internal array containing all query log entries across all instances of the model class that have logging turned on.
+- **getQueryLogForAllInstances:** it returns a copy of the static internal array containing all query log entries across all instances of the model class that have logging turned on. It can also return all the query log entries (if any) for a particular instance of model, if that instance is passed as an argument (it's equivalent to calling **getQueryLog** directly on the instance of the model class).
+
+> If you only want to debug queries executed by a single instance of the model class, you should just call the **getQueryLog** method on that instance. If you also have a logger set for that model instance, you will be able to see in real-time the queries executed on that instance in the destination where your logger is logging to.
+
+> If you only want to debug queries executed by more than one  instance of the model class, you could either call the **getQueryLog** method on each of those instances or call **\LeanOrm\Model::getQueryLogForAllInstances** to get all the queries executed across all instances of the model class that have logging turned on. If you also have a logger set for those model instances, you will be able to see in real-time the queries executed on those instances in the destination where your logger is logging to.
+
+Below is a little code snippet of how to enable query logging and display the logged query entries for a single instance of the model class.
+
+```php
+<?php
+$postsModel = new PostsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+if(!$postsModel->canLogQueries()) {
+    
+    $postsModel->enableQueryLogging();
+}
+
+/////////////////////////////////////////
+// Execute queries on the model object
+////////////////////////////////////////
+
+$postRecord = 
+    $postsModel->fetchOneRecord(
+        null, // we are not injecting a query obj, default
+              //    select * from posts 
+              // query will be issued
+        ['author', 'summary', 'comments', 'tags'] // related data to eager-load
+                                                  // 4 additional queries
+    );
+
+///////////////////////////////////////////////////
+// Dump the query log for the model instance above
+///////////////////////////////////////////////////
+
+var_export($postsModel->getQueryLog());
+```
+
+The code above should output something like this below:
+
+```php
+[
+    0 => [
+        'sql' => 'SELECT
+                        posts.* 
+                   FROM
+                       `posts`
+                   LIMIT 1',
+        'bind_params' => [],
+        'date_executed' => '2023-01-18 22:31:59',
+        'class_method' => 'LeanOrm\\Model::fetchOneRecord',
+        'line_of_execution' => '1530',
+    ],
+    1 => [
+        'sql' => 'SELECT
+                        authors.*
+                    FROM
+                        `authors`
+                    WHERE
+                         `authors`.`author_id` = :_1_ 
+                    ORDER BY
+                        author_id',
+        'bind_params' => [ '_1_' => '1', ],
+        'date_executed' => '2023-01-18 22:31:59',
+        'class_method' => 'LeanOrm\\Model::getBelongsToOrHasOneOrHasManyData',
+        'line_of_execution' => '931',
+    ],
+    
+    2 => [
+        'sql' => 'SELECT
+                        summaries.*
+                    FROM
+                        `summaries`
+                    WHERE
+                         `summaries`.`post_id` = :_1_ 
+                    ORDER BY
+                        summary_id',
+        'bind_params' => ['_1_' => '1',],
+        'date_executed' => '2023-01-18 22:31:59',
+        'class_method' => 'LeanOrm\\Model::getBelongsToOrHasOneOrHasManyData',
+        'line_of_execution' => '931',
+    ],
+    
+    3 => [
+        'sql' => 'SELECT
+                        comments.*
+                    FROM
+                        `comments`
+                    WHERE
+                         `comments`.`post_id` = :_1_ 
+                    ORDER BY
+                        comment_id',
+        'bind_params' => ['_1_' => '1',],
+        'date_executed' => '2023-01-18 22:31:59',
+        'class_method' => 'LeanOrm\\Model::getBelongsToOrHasOneOrHasManyData',
+        'line_of_execution' => '931',
+    ],
+    
+    4 => [
+        'sql' => 'SELECT
+                        `posts_tags`.`post_id` ,
+                        tags.* 
+                   FROM
+                       `tags`
+                   INNER JOIN `posts_tags` ON  `posts_tags`.`tag_id` = `tags`.`tag_id`
+                   WHERE
+                        `posts_tags`.`post_id` = :_1_ 
+                   ORDER BY
+                       `tags`.`tag_id`',
+        'bind_params' => ['_1_' => '1',],
+        'date_executed' => '2023-01-18 22:31:59',
+        'class_method' => 'LeanOrm\\Model::loadHasManyThrough',
+        'line_of_execution' => '689',
+    ],
+]
+```
+
+That's all for query logging. To learn more take a look at the source code for the query logging related methods in **\LeanOrm\Model**.
