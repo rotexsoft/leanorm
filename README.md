@@ -32,7 +32,7 @@ on that DB engine has been done.
 
 If you are using Sqlite, version sqlite 3.7.11 or higher is required.
 
-Version 1.X of this package never got a stable release. Please use version 2.X+ of this package.
+Version 1.X of this package never got a stable release. Please use version 2.X+ of this package. 
 
 ## Installation
 
@@ -71,6 +71,8 @@ There's an accompanying [command-line tool](https://github.com/rotexsoft/leanorm
 ![LeanORM Classes](class-diagram.svg)
 
 ## Documentation
-Documentation can be found [here](docs/index.md). 
-Please submit an issue (preferably with a pull request) to address mistakes 
-or ommissions in the documentation or to propose improvements to the documentation. 
+Documentation for the non-stable 1.X version of this package is located at http://rotexsoft.github.io/leanorm/
+
+Documentation for the most recent 2.X+ version can be found [here](docs/index.md).
+
+Please submit an issue (preferably with a pull request) to address mistakes or omissions in the documentation or to propose improvements to the documentation. 

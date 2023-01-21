@@ -1400,6 +1400,8 @@ echo PHP_EOL;
 
 ### Query Logging
 
+All the Query Logging functionality described in this section are only implemented in the **\LeanOrm\Model** class and not its parent class **\GDAO\Model**. Other non-**\LeanOrm\Model** sub-classes of **\GDAO\Model** are not required or guaranteed to implement the Query Logging functionality described in this section.
+
 LeanOrm allows you to log the queries queries generated and executed when:
 - delete methods are called on an instance of a model class
 - fetch methods are called on an instance of a model class
@@ -1445,6 +1447,8 @@ $postsModel = new PostsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
 if(!$postsModel->canLogQueries()) {
     
     $postsModel->enableQueryLogging();
+    // Applicable queries generated and executed by $postsModel
+    // will start being logged from here downwards
 }
 
 /////////////////////////////////////////
@@ -1459,6 +1463,10 @@ $postRecord =
         ['author', 'summary', 'comments', 'tags'] // related data to eager-load
                                                   // 4 additional queries
     );
+
+$postsModel->disableQueryLogging();
+// Applicable queries generated and executed by $postsModel
+// will stop being logged from here downwards
 
 ///////////////////////////////////////////////////
 // Dump the query log for the model instance above
