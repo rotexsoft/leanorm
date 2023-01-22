@@ -1402,7 +1402,7 @@ echo PHP_EOL;
 
 All the Query Logging functionality described in this section are only implemented in the **\LeanOrm\Model** class and not its parent class **\GDAO\Model**. Other non-**\LeanOrm\Model** sub-classes of **\GDAO\Model** are not required or guaranteed to implement the Query Logging functionality described in this section.
 
-LeanOrm allows you to log the queries queries generated and executed when:
+LeanOrm allows you to log the queries generated and executed when:
 - delete methods are called on an instance of a model class
 - fetch methods are called on an instance of a model class
 - related data is fetched (either via eager-loading or non-eager-loading / lazy-loading)
