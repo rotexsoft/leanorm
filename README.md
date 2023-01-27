@@ -79,7 +79,7 @@ Please submit an issue (preferably with a pull request) to address mistakes or o
 
 ## Contributing
 
-PHPUnit Tests are specified to run in a specifc order in **phpunit.xml.dist**. 
+PHPUnit Tests are set-up to run in a specific order in **phpunit.xml.dist**. 
 
 Yes, the best practice is for tests to run independently of each other, 
 but because there are fair amount of static methods in the DBConnector class, 
