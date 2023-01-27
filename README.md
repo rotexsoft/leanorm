@@ -76,3 +76,13 @@ Documentation for the non-stable 1.X version of this package is located at http:
 Documentation for the most recent 2.X+ version can be found [here](docs/index.md).
 
 Please submit an issue (preferably with a pull request) to address mistakes or omissions in the documentation or to propose improvements to the documentation. 
+
+## Contributing
+
+PHPUnit Tests are specified to run in a specified order in **phpunit.xml.dist**. 
+
+Yes, the best practice is for tests to run independently of each other, 
+but because there are fair amount of static methods in the DBConnector class, 
+its tests need to be run first before other Test Classes. 
+
+New Test files must be manually added to the phpunit.xml.dist file in order for those new tests to run.
