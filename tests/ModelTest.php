@@ -10,6 +10,9 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     use CommonPropertiesAndMethodsTrait;
     
+    protected string $modelClass = \LeanOrm\Model::class;
+
+
     protected const POST_POST_IDS =     [ '1', '2', '3', '4', ];
     protected const POST_AUTHOR_IDS =   [ '1', '2', '1', '2', ];
     protected const POST_TITLES =       [ 'Post 1', 'Post 2', 'Post 3', 'Post 4', ];
@@ -20,40 +23,40 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\PDOException::class);
 
-        $model = new \LeanOrm\Model();
+        $model = new $this->modelClass();
     }
     
     public function testThatConstructorWithNonExistentTableNameWorksAsExpected() {
         
         $this->expectException(\LeanOrm\BadModelTableNameException::class);
 
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'id','non_existent_table');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'id','non_existent_table');
     }
     
     public function testThatConstructorWithNonExistentPrimaryColumnNameWorksAsExpected() {
         
         $this->expectException(\LeanOrm\BadModelPrimaryColumnNameException::class);
 
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'non_existent_column','authors');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'non_existent_column','authors');
     }
     
     public function testThatConstructorWithNoPrimaryColWorksAsExpected() {
         
         $this->expectException(\GDAO\ModelPrimaryColNameNotSetDuringConstructionException::class);
 
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'','v_authors');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'','v_authors');
     }
     
     public function testThatConstructorWithNoTableNameWorksAsExpected() {
         
         $this->expectException(\GDAO\ModelTableNameNotSetDuringConstructionException::class);
 
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','');
     }
     
     public function testThatConstructorWorksAsExpected() {
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         
         self::assertEquals(static::$dsn, $model->getDsn());
         self::assertEquals(static::$username ?? "", $model->getUsername());
@@ -69,7 +72,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         // Test that the schema query gets & sets the primary key col
         // when an empty primary key value is passed to the constructor
-        $model = new \LeanOrm\Model(
+        $model = new $this->modelClass(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
             [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION], '', 'authors'
         );
@@ -111,7 +114,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         self::assertCount(3, $collection2WithRecords);
         
         //generic model
-        $genericModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'author_id','authors');
+        $genericModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'author_id','authors');
         $genericModel->setCollectionClassName('');
         self::assertEquals(\LeanOrm\Model\Collection::class, get_class($genericModel->createNewCollection()));
     }
@@ -134,7 +137,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         ////////////////////////////////////////////////////////////////////////
         // exact class test
-        $modelWithLeanormCollAndRec = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        $modelWithLeanormCollAndRec = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         $modelWithLeanormCollAndRec->setRecordClassName('');
         $leanOrmRecord = $modelWithLeanormCollAndRec->createNewRecord();
         self::assertEquals(\LeanOrm\Model\Record::class, get_class($leanOrmRecord));
@@ -148,7 +151,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         // relation name with the same name as p key column
         $model->belongsTo('author_id', '', '', '', '');
     }
@@ -157,7 +160,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
         $model->belongsTo(
             'post', 'post_id', 'posts', 'post_id', 'post_id',
@@ -171,7 +174,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
         $model->belongsTo(
             'post', 'post_id', 'posts', 'post_id', 'post_id',
@@ -185,7 +188,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
         $model->belongsTo(
             'post', 'post_id', 'posts', 'post_id', 'post_id',
@@ -199,7 +202,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelTableNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->belongsTo(
             'post', 'post_id', 
             'non_existent_foreign_table', // Non-existent foreign table
@@ -211,7 +214,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
         $model->belongsTo('post', 'non_existent', 'posts', 'post_id', 'post_id');
     }
@@ -220,7 +223,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
         // relation name with the same name as p key column
         $model->belongsTo('post', 'post_id', 'posts', 'non_existent', 'post_id');
@@ -230,7 +233,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
         // relation name with the same name as p key column
         $model->belongsTo('post', 'post_id', 'posts', 'post_id', 'non_existent');
@@ -238,9 +241,9 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToWorksAsExpected() {
 
-        $postsModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
+        $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->belongsTo(
-            'author', 'author_id', 'authors', 'author_id', 'author_id', \LeanOrm\Model::class,
+            'author', 'author_id', 'authors', 'author_id', 'author_id', $this->modelClass,
             \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, null
         );
         self::assertEquals(['author'], $postsModel->getRelationNames());
@@ -262,14 +265,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         self::assertEquals('authors', $relations['author']['foreign_table']);
         self::assertEquals('author_id', $relations['author']['foreign_key_col_in_foreign_table']);
         self::assertEquals('author_id', $relations['author']['primary_key_col_in_foreign_table']);
-        self::assertEquals(\LeanOrm\Model::class, $relations['author']['foreign_models_class_name']);
+        self::assertEquals($this->modelClass, $relations['author']['foreign_models_class_name']);
         self::assertEquals(\LeanOrm\Model\Record::class, $relations['author']['foreign_models_record_class_name']);
         self::assertEquals(\LeanOrm\Model\Collection::class, $relations['author']['foreign_models_collection_class_name']);
         self::assertNull($relations['author']['sql_query_modifier']);
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->belongsTo(
-            'author2', 'author_id', 'authors', 'author_id', 'author_id', \LeanOrm\Model::class,
+            'author2', 'author_id', 'authors', 'author_id', 'author_id', $this->modelClass,
             \LeanOrm\TestObjects\PostRecord::class, \LeanOrm\TestObjects\PostsCollection::class, $callback
         );
         self::assertEquals(['author', 'author2'], $postsModel->getRelationNames());
@@ -282,7 +285,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         // relation name with the same name as p key column
         $model->hasOne('author_id', '', '', '', '');
     }
@@ -291,7 +294,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
             'post', 'post_id', 'posts', 'post_id', 'post_id',
             \PDO::class, // bad Model class name
@@ -304,7 +307,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
             'post', 'post_id', 'posts', 'post_id', 'post_id',
             \LeanOrm\TestObjects\PostsModel::class,
@@ -317,7 +320,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelTableNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
             'post', 'post_id', 
             'non_existent_foreign_table', // Non-existent foreign table
@@ -329,7 +332,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
             'post', 'post_id', 'posts', 'post_id', 'post_id',
             \LeanOrm\TestObjects\PostsModel::class,
@@ -342,7 +345,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne('post', 'non_existent', 'posts', 'post_id', 'post_id');
     }
     
@@ -350,7 +353,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne('post', 'post_id', 'posts', 'non_existent', 'post_id');
     }
     
@@ -358,15 +361,15 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne('post', 'post_id', 'posts', 'post_id', 'non_existent');
     }
     
     public function testThatHasOneWorksAsExpected() {
 
-        $postsModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
+        $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->hasOne(
-            'author', 'author_id', 'authors', 'author_id', 'author_id', \LeanOrm\Model::class,
+            'author', 'author_id', 'authors', 'author_id', 'author_id', $this->modelClass,
             \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, null
         );
         self::assertEquals(['author'], $postsModel->getRelationNames());
@@ -387,14 +390,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         self::assertEquals('authors', $relations['author']['foreign_table']);
         self::assertEquals('author_id', $relations['author']['foreign_key_col_in_foreign_table']);
         self::assertEquals('author_id', $relations['author']['primary_key_col_in_foreign_table']);
-        self::assertEquals(\LeanOrm\Model::class, $relations['author']['foreign_models_class_name']);
+        self::assertEquals($this->modelClass, $relations['author']['foreign_models_class_name']);
         self::assertEquals(\LeanOrm\Model\Record::class, $relations['author']['foreign_models_record_class_name']);
         self::assertEquals(\LeanOrm\Model\Collection::class, $relations['author']['foreign_models_collection_class_name']);
         self::assertNull($relations['author']['sql_query_modifier']);
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasOne(
-            'author2', 'author_id', 'authors', 'author_id', 'author_id', \LeanOrm\Model::class,
+            'author2', 'author_id', 'authors', 'author_id', 'author_id', $this->modelClass,
             \LeanOrm\TestObjects\AuthorRecord::class, \LeanOrm\TestObjects\AuthorsCollection::class, $callback
         );
         self::assertEquals(['author', 'author2'], $postsModel->getRelationNames());
@@ -407,7 +410,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         // relation name with the same name as p key column
         $model->hasMany('author_id', '', '', '', '');
     }
@@ -416,7 +419,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
         $model->hasMany(
             'posts', 'post_id', 'posts', 'post_id', 'post_id',
@@ -430,7 +433,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
             'post', 'post_id', 'posts', 'post_id', 'post_id',
             \LeanOrm\TestObjects\PostsModel::class,
@@ -443,7 +446,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelTableNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
             'post', 'post_id', 
             'non_existent', // non-existent foreign table
@@ -455,7 +458,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
             'post', 'post_id', 'posts', 'post_id', 'post_id',
             \LeanOrm\TestObjects\PostsModel::class,
@@ -468,7 +471,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany('post', 'non_existent', 'posts', 'post_id', 'post_id');
     }
     
@@ -476,7 +479,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany('post', 'post_id', 'posts', 'non_existent', 'post_id');
     }
     
@@ -484,13 +487,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany('post', 'post_id', 'posts', 'post_id', 'non_existent');
     }
     
     public function testThatHasManyWorksAsExpected() {
 
-        $postsModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
+        $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->hasMany(
             'comments', 'post_id', 'comments', 'post_id', 'comment_id',
             LeanOrm\TestObjects\CommentsModel::class,
@@ -522,7 +525,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasMany(
-            'comments2', 'post_id', 'comments', 'post_id', 'comment_id', \LeanOrm\Model::class,
+            'comments2', 'post_id', 'comments', 'post_id', 'comment_id', $this->modelClass,
             \LeanOrm\TestObjects\CommentRecord::class, \LeanOrm\TestObjects\CommentsCollection::class, 
             $callback
         );
@@ -536,7 +539,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         // relation name with the same name as p key column
         $model->hasManyThrough('author_id', '', '', '', '', '', '', '');
     }
@@ -545,7 +548,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
             'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
             \PDO::class, // bad Model class name
@@ -558,7 +561,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
             'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
             LeanOrm\TestObjects\TagsModel::class,
@@ -571,7 +574,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelTableNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
             'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id',
             'non_existent_table', // non-existent foreign table
@@ -583,7 +586,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelTableNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
             'tags', 'post_id',
             'non_existent', // non-existent join table
@@ -595,7 +598,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
             'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
             LeanOrm\TestObjects\TagsModel::class,
@@ -608,7 +611,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
             'tags', 
             'non_existent', // post_id
@@ -620,7 +623,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
             'tags', 'post_id', 'posts_tags',
             'non_existent', // post_id
@@ -632,7 +635,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
             'tags', 'post_id', 'posts_tags', 'post_id',
             'non_existent', // tag_id
@@ -644,7 +647,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
             'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags',
             'non_existent', // tag_id
@@ -656,7 +659,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\BadModelColumnNameException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
             'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id',
             'non_existent' // bad col name
@@ -665,7 +668,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughWorksAsExpected() {
 
-        $postsModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
+        $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->hasManyThrough(
             'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
             LeanOrm\TestObjects\TagsModel::class, LeanOrm\TestObjects\TagRecord::class, LeanOrm\TestObjects\TagsCollection::class
@@ -713,7 +716,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatCanLogQueriesWorksAsExpected() {
         
-        $postsModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
+        $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         
         self::assertFalse($postsModel->canLogQueries());
         self::assertTrue($postsModel->enableQueryLogging()->canLogQueries());
@@ -721,7 +724,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDisableQueryLoggingWorksAsExpected() {
         
-        $postsModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
+        $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         
         self::assertFalse($postsModel->canLogQueries());
         self::assertSame($postsModel->disableQueryLogging(), $postsModel);
@@ -730,7 +733,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatEnableQueryLoggingWorksAsExpected() {
         
-        $postsModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
+        $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         
         self::assertFalse($postsModel->canLogQueries());
         self::assertSame($postsModel->enableQueryLogging(), $postsModel);
@@ -739,7 +742,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDeleteMatchingDbTableRowsWorksAsExpected() {
         
-        $keyValueModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id','key_value');
+        $keyValueModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id','key_value');
         $recordsToInsert = [
             ['key_name'=> 'key 1', 'value'=> 'value 1', 'm_timestamp' => date('Y-m-d H:i:s',  strtotime("+2 minutes")), 'date_created'=> date('Y-m-d H:i:s',  strtotime("+1 minutes"))],
             ['key_name'=> 'key 2', 'value'=> 'value 1', 'm_timestamp' => date('Y-m-d H:i:s',  strtotime("+3 minutes")), 'date_created'=> date('Y-m-d H:i:s',  strtotime("+2 minutes"))],
@@ -773,7 +776,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Any value outside of these is considered invalid for insert
         $this->expectException(\LeanOrm\InvalidArgumentException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $delete_query = [
             'key_name'          => 'Test Key',
             'value'             => 'Test Value',
@@ -792,7 +795,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Any value outside of these is considered invalid for insert
         $this->expectException(\LeanOrm\InvalidArgumentException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $delete_query = [
             'key_name'          => 'Test Key',
             'value'             => 'Test Value',
@@ -803,7 +806,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDeleteSpecifiedRecordWorksAsExpected() {
         
-        $keyValueModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id','key_value');
+        $keyValueModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id','key_value');
         $recordsToInsert = [
             ['key_name'=> 'key 1', 'value'=> 'value 1', 'm_timestamp' => date('Y-m-d H:i:s',  strtotime("+2 minutes")), 'date_created'=> date('Y-m-d H:i:s',  strtotime("+1 minutes"))],
             ['key_name'=> 'key 2', 'value'=> 'value 1', 'm_timestamp' => date('Y-m-d H:i:s',  strtotime("+3 minutes")), 'date_created'=> date('Y-m-d H:i:s',  strtotime("+2 minutes"))],
@@ -830,7 +833,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $this->expectException(\LeanOrm\CantDeleteReadOnlyRecordFromDBException::class);
         
-        $authorsModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
+        $authorsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         
         $authorsModel->setRecordClassName(LeanOrm\Model\ReadOnlyRecord::class);
         
@@ -993,7 +996,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         }
         
         // Test with empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         
         $expectedEmptyCollection = $emptyModel->fetch([1,2,3], null, [], true, true);
         self::assertInstanceOf(GDAO\Model\CollectionInterface::class, $expectedEmptyCollection);
@@ -1022,7 +1025,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         self::assertEquals(['tag_1', 'tag_2'], $cols3);
         
         // Test with empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         self::assertEquals([], $emptyModel->fetchCol());
     }
     
@@ -1100,7 +1103,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
 
         /////////////////////////////
         // Querying an empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         
         self::assertNull($emptyModel->fetchOneRecord());
     }
@@ -1135,14 +1138,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
         
         // Test with empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         self::assertEquals([], $emptyModel->fetchPairs());
     }
     
     public function testThatFetchRecordsIntoArrayWorksAsExpected() {
         
         // Test with empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         self::assertEquals([], $emptyModel->fetchRecordsIntoArray());
         
         ////////////////////////////////////////////////////////////////////////
@@ -1326,7 +1329,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     public function testThatFetchRecordsIntoArrayKeyedOnPkValWorksAsExpected() {
         
         // Test with empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         self::assertEquals([], $emptyModel->fetchRecordsIntoArrayKeyedOnPkVal());
         
         ////////////////////////////////////////////////////////////////////////
@@ -1518,7 +1521,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     public function testThatFetchRecordsIntoCollectionWorksAsExpected() {
         
         // Test with empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         $emptyResult = $emptyModel->fetchRecordsIntoCollection();
         self::assertInstanceOf(\LeanOrm\Model\Collection::class, $emptyResult);
         self::assertCount(0, $emptyResult);
@@ -1729,7 +1732,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     public function testThatFetchRecordsIntoCollectionKeyedOnPkValWorksAsExpected() {
         
         // Test with empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         $emptyResult = $emptyModel->fetchRecordsIntoCollectionKeyedOnPkVal();
         self::assertInstanceOf(\LeanOrm\Model\Collection::class, $emptyResult);
         self::assertCount(0, $emptyResult);
@@ -1918,7 +1921,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     public function testThatFetchRowsIntoArrayWorksAsExpected() {
         
         // Test with empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         self::assertEquals([], $emptyModel->fetchRowsIntoArray());
         
         ////////////////////////////////////////////////////////////////////////
@@ -2041,7 +2044,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     public function testThatFetchRowsIntoArrayKeyedOnPkValWorksAsExpected() {
         
         // Test with empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         self::assertEquals([], $emptyModel->fetchRowsIntoArrayKeyedOnPkVal());
         
         ////////////////////////////////////////////////////////////////////////
@@ -2200,7 +2203,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
         
         // Test with empty table
-        $emptyModel = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
         self::assertNull($emptyModel->fetchValue());
     }
     
@@ -2276,7 +2279,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         }
         
         self::assertEquals([], $postsModel->getQueryLog());
-        \LeanOrm\Model::clearQueryLogForAllInstances();
+        $this->modelClass::clearQueryLogForAllInstances();
     }
     
     public function testThatGetQueryLogForAllInstancesWorksAsExpected() {
@@ -2300,7 +2303,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $tagsModel->fetchRecordsIntoCollection();
         
         ////////////////////////////////////////////////////////////////////////
-        $logForAllInstances = \LeanOrm\Model::getQueryLogForAllInstances();
+        $logForAllInstances = $this->modelClass::getQueryLogForAllInstances();
         $keysToCheck = [
             $commentsModel->getDsn() . '::' . get_class($commentsModel),
             $postsModel->getDsn() . '::' . get_class($postsModel),
@@ -2320,7 +2323,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         ////////////////////////////////////////////////////////////////////////
         $logForCommentsModel = 
-            \LeanOrm\Model::getQueryLogForAllInstances($commentsModel);
+            $this->modelClass::getQueryLogForAllInstances($commentsModel);
         
         foreach($logForCommentsModel as $queryLogEntry) {
             self::assertArrayHasAllKeys(
@@ -2331,7 +2334,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         ////////////////////////////////////////////////////////////////////////
         $logForPostsModel = 
-            \LeanOrm\Model::getQueryLogForAllInstances($postsModel);
+            $this->modelClass::getQueryLogForAllInstances($postsModel);
         
         foreach($logForPostsModel as $queryLogEntry) {
             self::assertArrayHasAllKeys(
@@ -2341,10 +2344,10 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         } // foreach($logForPostsModel as $queryLogEntry)
         
         ////////////////////////////////////////////////////////////////////////
-        self::assertEquals([], \LeanOrm\Model::getQueryLogForAllInstances($tagsModel));
+        self::assertEquals([], $this->modelClass::getQueryLogForAllInstances($tagsModel));
 
         ////////////////////////////////////////////////////////////////////////
-        \LeanOrm\Model::clearQueryLogForAllInstances();
+        $this->modelClass::clearQueryLogForAllInstances();
     }
     
     public function testThatClearQueryLogForAllInstancesWorksAsExpected() {
@@ -2367,12 +2370,12 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $tagsModel->fetchRecordsIntoCollection();
         
         ////////////////////////////////////////////////////////////////////////
-        $logForAllInstances = \LeanOrm\Model::getQueryLogForAllInstances();
+        $logForAllInstances = $this->modelClass::getQueryLogForAllInstances();
         self::assertCount(2, $logForAllInstances);
         
         ////////////////////////////////////////////////////////////////////////
-        \LeanOrm\Model::clearQueryLogForAllInstances();
-        self::assertCount(0, \LeanOrm\Model::getQueryLogForAllInstances());
+        $this->modelClass::clearQueryLogForAllInstances();
+        self::assertCount(0, $this->modelClass::getQueryLogForAllInstances());
     }
     
     public function testThatsetLoggerWorksAsExpected() {
@@ -2429,7 +2432,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatInsertWorksAsExpected() {
         
-        $model = new \LeanOrm\Model(
+        $model = new $this->modelClass(
             static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value'
         );
 
@@ -2565,7 +2568,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         // Check that the primary key value is returned in the result
         // and that it's not null when a null primary key value is supplied
-        $model2 = new \LeanOrm\Model(
+        $model2 = new $this->modelClass(
             static::$dsn, static::$username ?? "", static::$password ?? "", [], 
             'id', 'key_value_no_auto_inc_pk'
         );
@@ -2651,7 +2654,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatUpdateMatchingDbTableRowsWorksAsExpected() {
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $isRunningOnPostgresql = strtolower($model->getPdoDriverName()) === 'pgsql';
         
         $this->clearDbTable($model);
@@ -2947,7 +2950,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatUpdateSpecifiedRecordWorksAsExpected() {
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         
         $recordsToInsert = [
             ['key_name'=> 'key 1', 'value'=> 'value 1', 'm_timestamp' => date('Y-m-d H:i:s',  strtotime("+2 minutes")), 'date_created'=> date('Y-m-d H:i:s',  strtotime("+1 minutes"))],
@@ -3021,7 +3024,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Any value outside of these is considered invalid for insert
         $this->expectException(\LeanOrm\CantSaveReadOnlyRecordException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $model->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
         
         $model->updateSpecifiedRecord($model->createNewRecord()); // will throw exception
@@ -3034,7 +3037,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Any value outside of these is considered invalid for insert
         $this->expectException(\GDAO\ModelInvalidUpdateValueSuppliedException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $model->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
         
         $model->updateSpecifiedRecord(
@@ -3111,7 +3114,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatInsertManyWorksAsExpected() {
         
-        $model = new \LeanOrm\Model(
+        $model = new $this->modelClass(
             static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value'
         );
 
@@ -3320,7 +3323,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // non-auto-incrementing primary key column. This table requires
         // that primary key values be specified in each row to insert.
         ///////////////////////////////////////////////////////////////////////
-        $model2 = new \LeanOrm\Model(
+        $model2 = new $this->modelClass(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
             [], 'id', 'key_value_no_auto_inc_pk'
         );
@@ -3366,7 +3369,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Any value outside of these is considered invalid for insert
         $this->expectException(\GDAO\ModelInvalidInsertValueSuppliedException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         
         ///////////////////////////////////////////////////////////////////////////
         // Some of the keys in the data array are actual table cols are table cols
@@ -3389,7 +3392,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Any value outside of these is considered invalid for insert
         $this->expectException(\GDAO\ModelInvalidInsertValueSuppliedException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         
         ///////////////////////////////////////////////////////////////////////////
         // Some of the keys in the data array are actual table cols are table cols
@@ -3414,7 +3417,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Any value outside of these is considered invalid for insert
         $this->expectException(\GDAO\ModelInvalidInsertValueSuppliedException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         
         ///////////////////////////////////////////////////////////////////////////
         // Some of the keys in the data array are actual table cols are table cols
@@ -3441,7 +3444,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Any value outside of these is considered invalid for insert
         $this->expectException(\LeanOrm\InvalidArgumentException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $update_vals = ['key_name' => 'Test Key New',];
         $update_query = [
             'key_name'          => 'Test Key',
@@ -3461,7 +3464,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Any value outside of these is considered invalid for insert
         $this->expectException(\LeanOrm\InvalidArgumentException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $update_vals = ['key_name' => 'Test Key New',];
         $update_query = [
             'key_name'          => 'Test Key',
@@ -3478,7 +3481,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // Any value outside of these is considered invalid for insert
         $this->expectException(\GDAO\ModelInvalidUpdateValueSuppliedException::class);
         
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $update_vals = [
             'key_name' => 'Test Key New',
             'blankable_value'   => function(){}, // invalid value 

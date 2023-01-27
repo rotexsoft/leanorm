@@ -11,7 +11,14 @@
   </coverage>
   <testsuites>
     <testsuite name="all-tests">
-      <directory>./tests</directory>
+      <!-- <directory>./tests</directory> -->
+      <file>./tests/DBConnectorTest.php</file>
+      <file>./tests/CachingModelTest.php</file>
+      <file>./tests/ModelTest.php</file>
+      <file>./tests/CollectionTest.php</file>
+      <file>./tests/ReadOnlyRecordTest.php</file>
+      <file>./tests/RecordTest.php</file>
+      <file>./tests/UtilsTest.php</file>
     </testsuite>
   </testsuites>
   <logging>
