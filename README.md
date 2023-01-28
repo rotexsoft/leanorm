@@ -15,7 +15,7 @@
 
 # LeanOrm
 
-#### A [Generic Data Objects](https://github.com/rotexsoft/gdao/blob/master/README.md) implementation. A light-weight, highly performant PHP data access library. 
+#### A light-weight, highly performant PHP data access library. Good alternative to Doctrine & Eloquent without all the bells & whistles that are not needed in most applications.
 
 ## Installation Requirements
 

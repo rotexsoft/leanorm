@@ -48,4 +48,4 @@ The Model class also acts as a Data Mapper by being able to map:
 - automatic serialization and un-serialization of database columns,
 - migration (packages like [Phinx](https://github.com/cakephp/phinx), etc. can be used)
 
-These deliberately omitted features can be easily implemented in your applications by extending LeanOrm classes and creating new methods or overriding existing methods and adding the necessary code there.
+Most of these deliberately omitted features can be easily implemented in your applications by extending LeanOrm classes and creating new methods or overriding existing methods and adding the necessary code there or by using other composer installable packages that provide the desired functionality.
