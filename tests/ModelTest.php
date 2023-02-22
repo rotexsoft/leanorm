@@ -78,6 +78,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
         self::assertEquals('author_id', $model->getPrimaryCol());
         self::assertEquals([PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION], $model->getPdoDriverOpts());
+        
+        // Test that primary key val is computed properly for
+        // a model that has hard-coded table col metadata
+        $postTagsModel = new \LeanOrm\TestObjects\PostsTagsModel(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION], '', ''
+        );
+        self::assertEquals('posts_tags_id', $postTagsModel->getPrimaryCol());
     }
     
     public function testCreateNewCollection() {

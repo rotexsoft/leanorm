@@ -190,7 +190,22 @@ class Model extends \GDAO\Model {
 
                 } // $this->getPrimaryCol() === '' && $metadata_obj->primary
             } // foreach( $schema_definitions as $colname => $metadata_obj )
-        } // if ( $this->table_cols === [] )
+            
+        } else { // $this->table_cols !== []
+            
+            if($this->getPrimaryCol() === '') {
+                
+                foreach ($this->table_cols as $colname => $col_metadata) {
+
+                    if($col_metadata['primary']) {
+                        
+                        $this->setPrimaryCol($colname);
+                        break;
+                    }
+                }
+            } // if($this->getPrimaryCol() === '')
+            
+        }// if ( $this->table_cols === [] )
 
         //if $this->getPrimaryCol() is still '' at this point, throw an exception.
         if( $this->getPrimaryCol() === '' ) {
