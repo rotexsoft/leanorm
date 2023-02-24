@@ -39,6 +39,7 @@ class Utils {
      * Search for a specified value with a specified integer key within each sub-array.
      * Each sub-array whose value at the specified key in that sub-array matches 
      * the specified value will be added to the results array.
+     * Each matching sub-array is removed from the original array.
      *
      * For example, given
      * $array = [
