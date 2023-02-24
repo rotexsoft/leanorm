@@ -68,11 +68,12 @@ class Utils {
      */
     public static function search2D(array &$array, $key, $value, array &$results): void {
 
-        foreach ($array as &$avalue) {
+        foreach ($array as $current_key => &$avalue) {
 
             if ( is_array($avalue) && array_key_exists($key, $avalue) && $avalue[$key] === $value) {
 
                 $results[] = $avalue;
+                unset($array[$current_key]);
             }
         }
     }

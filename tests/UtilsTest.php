@@ -39,7 +39,9 @@ class UtilsTest extends \PHPUnit\Framework\TestCase {
     }
     
     public function testThatSearch2DWorksAsExpected() {
-        
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // Search for a specified value with a specified string key within each sub-array
         $array = [
             [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
             'A Val',
@@ -47,9 +49,6 @@ class UtilsTest extends \PHPUnit\Framework\TestCase {
             [ 'a' => 'aaa2', 'zero2', 'b' => 'bbb0', 'one1', 'c' => [ 'ccc' ] ],
             'Some Val',
         ];
-        
-        /////////////////////////////////////////////////////////////////////////////////
-        // Search for a specified value with a specified string key within each sub-array
         $results = [];
         $expected = [
             [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
@@ -57,14 +56,28 @@ class UtilsTest extends \PHPUnit\Framework\TestCase {
         ];
         Utils::search2D($array, 'a', 'aaa0', $results);
         self::assertEquals($expected, $results);
-        
+
+        $array = [
+            [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
+            'A Val',
+            [ 'a' => 'aaa0', 'zero1', 'b' => 'bbb1', 'one1', 'c' => [ 'ccc' ] ],
+            [ 'a' => 'aaa2', 'zero2', 'b' => 'bbb0', 'one1', 'c' => [ 'ccc' ] ],
+            'Some Val',
+        ];
         $results = [];
         $expected = [
             [ 'a' => 'aaa2', 'zero2', 'b' => 'bbb0', 'one1', 'c' => [ 'ccc' ] ],
         ];
         Utils::search2D($array, 'a', 'aaa2', $results);
         self::assertEquals($expected, $results);
-        
+
+        $array = [
+            [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
+            'A Val',
+            [ 'a' => 'aaa0', 'zero1', 'b' => 'bbb1', 'one1', 'c' => [ 'ccc' ] ],
+            [ 'a' => 'aaa2', 'zero2', 'b' => 'bbb0', 'one1', 'c' => [ 'ccc' ] ],
+            'Some Val',
+        ];
         $results = [];
         $expected = [];
         Utils::search2D($array, 'a', 'non-existent', $results);
@@ -72,6 +85,13 @@ class UtilsTest extends \PHPUnit\Framework\TestCase {
         
         //////////////////////////////////////////////////////////////////////////////////
         // Search for a specified value with a specified integer key within each sub-array
+        $array = [
+            [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
+            'A Val',
+            [ 'a' => 'aaa0', 'zero1', 'b' => 'bbb1', 'one1', 'c' => [ 'ccc' ] ],
+            [ 'a' => 'aaa2', 'zero2', 'b' => 'bbb0', 'one1', 'c' => [ 'ccc' ] ],
+            'Some Val',
+        ];
         $results = [];
         $expected = [
             [ 'a' => 'aaa0', 'zero1', 'b' => 'bbb1', 'one1', 'c' => [ 'ccc' ] ],
@@ -79,14 +99,28 @@ class UtilsTest extends \PHPUnit\Framework\TestCase {
         ];
         Utils::search2D($array, 1, 'one1', $results);
         self::assertEquals($expected, $results);
-        
+
+        $array = [
+            [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
+            'A Val',
+            [ 'a' => 'aaa0', 'zero1', 'b' => 'bbb1', 'one1', 'c' => [ 'ccc' ] ],
+            [ 'a' => 'aaa2', 'zero2', 'b' => 'bbb0', 'one1', 'c' => [ 'ccc' ] ],
+            'Some Val',
+        ];
         $results = [];
         $expected = [
             [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
         ];
         Utils::search2D($array, 1, 'one0', $results);
         self::assertEquals($expected, $results);
-        
+
+        $array = [
+            [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
+            'A Val',
+            [ 'a' => 'aaa0', 'zero1', 'b' => 'bbb1', 'one1', 'c' => [ 'ccc' ] ],
+            [ 'a' => 'aaa2', 'zero2', 'b' => 'bbb0', 'one1', 'c' => [ 'ccc' ] ],
+            'Some Val',
+        ];
         $results = [];
         $expected = [];
         Utils::search2D($array, 1, 'non-existent', $results);
