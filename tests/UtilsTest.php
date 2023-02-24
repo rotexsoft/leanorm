@@ -56,6 +56,12 @@ class UtilsTest extends \PHPUnit\Framework\TestCase {
         ];
         Utils::search2D($array, 'a', 'aaa0', $results);
         self::assertEquals($expected, $results);
+        
+        // test that matched values were removed from the original array
+        foreach($expected as $val) {
+            
+            self::assertNotContains($val, $array);
+        }
 
         $array = [
             [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
