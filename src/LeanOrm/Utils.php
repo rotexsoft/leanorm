@@ -66,6 +66,8 @@ class Utils {
      * @param int|string $key                   key in each sub-array whose value is to be searched to search
      * @param mixed $value                      value to search for at the specified key in each sub-array
      * @param array<int|string, mixed> $results array where search results will be stored
+     * 
+     * @deprecated since version 2.2.2
      */
     public static function search2D(array &$array, $key, $value, array &$results): void {
 
