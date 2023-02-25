@@ -535,18 +535,34 @@ class Model extends \GDAO\Model {
                 $parent_data instanceof \GDAO\Model\CollectionInterface
                 || is_array($parent_data)
             ) {
-                //stitch the related data to the approriate parent records
+                // generate a map of fkey_val_in_parent_data => [array keys of related records ]
+                $fkey_val_to_related_data_keys = [];
+                
+                foreach ($related_data as $curr_key => $related_datum) {
+                    
+                    $curr_fkey_val = $related_datum[$fkey_col_in_foreign_table];
+                    
+                    if(!array_key_exists($curr_fkey_val, $fkey_val_to_related_data_keys)) {
+                        
+                        $fkey_val_to_related_data_keys[$curr_fkey_val] = [];
+                    }
+                    
+                    // add current key to sub array of keys for
+                    $fkey_val_to_related_data_keys[$curr_fkey_val][] = $curr_key;
+                }
+                
                 foreach( $parent_data as $p_rec_key => $parent_record ) {
-
+                    
                     $matching_related_records = [];
-
-                    Utils::search2D(
-                        $related_data,
-                        $fkey_col_in_foreign_table, 
-                        $parent_record[$fkey_col_in_my_table], 
-                        $matching_related_records
-                    );
-
+                    
+                    if(array_key_exists($parent_record[$fkey_col_in_my_table], $fkey_val_to_related_data_keys)) {
+                        
+                        foreach ($fkey_val_to_related_data_keys[$parent_record[$fkey_col_in_my_table]] as $related_data_key) {
+                            
+                            $matching_related_records[] = $related_data[$related_data_key];
+                        }
+                    }
+                    
                     $this->wrapRelatedDataInsideRecordsAndCollection(
                         $matching_related_records, $foreign_model_obj, 
                         $wrap_each_row_in_a_record, $wrap_records_in_collection
@@ -563,7 +579,42 @@ class Model extends \GDAO\Model {
                         //the current record must be an array
                         $parent_data[$p_rec_key][$rel_name] = $matching_related_records;
                     }
-                } //foreach( $parent_data as $p_rec_key => $parent_record )
+                        
+                }
+                
+                
+                
+                
+                
+                //stitch the related data to the approriate parent records
+//                foreach( $parent_data as $p_rec_key => $parent_record ) {
+//
+//                    $matching_related_records = [];
+//                        
+//                    Utils::search2D(
+//                        $related_data,
+//                        $fkey_col_in_foreign_table, 
+//                        $parent_record[$fkey_col_in_my_table], 
+//                        $matching_related_records
+//                    );
+//
+//                    $this->wrapRelatedDataInsideRecordsAndCollection(
+//                        $matching_related_records, $foreign_model_obj, 
+//                        $wrap_each_row_in_a_record, $wrap_records_in_collection
+//                    );
+//
+//                    //set the related data for the current parent record
+//                    if( $parent_record instanceof \GDAO\Model\RecordInterface ) {
+//
+//                        $parent_data[$p_rec_key]
+//                            ->setRelatedData($rel_name, $matching_related_records);
+//
+//                    } else {
+//
+//                        //the current record must be an array
+//                        $parent_data[$p_rec_key][$rel_name] = $matching_related_records;
+//                    }
+//                } //foreach( $parent_data as $p_rec_key => $parent_record )
 
             } else if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
