@@ -39,6 +39,7 @@ class Utils {
      * Search for a specified value with a specified integer key within each sub-array.
      * Each sub-array whose value at the specified key in that sub-array matches 
      * the specified value will be added to the results array.
+     * Each matching sub-array is removed from the original array.
      *
      * For example, given
      * $array = [
@@ -68,11 +69,12 @@ class Utils {
      */
     public static function search2D(array &$array, $key, $value, array &$results): void {
 
-        foreach ($array as &$avalue) {
+        foreach ($array as $current_key => &$avalue) {
 
             if ( is_array($avalue) && array_key_exists($key, $avalue) && $avalue[$key] === $value) {
 
                 $results[] = $avalue;
+                unset($array[$current_key]);
             }
         }
     }
