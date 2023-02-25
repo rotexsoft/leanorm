@@ -535,9 +535,14 @@ class Model extends \GDAO\Model {
                 $parent_data instanceof \GDAO\Model\CollectionInterface
                 || is_array($parent_data)
             ) {
-                // generate a map of fkey_val_in_parent_data => [array keys of related records ]
+                ///////////////////////////////////////////////////////////
+                // Stitch the related data to the approriate parent records
+                ///////////////////////////////////////////////////////////
+                
                 $fkey_val_to_related_data_keys = [];
                 
+                // Generate a map of 
+                //      foreign key value => [keys of related rows in $related_data]
                 foreach ($related_data as $curr_key => $related_datum) {
                     
                     $curr_fkey_val = $related_datum[$fkey_col_in_foreign_table];
@@ -547,75 +552,47 @@ class Model extends \GDAO\Model {
                         $fkey_val_to_related_data_keys[$curr_fkey_val] = [];
                     }
                     
-                    // add current key to sub array of keys for
+                    // Add current key in $related_data to sub array of keys for the 
+                    // foreign key value in the current related row $related_datum
                     $fkey_val_to_related_data_keys[$curr_fkey_val][] = $curr_key;
-                }
+                    
+                } // foreach ($related_data as $curr_key => $related_datum)
                 
-                foreach( $parent_data as $p_rec_key => $parent_record ) {
+                // Now use $fkey_val_to_related_data_keys map to
+                // look up related rows of data for each parent row of data
+                foreach( $parent_data as $p_rec_key => $parent_row ) {
                     
-                    $matching_related_records = [];
+                    $matching_related_rows = [];
                     
-                    if(array_key_exists($parent_record[$fkey_col_in_my_table], $fkey_val_to_related_data_keys)) {
+                    if(array_key_exists($parent_row[$fkey_col_in_my_table], $fkey_val_to_related_data_keys)) {
                         
-                        foreach ($fkey_val_to_related_data_keys[$parent_record[$fkey_col_in_my_table]] as $related_data_key) {
+                        foreach ($fkey_val_to_related_data_keys[$parent_row[$fkey_col_in_my_table]] as $related_data_key) {
                             
-                            $matching_related_records[] = $related_data[$related_data_key];
+                            $matching_related_rows[] = $related_data[$related_data_key];
                         }
                     }
                     
                     $this->wrapRelatedDataInsideRecordsAndCollection(
-                        $matching_related_records, $foreign_model_obj, 
+                        $matching_related_rows, $foreign_model_obj, 
                         $wrap_each_row_in_a_record, $wrap_records_in_collection
                     );
 
-                    //set the related data for the current parent record
-                    if( $parent_record instanceof \GDAO\Model\RecordInterface ) {
-
-                        $parent_data[$p_rec_key]
-                            ->setRelatedData($rel_name, $matching_related_records);
+                    //set the related data for the current parent row / record
+                    if( $parent_row instanceof \GDAO\Model\RecordInterface ) {
+                        
+                        $parent_data[$p_rec_key]->setRelatedData($rel_name, $matching_related_rows);
 
                     } else {
 
-                        //the current record must be an array
-                        $parent_data[$p_rec_key][$rel_name] = $matching_related_records;
+                        //the current row must be an array
+                        $parent_data[$p_rec_key][$rel_name] = $matching_related_rows;
                     }
-                        
-                }
+                } // foreach( $parent_data as $p_rec_key => $parent_record )
                 
+                ////////////////////////////////////////////////////////////////
+                // End: Stitch the related data to the approriate parent records
+                ////////////////////////////////////////////////////////////////
                 
-                
-                
-                
-                //stitch the related data to the approriate parent records
-//                foreach( $parent_data as $p_rec_key => $parent_record ) {
-//
-//                    $matching_related_records = [];
-//                        
-//                    Utils::search2D(
-//                        $related_data,
-//                        $fkey_col_in_foreign_table, 
-//                        $parent_record[$fkey_col_in_my_table], 
-//                        $matching_related_records
-//                    );
-//
-//                    $this->wrapRelatedDataInsideRecordsAndCollection(
-//                        $matching_related_records, $foreign_model_obj, 
-//                        $wrap_each_row_in_a_record, $wrap_records_in_collection
-//                    );
-//
-//                    //set the related data for the current parent record
-//                    if( $parent_record instanceof \GDAO\Model\RecordInterface ) {
-//
-//                        $parent_data[$p_rec_key]
-//                            ->setRelatedData($rel_name, $matching_related_records);
-//
-//                    } else {
-//
-//                        //the current record must be an array
-//                        $parent_data[$p_rec_key][$rel_name] = $matching_related_records;
-//                    }
-//                } //foreach( $parent_data as $p_rec_key => $parent_record )
-
             } else if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
                 $this->wrapRelatedDataInsideRecordsAndCollection(
@@ -623,8 +600,11 @@ class Model extends \GDAO\Model {
                     $wrap_each_row_in_a_record, $wrap_records_in_collection
                 );
 
+                ///////////////////////////////////////////////
                 //stitch the related data to the parent record
+                ///////////////////////////////////////////////
                 $parent_data->setRelatedData($rel_name, $related_data);
+                
             } // else if ($parent_data instanceof \GDAO\Model\RecordInterface)
         } // if( array_key_exists($rel_name, $this->relations) )
     }
@@ -763,34 +743,64 @@ SELECT {$foreign_table_name}.*,
                 $parent_data instanceof \GDAO\Model\CollectionInterface
                 || is_array($parent_data)
             ) {
-                //stitch the related data to the approriate parent records
-                foreach( $parent_data as $p_rec_key => $parent_record ) {
-
-                    $matching_related_records = [];
-
-                    Utils::search2D(
-                        $related_data,
-                        $col_in_join_table_linked_to_my_models_table, 
-                        $parent_record[$fkey_col_in_my_table], 
-                        $matching_related_records
-                    );
-
+                ///////////////////////////////////////////////////////////
+                // Stitch the related data to the approriate parent records
+                ///////////////////////////////////////////////////////////
+                
+                $fkey_val_to_related_data_keys = [];
+                
+                // Generate a map of 
+                //      foreign key value => [keys of related rows in $related_data]
+                foreach ($related_data as $curr_key => $related_datum) {
+                    
+                    $curr_fkey_val = $related_datum[$col_in_join_table_linked_to_my_models_table];
+                    
+                    if(!array_key_exists($curr_fkey_val, $fkey_val_to_related_data_keys)) {
+                        
+                        $fkey_val_to_related_data_keys[$curr_fkey_val] = [];
+                    }
+                    
+                    // Add current key in $related_data to sub array of keys for the 
+                    // foreign key value in the current related row $related_datum
+                    $fkey_val_to_related_data_keys[$curr_fkey_val][] = $curr_key;
+                    
+                } // foreach ($related_data as $curr_key => $related_datum)
+                
+                // Now use $fkey_val_to_related_data_keys map to
+                // look up related rows of data for each parent row of data
+                foreach( $parent_data as $p_rec_key => $parent_row ) {
+                    
+                    $matching_related_rows = [];
+                    
+                    if(array_key_exists($parent_row[$fkey_col_in_my_table], $fkey_val_to_related_data_keys)) {
+                        
+                        foreach ($fkey_val_to_related_data_keys[$parent_row[$fkey_col_in_my_table]] as $related_data_key) {
+                            
+                            $matching_related_rows[] = $related_data[$related_data_key];
+                        }
+                    }
+                    
                     $this->wrapRelatedDataInsideRecordsAndCollection(
-                        $matching_related_records, $foreign_model_obj, 
+                        $matching_related_rows, $foreign_model_obj, 
                         $wrap_each_row_in_a_record, $wrap_records_in_collection
                     );
 
-                    //set the related data for the current parent record
-                    if( $parent_record instanceof \GDAO\Model\RecordInterface ) {
+                    //set the related data for the current parent row / record
+                    if( $parent_row instanceof \GDAO\Model\RecordInterface ) {
+                        
+                        $parent_data[$p_rec_key]->setRelatedData($rel_name, $matching_related_rows);
 
-                        $parent_data[$p_rec_key]
-                            ->setRelatedData($rel_name, $matching_related_records);
                     } else {
 
-                        //the current record must be an array
-                        $parent_data[$p_rec_key][$rel_name] = $matching_related_records;
+                        //the current row must be an array
+                        $parent_data[$p_rec_key][$rel_name] = $matching_related_rows;
                     }
-                } //foreach( $parent_data as $p_rec_key => $parent_record )
+                        
+                } // foreach( $parent_data as $p_rec_key => $parent_record )
+                
+                ////////////////////////////////////////////////////////////////
+                // End: Stitch the related data to the approriate parent records
+                ////////////////////////////////////////////////////////////////
 
             } else if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
