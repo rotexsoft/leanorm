@@ -919,51 +919,6 @@ SELECT {$foreign_table_name}.*
                 ////////////////////////////////////////////////////////////////
                 // End: Stitch the related data to the approriate parent records
                 ////////////////////////////////////////////////////////////////
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-//                //stitch the related data to the approriate parent records
-//                foreach( $parent_data as $p_rec_key => $parent_record ) {
-//
-//                    if( isset($related_data[$parent_record[$fkey_col_in_my_table]]) ) {
-//                        $matching_related_record = 
-//                            [$related_data[$parent_record[$fkey_col_in_my_table]]];
-//
-//                        $this->wrapRelatedDataInsideRecordsAndCollection(
-//                                    $matching_related_record, $foreign_model_obj, 
-//                                    $wrap_row_in_a_record, false
-//                                );
-//
-//                        //set the related data for the current parent record
-//                        if( $parent_record instanceof \GDAO\Model\RecordInterface ) {
-//
-//                            $parent_data[$p_rec_key]
-//                                ->setRelatedData($rel_name, $matching_related_record[0]);
-//
-//                        } else {
-//
-//                            //the current record must be an array
-//                            $parent_data[$p_rec_key][$rel_name] = $matching_related_record[0];
-//                        }
-//                    }
-//                } //foreach( $parent_data as $p_rec_key => $parent_record )
 
             } else if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
