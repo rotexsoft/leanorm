@@ -845,13 +845,6 @@ SELECT {$foreign_table_name}.*
   FROM {$foreign_table_name}
  WHERE {$foreign_table_name}.{$fkey_col_in_foreign_table} = {$parent_data->$fkey_col_in_my_table}
 */
-            
-//            //re-key related data on the foreign key column values
-//            $related_data = 
-//                array_combine(
-//                    array_column($related_data, $fkey_col_in_foreign_table), 
-//                    $related_data
-//                );
 
             if ( 
                 $parent_data instanceof \GDAO\Model\CollectionInterface
@@ -1095,15 +1088,10 @@ SELECT {$foreign_table_name}.*
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $sql_2_get_related_data = $query_obj->__toString();
         $this->logQuery($sql_2_get_related_data, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
-
-        //GRAB DA RELATED DATA
-        $related_data = 
-            $this->db_connector
-                 ->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql);
-
+        
         return [
-            $fkey_col_in_foreign_table, $fkey_col_in_my_table, 
-            $foreign_model_obj, $related_data
+            $fkey_col_in_foreign_table, $fkey_col_in_my_table, $foreign_model_obj,
+            $this->db_connector->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql) // fetch the related data
         ]; 
     }
 
