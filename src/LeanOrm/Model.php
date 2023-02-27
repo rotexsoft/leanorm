@@ -845,12 +845,13 @@ SELECT {$foreign_table_name}.*
   FROM {$foreign_table_name}
  WHERE {$foreign_table_name}.{$fkey_col_in_foreign_table} = {$parent_data->$fkey_col_in_my_table}
 */
-            //re-key related data on the foreign key column values
-            $related_data = 
-                array_combine(
-                    array_column($related_data, $fkey_col_in_foreign_table), 
-                    $related_data
-                );
+            
+//            //re-key related data on the foreign key column values
+//            $related_data = 
+//                array_combine(
+//                    array_column($related_data, $fkey_col_in_foreign_table), 
+//                    $related_data
+//                );
 
             if ( 
                 $parent_data instanceof \GDAO\Model\CollectionInterface
