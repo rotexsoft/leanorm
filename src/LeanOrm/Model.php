@@ -2236,52 +2236,60 @@ SELECT {$foreign_table_name}.*
     protected function addWhereInAndOrIsNullToQuery(
         string $colname, array &$colvals, \Aura\SqlQuery\Common\WhereInterface $qry_obj
     ): void {
+        
+        if($colvals !== []) { // make sure it's a non-empty array
+            
+            // if there are one or more null values in the array,
+            // we need to unset them and add an
+            //      OR $colname IS NULL 
+            // clause to the query
+            $unique_colvals = array_unique($colvals);
+            $keys_for_null_vals = array_keys($unique_colvals, null, true);
 
-        // if there are one or more null values in the array,
-        // we need to unset them and add an
-        //      OR $colname IS NULL 
-        // clause to the query
-        $unique_colvals = array_unique($colvals);
-        $keys_for_null_vals = array_keys($unique_colvals, null, true);
+            foreach($keys_for_null_vals as $key_for_null_val) {
 
-        foreach($keys_for_null_vals as $key_for_null_val) {
+                // remove the null vals from $colval
+                unset($unique_colvals[$key_for_null_val]);
+            }
 
-            // remove the null vals from $colval
-            unset($unique_colvals[$key_for_null_val]);
-        }
+            if(
+                $keys_for_null_vals !== [] && $unique_colvals !== []
+            ) {
+                // Some values in the array are null and some are non-null
+                // Generate WHERE COL IN () OR COL IS NULL
+                $colval_placeholders = array_fill(0, count($unique_colvals), '?');
+                //  we are trying to do something like this 
+                // ->where('id IN (?, ?, ?)', 1, 2, 3)
+                $qry_obj->where(
+                    " {$colname} IN (" . implode(',', $colval_placeholders) . ") ",
+                    ...$unique_colvals
+                )->orWhere(" {$colname} IS NULL ");
 
-        if(
-            $keys_for_null_vals !== [] && $unique_colvals !== []
-        ) {
-            // Generate WHERE COL IN () OR COL IS NULL
-            $colval_placeholders = array_fill(0, count($unique_colvals), '?');
-            //  we are trying to do something like this 
-            // ->where('id IN (?, ?, ?)', 1, 2, 3)
-            $qry_obj->where(
-                " {$colname} IN (" . implode(',', $colval_placeholders) . ") ",
-                ...$unique_colvals
-            )->orWhere(" {$colname} IS NULL ");
+            } elseif (
+                $keys_for_null_vals !== []
+                && $unique_colvals === []
+            ) {
+                // All values in the array are null
+                // Only generate WHERE COL IS NULL
+                $qry_obj->where(" {$colname} IS NULL ");
 
-        } elseif (
-            $keys_for_null_vals !== []
-            && $unique_colvals === []
-        ) {
-            // Only generate WHERE COL IS NULL
-            $qry_obj->where(" {$colname} IS NULL ");
+            } else { // ($keys_for_null_vals === [] && $unique_colvals !== []) // no nulls found
+                
+                ////////////////////////////////////////////////////////////////
+                // NOTE: ($keys_for_null_vals === [] && $unique_colvals === [])  
+                // is impossible because we started with if($colvals !== [])
+                ////////////////////////////////////////////////////////////////
 
-        } else {
-            // (count($keys_for_null_vals) === 0 && count($colval) > 0) // no nulls found
-            // OR 
-            // (count($keys_for_null_vals) === 0 && count($colval) === 0) //impossible scenario
-
-            // Only generate WHERE COL IN ()
-            $colval_placeholders = array_fill(0, count($unique_colvals), '?');
-            //  we are trying to do something like this 
-            // ->where('id IN (?, ?, ?)', 1, 2, 3)
-            $qry_obj->where(
-                " {$colname} IN (" . implode(',', $colval_placeholders) . ") ",
-                ...$unique_colvals
-            );
+                // All values in the array are non-null
+                // Only generate WHERE COL IN ()
+                $colval_placeholders = array_fill(0, count($unique_colvals), '?');
+                //  we are trying to do something like this 
+                // ->where('id IN (?, ?, ?)', 1, 2, 3)
+                $qry_obj->where(
+                    " {$colname} IN (" . implode(',', $colval_placeholders) . ") ",
+                    ...$unique_colvals
+                );
+            }
         }
     }
     
