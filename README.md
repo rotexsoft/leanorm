@@ -73,7 +73,9 @@ There's an accompanying [command-line tool](https://github.com/rotexsoft/leanorm
 ## Documentation
 Documentation for the non-stable 1.X version of this package is located at http://rotexsoft.github.io/leanorm/
 
-Documentation for the most recent 2.X+ version can be found [here](docs/index.md).
+Documentation for version 2.X version can be found [here](https://github.com/rotexsoft/leanorm/blob/2.2.x/docs/index.md).
+
+Documentation for the most recent 3.X+ version can be found [here](docs/index.md).
 
 Please submit an issue (preferably with a pull request) to address mistakes or omissions in the documentation or to propose improvements to the documentation. 
 
