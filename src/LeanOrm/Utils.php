@@ -67,6 +67,9 @@ class Utils {
      * @param mixed $value                      value to search for at the specified key in each sub-array
      * @param array<int|string, mixed> $results array where search results will be stored
      * 
+     * @psalm-suppress RedundantConditionGivenDocblockType
+     * @psalm-suppress PossiblyUnusedMethod
+     * 
      * @deprecated since version 2.2.2
      */
     public static function search2D(array &$array, $key, $value, array &$results): void {
