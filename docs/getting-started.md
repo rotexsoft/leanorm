@@ -395,7 +395,7 @@ $colVals = $authorsModel->fetchCol();
 $colVals = $authorsModel->fetchCol(
                 $authorsModel->getSelect()
                              ->cols(['name'])
-                             ->where(' author_id <= ? ', 5)
+                             ->where(' author_id <= ? ', [5])
             );
 ```
 
@@ -416,7 +416,7 @@ $record = $authorsModel->fetchOneRecord();
 $record = $authorsModel->fetchOneRecord(
             $authorsModel->getSelect()
                          ->cols(['author_id', 'name'])
-                         ->where(' author_id = ? ', 5)
+                         ->where(' author_id = ? ', [5])
         );
 
 // $record will contain the first row of data returned by
@@ -427,7 +427,7 @@ $record = $authorsModel->fetchOneRecord(
 $record = $authorsModel->fetchOneRecord(
             $authorsModel->getSelect()
                          ->cols(['author_id', 'name'])
-                         ->where(' author_id = ? ', 5),
+                         ->where(' author_id = ? ', [5]),
             ['posts'] // eager fetch posts for the author
         );
 ```
@@ -451,7 +451,7 @@ $keyValPairs = $authorsModel->fetchPairs();
 $keyValPairs = $authorsModel->fetchPairs(
                 $authorsModel->getSelect()
                              ->cols(['author_id', 'date_created'])
-                             ->where(' author_id <= ? ', 5)
+                             ->where(' author_id <= ? ', [5])
             );
 
 // Similar to example above, except that the second specified column is an expression
@@ -463,7 +463,7 @@ $keyValPairs = $authorsModel->fetchPairs(
 $keyValPairs = $authorsModel->fetchPairs(
                 $authorsModel->getSelect()
                              ->cols(['author_id', " concat(author_id, '-', 'name') "])
-                             ->where(' author_id <= ? ', 5)
+                             ->where(' author_id <= ? ', [5])
             );
 ```
 
@@ -486,7 +486,7 @@ $records = $authorsModel->fetchRecordsIntoArray();
 $records = $authorsModel->fetchRecordsIntoArray(
             $authorsModel->getSelect()
                          ->cols(['author_id', 'name'])
-                         ->where(' author_id <= ? ', 5)
+                         ->where(' author_id <= ? ', [5])
         );
 
 // $records is an array containing the all rows of data as record objects returned by
@@ -498,7 +498,7 @@ $records = $authorsModel->fetchRecordsIntoArray(
 $records = $authorsModel->fetchRecordsIntoArray(
             $authorsModel->getSelect()
                          ->cols(['author_id', 'name'])
-                         ->where(' author_id <= ? ', 5),
+                         ->where(' author_id <= ? ', [5]),
             ['posts'] // eager fetch posts for all the matching authors
         );
 ```
