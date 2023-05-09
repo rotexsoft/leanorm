@@ -23,7 +23,7 @@ PHP 7.4+.
 
 [Composer](https://getcomposer.org/)
 
-Version 2.X of this package has been rigorously tested against sqlite 3.7.11+, 
+Version 2.X & 3.X of this package have been rigorously tested against sqlite 3.7.11+, 
 MySQL 8.0.29+ & Postgresql 15.1+. 
 
 MS SQL Server, is theoretically supported but hasn't been tested. 
@@ -32,7 +32,17 @@ on that DB engine has been done.
 
 If you are using Sqlite, version sqlite 3.7.11 or higher is required.
 
-Version 1.X of this package never got a stable release. Please use version 2.X+ of this package. 
+Version 1.X of this package never got a stable release. 
+
+Version 2.X+ of this package is stable & uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/tree/2.8.1#select) 2.8.0+ . 
+
+Please use version 3.X+ of this package which uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) 3.0.0+.
+
+Versions 2.X & 3.X will contain the same features, but only differ in the versions of **aura/sqlquery** their **Model::getSelect(): \Aura\SqlQuery\Common\Select** returns.
+
+> Deprecated **Utils::search2D(...)** in 2.X has been removed in 3.X
+
+A future version 4 will require php 8.1 as the minimum PHP version.
 
 ## Installation
 

@@ -16,7 +16,7 @@
     "require": {
         "php": ">=7.4",
         "rotexsoft/gdao": "^2.2.1",
-        "aura/sqlquery": "^2.4",
+        "aura/sqlquery": "^3.0.0",
         "aura/sqlschema": "^2.0",
         "psr/log": "^1.1",
         "atlas/info": "^1.2"

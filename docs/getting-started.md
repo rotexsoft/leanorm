@@ -318,7 +318,7 @@ The following methods for fetching data from the database are defined in **\GDAO
 - [__**fetchValue(?object $query = null): mixed**__](#fetching-data-from-the-database-via-fetchvalue)
 > selects a single value from a single column of a single row of data from a database table / view and returns the value (eg. as a string, or an appropriate data type). By default, it selects the value of the first column of the first row of data from a database table / view.
 
-All these fetch methods accept a first argument which is a query object. LeanOrm uses [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md#select) as its query object. You can create a query object to inject into each fetch method using the **getSelect(): \Aura\SqlQuery\Common\Select** method in **\LeanOrm\Model**. Read the documentation for [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/2.8.0/README.md#select) to figure out how to customize the sql queries executed by each fetch method. Some examples will be shown later on below.
+All these fetch methods accept a first argument which is a query object. LeanOrm uses [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) as its query object. You can create a query object to inject into each fetch method using the **getSelect(): \Aura\SqlQuery\Common\Select** method in **\LeanOrm\Model**. Read the documentation for [Aura\SqlQuery](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) to figure out how to customize the sql queries executed by each fetch method. Some examples will be shown later on below.
 
 Some of these fetch methods also accept a second argument called **$relations_to_include**. It is basically an array of relationship names for related data defined in the Model class. When you specify these relationship names in a fetch method, the fetch method will eager load the related data which would eliminate the need to issues N queries to fetch the related data for a specified defined relation for each fetched record which leads to the N+1 problem. For example, when fetching records from the authors table via the AuthorsModel, each author record / row can have one or more posts associated with it. If you do not specify that the posts for the author records be eager fetched during a fetch, then when you loop through the returned author records, additional queries will be issued to fetch the posts for each author. If we have 3 authors in the database, then doing a fetch without eager loading posts will lead to the following queries being issued when you loop through the authors and try to access the posts associated with each of them:
 
@@ -530,7 +530,7 @@ $records = $authorsModel->fetchRecordsIntoCollection();
 $records = $authorsModel->fetchRecordsIntoCollection(
             $authorsModel->getSelect()
                          ->cols(['author_id', 'name'])
-                         ->where(' author_id <= ? ', 5)
+                         ->where(' author_id <= ? ', [5])
         );
 
 // $records is a collection object containing the all rows of data as record objects returned by
@@ -542,7 +542,7 @@ $records = $authorsModel->fetchRecordsIntoCollection(
 $records = $authorsModel->fetchRecordsIntoCollection(
             $authorsModel->getSelect()
                          ->cols(['author_id', 'name'])
-                         ->where(' author_id <= ? ', 5),
+                         ->where(' author_id <= ? ', [5]),
             ['posts'] // eager fetch posts for all the matching authors
         );
 ```
@@ -576,7 +576,7 @@ $records = $authorsModel->fetchRowsIntoArray();
 $records = $authorsModel->fetchRowsIntoArray(
             $authorsModel->getSelect()
                          ->cols(['author_id', 'name'])
-                         ->where(' author_id <= ? ', 5)
+                         ->where(' author_id <= ? ', [5])
         );
 
 // $records is an array containing the all rows of data as record objects returned by
@@ -588,7 +588,7 @@ $records = $authorsModel->fetchRowsIntoArray(
 $records = $authorsModel->fetchRowsIntoArray(
             $authorsModel->getSelect()
                          ->cols(['author_id', 'name'])
-                         ->where(' author_id <= ? ', 5),
+                         ->where(' author_id <= ? ', [5]),
             ['posts'] // eager fetch posts for all the matching authors
         );
 ```
@@ -633,7 +633,7 @@ $value = $authorsModel->fetchValue(
 $value = $authorsModel->fetchValue(
             $authorsModel->getSelect()
                          ->cols(['max(author_id)'])
-                         ->where(' author_id <= ? ', 5)
+                         ->where(' author_id <= ? ', [5])
         );
 
 // NOTE: if the database table is empty or the select query returns no row(s) of 
@@ -692,7 +692,7 @@ $authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd
 ///////////////////////////////////////////////////////////////////
 $joeBlowRecord = $authorsModel->fetchOneRecord(
                     $authorsModel->getSelect()
-                                 ->where(' name = ? ', 'Joe Blow')
+                                 ->where(' name = ? ', ['Joe Blow'])
                 );
 // - Deletes record from the database table 
 // - Flags the record object as new
@@ -706,7 +706,7 @@ $joeBlowRecord->delete(false);
 ///////////////////////////////////////////////////////////////////
 $jillBlowRecord = $authorsModel->fetchOneRecord(
                     $authorsModel->getSelect()
-                                 ->where(' name = ? ', 'Jill Blow')
+                                 ->where(' name = ? ', ['Jill Blow'])
                 );
 // - Deletes record from the database table 
 // - Flags the record object as new
@@ -718,8 +718,16 @@ $jackAndJaneDoe = $authorsModel->fetchRecordsIntoCollection(
                     $authorsModel->getSelect()
                                  ->where(
                                         ' name IN (?, ?) ', 
-                                        'Jack Doe', 
-                                        'Jane Doe'
+                                        [ 'Jack Doe', 'Jane Doe' ]
+                                    )
+                );
+// OR
+
+$jackAndJaneDoe = $authorsModel->fetchRecordsIntoCollection(
+                    $authorsModel->getSelect()
+                                 ->where(
+                                        ' name IN (:bar) ', // named paceholder for WHERE IN
+                                        [ 'bar' => [ 'Jack Doe', 'Jane Doe' ]]
                                     )
                 );
 
@@ -793,7 +801,7 @@ $authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd
 ///////////////////////////////////////////////////////////////////
 $joeBlowRecord = $authorsModel->fetchOneRecord(
                     $authorsModel->getSelect()
-                                 ->where(' name = ? ', 'Joe Blow')
+                                 ->where(' name = ? ', ['Joe Blow'])
                 );
 
 // Prepend a title to Joe Blow's name
@@ -805,8 +813,7 @@ $jackAndJaneDoe = $authorsModel->fetchRecordsIntoCollection(
                     $authorsModel->getSelect()
                                  ->where(
                                         ' name IN (?, ?) ', 
-                                        'Jack Doe', 
-                                        'Jane Doe'
+                                        [ 'Jack Doe', 'Jane Doe' ]
                                     )
                 );
 
@@ -822,7 +829,7 @@ $jackAndJaneDoe->saveAll();
 ///////////////////////////////////////////////////////////////////
 $jillBlowRecord = $authorsModel->fetchOneRecord(
                     $authorsModel->getSelect()
-                                 ->where(' name = ? ', 'Jill Blow')
+                                 ->where(' name = ? ', ['Jill Blow'])
                 );
 
 // reverse the name for this record

@@ -683,7 +683,7 @@ class Model extends \GDAO\Model {
 
                 $query_obj->where(
                     " {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = ? ",
-                    $parent_data->$fkey_col_in_my_table
+                    [$parent_data->$fkey_col_in_my_table]
                 );
 
             } else {
@@ -1008,7 +1008,7 @@ SELECT {$foreign_table_name}.*
 
             $query_obj->where(
                 " {$foreign_table_name}.{$fkey_col_in_foreign_table} = ? ",
-                $parent_data->$fkey_col_in_my_table
+                [$parent_data->$fkey_col_in_my_table]
             );
 
         } else {
@@ -1369,7 +1369,7 @@ SELECT {$foreign_table_name}.*
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
-
+        
         $results = $this->db_connector->dbFetchAll($sql, $params_2_bind_2_sql);
         
         if( $use_p_k_val_as_key && $results !== [] && $this->getPrimaryCol() !== '' ) {
@@ -1486,7 +1486,7 @@ SELECT {$foreign_table_name}.*
                         $this->throwExceptionForInvalidDeleteQueryArg($colval, $cols_n_vals);
                     }
 
-                    $del_qry_obj->where("{$colname} = ?", $this->stringifyIfStringable($colval));
+                    $del_qry_obj->where(" {$colname} = :{$colname} ", [$colname => $this->stringifyIfStringable($colval)]);
                 }
             }
 
@@ -1835,8 +1835,8 @@ SELECT {$foreign_table_name}.*
                 $this->fetchOneRecord(
                         $this->getSelect()
                              ->where(
-                                " {$this->getPrimaryCol()} = ? ",
-                                $data_2_insert[$this->getPrimaryCol()]
+                                " {$this->getPrimaryCol()} = :{$this->getPrimaryCol()} ",
+                                [ $this->getPrimaryCol() => $data_2_insert[$this->getPrimaryCol()]]
                              )
                      )->getData();
         } else {
@@ -1854,7 +1854,7 @@ SELECT {$foreign_table_name}.*
 
                 if(is_string($processed_val) || is_numeric($processed_val)) {
 
-                    $select->where(" {$col} = ? ", $val);
+                    $select->where(" {$col} = :{$col} ", [$col=>$val]);
 
                 } elseif(is_null($processed_val) && $this->getPrimaryCol() !== $col) {
 
@@ -1875,7 +1875,7 @@ SELECT {$foreign_table_name}.*
      * {@inheritDoc}
      */
     public function insert(array $data_2_insert = []) {
-
+        
         $result = false;
 
         if ( $data_2_insert !== [] ) {
@@ -1886,7 +1886,7 @@ SELECT {$foreign_table_name}.*
             $this->processRowOfDataToInsert(
                 $data_2_insert, $table_cols, $has_autoinc_pkey_col
             );
-
+            
             // Do we still have anything left to save after removing items
             // in the array that do not map to actual db table columns
             if( (is_countable($data_2_insert) ? count($data_2_insert) : 0) > 0 ) {
@@ -1898,7 +1898,7 @@ SELECT {$foreign_table_name}.*
                 $insrt_qry_sql = $insrt_qry_obj->__toString();
                 $insrt_qry_params = $insrt_qry_obj->getBindValues();
                 $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
-
+                
                 if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
 
                     // insert was successful, we are now going to try to 
@@ -1936,7 +1936,7 @@ SELECT {$foreign_table_name}.*
                 } // if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) )
             } // if(count($data_2_insert) > 0 ) 
         } // if ( $data_2_insert !== [] )
-
+        
         return $result;
     }
 
@@ -2134,8 +2134,12 @@ SELECT {$foreign_table_name}.*
                         } else {
 
                             $update_qry_obj->where(
-                                " {$colname} = ? ", 
-                                $this->stringifyIfStringable($colval) 
+                                " {$colname} = :{$colname}_for_where ",  // add the _for_where suffix to deconflict where bind value, 
+                                                                         // from the set bind value when a column in the where clause
+                                                                         // is also being set and the value we are setting it to is 
+                                                                         // different from the value we are using for the same column 
+                                                                         // in the where clause
+                                ["{$colname}_for_where" => $this->stringifyIfStringable($colval)] 
                             );
                         }
 
@@ -2157,7 +2161,7 @@ SELECT {$foreign_table_name}.*
                     $updt_qry = $update_qry_obj->__toString();
                     $updt_qry_params = $update_qry_obj->getBindValues();
                     $this->logQuery($updt_qry, $updt_qry_params, __METHOD__, '' . __LINE__);
-
+                    
                     $this->db_connector->executeQuery($updt_qry, $updt_qry_params, true);
                 }
 
@@ -2224,8 +2228,8 @@ SELECT {$foreign_table_name}.*
             $record = $this->fetchOneRecord(
                         $this->getSelect()
                              ->where(
-                                    " {$record->getPrimaryCol()} = ? ", 
-                                    $record->getPrimaryVal()
+                                    " {$record->getPrimaryCol()} = :{$record->getPrimaryCol()} ", 
+                                    [$record->getPrimaryCol() => $record->getPrimaryVal()]
                                 )
                     );
         } // if( count($record) > 0 && !$record->isNew()........
@@ -2257,12 +2261,9 @@ SELECT {$foreign_table_name}.*
             ) {
                 // Some values in the array are null and some are non-null
                 // Generate WHERE COL IN () OR COL IS NULL
-                $colval_placeholders = array_fill(0, count($unique_colvals), '?');
-                //  we are trying to do something like this 
-                // ->where('id IN (?, ?, ?)', 1, 2, 3)
                 $qry_obj->where(
-                    " {$colname} IN (" . implode(',', $colval_placeholders) . ") ",
-                    ...$unique_colvals
+                    " {$colname} IN (:bar) ",
+                    [ 'bar' => $unique_colvals ]
                 )->orWhere(" {$colname} IS NULL ");
 
             } elseif (
@@ -2282,12 +2283,9 @@ SELECT {$foreign_table_name}.*
 
                 // All values in the array are non-null
                 // Only generate WHERE COL IN ()
-                $colval_placeholders = array_fill(0, count($unique_colvals), '?');
-                //  we are trying to do something like this 
-                // ->where('id IN (?, ?, ?)', 1, 2, 3)
-                $qry_obj->where(
-                    " {$colname} IN (" . implode(',', $colval_placeholders) . ") ",
-                    ...$unique_colvals
+                $qry_obj->where(       
+                    " {$colname} IN (:bar) ",
+                    [ 'bar' => $unique_colvals ]
                 );
             }
         }

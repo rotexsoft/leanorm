@@ -35,55 +35,6 @@ class Utils {
         }
     }
     
-    /**
-     * Search for a specified value with a specified integer key within each sub-array.
-     * Each sub-array whose value at the specified key in that sub-array matches 
-     * the specified value will be added to the results array.
-     * Each matching sub-array is removed from the original array.
-     *
-     * For example, given
-     * $array = [
-     *     [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
-     *     'A Val',
-     *     [ 'a' => 'aaa0', 'zero1', 'b' => 'bbb1', 'one1', 'c' => [ 'ccc' ] ],
-     *     [ 'a' => 'aaa2', 'zero2', 'b' => 'bbb0', 'one1', 'c' => [ 'ccc' ] ],
-     *     'Some Val',
-     * ];
-     * $results = [];
-     *
-     * then
-     *
-     * \LeanOrm\Utils::search2D($array, 'a', 'aaa0', $results);
-     *
-     * leads to
-     *
-     * $results = [
-     *     [ 'a' => 'aaa0', 'zero0', 'b' => 'bbb0', 'one0', 'c' => [ 'ccc' ] ],
-     *     [ 'a' => 'aaa0', 'zero1', 'b' => 'bbb1', 'one1', 'c' => [ 'ccc' ] ],
-     * ];
-     *
-     * @param array<int|string, array> $array   array of arrays to search
-     * @param int|string $key                   key in each sub-array whose value is to be searched to search
-     * @param mixed $value                      value to search for at the specified key in each sub-array
-     * @param array<int|string, mixed> $results array where search results will be stored
-     * 
-     * @psalm-suppress RedundantConditionGivenDocblockType
-     * @psalm-suppress PossiblyUnusedMethod
-     * 
-     * @deprecated since version 2.2.2
-     */
-    public static function search2D(array &$array, $key, $value, array &$results): void {
-
-        foreach ($array as $current_key => &$avalue) {
-
-            if ( is_array($avalue) && array_key_exists($key, $avalue) && $avalue[$key] === $value) {
-
-                $results[] = $avalue;
-                unset($array[$current_key]);
-            }
-        }
-    }
-    
     public static function getClosureFromCallable(callable $callable): Closure {
 
         return ($callable instanceof Closure)? $callable : Closure::fromCallable($callable);

@@ -132,7 +132,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         self::assertEquals([], $record1->getRelatedData());
         
         $refetchRecord = $model->fetchOneRecord(
-            $model->getSelect()->where(' author_id = ? ', $authorId)
+            $model->getSelect()->where(' author_id = ? ', [$authorId])
         );
         
         self::assertNull($refetchRecord);
@@ -990,7 +990,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         
         // verify that the data was really saved to the DB
         $newlySavedRecordFromDb = $model->fetchOneRecord(
-            $model->getSelect()->where(' name = ? ', 'Author 888')
+            $model->getSelect()->where(' name = ? ', ['Author 888'])
         );
         self::assertInstanceOf(\LeanOrm\Model\Record::class, $newlySavedRecordFromDb);
         
@@ -1016,7 +1016,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         
         // verify that the data was really saved to the DB
         $updatedExistingRecordFromDb = $model->fetchOneRecord(
-            $model->getSelect()->where(' name = ? ', 'Author 9999')
+            $model->getSelect()->where(' name = ? ', ['Author 9999'])
         );
         self::assertInstanceOf(\LeanOrm\Model\Record::class, $updatedExistingRecordFromDb);
         
@@ -1057,7 +1057,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         // The record cannot be fetched because the save failed
         self::assertNull(
             $model->fetchOneRecord(
-                $model->getSelect()->where(' name = ? ', 'Author 1999')
+                $model->getSelect()->where(' name = ? ', ['Author 1999'])
             )
         );
             
@@ -1104,7 +1104,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         
         // verify that the data was really saved to the DB
         $newlySavedRecordFromDb = $model->fetchOneRecord(
-            $model->getSelect()->where(' name = ? ', 'Author 888')
+            $model->getSelect()->where(' name = ? ', ['Author 888'])
         );
         self::assertInstanceOf(\LeanOrm\Model\Record::class, $newlySavedRecordFromDb);
         
@@ -1130,7 +1130,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         
         // verify that the data was really saved to the DB
         $updatedExistingRecordFromDb = $model->fetchOneRecord(
-            $model->getSelect()->where(' name = ? ', 'Author 9999')
+            $model->getSelect()->where(' name = ? ', ['Author 9999'])
         );
         self::assertInstanceOf(\LeanOrm\Model\Record::class, $updatedExistingRecordFromDb);
         
@@ -1171,7 +1171,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         // The record cannot be fetched because the save failed
         self::assertNull(
             $model->fetchOneRecord(
-                $model->getSelect()->where(' name = ? ', 'Author 1999')
+                $model->getSelect()->where(' name = ? ', ['Author 1999'])
             )
         );
     }

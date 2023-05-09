@@ -829,7 +829,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->insertDataIntoTable('key_value', $recordsToInsert[1], $keyValueModel->getPDO());
         $this->insertDataIntoTable('key_value', $recordsToInsert[2], $keyValueModel->getPDO());
 
-        $aRecord = $keyValueModel->fetchOneRecord($keyValueModel->getSelect()->where('key_name = ? ', 'key 1'));
+        $aRecord = $keyValueModel->fetchOneRecord($keyValueModel->getSelect()->where('key_name = ? ', ['key 1']));
         
         self::assertFalse($aRecord->isNew());
         self::assertTrue($keyValueModel->deleteSpecifiedRecord($aRecord));
@@ -1105,7 +1105,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
         self::assertNull(
             $authorsModel->fetchOneRecord(
-                $authorsModel->getSelect()->where(" name =  ? ", "''"), ['posts']
+                $authorsModel->getSelect()->where(" name =  ? ", ["''"]), ['posts']
             )
         );
 
@@ -2466,7 +2466,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             'non_existent_col'  => 'some value'
         ];
         $result1 = $model->insert($data2Save);
-
+        
         // make sure all valid column names were returned
         self::assertArrayHasAllKeys(
             $result1,
@@ -2891,7 +2891,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
                         $model->getSelect()
                               ->where(
                                     " {$aRecordFromDB->getPrimaryCol()} = ? ", 
-                                    $aRecordFromDB->getPrimaryVal()
+                                    [$aRecordFromDB->getPrimaryVal()]
                                 )
                     );
         };
@@ -2989,7 +2989,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
                         $model->getSelect()
                               ->where(
                                     " {$existingRecord->getPrimaryCol()} = ? ", 
-                                    $existingRecord->getPrimaryVal()
+                                    [$existingRecord->getPrimaryVal()]
                                 )
                     );
                                     
@@ -3098,7 +3098,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         );
         
         foreach ($model->fetchRowsIntoArray() as $dbRecord) {
-            
+
             self::assertEquals('A Val', $dbRecord['blankable_value']);
         } // foreach ($model->fetchRowsIntoArray() as $dbRecord)
         
@@ -3201,7 +3201,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
                             $model->getSelect()
                                   ->where(
                                         ' key_name = ? ', 
-                                        $potentiallySavedData['key_name']
+                                        [$potentiallySavedData['key_name']]
                                     ) 
                         )->getData();
             
@@ -3305,7 +3305,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
                             $model->getSelect()
                                   ->where(
                                         ' key_name = ? ', 
-                                        $potentiallySavedData['key_name']
+                                        [$potentiallySavedData['key_name']]
                                     ) 
                         )->getData();
             

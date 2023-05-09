@@ -538,7 +538,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
                 $refetchedPotentiallySavedRecord = $record->getModel()->fetchOneRecord(
                     $record->getModel()
                            ->getSelect()
-                           ->where(' name = ? ', $collectionRecordsDataB4SaveAllAsArrays[$key]['name'])
+                           ->where(' name = ? ', [$collectionRecordsDataB4SaveAllAsArrays[$key]['name']] )
                 );
                 
                 // if the result is a record, then the saveAll successfully saved this record
@@ -579,7 +579,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
                         $record->getModel()->fetchOneRecord(
                             $record->getModel()
                                    ->getSelect()
-                                   ->where(' name = ? ', $collectionRecordsDataB4SaveAllAsArrays[$key]['name'])
+                                   ->where(' name = ? ', [$collectionRecordsDataB4SaveAllAsArrays[$key]['name']])
                         )
                     );
                     
@@ -753,7 +753,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             0,
             $model->fetchRecordsIntoCollection(
                 $model->getSelect()
-                      ->where(' name IN (?, ?) ', 'Author 1', 'Author 2')
+                      ->where(' name IN (:bar) ', [ 'bar' => ['Author 1', 'Author 2'] ])
             )
         );
         self::assertTrue($collection->saveAll($groupInsertsTogether));
@@ -761,7 +761,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
             2,
             $model->fetchRecordsIntoCollection(
                 $model->getSelect()
-                      ->where(' name IN (?, ?) ', 'Author 1', 'Author 2')
+                      ->where(' name IN (:bar) ', [ 'bar' => ['Author 1', 'Author 2'] ])
             )
         );
         
