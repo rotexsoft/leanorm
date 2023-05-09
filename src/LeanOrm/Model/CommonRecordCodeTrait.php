@@ -142,7 +142,7 @@ trait CommonRecordCodeTrait {
      * 
      * @throws \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException
      */
-    public function setRelatedData($key, $value): self {
+    public function setRelatedData($key, $value): static {
         
         $my_model = $this->getModel();
         $table_cols = $my_model->getTableColNames();
@@ -188,7 +188,7 @@ trait CommonRecordCodeTrait {
     /**
      * @return mixed the value stored in the primary-key column for this record.
      */
-    public function getPrimaryVal() {
+    public function getPrimaryVal(): mixed {
 
         return $this->{$this->getPrimaryCol()};
     }
@@ -198,7 +198,7 @@ trait CommonRecordCodeTrait {
      * 
      * @param \GDAO\Model $model A model object that will be used by this record to communicate with the DB
      */
-    public function setModel(\GDAO\Model $model): self {
+    public function setModel(\GDAO\Model $model): static {
         
         $this->model = $model;
         
@@ -289,7 +289,7 @@ trait CommonRecordCodeTrait {
      * 
      * @return mixed The data value.
      */
-    public function __get($key) {
+    public function __get($key): mixed {
 
         if ( array_key_exists($key, $this->data) ) {
             

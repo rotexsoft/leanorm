@@ -1032,7 +1032,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
                     [], 'author_id', 'authors'
                 ) extends \LeanOrm\Model {
             
-                public function insert(array $data_2_insert = []) {
+                public function insert(array $data_2_insert = []): array|bool {
                     return false;
                 }
                 public function insertMany(array $rows_of_data_2_insert = []): bool {
@@ -1146,7 +1146,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
                     [], 'author_id', 'authors'
                 ) extends \LeanOrm\Model {
             
-                public function insert(array $data_2_insert = []) {
+                public function insert(array $data_2_insert = []): array|bool {
                     return false;
                 }
                 public function insertMany(array $rows_of_data_2_insert = []): bool {
@@ -1188,7 +1188,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
                     [], 'author_id', 'authors'
                 ) extends \LeanOrm\Model {
 
-                public function insert(array $data_2_insert = []) {
+                public function insert(array $data_2_insert = []): array|bool {
 
                     throw new \Exception('Yabadabadoo');
 

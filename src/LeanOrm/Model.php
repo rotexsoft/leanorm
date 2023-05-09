@@ -56,13 +56,13 @@ class Model extends \GDAO\Model {
 
     public function canLogQueries(): bool { return $this->can_log_queries; }
 
-    public function enableQueryLogging(): self {
+    public function enableQueryLogging(): static {
 
         $this->can_log_queries = true;
         return $this;
     }
 
-    public function disableQueryLogging(): self {
+    public function disableQueryLogging(): static {
 
         $this->can_log_queries = false;
         return $this;
@@ -80,7 +80,7 @@ class Model extends \GDAO\Model {
 
     protected ?LoggerInterface $logger = null;
 
-    public function setLogger(?LoggerInterface $logger): self {
+    public function setLogger(?LoggerInterface $logger): static {
         
         $this->logger = $logger;
         return $this;
@@ -408,7 +408,7 @@ class Model extends \GDAO\Model {
     /**
      * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
      */
-    public function loadRelationshipData($rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false): self {
+    public function loadRelationshipData($rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false): static {
 
         if( 
             array_key_exists($rel_name, $this->relations) 
@@ -1674,7 +1674,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
-    public function fetchValue(?object $select_obj=null) {
+    public function fetchValue(?object $select_obj=null): mixed {
 
         $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery($select_obj);
         $query_obj->limit(1);
@@ -1874,7 +1874,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
-    public function insert(array $data_2_insert = []) {
+    public function insert(array $data_2_insert = []): bool|array {
         
         $result = false;
 
@@ -2030,7 +2030,7 @@ SELECT {$foreign_table_name}.*
     public function updateMatchingDbTableRows(
         array $col_names_n_vals_2_save = [],
         array $col_names_n_vals_2_match = []
-    ): self {
+    ): static {
         $num_initial_match_items = count($col_names_n_vals_2_match);
 
         if ($col_names_n_vals_2_save !== []) {
@@ -2174,7 +2174,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
-    public function updateSpecifiedRecord(\GDAO\Model\RecordInterface $record): self {
+    public function updateSpecifiedRecord(\GDAO\Model\RecordInterface $record): static {
         
         if( $record instanceof \LeanOrm\Model\ReadOnlyRecord ) {
 
@@ -2376,7 +2376,7 @@ SELECT {$foreign_table_name}.*
         return "{$obj->getDsn()}::" . get_class($obj);
     }
     
-    protected function logQuery(string $sql, array $bind_params, string $calling_method='', string $calling_line=''): self {
+    protected function logQuery(string $sql, array $bind_params, string $calling_method='', string $calling_line=''): static {
 
         if( $this->can_log_queries ) {
 
@@ -2428,7 +2428,7 @@ SELECT {$foreign_table_name}.*
         string $foreign_models_record_class_name = '',
         string $foreign_models_collection_class_name = '',
         ?callable $sql_query_modifier = null
-    ): self {
+    ): static {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
         $this->validateRelatedModelClassName($foreign_models_class_name);
         
@@ -2474,7 +2474,7 @@ SELECT {$foreign_table_name}.*
         string $foreign_models_record_class_name = '',
         string $foreign_models_collection_class_name = '',
         ?callable $sql_query_modifier = null
-    ): self {
+    ): static {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
         $this->validateRelatedModelClassName($foreign_models_class_name);
         
@@ -2520,7 +2520,7 @@ SELECT {$foreign_table_name}.*
         string $foreign_models_record_class_name = '',
         string $foreign_models_collection_class_name = '',
         ?callable $sql_query_modifier = null
-    ): self {
+    ): static {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
         $this->validateRelatedModelClassName($foreign_models_class_name);
         
@@ -2570,7 +2570,7 @@ SELECT {$foreign_table_name}.*
         string $foreign_models_record_class_name = '',
         string $foreign_models_collection_class_name = '',
         ?callable $sql_query_modifier = null
-    ): self {
+    ): static {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
         $this->validateRelatedModelClassName($foreign_models_class_name);
         

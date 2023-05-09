@@ -204,7 +204,7 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      */
-    public function loadData($data_2_load, array $cols_2_load = []): self {
+    public function loadData($data_2_load, array $cols_2_load = []): static {
 
         if(
             !is_array($data_2_load) 
@@ -310,7 +310,7 @@ class Record implements \GDAO\Model\RecordInterface
      * Set the is_new attribute of this record to true (meaning that the data
      * for this record has never been saved to the db).
      */
-    public function markAsNew(): self {
+    public function markAsNew(): static {
         
         $this->is_new = true;
         
@@ -321,7 +321,7 @@ class Record implements \GDAO\Model\RecordInterface
      * Set the is_new attribute of this record to false (meaning that the data
      * for this record has been saved to the db or was read from the db).
      */
-    public function markAsNotNew(): self {
+    public function markAsNotNew(): static {
         
         $this->is_new = false;
         
@@ -343,7 +343,7 @@ class Record implements \GDAO\Model\RecordInterface
      *  - or the value of initial_data could be copied to _data
      *  - etc.
      */
-    public function setStateToNew(): self {
+    public function setStateToNew(): static {
 
         $this->data = [];
         $this->related_data = [];

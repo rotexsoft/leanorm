@@ -14,11 +14,11 @@
         }
     ],
     "require": {
-        "php": ">=7.4",
-        "rotexsoft/gdao": "^2.2.1",
+        "php": ">=8.1",
+        "rotexsoft/gdao": "^3.0.0-RC1",
         "aura/sqlquery": "^3.0.0",
         "aura/sqlschema": "^2.0",
-        "psr/log": "^1.1",
+        "psr/log": "^2.0.0",
         "atlas/info": "^1.2"
     },
     "require-dev": {
@@ -26,8 +26,6 @@
         "php-coveralls/php-coveralls": "^2.0",
         "vimeo/psalm": "^5.4.0",
         "rector/rector": "^0.16.0",
-        "symfony/polyfill-php80": "^1.26",
-        "symfony/polyfill-php81": "^1.26",
         "symfony/polyfill-php82": "^1.26",
         "atlas/pdo": "^1.2",
         "rotexsoft/versatile-collections": "^5.2"

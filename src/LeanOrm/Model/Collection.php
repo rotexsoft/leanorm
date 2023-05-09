@@ -48,7 +48,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @throws \LeanOrm\CantDeleteReadOnlyRecordFromDBException
      * 
      */
-    public function deleteAll() {
+    public function deleteAll(): bool|array {
         
         $this->preDeleteAll();
         
@@ -157,7 +157,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Load the collection with a list of records.
      * @param \GDAO\Model\RecordInterface[] ...$data_2_load
      */
-    public function loadData(\GDAO\Model\RecordInterface ...$data_2_load): self{
+    public function loadData(\GDAO\Model\RecordInterface ...$data_2_load): static {
         
         $this->data = $data_2_load;
         
@@ -171,7 +171,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * from the database.
      * 
      */
-    public function removeAll(): self {
+    public function removeAll(): static {
         
         $keys =  array_keys($this->data);
         
@@ -218,7 +218,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @throws \PDOException
      * 
      */
-    public function saveAll($group_inserts_together=false) {
+    public function saveAll($group_inserts_together=false): bool|array {
         
         $this->preSaveAll($group_inserts_together);
         
@@ -334,7 +334,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * 
      */
-    public function setModel(\GDAO\Model $model): self {
+    public function setModel(\GDAO\Model $model): static {
         
         $this->model = $model;
         
@@ -404,7 +404,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @throws \GDAO\Model\CollectionCanOnlyContainGDAORecordsException
      * 
      */
-    public function offsetSet($key, $val): void {
+    public function offsetSet(mixed $key, mixed $val): void {
         
         if( !($val instanceof \GDAO\Model\RecordInterface) ) {
             

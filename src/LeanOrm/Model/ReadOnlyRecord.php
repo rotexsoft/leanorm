@@ -96,7 +96,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      */
-    public function loadData($data_2_load, array $cols_2_load = []): self {
+    public function loadData($data_2_load, array $cols_2_load = []): static {
 
         if(
             !is_array($data_2_load) 
@@ -191,7 +191,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * Not Supported, not overridable.
      */
-    public final function markAsNew(): self {
+    public final function markAsNew(): static {
         
         return $this;
     }
@@ -199,7 +199,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * Not Supported, not overridable.
      */
-    public final function markAsNotNew(): self {
+    public final function markAsNotNew(): static {
         
         return $this;
     }
@@ -207,7 +207,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * Not Supported, not overridable.
      */
-    public final function setStateToNew(): self {
+    public final function setStateToNew(): static {
         
         return $this;
     }
