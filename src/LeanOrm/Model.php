@@ -148,7 +148,7 @@ class Model extends \GDAO\Model {
                 if( !$this->tableExistsInDB($this->getTableName()) ) {
 
                     $msg = "ERROR: Table name `{$this->getTableName()}` supplied to " 
-                            . get_class($this) . '::' . __FUNCTION__ . '(...)'
+                            . static::class . '::' . __FUNCTION__ . '(...)'
                             . ' does not exist as a table or view in the database';
                     throw new BadModelTableNameException($msg);
                 }
@@ -166,7 +166,7 @@ class Model extends \GDAO\Model {
                 && !$this->columnExistsInDbTable($this->getTableName(), $primary_col_name) 
             ) {
                 $msg = "ERROR: The Primary Key column name `{$primary_col_name}` supplied to " 
-                        . get_class($this) . '::' . __FUNCTION__ . '(...)'
+                        . static::class . '::' . __FUNCTION__ . '(...)'
                         . " does not exist as an actual column in the supplied table `{$this->getTableName()}`.";
                 throw new BadModelPrimaryColumnNameException($msg);
             }
@@ -226,7 +226,7 @@ class Model extends \GDAO\Model {
 
             if(version_compare($sqlite_version_number, '3.7.10', '<=')) {
 
-                $source = get_class($this) . '::' . __FUNCTION__ . '(...)';
+                $source = static::class . '::' . __FUNCTION__ . '(...)';
                 $msg = "ERROR ({$source}): Sqlite version `{$sqlite_version_number}`"
                         . " detected. This package requires Sqlite version `3.7.11`"
                         . " or greater. Use a newer version of sqlite or use another"
@@ -258,7 +258,7 @@ class Model extends \GDAO\Model {
         $column_factory = new ColumnFactory();
         $pdo_driver_name = $this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME);
 
-        $schema_class_name = '\\Aura\\SqlSchema\\' . ucfirst($pdo_driver_name) . 'Schema';
+        $schema_class_name = '\\Aura\\SqlSchema\\' . ucfirst((string) $pdo_driver_name) . 'Schema';
 
         // the schema discovery object
         return new $schema_class_name($this->getPDO(), $column_factory);
@@ -269,7 +269,7 @@ class Model extends \GDAO\Model {
      */
     protected function fetchTableListFromDB(): array {
         
-        if(strtolower($this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) === 'sqlite') {
+        if(strtolower((string) $this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) === 'sqlite') {
             
             // Do this to return both tables and views
             // $this->getSchemaQueryingObject()->fetchTableList()
@@ -285,7 +285,7 @@ class Model extends \GDAO\Model {
         
         $schema = $this->getSchemaQueryingObject();
         
-        if(strtolower($this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) ===  'pgsql') {
+        if(strtolower((string) $this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) ===  'pgsql') {
             
             // Calculate schema name for postgresql
             $schema_name = $this->db_connector->dbFetchValue('SELECT CURRENT_SCHEMA');
@@ -301,7 +301,7 @@ class Model extends \GDAO\Model {
      */
     protected function fetchTableColsFromDB(string $table_name): array {
                 
-        if(strtolower($this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) ===  'pgsql') {
+        if(strtolower((string) $this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) ===  'pgsql') {
             
             // Use Atlas Info to get this data for Postgresql because 
             // Aura Sql Schema keeps blowing up when fetchTableCols
@@ -454,7 +454,7 @@ class Model extends \GDAO\Model {
                  . "'{$parent_model_class_name}'. A model class name specified"
                  . " for fetching related data must be the name of a class that"
                  . " is a sub-class or instance of '{$parent_model_class_name}'"
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
             throw new BadModelClassNameForFetchingRelatedDataException($msg);
@@ -474,7 +474,7 @@ class Model extends \GDAO\Model {
                  . "'{$parent_collection_class_name}'. A collection class name specified"
                  . " for fetching related data must be the name of a class that"
                  . " is a sub-class of '{$parent_collection_class_name}'"
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
             throw new BadCollectionClassNameForFetchingRelatedDataException($msg);
@@ -494,7 +494,7 @@ class Model extends \GDAO\Model {
                  . "'{$parent_record_class_name}'. A record class name specified for"
                  . " fetching related data must be the name of a class that"
                  . " is a sub-class of '{$parent_record_class_name}'"
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
             throw new BadRecordClassNameForFetchingRelatedDataException($msg);
@@ -1078,38 +1078,38 @@ SELECT {$foreign_table_name}.*
                 $f_table_name
             );
             
-        } catch (\GDAO\ModelPrimaryColNameNotSetDuringConstructionException $e) {
+        } catch (\GDAO\ModelPrimaryColNameNotSetDuringConstructionException) {
             
             $msg = "ERROR: Couldn't create foreign model of type '{$f_models_class_name}'."
                  . "  No primary key supplied for the database table '{$f_table_name}'"
                  . " associated with the foreign table class '{$f_models_class_name}'."
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
             throw new RelatedModelNotCreatedException($msg);
             
-        } catch (\GDAO\ModelTableNameNotSetDuringConstructionException $e) {
+        } catch (\GDAO\ModelTableNameNotSetDuringConstructionException) {
             
             $msg = "ERROR: Couldn't create foreign model of type '{$f_models_class_name}'."
                  . "  No database table name supplied."
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
             throw new RelatedModelNotCreatedException($msg);
             
-        } catch (BadModelTableNameException $e) {
+        } catch (BadModelTableNameException) {
             
             $msg = "ERROR: Couldn't create foreign model of type '{$f_models_class_name}'."
                  . " The supplied table name `{$f_table_name}` does not exist as a table or"
                  . " view in the database."
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
             throw new RelatedModelNotCreatedException($msg);
             
-        } catch(BadModelPrimaryColumnNameException $e) {
+        } catch(BadModelPrimaryColumnNameException) {
             
             $msg = "ERROR: Couldn't create foreign model of type '{$f_models_class_name}'."
                  . " The supplied primary key column `{$pri_key_col_in_f_models_table}` "
                  . " does not exist in the supplied table named `{$f_table_name}`."
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
             throw new RelatedModelNotCreatedException($msg);
         }
@@ -1386,7 +1386,7 @@ SELECT {$foreign_table_name}.*
 
                     $msg = "ERROR: Can't key fetch results by Primary Key value."
                          . PHP_EOL . " One or more result rows has no Primary Key field (`{$this->getPrimaryCol()}`)" 
-                         . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                         . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).'
                          . PHP_EOL . 'Fetch Results:' . PHP_EOL . var_export($results, true) . PHP_EOL
                          . PHP_EOL . "Row without Primary Key field (`{$this->getPrimaryCol()}`):" . PHP_EOL . var_export($result, true) . PHP_EOL;
 
@@ -1533,7 +1533,7 @@ SELECT {$foreign_table_name}.*
              . " supplied). Boolean, NULL, numeric or string value expected."
              . PHP_EOL
              . "Data supplied to "
-             . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+             . static::class . '::' . __FUNCTION__ . '(...).' 
              . " for buiding the where clause for the deletion:"
              . PHP_EOL . var_export($cols_n_vals, true) . PHP_EOL
              . PHP_EOL;
@@ -1551,24 +1551,24 @@ SELECT {$foreign_table_name}.*
         if( $record instanceof \LeanOrm\Model\ReadOnlyRecord ) {
 
             $msg = "ERROR: Can't delete ReadOnlyRecord from the database in " 
-                 . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                 . static::class . '::' . __FUNCTION__ . '(...).'
                  . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
             throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
         }
         
         if( 
             $record->getModel()->getTableName() !== $this->getTableName() 
-            || get_class($record->getModel()) !== get_class($this)  
+            || $record->getModel()::class !== static::class  
         ) {
             $msg = "ERROR: Can't delete a record (an instance of `%s` belonging to the Model class `%s`) belonging to the database table `%s` " 
                 . "using a Model instance of `%s` belonging to the database table `%s` in " 
-                 . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                 . static::class . '::' . __FUNCTION__ . '(...).'
                  . PHP_EOL .'Undeleted record: ' . PHP_EOL . var_export($record, true) . PHP_EOL; 
             throw new InvalidArgumentException(
                 sprintf(
-                    $msg, get_class($record), get_class($record->getModel()), 
+                    $msg, $record::class, $record->getModel()::class, 
                     $record->getModel()->getTableName(),
-                    get_class($this), $this->getTableName()
+                    static::class, $this->getTableName()
                 )
             );
         }
@@ -1788,7 +1788,7 @@ SELECT {$foreign_table_name}.*
                      . " supplied). Boolean, NULL, numeric or string value expected."
                      . PHP_EOL
                      . "Data supplied to "
-                     . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                     . static::class . '::' . __FUNCTION__ . '(...).' 
                      . " for insertion:"
                      . PHP_EOL . var_export($data, true) . PHP_EOL
                      . PHP_EOL;
@@ -1887,7 +1887,7 @@ SELECT {$foreign_table_name}.*
             $this->processRowOfDataToInsert(
                 $data_2_insert, $table_cols, $has_autoinc_pkey_col
             );
-            
+
             // Do we still have anything left to save after removing items
             // in the array that do not map to actual db table columns
             if( (is_countable($data_2_insert) ? count($data_2_insert) : 0) > 0 ) {
@@ -1899,7 +1899,7 @@ SELECT {$foreign_table_name}.*
                 $insrt_qry_sql = $insrt_qry_obj->__toString();
                 $insrt_qry_params = $insrt_qry_obj->getBindValues();
                 $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
-                
+
                 if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
 
                     // insert was successful, we are now going to try to 
@@ -1958,13 +1958,13 @@ SELECT {$foreign_table_name}.*
 
                     $item_type = gettype($rows_of_data_2_insert[$key]);
 
-                    $msg = "ERROR: " . get_class($this) . '::' . __FUNCTION__ . '(...)' 
+                    $msg = "ERROR: " . static::class . '::' . __FUNCTION__ . '(...)' 
                          . " expects you to supply an array of arrays."
                          . " One of the items in the array supplied is not an array."
                          . PHP_EOL . " Item below of type `{$item_type}` is not an array: "
                          . PHP_EOL . var_export($rows_of_data_2_insert[$key], true) 
                          . PHP_EOL . PHP_EOL . "Data supplied to "
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . static::class . '::' . __FUNCTION__ . '(...).' 
                          . " for insertion into the db table `{$this->getTableName()}`:"
                          . PHP_EOL . var_export($rows_of_data_2_insert, true) . PHP_EOL
                          . PHP_EOL;
@@ -2017,7 +2017,7 @@ SELECT {$foreign_table_name}.*
              . " supplied). Boolean, NULL, numeric or string value expected."
              . PHP_EOL
              . "Data supplied to "
-             . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+             . static::class . '::' . __FUNCTION__ . '(...).' 
              . " for buiding the where clause for the update:"
              . PHP_EOL . var_export($cols_n_vals, true) . PHP_EOL
              . PHP_EOL;
@@ -2070,7 +2070,7 @@ SELECT {$foreign_table_name}.*
                          . " supplied). Boolean, NULL, numeric or string value expected."
                          . PHP_EOL
                          . "Data supplied to "
-                         . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                         . static::class . '::' . __FUNCTION__ . '(...).' 
                          . " for update:"
                          . PHP_EOL . var_export($col_names_n_vals_2_save, true) . PHP_EOL
                          . PHP_EOL;
@@ -2162,7 +2162,7 @@ SELECT {$foreign_table_name}.*
                     $updt_qry = $update_qry_obj->__toString();
                     $updt_qry_params = $update_qry_obj->getBindValues();
                     $this->logQuery($updt_qry, $updt_qry_params, __METHOD__, '' . __LINE__);
-                    
+
                     $this->db_connector->executeQuery($updt_qry, $updt_qry_params, true);
                 }
 
@@ -2180,7 +2180,7 @@ SELECT {$foreign_table_name}.*
         if( $record instanceof \LeanOrm\Model\ReadOnlyRecord ) {
 
             $msg = "ERROR: Can't save a ReadOnlyRecord to the database in " 
-                 . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                 . static::class . '::' . __FUNCTION__ . '(...).'
                  . PHP_EOL .'Unupdated record' . var_export($record, true) . PHP_EOL;
             throw new \LeanOrm\CantSaveReadOnlyRecordException($msg);
         }
@@ -2189,12 +2189,12 @@ SELECT {$foreign_table_name}.*
             
             $msg = "ERROR: Can't update a record (an instance of `%s`) belonging to the database table `%s` " 
                 . "using a Model instance of `%s` belonging to the database table `%s` in " 
-                 . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                 . static::class . '::' . __FUNCTION__ . '(...).'
                  . PHP_EOL .'Unupdated record: ' . PHP_EOL . var_export($record, true) . PHP_EOL; 
             throw new \GDAO\ModelInvalidUpdateValueSuppliedException(
                 sprintf(
-                    $msg, get_class($record), $record->getModel()->getTableName(),
-                    get_class($this), $this->getTableName()
+                    $msg, $record::class, $record->getModel()->getTableName(),
+                    static::class, $this->getTableName()
                 )
             );
         }
@@ -2320,7 +2320,7 @@ SELECT {$foreign_table_name}.*
                 
                 $attributes[ $key ] = $pdo_obj->getAttribute(constant(\PDO::class .'::ATTR_' . $value));
                 
-            } catch (\PDOException $e) {
+            } catch (\PDOException) {
                 
                 $attributes[ $key ] = 'Unsupported attribute for the current PDO driver';
                 continue;
@@ -2374,7 +2374,7 @@ SELECT {$foreign_table_name}.*
 
     protected static function createLoggingKey(\GDAO\Model $obj): string {
         
-        return "{$obj->getDsn()}::" . get_class($obj);
+        return "{$obj->getDsn()}::" . $obj::class;
     }
     
     protected function logQuery(string $sql, array $bind_params, string $calling_method='', string $calling_line=''): static {
@@ -2623,11 +2623,11 @@ SELECT {$foreign_table_name}.*
             //Error trying to add a relation whose name collides with an actual
             //name of a column in the db table associated with this model.
             $msg = sprintf("ERROR: You cannont add a relationship with the name '%s' ", $relationName)
-                 . " to the Model (".get_class($this)."). The database table "
+                 . " to the Model (".static::class."). The database table "
                  . sprintf(" '%s' associated with the ", $this->getTableName())
-                 . " model (".get_class($this).") already contains"
+                 . " model (".static::class.") already contains"
                  . " a column with the same name."
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
             throw new \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
@@ -2640,7 +2640,7 @@ SELECT {$foreign_table_name}.*
             
             //throw exception
             $msg = "ERROR: The specified table `{$table_name}` does not exist in the DB."
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
             throw new BadModelTableNameException($msg);
         } // if(!$this->tableExistsInDB($table_name))
@@ -2655,7 +2655,7 @@ SELECT {$foreign_table_name}.*
             //throw exception
             $msg = "ERROR: The specified table `{$table_name}` in the DB"
                  . " does not contain the specified column `{$column_name}`."
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
             throw new BadModelColumnNameException($msg);
         } // if(!$this->columnExistsInDbTable($table_name, $column_name))

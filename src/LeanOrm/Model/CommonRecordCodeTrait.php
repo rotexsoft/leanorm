@@ -152,11 +152,11 @@ trait CommonRecordCodeTrait {
             //Error trying to add a relation whose name collides with an actual
             //name of a column in the db table associated with this record's model.
             $msg = sprintf("ERROR: You cannont add a relationship with the name '%s' ", $key)
-                 . " to the record (".get_class($this)."). The database table "
+                 . " to the record (".$this::class."). The database table "
                  . sprintf(" '%s' associated with the ", $my_model->getTableName())
-                 . " record's model (".get_class($my_model).") already contains"
+                 . " record's model (".$my_model::class.") already contains"
                  . " a column with the same name."
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . $this::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
                  
             throw new \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
@@ -333,7 +333,7 @@ trait CommonRecordCodeTrait {
 
             //$key is not a valid db column name or relation name.
             $msg = sprintf("Property '%s' does not exist in ", $key) 
-                   . get_class($this) . PHP_EOL . $this->__toString();
+                   . $this::class . PHP_EOL . $this->__toString();
             
             throw new NoSuchPropertyForRecordException($msg);
         }
@@ -350,7 +350,7 @@ trait CommonRecordCodeTrait {
     public function __isset($key): bool {
         
         try { $this->$key;  } //access the property first to make sure the data is loaded
-        catch ( \Exception $exception ) {  } //do nothing if exception was thrown
+        catch ( \Exception ) {  } //do nothing if exception was thrown
         
         return array_key_exists($key, $this->data) 
             || array_key_exists($key, $this->related_data)
@@ -378,10 +378,10 @@ trait CommonRecordCodeTrait {
             //Cannot load data
             //2 records whose models are associated with different db tables.
             //Can't load data, schemas don't match.
-            $msg = "ERROR: Can't load data from an instance of '".get_class($data_2_load)
-                   . "' into an instance of '".get_class($this)."'. Their models"
-                   . "'".get_class($data_2_load->getModel())."' and '"
-                   . get_class($this->getModel())."' are associated with different"
+            $msg = "ERROR: Can't load data from an instance of '".$data_2_load::class
+                   . "' into an instance of '".$this::class."'. Their models"
+                   . "'".$data_2_load->getModel()::class."' and '"
+                   . $this->getModel()::class."' are associated with different"
                    . " db tables ('".$data_2_load->getModel()->getTableName() 
                    ."' and '". $this->getModel()->getTableName()."')."
                    . PHP_EOL . "Unloaded Data:"

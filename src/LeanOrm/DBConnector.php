@@ -49,12 +49,12 @@ class DBConnector {
     /**
      * @var string
      */
-    public const DEFAULT_CONNECTION = 'default';
+    final public const DEFAULT_CONNECTION = 'default';
 
     /**
      * @var int
      */
-    public const NANO_SECOND_TO_SECOND_DIVISOR = 1_000_000_000;
+    final public const NANO_SECOND_TO_SECOND_DIVISOR = 1_000_000_000;
 
 ////////////////////////////////////////////////////////////////////////////////        
 //////////// -------------------------------- //////////////////////////////////
@@ -78,21 +78,12 @@ class DBConnector {
      */
     protected static array $db = [];
 
-    // --------------------------- //
-    // --- INSTANCE PROPERTIES --- //
-    // --------------------------- //
-
-    // Key name of the connection in static::$db used by this instance
-    protected string $connection_name;
-
 //////////// ------------------------------------ //////////////////////////////
-//////////// --- END CLASS PROPERTIES TO KEEP --- //////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
+    //////////// --- END CLASS PROPERTIES TO KEEP --- //////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
     // ---------------------- //
     // --- STATIC METHODS --- //
     // ---------------------- //
-
     /**
      * Pass configuration settings to the class in the form of
      * key/value pairs. As a shortcut, if the second argument
@@ -103,10 +94,9 @@ class DBConnector {
      * you wish to configure, another shortcut is to pass an array
      * of settings (and omit the second argument).
      * @param array<int|string, mixed>|string $key_or_settings
-     * @param mixed $value
      * @param string $connection_name Which connection to use
      */
-    public static function configure($key_or_settings, $value = null, string $connection_name = self::DEFAULT_CONNECTION): void {
+    public static function configure(array|string $key_or_settings, mixed $value = null, string $connection_name = self::DEFAULT_CONNECTION): void {
 
         static::_initDbConfigWithDefaultVals($connection_name); //ensures at least default config is set
 
@@ -214,7 +204,7 @@ class DBConnector {
      * 
      * @return bool|array bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
      */
-    public function executeQuery(string $query, array $parameters=[], bool $return_pdo_stmt_and_exec_time=false) {
+    public function executeQuery(string $query, array $parameters=[], bool $return_pdo_stmt_and_exec_time=false): bool|array {
 
         return static::_execute($query, $parameters, $return_pdo_stmt_and_exec_time, $this->connection_name);
     }
@@ -229,7 +219,7 @@ class DBConnector {
     * 
     * @return bool|array Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
     */
-    protected static function _execute(string $query, array $parameters = [], bool $return_pdo_stmt_and_exec_time=false, string $connection_name = self::DEFAULT_CONNECTION) {
+    protected static function _execute(string $query, array $parameters = [], bool $return_pdo_stmt_and_exec_time=false, string $connection_name = self::DEFAULT_CONNECTION): bool|array {
 
         $statement = static::getDb($connection_name)->prepare($query);
 
@@ -273,9 +263,12 @@ class DBConnector {
      * "Private" constructor; shouldn't be called directly.
      * Use the DBConnector::create factory method instead.
      */
-    protected function __construct(string $connection_name = self::DEFAULT_CONNECTION) {
+    protected function __construct(// --------------------------- //
+    // --- INSTANCE PROPERTIES --- //
+    // --------------------------- //
+    // Key name of the connection in static::$db used by this instance
+    protected string $connection_name = self::DEFAULT_CONNECTION) {
 
-        $this->connection_name = $connection_name;
         static::_initDbConfigWithDefaultVals($connection_name);
     }
 

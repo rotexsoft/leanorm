@@ -57,7 +57,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             if( $record instanceof ReadOnlyRecord ) {
                 
                 $msg = "ERROR: Can't delete ReadOnlyRecord in Collection from"
-                     . " the database in " . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                     . " the database in " . static::class . '::' . __FUNCTION__ . '(...).'
                      . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
                 throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
             }
@@ -238,10 +238,10 @@ class Collection implements \GDAO\Model\CollectionInterface
                         $record->getModel()->getTableName() 
                         !== $this->getModel()->getTableName()
                     ) {
-                        $record_class_name = get_class($record);
+                        $record_class_name = $record::class;
                         $record_table_name = $record->getModel()->getTableName();
                         
-                        $collection_class_name = get_class($this);
+                        $collection_class_name = static::class;
                         $collection_table_name = $this->getModel()->getTableName();
                         
                         $method_name = __FUNCTION__;
@@ -250,7 +250,7 @@ class Collection implements \GDAO\Model\CollectionInterface
                             . " belonging to table `{$record_table_name}` in the database via the " 
                             . " `{$method_name}` method in a Collection of type `{$collection_class_name}`"
                             . " whose model is associated with the table `{$collection_table_name}` in the"
-                            . " database. " . PHP_EOL .  get_class($this) . '::' . $method_name . '(...).'
+                            . " database. " . PHP_EOL .  static::class . '::' . $method_name . '(...).'
                             . PHP_EOL .'Unsaved record' . var_export($record, true) . PHP_EOL;
                         throw new TableNameMismatchInCollectionSaveAllException($msg);
                     }
@@ -312,7 +312,7 @@ class Collection implements \GDAO\Model\CollectionInterface
         if( $record instanceof ReadOnlyRecord ) {
 
             $msg = "ERROR: Can't save ReadOnlyRecord in Collection to"
-                 . " the database in " . get_class($this) . '::' . $calling_function . '(...).'
+                 . " the database in " . static::class . '::' . $calling_function . '(...).'
                  . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
             throw new \LeanOrm\CantSaveReadOnlyRecordException($msg);
         }
@@ -462,7 +462,7 @@ class Collection implements \GDAO\Model\CollectionInterface
         } else {
 
             $msg = sprintf("ERROR: Item with key '%s' does not exist in ", $key) 
-                   . get_class($this) .'.'. PHP_EOL . $this->__toString();
+                   . static::class .'.'. PHP_EOL . $this->__toString();
             
             throw new \GDAO\Model\ItemNotFoundInCollectionException($msg);
         }
