@@ -21,10 +21,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     use CommonRecordCodeTrait;
     
     /**
-     * @return never
      * @throws \GDAO\Model\RecordOperationNotSupportedException
      */
-    protected function throwNotSupportedException($function_name): void {
+    protected function throwNotSupportedException($function_name): never {
         
         $msg = "ERROR: ". get_class($this) . '::' . $function_name . '(...)' 
              . " is not supported in a ReadOnly Record. ";
@@ -35,7 +34,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * Not Supported, not overridable.
      */
-    public final function delete($set_record_objects_data_to_empty_array=false): bool{
+    public final function delete(bool $set_record_objects_data_to_empty_array=false): bool{
         
         $this->throwNotSupportedException(__FUNCTION__);
     }
@@ -63,7 +62,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * Not overridable.
      */
-    public final function isChanged($col = null): ?bool {
+    public final function isChanged(?string $col = null): ?bool {
         
         return false;
     }
@@ -96,96 +95,9 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      * 
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      */
-    public function loadData($data_2_load, array $cols_2_load = []): static {
-
-        if(
-            !is_array($data_2_load) 
-            && !($data_2_load instanceof \GDAO\Model\RecordInterface)
-        ) {
-            $datasource_type = is_object($data_2_load)? 
-                                get_class($data_2_load) : gettype($data_2_load);
-            
-            $msg = "ERROR: Trying to load data into a record from an unsupported"
-                   . sprintf(" data source of type '%s'. An 'Array' or", $datasource_type)
-                   . " instance of '\\LeanOrm\\Model\\Record' or any of its"
-                   . " subclasses are the allowed data sources acceptable by "
-                   . get_class($this).'::'.__FUNCTION__.'(...)'
-                   . PHP_EOL . "Unloaded Data:"
-                   . PHP_EOL . var_export($data_2_load, true) . PHP_EOL;
-            
-            throw new LoadingDataFromInvalidSourceIntoRecordException($msg);
-        }
+    public function loadData(\GDAO\Model\RecordInterface|array $data_2_load, array $cols_2_load = []): static {
         
-        if (
-            $data_2_load instanceof \GDAO\Model\RecordInterface
-            && $data_2_load->getModel()->getTableName() !== $this->getModel()->getTableName()
-        ) {
-            //Cannot load data
-            //2 records whose models are associated with different db tables.
-            //Can't load data, schemas don't match.
-            $msg = "ERROR: Can't load data from an instance of '".get_class($data_2_load)
-                   . "' into an instance of '".get_class($this)."'. Their models"
-                   . "'".get_class($data_2_load->getModel())."' and '"
-                   . get_class($this->getModel())."' are associated with different"
-                   . " db tables ('".$data_2_load->getModel()->getTableName() 
-                   ."' and '". $this->getModel()->getTableName()."')."
-                   . PHP_EOL . "Unloaded Data:"
-                   . PHP_EOL . var_export($data_2_load->getData(), true)  . PHP_EOL;
-            
-            throw new LoadingDataFromInvalidSourceIntoRecordException($msg);
-        }
-
-        $table_col_names_4_my_model = $this->getModel()->getTableColNames();
-        
-        if ( $cols_2_load === [] ) {
-
-            if ( is_array($data_2_load) && $data_2_load !== [] ) {
-
-                foreach( $data_2_load as $col_name => $value_2_load ) {
-                    
-                    if ( in_array($col_name, $table_col_names_4_my_model) ) {
-                        
-                        $this->data[$col_name] = $value_2_load;
-                    } else {
-                        
-                        $this->non_table_col_and_non_related_data[$col_name] = $value_2_load;
-                    }
-                }
-                
-            } else if ($data_2_load instanceof \GDAO\Model\RecordInterface) {
-
-                $this->data = $data_2_load->getData();
-                $this->non_table_col_and_non_related_data = $data_2_load->getNonTableColAndNonRelatedData();
-            }
-            
-        } else {
-
-            foreach ( $cols_2_load as $col_name ) {
-
-                if (
-                    (
-                        is_array($data_2_load)
-                        && $data_2_load !== []
-                        && array_key_exists($col_name, $data_2_load)
-                    ) 
-                    || (
-                        $data_2_load instanceof \GDAO\Model\RecordInterface 
-                        && isset($data_2_load[$col_name])
-                    )
-                ) {
-                    if ( in_array($col_name, $table_col_names_4_my_model) ) {
-
-                        $this->data[$col_name] = $data_2_load[$col_name];
-
-                    } else {
-
-                        $this->non_table_col_and_non_related_data[$col_name] = $data_2_load[$col_name];
-                    }
-                }
-            } // foreach ( $cols_2_load as $col_name )
-        }// else if ( is_array($cols_2_load) && count($cols_2_load) > 0 )
-        
-        return $this;
+        return $this->injectData($data_2_load, $cols_2_load);
     }
 
     /**
@@ -215,7 +127,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * Not Supported, not overridable.
      */
-    public final function save($data_2_save = null): ?bool {
+    public final function save(null|\GDAO\Model\RecordInterface|array $data_2_save = null): ?bool {
         
         return null;
     }
@@ -223,7 +135,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * Not Supported, not overridable.
      */
-    public final function saveInTransaction($data_2_save = null): ?bool {
+    public final function saveInTransaction(null|\GDAO\Model\RecordInterface|array $data_2_save = null): ?bool {
         
         return null;
     }

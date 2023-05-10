@@ -192,29 +192,6 @@ class ReadOnlyRecordTest extends \PHPUnit\Framework\TestCase {
             $model
         );
         
-        $readOnlyRecord->loadData(new \DateTime()); //calling with non-array & non-RecordInterface
-    }
-    
-    public function testThatLoadDataThrowsException2() {
-        
-        $this->expectException(\GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException::class);
-        
-        $model = new \LeanOrm\Model(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
-        $model->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
-        
-        $timestamp = date('Y-m-d H:i:s');
-        $readOnlyRecord = new \LeanOrm\Model\ReadOnlyRecord(
-            [
-                'author_id' => 888, 
-                'name' => 'Author 1', 
-                'm_timestamp' => $timestamp, 
-                'date_created' => $timestamp,
-                'non_existent_col_1' => 'Some Data 1',
-                'non_existent_col_2' => 'Some Data 2',
-            ],
-            $model
-        );
-        
         $postRecord = (new \LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? ""))
                         ->createNewRecord();
         self::assertInstanceOf(\LeanOrm\TestObjects\PostRecord::class, $postRecord);

@@ -404,11 +404,13 @@ class Model extends \GDAO\Model {
 
         return $default_colvals;
     }
-
-    /**
-     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
-     */
-    public function loadRelationshipData($rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false): static {
+    
+    public function loadRelationshipData(
+        string $rel_name, 
+        \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array &$parent_data, 
+        bool $wrap_each_row_in_a_record=false, 
+        bool $wrap_records_in_collection=false
+    ): static {
 
         if( 
             array_key_exists($rel_name, $this->relations) 
@@ -501,11 +503,11 @@ class Model extends \GDAO\Model {
         return true;
     }
     
-    /**
-     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
-     */
     protected function loadHasMany( 
-        string $rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false 
+        string $rel_name, 
+        \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array &$parent_data, 
+        bool $wrap_each_row_in_a_record=false, 
+        bool $wrap_records_in_collection=false 
     ): void {
         if( 
             array_key_exists($rel_name, $this->relations) 
@@ -609,11 +611,11 @@ class Model extends \GDAO\Model {
         } // if( array_key_exists($rel_name, $this->relations) )
     }
     
-    /**
-     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
-     */
     protected function loadHasManyThrough( 
-        string $rel_name, &$parent_data, bool $wrap_each_row_in_a_record=false, bool $wrap_records_in_collection=false 
+        string $rel_name, 
+        \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array &$parent_data, 
+        bool $wrap_each_row_in_a_record=false, 
+        bool $wrap_records_in_collection=false 
     ): void {
         if( 
             array_key_exists($rel_name, $this->relations) 
@@ -815,11 +817,10 @@ SELECT {$foreign_table_name}.*,
         } // if( array_key_exists($rel_name, $this->relations) )
     }
     
-    /**
-     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
-     */
     protected function loadHasOne( 
-        string $rel_name, &$parent_data, bool $wrap_row_in_a_record=false
+        string $rel_name, 
+        \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array &$parent_data, 
+        bool $wrap_row_in_a_record=false
     ): void {
         if( 
             array_key_exists($rel_name, $this->relations) 
@@ -933,10 +934,11 @@ SELECT {$foreign_table_name}.*
         } // if( array_key_exists($rel_name, $this->relations) )
     }
     
-    /**
-     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
-     */
-    protected function loadBelongsTo(string $rel_name, &$parent_data, bool $wrap_row_in_a_record=false): void {
+    protected function loadBelongsTo(
+        string $rel_name, 
+        \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array &$parent_data, 
+        bool $wrap_row_in_a_record=false
+    ): void {
 
         if( 
             array_key_exists($rel_name, $this->relations) 
@@ -956,10 +958,12 @@ SELECT {$foreign_table_name}.*
     }
     
     /**
-     * @param \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
      * @return mixed[]
      */
-    protected function getBelongsToOrHasOneOrHasManyData(string $rel_name, &$parent_data): array {
+    protected function getBelongsToOrHasOneOrHasManyData(
+        string $rel_name, 
+        \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array &$parent_data
+    ): array {
 
         $rel_info = $this->relations[$rel_name];
 
@@ -1128,11 +1132,11 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     * @param \GDAO\Model\CollectionInterface|array<string|int, array> $parent_data
      * @return mixed[]
      */
     protected function getColValsFromArrayOrCollection(
-        &$parent_data, string $fkey_col_in_my_table
+        \GDAO\Model\CollectionInterface|array &$parent_data, 
+        string $fkey_col_in_my_table
     ): array {
         $col_vals = [];
 
@@ -1220,7 +1224,8 @@ SELECT {$foreign_table_name}.*
         bool $use_records=false, 
         bool $use_collections=false, 
         bool $use_p_k_val_as_key=false
-    ) {
+    ): \GDAO\Model\CollectionInterface|array {
+        
         $select_obj ??= $this->createQueryObjectIfNullAndAddColsToQuery($select_obj);
         
         if( $ids !== [] ) {
@@ -1253,7 +1258,6 @@ SELECT {$foreign_table_name}.*
             if(!($result instanceof \GDAO\Model\CollectionInterface) && !is_array($result)) {
                
                 return $use_collections ? $this->createNewCollection() : [];
-                
             } 
             
             return $result;
@@ -1281,7 +1285,7 @@ SELECT {$foreign_table_name}.*
         ?\Aura\SqlQuery\Common\Select $select_obj=null, 
         array $relations_to_include=[], 
         bool $use_p_k_val_as_key=false
-    ) {
+    ): \GDAO\Model\CollectionInterface {
         $results = $this->createNewCollection();
         $data = $this->getArrayOfRecordObjects($select_obj, $use_p_k_val_as_key);
 
@@ -1718,11 +1722,8 @@ SELECT {$foreign_table_name}.*
             $data[$timestamp_col_name] = date('Y-m-d H:i:s');
         }
     }
-
-    /**
-     * @return mixed
-     */
-    protected function stringifyIfStringable($col_val, string $col_name='', array $table_cols=[]) {
+    
+    protected function stringifyIfStringable(mixed $col_val, string $col_name='', array $table_cols=[]): mixed {
         
         if(
             ( 
@@ -1737,23 +1738,23 @@ SELECT {$foreign_table_name}.*
         return $col_val;
     }
         
-    protected function isAcceptableInsertValue($val): bool {
+    protected function isAcceptableInsertValue(mixed $val): bool {
         
         return is_bool($val) || is_null($val) || is_numeric($val) || is_string($val)
                || ( is_object($val) && method_exists($val, '__toString') );
     }
     
-    protected function isAcceptableUpdateValue($val): bool {
+    protected function isAcceptableUpdateValue(mixed $val): bool {
         
         return $this->isAcceptableInsertValue($val);
     }
     
-    protected function isAcceptableUpdateQueryValue($val): bool {
+    protected function isAcceptableUpdateQueryValue(mixed $val): bool {
         
         return $this->isAcceptableUpdateValue($val);
     }
     
-    protected function isAcceptableDeleteQueryValue($val): bool {
+    protected function isAcceptableDeleteQueryValue(mixed $val): bool {
         
         return $this->isAcceptableUpdateQueryValue($val);
     }

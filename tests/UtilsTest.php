@@ -24,7 +24,6 @@ class UtilsTest extends \PHPUnit\Framework\TestCase {
         
         self::assertNull(Utils::arrayGet($array, ''));
         self::assertNull(Utils::arrayGet($array, " "));
-        self::assertNull(Utils::arrayGet($array, fn() => 'booo' )); // non-int & non-string key
         self::assertNull(Utils::arrayGet($array, "non-existent-key"));
         
         self::assertEquals(

@@ -16,7 +16,6 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * @var \GDAO\Model\RecordInterface[] array of \GDAO\Model\RecordInterface records
-     * 
      */
     protected array $data = [];
     
@@ -46,7 +45,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @throws \PDOException 
      * @throws \LeanOrm\CantDeleteReadOnlyRecordFromDBException
-     * 
      */
     public function deleteAll(): bool|array {
         
@@ -104,9 +102,8 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return array An array of key-value pairs where the key is the collection 
      *               element key, and the value is the column value for that
      *               element.
-     * 
      */
-    public function getColVals($col): array {
+    public function getColVals(string $col): array {
         
         $list = [];
         
@@ -133,7 +130,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Returns the model from which the data originates.
      * 
      * @return \GDAO\Model The origin model object.
-     * 
      */
     public function getModel(): \GDAO\Model {
         
@@ -145,7 +141,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Are there any records in the collection?
      * 
      * @return bool True if empty, false if not.
-     * 
      */
     public function isEmpty(): bool {
         
@@ -167,9 +162,7 @@ class Collection implements \GDAO\Model\CollectionInterface
     
     /**
      * 
-     * Removes all records from the collection but **does not** delete them
-     * from the database.
-     * 
+     * Removes all records from the collection but **does not** delete them from the database.
      */
     public function removeAll(): static {
         
@@ -216,9 +209,8 @@ class Collection implements \GDAO\Model\CollectionInterface
      *                    thrown if an insert or update fails.
      * 
      * @throws \PDOException
-     * 
      */
-    public function saveAll($group_inserts_together=false): bool|array {
+    public function saveAll(bool $group_inserts_together=false): bool|array {
         
         $this->preSaveAll($group_inserts_together);
         
@@ -331,8 +323,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Injects the model from which the data originates.
      * 
      * @param \GDAO\Model $model The origin model object.
-     * 
-     * 
      */
     public function setModel(\GDAO\Model $model): static {
         
@@ -346,7 +336,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Returns an array representation of an instance of this class.
      * 
      * @return array an array representation of an instance of this class.
-     * 
      */
     public function toArray(): array {
 
@@ -369,7 +358,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * ArrayAccess: does the requested key exist?
      * 
      * @param string $key The requested key.
-     * 
      */
     public function offsetExists($key): bool {
         
@@ -383,7 +371,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @param string $key The requested key.
      * 
      * @return mixed
-     * 
      */
     #[\ReturnTypeWillChange]
     public function offsetGet($key): \GDAO\Model\RecordInterface {
@@ -400,9 +387,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
      * 
-     * 
      * @throws \GDAO\Model\CollectionCanOnlyContainGDAORecordsException
-     * 
      */
     public function offsetSet(mixed $key, mixed $val): void {
         
@@ -432,7 +417,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Removes a record with the specified key from the collection.
      * 
      * @param string $key The requested key.
-     * 
      */
     public function offsetUnset($key): void {
         
@@ -442,7 +426,6 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * Countable: how many keys are there?
-     * 
      */
     public function count(): int {
         
@@ -454,7 +437,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * IteratorAggregate: returns an external iterator for this collection.
      * 
      * @return \ArrayIterator an Iterator eg. an instance of \ArrayIterator
-     * 
      */
     public function getIterator(): \ArrayIterator {
         
@@ -469,9 +451,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * Returns a record from the collection based on its key value.
      * 
-     * @param int|string $key The sequential or associative key value for the
-     *                        record.
-     * 
+     * @param int|string $key The sequential or associative key value for the record.
      */
     public function __get($key): \GDAO\Model\RecordInterface {
         
@@ -493,7 +473,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Does a certain key exist in the data?
      * 
      * @param string $key The requested data key.
-     *  
      */
     public function __isset($key): bool {
         
@@ -506,7 +485,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @param string $key The requested key.
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
-     *   
      */
     public function __set($key, \GDAO\Model\RecordInterface $val): void {
         
@@ -519,7 +497,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Returns a string representation of an instance of this class.
      * 
      * @return string a string representation of an instance of this class.
-     * 
      */
     public function __toString(): string {
         
@@ -531,7 +508,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Removes a record with the specified key from the collection.
      * 
      * @param string $key The requested data key.
-     * 
      */
     public function __unset($key): void {
         
@@ -558,5 +534,5 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * {@inheritDoc}
      */
-    public function postSaveAll($save_all_result, bool $group_inserts_together=false): void { }
+    public function postSaveAll(bool|array $save_all_result, bool $group_inserts_together=false): void { }
 }
