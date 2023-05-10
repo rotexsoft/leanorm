@@ -1521,10 +1521,7 @@ SELECT {$foreign_table_name}.*
         return $result;
     }
     
-    /**
-     * @return never
-     */
-    protected function throwExceptionForInvalidDeleteQueryArg($val, array $cols_n_vals): void {
+    protected function throwExceptionForInvalidDeleteQueryArg($val, array $cols_n_vals): never {
 
         $msg = "ERROR: the value "
              . PHP_EOL . var_export($val, true) . PHP_EOL
@@ -2005,10 +2002,7 @@ SELECT {$foreign_table_name}.*
         return $result;
     }
     
-    /**
-     * @return never
-     */
-    protected function throwExceptionForInvalidUpdateQueryArg($val, array $cols_n_vals): void {
+    protected function throwExceptionForInvalidUpdateQueryArg($val, array $cols_n_vals): never {
 
         $msg = "ERROR: the value "
              . PHP_EOL . var_export($val, true) . PHP_EOL
