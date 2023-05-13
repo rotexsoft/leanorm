@@ -263,12 +263,13 @@ class DBConnector {
      * "Private" constructor; shouldn't be called directly.
      * Use the DBConnector::create factory method instead.
      */
-    protected function __construct(// --------------------------- //
-    // --- INSTANCE PROPERTIES --- //
-    // --------------------------- //
-    // Key name of the connection in static::$db used by this instance
-    protected string $connection_name = self::DEFAULT_CONNECTION) {
-
+    protected function __construct(
+        // --------------------------- //
+        // --- INSTANCE PROPERTIES --- //
+        // --------------------------- //
+        // Key name of the connection in static::$db used by this instance
+        protected string $connection_name = self::DEFAULT_CONNECTION
+    ) {
         static::_initDbConfigWithDefaultVals($connection_name);
     }
 
