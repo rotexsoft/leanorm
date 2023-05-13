@@ -349,6 +349,20 @@ class Collection implements \GDAO\Model\CollectionInterface
         return $result;
     }
     
+    /**
+     * @return array an array where each value is the result of calling getData() on each record in the collection
+     */
+    public function getData(): array {
+    
+        $rows = [];
+        foreach ($this->data as $row) {
+            
+            $rows[] = $row->getData();
+        }
+
+        return $rows;
+    }
+    
     /////////////////////
     // Interface Methods
     /////////////////////

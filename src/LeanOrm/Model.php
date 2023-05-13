@@ -1658,6 +1658,22 @@ SELECT {$foreign_table_name}.*
 
         return $result;
     }
+    
+    /**
+     * Convenience method to fetch one record by the specified primary key value.
+     * 
+     * @param string|int $id
+     * @param array $relations_to_include
+     * 
+     * @return \GDAO\Model\RecordInterface|null
+     */
+    public function fetchOneByPkey($id, $relations_to_include = []): ?\GDAO\Model\RecordInterface {
+        
+        $select = $this->getSelect();
+        $select->where(" {$this->getPrimaryCol()} = ? ", [$id]);
+        
+        return $this->fetchOneRecord($select, $relations_to_include);
+    }
 
     /**
      * {@inheritDoc}

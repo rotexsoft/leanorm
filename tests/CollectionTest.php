@@ -870,6 +870,38 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         );
     } // public function testThatSetModelWorksAsExpected()
     
+    public function testThatGetDataWorksAsExpected() {
+
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        // empty collection
+        self::assertEquals([], $collection->getData());
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            'name'          => 'Author 1 for getData Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            'name'          => 'Author 2 for getData Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[] = $newRecord1;
+        $collection[] = $newRecord2;
+        $getDataOnCollection = $collection->getData();
+        
+        foreach($collection as $record) {
+            
+            self::assertContains($record->getData(), $getDataOnCollection);
+        }
+    }
+    
     public function testThatToArrayWorksAsExpected() {
 
         $model = new \LeanOrm\Model(
