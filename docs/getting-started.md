@@ -8,6 +8,7 @@
     - [Methods for Fetching data from the Database](#methods-for-fetching-data-from-the-database)
         - [Fetching data from the Database via fetchCol](#fetching-data-from-the-database-via-fetchcol)
         - [Fetching data from the Database via fetchOneRecord](#fetching-data-from-the-database-via-fetchonerecord)
+        - [Fetching data from the Database via fetchOneByPkey](#fetching-data-from-the-database-via-fetchonebypkey)
         - [Fetching data from the Database via fetchPairs](#fetching-data-from-the-database-via-fetchpairs)
         - [Fetching data from the Database via fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray)
         - [Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrecordsintoarraykeyedonpkval)
@@ -428,6 +429,29 @@ $record = $authorsModel->fetchOneRecord(
             $authorsModel->getSelect()
                          ->cols(['author_id', 'name'])
                          ->where(' author_id = ? ', 5),
+            ['posts'] // eager fetch posts for the author
+        );
+```
+
+#### Fetching data from the Database via fetchOneByPkey
+
+If you want to fetch just one row of data from a database table into a record object and you know the primary key value of the row of data you want to fetch, use the fetchOneByPkey method. This method returns null if the table or view is empty or the specified primary key value doesn't match any record. Below are a few examples of how to use this method:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+// $record will contain the first row of data returned by
+// select authors.* from authors where author_id = 5;
+$record = $authorsModel->fetchOneByPkey(5);
+
+// $record will contain the first row of data returned by
+//   select authors.* from authors where author_id = 5;
+//      
+// It will also contain a collection of posts records returned by
+//   select posts.* from posts where author_id = 5;
+$record = $authorsModel->fetchOneByPkey(
+            5,
             ['posts'] // eager fetch posts for the author
         );
 ```
