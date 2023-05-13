@@ -870,6 +870,35 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         );
     } // public function testThatSetModelWorksAsExpected()
     
+    public function testThatGetDataWorksAsExpected() {
+
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        // empty collection
+        self::assertEquals([], $collection->getData());
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            'name'          => 'Author 1 for getData Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            'name'          => 'Author 2 for getData Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[] = $newRecord1;
+        $collection[] = $newRecord2;
+        $getDataOnCollection = $collection->getData();
+        self::assertContains($newRecord1->getData(), $getDataOnCollection);
+        self::assertContains($newRecord2->getData(), $getDataOnCollection);
+    }
+    
     public function testThatToArrayWorksAsExpected() {
 
         $model = new \LeanOrm\Model(
@@ -1270,13 +1299,13 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $timestamp = date('Y-m-d H:i:s');
         $newRecord1 = $model->createNewRecord([
             //'author_id'     => 777, // new record, no need for primary key
-            'name'          => 'Author 1 for toArray Testing',
+            'name'          => 'Author 1 for __unset Testing',
             'm_timestamp'   => $timestamp,
             'date_created'  => $timestamp,
         ]);
         $newRecord2 = $model->createNewRecord([
             //'author_id'     => 777, // new record, no need for primary key
-            'name'          => 'Author 2 for toArray Testing',
+            'name'          => 'Author 2 for __unset Testing',
             'm_timestamp'   => $timestamp,
             'date_created'  => $timestamp,
         ]);

@@ -1116,6 +1116,51 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         self::assertNull($emptyModel->fetchOneRecord());
     }
     
+    public function testThatFetchOneByPkeyWorksAsExpected() {
+        
+        $authorsModel = new LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        ////////////////////////////////////////////////////////////////////////
+        // fetch Author with author_id = 2 & include posts during the fetch
+        // fetch first record in the table
+        $secondAuthorInTheTable = $authorsModel->fetchOneByPkey(2, ['posts']);
+        self::assertInstanceOf(GDAO\Model\RecordInterface::class, $secondAuthorInTheTable);
+        self::assertEquals('2', $secondAuthorInTheTable->getPrimaryVal().'');
+        self::assertArrayHasKey('author_id', $secondAuthorInTheTable->getData());
+        self::assertArrayHasKey('name', $secondAuthorInTheTable->getData());
+        self::assertArrayHasKey('m_timestamp', $secondAuthorInTheTable->getData());
+        self::assertArrayHasKey('date_created', $secondAuthorInTheTable->getData());
+        
+        // test that eager loaded relationship data works
+        self::assertInstanceOf(GDAO\Model\CollectionInterface::class, $secondAuthorInTheTable->posts);
+        self::assertCount(2, $secondAuthorInTheTable->posts);
+        self::assertCount(1, $secondAuthorInTheTable->one_post);
+        
+        self::assertEquals(['2', '4'], $secondAuthorInTheTable->posts->getColVals('post_id'));
+        self::assertEquals(['2', '2'], $secondAuthorInTheTable->posts->getColVals('author_id'));
+        self::assertEquals(['Post 2', 'Post 4'], $secondAuthorInTheTable->posts->getColVals('title'));
+        self::assertEquals(['Post Body 2', 'Post Body 4'], $secondAuthorInTheTable->posts->getColVals('body'));
+        
+        self::assertEquals(['2'], $secondAuthorInTheTable->one_post->getColVals('post_id'));
+        self::assertEquals(['2'], $secondAuthorInTheTable->one_post->getColVals('author_id'));
+        self::assertEquals(['Post 2'], $secondAuthorInTheTable->one_post->getColVals('title'));
+        self::assertEquals(['Post Body 2'], $secondAuthorInTheTable->one_post->getColVals('body'));
+        
+        ///////////////////////////////////////////////////////////////////////
+        // Test that record not in db returns null
+        $authorNotInTheTable = $authorsModel->fetchOneByPkey(777, ['posts']);
+        self::assertNull($authorNotInTheTable);
+        
+        $author2NotInTheTable = $authorsModel->fetchOneByPkey(77);
+        self::assertNull($author2NotInTheTable);
+
+        /////////////////////////////
+        // Querying an empty table
+        $emptyModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'empty_data' );
+        
+        self::assertNull($emptyModel->fetchOneByPkey(777));
+    }
+    
     public function testThatFetchPairsWorksAsExpected() {
         
         $tagsModel = new LeanOrm\TestObjects\TagsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
