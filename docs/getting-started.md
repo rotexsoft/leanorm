@@ -8,6 +8,7 @@
     - [Methods for Fetching data from the Database](#methods-for-fetching-data-from-the-database)
         - [Fetching data from the Database via fetchCol](#fetching-data-from-the-database-via-fetchcol)
         - [Fetching data from the Database via fetchOneRecord](#fetching-data-from-the-database-via-fetchonerecord)
+        - [Fetching data from the Database via fetchOneByPkey](#fetching-data-from-the-database-via-fetchonebypkey)
         - [Fetching data from the Database via fetchPairs](#fetching-data-from-the-database-via-fetchpairs)
         - [Fetching data from the Database via fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray)
         - [Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrecordsintoarraykeyedonpkval)
@@ -303,6 +304,9 @@ The following methods for fetching data from the database are defined in **\GDAO
 - [__**fetchOneRecord(?object $query = null, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**__](#fetching-data-from-the-database-via-fetchonerecord)
 > selects a single row of data from a database table / view and returns it as an instance of **\LeanOrm\Model\Record** (or any of its subclasses). By default, it fetches the first row of data in a database table / view into a Record object. This method returns null if the table or view is empty or the query doesn't match any record.
 
+- [__**fetchOneByPkey($id, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**__](#fetching-data-from-the-database-via-fetchonebypkey)
+> selects a single row of data from a database table / view whose primary key value matches the specified primary key value in the **$id** parameter. For views, the primary key field will be whatever value is set in the Model class' **primary_col** property. This method returns an instance of **\LeanOrm\Model\Record** (or any of its subclasses). This method returns null if the table or view is empty or the specified primary key value doesn't match any record in the database table / view.
+
 - [__**fetchPairs(?object $query = null): array**__](#fetching-data-from-the-database-via-fetchpairs)
 > selects data from two database table / view columns and returns an array whose keys are values from the first column and whose values are the values from the second column. By default, it selects data from the first two columns in a database table / view.
 
@@ -428,6 +432,29 @@ $record = $authorsModel->fetchOneRecord(
             $authorsModel->getSelect()
                          ->cols(['author_id', 'name'])
                          ->where(' author_id = ? ', [5]),
+            ['posts'] // eager fetch posts for the author
+        );
+```
+
+#### Fetching data from the Database via fetchOneByPkey
+
+If you want to fetch just one row of data from a database table into a record object and you know the primary key value of the row of data you want to fetch, use the fetchOneByPkey method. This method returns null if the table or view is empty or the specified primary key value doesn't match any record. Below are a few examples of how to use this method:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+// $record will contain the first row of data returned by
+// select authors.* from authors where author_id = 5;
+$record = $authorsModel->fetchOneByPkey(5);
+
+// $record will contain the first row of data returned by
+//   select authors.* from authors where author_id = 5;
+//      
+// It will also contain a collection of posts records returned by
+//   select posts.* from posts where author_id = 5;
+$record = $authorsModel->fetchOneByPkey(
+            5,
             ['posts'] // eager fetch posts for the author
         );
 ```
@@ -1050,6 +1077,7 @@ class PostsModel extends \LeanOrm\Model{
 The code samples in this section build on the code samples in the [Relationship Definition Code Samples](#relationship-definition-code-samples) section above.
 
 In order to access related data, you must call one of the **fetch*** methods that return any one of these:
+- a single record ([**fetchOneByPkey**](#fetching-data-from-the-database-via-fetchonebypkey)),
 - a single record ([**fetchOneRecord**](#fetching-data-from-the-database-via-fetchonerecord)), 
 - array of records ([**fetchRecordsIntoArray**](#fetching-data-from-the-database-via-fetchrecordsintoarray)), 
 - collection of records ([**fetchRecordsIntoCollection**](#fetching-data-from-the-database-via-fetchrecordsintocollection))
