@@ -28,14 +28,19 @@ class CachingModel extends Model {
     }
 
     protected function fetchTableColsFromDB(string $table_name): array {
+        
+        if(!array_key_exists($this->db_connector->getConnectionName(), static::$cachedFetchedTableColsFromDB)) {
 
-        if(array_key_exists($table_name, static::$cachedFetchedTableColsFromDB)) {
-
-            return static::$cachedFetchedTableColsFromDB[$table_name];
+            static::$cachedFetchedTableColsFromDB[$this->db_connector->getConnectionName()] = [];
         }
 
-        static::$cachedFetchedTableColsFromDB[$table_name] = parent::fetchTableColsFromDB($table_name);
+        if(array_key_exists($table_name, static::$cachedFetchedTableColsFromDB[$this->db_connector->getConnectionName()])) {
 
-        return static::$cachedFetchedTableColsFromDB[$table_name];
+            return static::$cachedFetchedTableColsFromDB[$this->db_connector->getConnectionName()][$table_name];
+        }
+
+        static::$cachedFetchedTableColsFromDB[$this->db_connector->getConnectionName()][$table_name] = parent::fetchTableColsFromDB($table_name);
+
+        return static::$cachedFetchedTableColsFromDB[$this->db_connector->getConnectionName()][$table_name];
     }
 }
