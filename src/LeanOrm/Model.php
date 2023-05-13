@@ -1662,8 +1662,6 @@ SELECT {$foreign_table_name}.*
      * Convenience method to fetch one record by the specified primary key value.
      * 
      * @param string|int $id
-     * 
-     * @return \GDAO\Model\RecordInterface|null
      */
     public function fetchOneByPkey($id, array $relations_to_include = []): ?\GDAO\Model\RecordInterface {
         
@@ -1901,7 +1899,7 @@ SELECT {$foreign_table_name}.*
             $this->processRowOfDataToInsert(
                 $data_2_insert, $table_cols, $has_autoinc_pkey_col
             );
-            
+
             // Do we still have anything left to save after removing items
             // in the array that do not map to actual db table columns
             if( (is_countable($data_2_insert) ? count($data_2_insert) : 0) > 0 ) {
@@ -1913,7 +1911,7 @@ SELECT {$foreign_table_name}.*
                 $insrt_qry_sql = $insrt_qry_obj->__toString();
                 $insrt_qry_params = $insrt_qry_obj->getBindValues();
                 $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
-                
+
                 if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
 
                     // insert was successful, we are now going to try to 
@@ -2176,7 +2174,7 @@ SELECT {$foreign_table_name}.*
                     $updt_qry = $update_qry_obj->__toString();
                     $updt_qry_params = $update_qry_obj->getBindValues();
                     $this->logQuery($updt_qry, $updt_qry_params, __METHOD__, '' . __LINE__);
-                    
+
                     $this->db_connector->executeQuery($updt_qry, $updt_qry_params, true);
                 }
 
