@@ -1662,8 +1662,6 @@ SELECT {$foreign_table_name}.*
      * Convenience method to fetch one record by the specified primary key value.
      * 
      * @param string|int $id
-     * 
-     * @return \GDAO\Model\RecordInterface|null
      */
     public function fetchOneByPkey($id, array $relations_to_include = []): ?\GDAO\Model\RecordInterface {
         
