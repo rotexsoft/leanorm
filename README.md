@@ -51,7 +51,7 @@ happens, version 3 bug fixes will be added to the 3.x branch which will continue
 branch until the first stable release of version 4 is published (at that point, the 4.x branch will be merged
 into master and start being synced with master moving forward). Bug fixes for version 2.2.x will be applied to
 to the 2.2.x branch. I will continue to accept bug-fix pull requests for versions 2.x & 3.x even after version
-4 is released. New feature pull requests for versions 2.x & 3.x will be rejected, those should be sent to the 4.x branch.
+4 is released. New feature pull requests for versions 2.x & 3.x will be rejected, new features will only be added to the 4.x branch.
 
 ## Installation
 
