@@ -44,6 +44,15 @@ Versions 2.X & 3.X will contain the same features, but only differ in the versio
 
 A future version 4 will require php 8.1 as the minimum PHP version.
 
+Versions 2.x & 3.x are feature complete as of May 2023, only bug fixes will be applied to those versions.
+ 
+New features will all be going to version 4 on the 4.x branch. Until the first stable release of version 4
+happens, version 3 bug fixes will be added to the 3.x branch which will continue to be synced to the master 
+branch until the first stable release of version 4 is published (at that point, the 4.x branch will be merged
+into master and start being synced with master moving forward). Bug fixes for version 2.2.x will be applied to
+to the 2.2.x branch. I will continue to accept bug-fix pull requests for versions 2.x & 3.x even after version
+4 is released. New feature pull requests for versions 2.x & 3.x will be rejected, those should be sent to the 4.x branch.
+
 ## Installation
 
 >`composer require rotexsoft/leanorm`
