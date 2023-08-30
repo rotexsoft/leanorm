@@ -58,8 +58,8 @@ class Collection implements \GDAO\Model\CollectionInterface
             
             if( $record instanceof ReadOnlyRecord ) {
                 
-                $msg = "ERROR: Can't delete ReadOnlyRecord in Collection from"
-                     . " the database in " . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                $msg = "ERROR: Can't delete ReadOnlyRecord in Collection from the database in " 
+                     . get_class($this) . '::' . __FUNCTION__ . '(...).'
                      . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
                 throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
             }
@@ -319,8 +319,8 @@ class Collection implements \GDAO\Model\CollectionInterface
         
         if( $record instanceof ReadOnlyRecord ) {
 
-            $msg = "ERROR: Can't save ReadOnlyRecord in Collection to"
-                 . " the database in " . get_class($this) . '::' . $calling_function . '(...).'
+            $msg = "ERROR: Can't save ReadOnlyRecord in Collection to the database in " 
+                 . get_class($this) . '::' . $calling_function . '(...).'
                  . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
             throw new \LeanOrm\CantSaveReadOnlyRecordException($msg);
         }
