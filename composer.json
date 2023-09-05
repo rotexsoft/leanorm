@@ -25,7 +25,7 @@
         "phpunit/phpunit": "^10.0",
         "php-coveralls/php-coveralls": "^2.0",
         "vimeo/psalm": "^5.4.0",
-        "rector/rector": "^0.16.0",
+        "rector/rector": "^0.18.0",
         "symfony/polyfill-php82": "^1.26",
         "atlas/pdo": "^1.2",
         "rotexsoft/versatile-collections": "^5.2"
@@ -44,7 +44,8 @@
         "rector-clear": "vendor/bin/rector --clear-cache",
         "rector": "vendor/bin/rector process src --dry-run -vvv",
         "psalm": "vendor/bin/psalm --threads=1",
-        "qa": "composer test && composer rector-clear && composer rector && composer psalm"
+        "psalm-clear-cache": "vendor/bin/psalm --clear-global-cache && vendor/bin/psalm --clear-cache",
+        "qa": "composer test && composer rector && composer psalm-clear-cache && composer psalm"
     },
     "suggest": {
         "rotexsoft/leanorm-cli": "A Command-line tool for rotexsoft/leanorm for generating Model, Record & Collection Classes for tables & views in a specified database."
