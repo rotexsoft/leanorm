@@ -14,7 +14,7 @@ use function sprintf;
  * Supported PDO drivers: mysql, pgsql, sqlite and sqlsrv
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2023, Rotexsoft
  */
 class Model extends \GDAO\Model {
     
@@ -49,19 +49,21 @@ class Model extends \GDAO\Model {
     /**
      *  An object for interacting with the db
      */
-    protected ?\LeanOrm\DBConnector $db_connector = null;
+    protected \LeanOrm\DBConnector $db_connector;
 
     // Query Logging related properties
     protected bool $can_log_queries = false;
 
     public function canLogQueries(): bool { return $this->can_log_queries; }
 
+    /** @psalm-suppress PossiblyUnusedMethod */
     public function enableQueryLogging(): static {
 
         $this->can_log_queries = true;
         return $this;
     }
-
+    
+    /** @psalm-suppress PossiblyUnusedMethod */
     public function disableQueryLogging(): static {
 
         $this->can_log_queries = false;
@@ -80,6 +82,7 @@ class Model extends \GDAO\Model {
 
     protected ?LoggerInterface $logger = null;
 
+    /** @psalm-suppress PossiblyUnusedMethod */
     public function setLogger(?LoggerInterface $logger): static {
         
         $this->logger = $logger;
@@ -90,6 +93,9 @@ class Model extends \GDAO\Model {
     
     /**
      * {@inheritDoc}
+     * 
+     * @psalm-suppress MixedArrayAccess
+     * @psalm-suppress MixedPropertyFetch
      */
     public function __construct(
         string $dsn = '', 
@@ -122,6 +128,8 @@ class Model extends \GDAO\Model {
         }
 
         $this->db_connector = DBConnector::create($dsn);//use $dsn as connection name
+        
+        /** @psalm-suppress MixedAssignment */
         $this->pdo_driver_name = $this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME);
         $this->pdoServerVersionCheck();
 
@@ -137,9 +145,11 @@ class Model extends \GDAO\Model {
                 $dsn_n_tname_to_schema_def_map = [];
             }
 
+            /** @psalm-suppress MixedArgument */
             if( array_key_exists($dsn.$this->getTableName(), $dsn_n_tname_to_schema_def_map) ) {
 
                 // use cached schema definition for the dsn and table name combo
+                /** @psalm-suppress MixedAssignment */
                 $schema_definitions = $dsn_n_tname_to_schema_def_map[$dsn.$this->getTableName()];
 
             } else {
@@ -157,6 +167,7 @@ class Model extends \GDAO\Model {
                 $schema_definitions = $this->fetchTableColsFromDB($this->getTableName());
 
                 // cache schema definition for the current dsn and table combo
+                /** @psalm-suppress MixedArrayAssignment */
                 $dsn_n_tname_to_schema_def_map[$dsn.$this->getTableName()] = $schema_definitions;
 
             } // if( array_key_exists($dsn.$this->getTableName(), $dsn_n_tname_to_schema_def_map) )
@@ -171,21 +182,32 @@ class Model extends \GDAO\Model {
                 throw new BadModelPrimaryColumnNameException($msg);
             }
 
+            /** @psalm-suppress MixedAssignment */
             foreach( $schema_definitions as $colname => $metadata_obj ) {
 
+                /** @psalm-suppress MixedArrayOffset */
                 $this->table_cols[$colname] = [];
+                /** @psalm-suppress MixedArrayOffset */
                 $this->table_cols[$colname]['name'] = $metadata_obj->name;
+                /** @psalm-suppress MixedArrayOffset */
                 $this->table_cols[$colname]['type'] = $metadata_obj->type;
+                /** @psalm-suppress MixedArrayOffset */
                 $this->table_cols[$colname]['size'] = $metadata_obj->size;
+                /** @psalm-suppress MixedArrayOffset */
                 $this->table_cols[$colname]['scale'] = $metadata_obj->scale;
+                /** @psalm-suppress MixedArrayOffset */
                 $this->table_cols[$colname]['notnull'] = $metadata_obj->notnull;
+                /** @psalm-suppress MixedArrayOffset */
                 $this->table_cols[$colname]['default'] = $metadata_obj->default;
+                /** @psalm-suppress MixedArrayOffset */
                 $this->table_cols[$colname]['autoinc'] = $metadata_obj->autoinc;
+                /** @psalm-suppress MixedArrayOffset */
                 $this->table_cols[$colname]['primary'] = $metadata_obj->primary;
 
                 if( $this->getPrimaryCol() === '' && $metadata_obj->primary ) {
 
                     //this is a primary column
+                    /** @psalm-suppress MixedArgument */
                     $this->setPrimaryCol($metadata_obj->name);
 
                 } // $this->getPrimaryCol() === '' && $metadata_obj->primary
@@ -195,10 +217,13 @@ class Model extends \GDAO\Model {
 
             if($this->getPrimaryCol() === '') {
 
+                /** @psalm-suppress MixedAssignment */
                 foreach ($this->table_cols as $colname => $col_metadata) {
 
+                    /** @psalm-suppress MixedArrayAccess */
                     if($col_metadata['primary']) {
 
+                        /** @psalm-suppress MixedArgumentTypeCoercion */
                         $this->setPrimaryCol($colname);
                         break;
                     }
@@ -222,8 +247,11 @@ class Model extends \GDAO\Model {
         if(strtolower($this->getPdoDriverName()) === 'sqlite') {
 
             $pdo_obj = $this->getPDO();
+
+            /** @psalm-suppress MixedAssignment */
             $sqlite_version_number = $pdo_obj->getAttribute(\PDO::ATTR_SERVER_VERSION);
 
+            /** @psalm-suppress MixedArgument */
             if(version_compare($sqlite_version_number, '3.7.10', '<=')) {
 
                 $source = static::class . '::' . __FUNCTION__ . '(...)';
@@ -252,15 +280,20 @@ class Model extends \GDAO\Model {
         return in_array($table_name, $list_of_tables_and_views, true);
     }
     
+    /**
+     * @psalm-suppress MoreSpecificReturnType
+     */
     protected function getSchemaQueryingObject(): \Aura\SqlSchema\AbstractSchema {
         
         // a column definition factory 
         $column_factory = new ColumnFactory();
+        /** @psalm-suppress MixedAssignment */
         $pdo_driver_name = $this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME);
 
         $schema_class_name = '\\Aura\\SqlSchema\\' . ucfirst((string) $pdo_driver_name) . 'Schema';
 
         // the schema discovery object
+        /** @psalm-suppress LessSpecificReturnStatement */
         return new $schema_class_name($this->getPDO(), $column_factory);
     }
     
@@ -288,8 +321,10 @@ class Model extends \GDAO\Model {
         if(strtolower((string) $this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) ===  'pgsql') {
             
             // Calculate schema name for postgresql
+            /** @psalm-suppress MixedAssignment */
             $schema_name = $this->db_connector->dbFetchValue('SELECT CURRENT_SCHEMA');
             
+            /** @psalm-suppress MixedArgument */
             return $schema->fetchTableList($schema_name);
         }
         
@@ -310,6 +345,7 @@ class Model extends \GDAO\Model {
             
             $columns_info = $info->fetchColumns($table_name);
 
+            /** @psalm-suppress MixedAssignment */
             foreach ($columns_info as $key=>$column_info) {
 
                 // Convert each row to objects because 
@@ -328,21 +364,26 @@ class Model extends \GDAO\Model {
         // Will need to test what works for MS Sql Server
         return $this->getSchemaQueryingObject()->fetchTableCols($table_name);
     }
-
+    
+    /** @psalm-suppress MoreSpecificReturnType */
     public function getSelect(): \Aura\SqlQuery\Common\Select {
 
         $selectObj = (new QueryFactory($this->getPdoDriverName()))->newSelect();
 
         $selectObj->from($this->getTableName());
 
+        /** @psalm-suppress LessSpecificReturnStatement */
         return $selectObj;
     }
 
     /**
      * {@inheritDoc}
+     * 
+     * @psalm-suppress MoreSpecificReturnType
      */
     public function createNewCollection(\GDAO\Model\RecordInterface ...$list_of_records): \GDAO\Model\CollectionInterface {
 
+        /** @psalm-suppress LessSpecificReturnStatement */
         return ($this->collection_class_name === null || $this->collection_class_name === '')
                 ? //default to creating new collection of type \LeanOrm\Model\Collection
                   new \LeanOrm\Model\Collection($this, ...$list_of_records)
@@ -351,19 +392,20 @@ class Model extends \GDAO\Model {
 
     /**
      * {@inheritDoc}
+     * 
+     * @psalm-suppress MoreSpecificReturnType
      */
-    public function createNewRecord(array $col_names_n_vals = []): \GDAO\Model\RecordInterface {
+    public function createNewRecord(array $col_names_and_values = []): \GDAO\Model\RecordInterface {
 
+        /** @psalm-suppress LessSpecificReturnStatement */
         return ($this->record_class_name === null || $this->record_class_name === '')
                 ? //default to creating new record of type \LeanOrm\Model\Record
-                  new \LeanOrm\Model\Record($col_names_n_vals, $this)
-                : new $this->record_class_name($col_names_n_vals, $this);
+                  new \LeanOrm\Model\Record($col_names_and_values, $this)
+                : new $this->record_class_name($col_names_and_values, $this);
     }
 
     /**
      * 
-     * @param array $params an array of parameters passed to a fetch*() method
-     * @param array $disallowed_keys list of keys in $params not to be used to build the query object 
      * @param string $table_name name of the table to select from (will default to $this->getTableName() if empty)
      * @return \Aura\SqlQuery\Common\Select or any of its descendants
      */
@@ -392,13 +434,16 @@ class Model extends \GDAO\Model {
 
     /**
      * @return mixed[]
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function getDefaultColVals(): array {
 
         $default_colvals = [];
 
+        /** @psalm-suppress MixedAssignment */
         foreach($this->table_cols as $col_name => $col_metadata) {
-
+            
+            /** @psalm-suppress MixedArrayAccess */
             $default_colvals[$col_name] = $col_metadata['default'];
         }
 
@@ -412,6 +457,7 @@ class Model extends \GDAO\Model {
         bool $wrap_records_in_collection=false
     ): static {
 
+        /** @psalm-suppress MixedArrayAccess */
         if( 
             array_key_exists($rel_name, $this->relations) 
             && $this->relations[$rel_name]['relation_type'] === \GDAO\Model::RELATION_TYPE_HAS_MANY 
@@ -440,6 +486,9 @@ class Model extends \GDAO\Model {
         return $this;
     }
     
+    /**
+     * @psalm-suppress PossiblyUnusedReturnValue
+     */
     protected function validateRelatedModelClassName(string $model_class_name): bool {
         
         // DO NOT use static::class here, we always want self::class
@@ -462,7 +511,10 @@ class Model extends \GDAO\Model {
         
         return true;
     }
-
+    
+    /**
+     * @psalm-suppress PossiblyUnusedReturnValue
+     */
     protected function validateRelatedCollectionClassName(string $collection_class_name): bool {
 
         $parent_collection_class_name = \GDAO\Model\CollectionInterface::class;
@@ -483,6 +535,9 @@ class Model extends \GDAO\Model {
         return true;
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedReturnValue
+     */
     protected function validateRelatedRecordClassName(string $record_class_name): bool {
         
         $parent_record_class_name = \GDAO\Model\RecordInterface::class;
@@ -509,6 +564,7 @@ class Model extends \GDAO\Model {
         bool $wrap_each_row_in_a_record=false, 
         bool $wrap_records_in_collection=false 
     ): void {
+        /** @psalm-suppress MixedArrayAccess */
         if( 
             array_key_exists($rel_name, $this->relations) 
             && $this->relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY
@@ -545,27 +601,37 @@ class Model extends \GDAO\Model {
 
                 // Generate a map of 
                 //      foreign key value => [keys of related rows in $related_data]
+                /** @psalm-suppress MixedAssignment */
                 foreach ($related_data as $curr_key => $related_datum) {
 
+                    /** @psalm-suppress MixedArrayOffset */
                     $curr_fkey_val = $related_datum[$fkey_col_in_foreign_table];
 
+                    /** @psalm-suppress MixedArgument */
                     if(!array_key_exists($curr_fkey_val, $fkey_val_to_related_data_keys)) {
 
+                        /** @psalm-suppress MixedArrayOffset */
                         $fkey_val_to_related_data_keys[$curr_fkey_val] = [];
                     }
 
                     // Add current key in $related_data to sub array of keys for the 
                     // foreign key value in the current related row $related_datum
+                    /** @psalm-suppress MixedArrayOffset */
                     $fkey_val_to_related_data_keys[$curr_fkey_val][] = $curr_key;
 
                 } // foreach ($related_data as $curr_key => $related_datum)
 
                 // Now use $fkey_val_to_related_data_keys map to
                 // look up related rows of data for each parent row of data
+                /** @psalm-suppress MixedAssignment */
                 foreach( $parent_data as $p_rec_key => $parent_row ) {
 
                     $matching_related_rows = [];
 
+                    /** 
+                     * @psalm-suppress MixedArgument 
+                     * @psalm-suppress MixedArrayOffset 
+                     */
                     if(array_key_exists($parent_row[$fkey_col_in_my_table], $fkey_val_to_related_data_keys)) {
 
                         foreach ($fkey_val_to_related_data_keys[$parent_row[$fkey_col_in_my_table]] as $related_data_key) {
@@ -574,6 +640,7 @@ class Model extends \GDAO\Model {
                         }
                     }
 
+                    /** @psalm-suppress MixedArgument */
                     $this->wrapRelatedDataInsideRecordsAndCollection(
                         $matching_related_rows, $foreign_model_obj, 
                         $wrap_each_row_in_a_record, $wrap_records_in_collection
@@ -581,12 +648,21 @@ class Model extends \GDAO\Model {
 
                     //set the related data for the current parent row / record
                     if( $parent_row instanceof \GDAO\Model\RecordInterface ) {
-
+                        /**
+                         * @psalm-suppress MixedArrayTypeCoercion
+                         * @psalm-suppress MixedArrayOffset
+                         * @psalm-suppress MixedMethodCall
+                         */
                         $parent_data[$p_rec_key]->setRelatedData($rel_name, $matching_related_rows);
 
                     } else {
 
                         //the current row must be an array
+                        /**
+                         * @psalm-suppress MixedArrayOffset
+                         * @psalm-suppress MixedArrayAssignment
+                         * @psalm-suppress InvalidArgument
+                         */
                         $parent_data[$p_rec_key][$rel_name] = $matching_related_rows;
                     }
                 } // foreach( $parent_data as $p_rec_key => $parent_record )
@@ -597,6 +673,7 @@ class Model extends \GDAO\Model {
 
             } else if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
+                /** @psalm-suppress MixedArgument */
                 $this->wrapRelatedDataInsideRecordsAndCollection(
                     $related_data, $foreign_model_obj, 
                     $wrap_each_row_in_a_record, $wrap_records_in_collection
@@ -617,38 +694,53 @@ class Model extends \GDAO\Model {
         bool $wrap_each_row_in_a_record=false, 
         bool $wrap_records_in_collection=false 
     ): void {
+        /** @psalm-suppress MixedArrayAccess */
         if( 
             array_key_exists($rel_name, $this->relations) 
             && $this->relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH
         ) {
+            /** @psalm-suppress MixedAssignment */
             $rel_info = $this->relations[$rel_name];
 
+            /** 
+             * @psalm-suppress MixedAssignment
+             * @psalm-suppress MixedArgument
+             */
             $foreign_table_name = Utils::arrayGet($rel_info, 'foreign_table');
 
+            /** @psalm-suppress MixedAssignment */
             $fkey_col_in_foreign_table = 
                 Utils::arrayGet($rel_info, 'col_in_foreign_table_linked_to_join_table');
 
+            /** @psalm-suppress MixedAssignment */
             $foreign_models_class_name = 
                 Utils::arrayGet($rel_info, 'foreign_models_class_name', \LeanOrm\Model::class);
 
+            /** @psalm-suppress MixedAssignment */
             $pri_key_col_in_foreign_models_table = 
                 Utils::arrayGet($rel_info, 'primary_key_col_in_foreign_table');
 
+            /** @psalm-suppress MixedAssignment */
             $fkey_col_in_my_table = 
                     Utils::arrayGet($rel_info, 'col_in_my_table_linked_to_join_table');
 
             //join table params
+            /** @psalm-suppress MixedAssignment */
             $join_table_name = Utils::arrayGet($rel_info, 'join_table');
 
+            /** @psalm-suppress MixedAssignment */
             $col_in_join_table_linked_to_my_models_table = 
                 Utils::arrayGet($rel_info, 'col_in_join_table_linked_to_my_table');
 
+            /** @psalm-suppress MixedAssignment */
             $col_in_join_table_linked_to_foreign_models_table = 
                 Utils::arrayGet($rel_info, 'col_in_join_table_linked_to_foreign_table');
 
+            /** @psalm-suppress MixedAssignment */
             $sql_query_modifier = 
                 Utils::arrayGet($rel_info, 'sql_query_modifier', null);
 
+            /** @psalm-suppress MixedArgument */
             $foreign_model_obj = 
                 $this->createRelatedModelObject(
                     $foreign_models_class_name,
@@ -656,19 +748,23 @@ class Model extends \GDAO\Model {
                     $foreign_table_name
                 );
 
+            /** @psalm-suppress MixedAssignment */
             $foreign_models_collection_class_name = 
                 Utils::arrayGet($rel_info, 'foreign_models_collection_class_name', '');
 
+            /** @psalm-suppress MixedAssignment */
             $foreign_models_record_class_name = 
                 Utils::arrayGet($rel_info, 'foreign_models_record_class_name', '');
 
             if($foreign_models_collection_class_name !== '') {
 
+                /** @psalm-suppress MixedArgument */
                 $foreign_model_obj->setCollectionClassName($foreign_models_collection_class_name);
             }
 
             if($foreign_models_record_class_name !== '') {
 
+                /** @psalm-suppress MixedArgument */
                 $foreign_model_obj->setRecordClassName($foreign_models_record_class_name);
             }
 
@@ -676,6 +772,7 @@ class Model extends \GDAO\Model {
 
             $query_obj->cols( [" {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} ", " {$foreign_table_name}.* "] );
 
+            /** @psalm-suppress MixedArgument */
             $query_obj->innerJoin(
                             $join_table_name, 
                             " {$join_table_name}.{$col_in_join_table_linked_to_foreign_models_table} = {$foreign_table_name}.{$fkey_col_in_foreign_table} "
@@ -691,6 +788,7 @@ class Model extends \GDAO\Model {
             } else {
 
                 //assume it's a collection or array
+                /** @psalm-suppress MixedArgument */
                 $col_vals = $this->getColValsFromArrayOrCollection(
                                 $parent_data, $fkey_col_in_my_table
                             );
@@ -709,10 +807,14 @@ class Model extends \GDAO\Model {
 
                 $sql_query_modifier = Utils::getClosureFromCallable($sql_query_modifier);
                 // modify the query object before executing the query
+                /** @psalm-suppress MixedAssignment */
                 $query_obj = $sql_query_modifier($query_obj);
             }
 
+            /** @psalm-suppress MixedAssignment */
             $params_2_bind_2_sql = $query_obj->getBindValues();
+
+            /** @psalm-suppress MixedAssignment */
             $sql_2_get_related_data = $query_obj->__toString();
 
 /*
@@ -734,6 +836,7 @@ SELECT {$foreign_table_name}.*,
   JOIN {$join_table_name} ON {$join_table_name}.{$col_in_join_table_linked_to_foreign_models_table} = {$foreign_table_name}.{$fkey_col_in_foreign_table}
  WHERE {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = {$parent_data->$fkey_col_in_my_table}
 */
+            /** @psalm-suppress MixedArgument */
             $this->logQuery($sql_2_get_related_data, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
             //GRAB DA RELATED DATA
@@ -753,27 +856,37 @@ SELECT {$foreign_table_name}.*,
 
                 // Generate a map of 
                 //      foreign key value => [keys of related rows in $related_data]
+                /** @psalm-suppress MixedAssignment */
                 foreach ($related_data as $curr_key => $related_datum) {
 
+                    /** @psalm-suppress MixedArrayOffset */
                     $curr_fkey_val = $related_datum[$col_in_join_table_linked_to_my_models_table];
 
+                    /** @psalm-suppress MixedArgument */
                     if(!array_key_exists($curr_fkey_val, $fkey_val_to_related_data_keys)) {
 
+                        /** @psalm-suppress MixedArrayOffset */
                         $fkey_val_to_related_data_keys[$curr_fkey_val] = [];
                     }
 
                     // Add current key in $related_data to sub array of keys for the 
                     // foreign key value in the current related row $related_datum
+                    /** @psalm-suppress MixedArrayOffset */
                     $fkey_val_to_related_data_keys[$curr_fkey_val][] = $curr_key;
 
                 } // foreach ($related_data as $curr_key => $related_datum)
 
                 // Now use $fkey_val_to_related_data_keys map to
                 // look up related rows of data for each parent row of data
+                /** @psalm-suppress MixedAssignment */
                 foreach( $parent_data as $p_rec_key => $parent_row ) {
 
                     $matching_related_rows = [];
 
+                    /** 
+                     * @psalm-suppress MixedArrayOffset
+                     * @psalm-suppress MixedArgument
+                     */
                     if(array_key_exists($parent_row[$fkey_col_in_my_table], $fkey_val_to_related_data_keys)) {
 
                         foreach ($fkey_val_to_related_data_keys[$parent_row[$fkey_col_in_my_table]] as $related_data_key) {
@@ -790,11 +903,20 @@ SELECT {$foreign_table_name}.*,
                     //set the related data for the current parent row / record
                     if( $parent_row instanceof \GDAO\Model\RecordInterface ) {
 
+                        /** 
+                         * @psalm-suppress MixedArrayOffset
+                         * @psalm-suppress MixedArrayTypeCoercion
+                         */
                         $parent_data[$p_rec_key]->setRelatedData($rel_name, $matching_related_rows);
 
                     } else {
 
                         //the current row must be an array
+                        /** 
+                         * @psalm-suppress MixedArrayOffset
+                         * @psalm-suppress MixedArrayAssignment
+                         * @psalm-suppress InvalidArgument
+                         */
                         $parent_data[$p_rec_key][$rel_name] = $matching_related_rows;
                     }
 
@@ -822,6 +944,9 @@ SELECT {$foreign_table_name}.*,
         \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array &$parent_data, 
         bool $wrap_row_in_a_record=false
     ): void {
+        /**
+         * @psalm-suppress MixedArrayAccess
+         */
         if( 
             array_key_exists($rel_name, $this->relations) 
             && $this->relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_HAS_ONE
@@ -859,27 +984,37 @@ SELECT {$foreign_table_name}.*
 
                 // Generate a map of 
                 //      foreign key value => [keys of related rows in $related_data]
+                /** @psalm-suppress MixedAssignment */
                 foreach ($related_data as $curr_key => $related_datum) {
 
+                    /** @psalm-suppress MixedArrayOffset */
                     $curr_fkey_val = $related_datum[$fkey_col_in_foreign_table];
 
+                    /** @psalm-suppress MixedArgument */
                     if(!array_key_exists($curr_fkey_val, $fkey_val_to_related_data_keys)) {
 
+                        /** @psalm-suppress MixedArrayOffset */
                         $fkey_val_to_related_data_keys[$curr_fkey_val] = [];
                     }
 
                     // Add current key in $related_data to sub array of keys for the 
                     // foreign key value in the current related row $related_datum
+                    /** @psalm-suppress MixedArrayOffset */
                     $fkey_val_to_related_data_keys[$curr_fkey_val][] = $curr_key;
 
                 } // foreach ($related_data as $curr_key => $related_datum)
 
                 // Now use $fkey_val_to_related_data_keys map to
                 // look up related rows of data for each parent row of data
+                /** @psalm-suppress MixedAssignment */
                 foreach( $parent_data as $p_rec_key => $parent_row ) {
 
                     $matching_related_rows = [];
 
+                    /** 
+                     * @psalm-suppress MixedArgument
+                     * @psalm-suppress MixedArrayOffset
+                     */
                     if(array_key_exists($parent_row[$fkey_col_in_my_table], $fkey_val_to_related_data_keys)) {
 
                         foreach ($fkey_val_to_related_data_keys[$parent_row[$fkey_col_in_my_table]] as $related_data_key) {
@@ -891,6 +1026,7 @@ SELECT {$foreign_table_name}.*
                         }
                     }
 
+                    /** @psalm-suppress MixedArgument */
                     $this->wrapRelatedDataInsideRecordsAndCollection(
                         $matching_related_rows, $foreign_model_obj, 
                         $wrap_row_in_a_record, false
@@ -903,6 +1039,11 @@ SELECT {$foreign_table_name}.*
                         // record per parent record since this is a hasOne
                         // relationship. That's why we are doing 
                         // $matching_related_rows[0]
+                        /** 
+                         * @psalm-suppress MixedArrayTypeCoercion
+                         * @psalm-suppress MixedArrayOffset
+                         * @psalm-suppress MixedMethodCall
+                         */
                         $parent_data[$p_rec_key]->setRelatedData($rel_name, $matching_related_rows[0]);
 
                     } else {
@@ -913,6 +1054,11 @@ SELECT {$foreign_table_name}.*
                         // $matching_related_rows[0]
 
                         //the current row must be an array
+                        /**
+                         * @psalm-suppress MixedArrayOffset
+                         * @psalm-suppress MixedArrayAssignment
+                         * @psalm-suppress MixedArgument
+                         */
                         $parent_data[$p_rec_key][$rel_name] = $matching_related_rows[0];
                     }
                 } // foreach( $parent_data as $p_rec_key => $parent_record )
@@ -923,12 +1069,14 @@ SELECT {$foreign_table_name}.*
 
             } else if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
+                /** @psalm-suppress MixedArgument */
                 $this->wrapRelatedDataInsideRecordsAndCollection(
                             $related_data, $foreign_model_obj, 
                             $wrap_row_in_a_record, false
                         );
 
                 //stitch the related data to the parent record
+                /** @psalm-suppress MixedArgument */
                 $parent_data->setRelatedData($rel_name, array_shift($related_data));
             } // else if ($parent_data instanceof \GDAO\Model\RecordInterface)
         } // if( array_key_exists($rel_name, $this->relations) )
@@ -940,11 +1088,13 @@ SELECT {$foreign_table_name}.*
         bool $wrap_row_in_a_record=false
     ): void {
 
+        /** @psalm-suppress MixedArrayAccess */
         if( 
             array_key_exists($rel_name, $this->relations) 
             && $this->relations[$rel_name]['relation_type']  === \GDAO\Model::RELATION_TYPE_BELONGS_TO
         ) {
             //quick hack
+            /** @psalm-suppress MixedArrayAssignment */
             $this->relations[$rel_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
 
             //I really don't see the difference in the sql to fetch data for
@@ -953,6 +1103,7 @@ SELECT {$foreign_table_name}.*
             $this->loadHasOne($rel_name, $parent_data, $wrap_row_in_a_record);
 
             //undo quick hack
+            /** @psalm-suppress MixedArrayAssignment */
             $this->relations[$rel_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
         }
     }
@@ -964,45 +1115,61 @@ SELECT {$foreign_table_name}.*
         string $rel_name, 
         \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array &$parent_data
     ): array {
-
+        /** 
+         * @psalm-suppress MixedAssignment
+         */
         $rel_info = $this->relations[$rel_name];
 
+        /** 
+         * @psalm-suppress MixedAssignment
+         * @psalm-suppress MixedArgument
+         */
         $foreign_table_name = Utils::arrayGet($rel_info, 'foreign_table');
 
+        /** @psalm-suppress MixedAssignment */
         $fkey_col_in_foreign_table = 
             Utils::arrayGet($rel_info, 'foreign_key_col_in_foreign_table');
-
+        
+        /** @psalm-suppress MixedAssignment */
         $foreign_models_class_name = 
             Utils::arrayGet($rel_info, 'foreign_models_class_name', \LeanOrm\Model::class);
 
+        /** @psalm-suppress MixedAssignment */
         $pri_key_col_in_foreign_models_table = 
             Utils::arrayGet($rel_info, 'primary_key_col_in_foreign_table');
 
+        /** @psalm-suppress MixedAssignment */
         $fkey_col_in_my_table = 
                 Utils::arrayGet($rel_info, 'foreign_key_col_in_my_table');
 
+        /** @psalm-suppress MixedAssignment */
         $sql_query_modifier = 
                 Utils::arrayGet($rel_info, 'sql_query_modifier', null);
 
+        /** @psalm-suppress MixedArgument */
         $foreign_model_obj = $this->createRelatedModelObject(
                                         $foreign_models_class_name,
                                         $pri_key_col_in_foreign_models_table,
                                         $foreign_table_name
                                     );
         
+        /** @psalm-suppress MixedAssignment */
         $foreign_models_collection_class_name = 
             Utils::arrayGet($rel_info, 'foreign_models_collection_class_name', '');
 
+        /** @psalm-suppress MixedAssignment */
         $foreign_models_record_class_name = 
             Utils::arrayGet($rel_info, 'foreign_models_record_class_name', '');
 
         if($foreign_models_collection_class_name !== '') {
-
+            
+            /** @psalm-suppress MixedArgument */
             $foreign_model_obj->setCollectionClassName($foreign_models_collection_class_name);
         }
 
         if($foreign_models_record_class_name !== '') {
-
+            
+            /** @psalm-suppress MixedArgument */
             $foreign_model_obj->setRecordClassName($foreign_models_record_class_name);
         }
 
@@ -1016,7 +1183,8 @@ SELECT {$foreign_table_name}.*
             );
 
         } else {
-            //assume it's a collection or array                
+            //assume it's a collection or array
+            /** @psalm-suppress MixedArgument */
             $col_vals = $this->getColValsFromArrayOrCollection(
                             $parent_data, $fkey_col_in_my_table
                         );
@@ -1035,7 +1203,8 @@ SELECT {$foreign_table_name}.*
 
             $sql_query_modifier = Utils::getClosureFromCallable($sql_query_modifier);
             
-            // modify the query object before executing the query 
+            // modify the query object before executing the query
+            /** @psalm-suppress MixedAssignment */
             $query_obj = $sql_query_modifier($query_obj);
         }
 
@@ -1043,9 +1212,14 @@ SELECT {$foreign_table_name}.*
 
             $query_obj->cols(["{$foreign_table_name}.*"]);
         }
-
+        
+        /** @psalm-suppress MixedAssignment */
         $params_2_bind_2_sql = $query_obj->getBindValues();
+        
+        /** @psalm-suppress MixedAssignment */
         $sql_2_get_related_data = $query_obj->__toString();
+        
+        /** @psalm-suppress MixedArgument */
         $this->logQuery($sql_2_get_related_data, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
         
         return [
@@ -1053,7 +1227,8 @@ SELECT {$foreign_table_name}.*
             $this->db_connector->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql) // fetch the related data
         ]; 
     }
-
+    
+    /** @psalm-suppress MoreSpecificReturnType */
     protected function createRelatedModelObject(
         string $f_models_class_name, 
         string $pri_key_col_in_f_models_table, 
@@ -1069,6 +1244,7 @@ SELECT {$foreign_table_name}.*
 
         try {
             //try to create a model object for the related data
+            /** @psalm-suppress MixedMethodCall */
             $related_model = new $f_models_class_name(
                 $this->dsn, 
                 $this->username, 
@@ -1118,16 +1294,20 @@ SELECT {$foreign_table_name}.*
             
             // Transfer logger settings from this model
             // to the newly created model
+            /** @psalm-suppress MixedMethodCall */
             $related_model->enableQueryLogging();
         }
         
+        /** @psalm-suppress MixedMethodCall */
         if( 
             $this->getLogger() instanceof \Psr\Log\LoggerInterface
             && $related_model->getLogger() === null
         ) {
+            /** @psalm-suppress MixedMethodCall */
             $related_model->setLogger($this->getLogger());
         }
         
+        /** @psalm-suppress LessSpecificReturnStatement */
         return $related_model;
     }
 
@@ -1142,8 +1322,13 @@ SELECT {$foreign_table_name}.*
 
         if ( is_array($parent_data) ) {
 
+            /** @psalm-suppress MixedAssignment */
             foreach($parent_data as $data) {
 
+                /** 
+                 * @psalm-suppress MixedAssignment
+                 * @psalm-suppress MixedArrayAccess
+                 */
                 $col_vals[] = $data[$fkey_col_in_my_table];
             }
 
@@ -1155,6 +1340,7 @@ SELECT {$foreign_table_name}.*
         return $col_vals;
     }
 
+    /** @psalm-suppress ReferenceConstraintViolation */
     protected function wrapRelatedDataInsideRecordsAndCollection(
         array &$matching_related_records, Model $foreign_model_obj, 
         bool $wrap_each_row_in_a_record, bool $wrap_records_in_collection
@@ -1163,11 +1349,13 @@ SELECT {$foreign_table_name}.*
         if( $wrap_each_row_in_a_record ) {
 
             //wrap into records of the appropriate class
+            /** @psalm-suppress MixedAssignment */
             foreach ($matching_related_records as $key=>$rec_data) {
                 
                 // Mark as not new because this is a related row of data that 
                 // already exists in the db as opposed to a row of data that
                 // has never been saved to the db
+                /** @psalm-suppress MixedArgument */
                 $matching_related_records[$key] = 
                     $foreign_model_obj->createNewRecord($rec_data)
                                       ->markAsNotNew();
@@ -1176,8 +1364,8 @@ SELECT {$foreign_table_name}.*
 
         if($wrap_records_in_collection) {
             
-            $matching_related_records = 
-                $foreign_model_obj->createNewCollection(...$matching_related_records);
+            /** @psalm-suppress MixedArgument */
+            $matching_related_records = $foreign_model_obj->createNewCollection(...$matching_related_records);
         }
     }
 
@@ -1198,6 +1386,8 @@ SELECT {$foreign_table_name}.*
      * 
      * @param array $ids an array of scalar values of the primary key field of db rows to be fetched
      * 
+     * @param string[] $relations_to_include names of relations to include
+     * 
      * @param bool $use_records true if each matched db row should be wrapped in 
      *                          an instance of \LeanOrm\Model\Record; false if 
      *                          rows should be returned as associative php 
@@ -1214,8 +1404,6 @@ SELECT {$foreign_table_name}.*
      * 
      * @param bool $use_p_k_val_as_key true means the collection or array returned should be keyed on the primary key values
      * 
-     * @return array|\LeanOrm\Model\Collection 
-     * 
      */
     public function fetch(
         array $ids, 
@@ -1230,12 +1418,12 @@ SELECT {$foreign_table_name}.*
         
         if( $ids !== [] ) {
             
-            $result = [];
+            $_result = [];
             $this->addWhereInAndOrIsNullToQuery($this->getPrimaryCol(), $ids, $select_obj);
 
             if( $use_collections ) {
 
-                $result = ($use_p_k_val_as_key) 
+                $_result = ($use_p_k_val_as_key) 
                             ? $this->fetchRecordsIntoCollectionKeyedOnPkVal($select_obj, $relations_to_include) 
                             : $this->fetchRecordsIntoCollection($select_obj, $relations_to_include);
 
@@ -1243,24 +1431,25 @@ SELECT {$foreign_table_name}.*
 
                 if( $use_records ) {
 
-                    $result = ($use_p_k_val_as_key) 
+                    $_result = ($use_p_k_val_as_key) 
                                 ? $this->fetchRecordsIntoArrayKeyedOnPkVal($select_obj, $relations_to_include) 
                                 : $this->fetchRecordsIntoArray($select_obj, $relations_to_include);
                 } else {
 
                     //default
-                    $result = ($use_p_k_val_as_key) 
+                    $_result = ($use_p_k_val_as_key) 
                                 ? $this->fetchRowsIntoArrayKeyedOnPkVal($select_obj, $relations_to_include) 
                                 : $this->fetchRowsIntoArray($select_obj, $relations_to_include);
                 } // if( $use_records ) else ...
             } // if( $use_collections ) else ...
             
-            if(!($result instanceof \GDAO\Model\CollectionInterface) && !is_array($result)) {
+            /** @psalm-suppress TypeDoesNotContainType */
+            if(!($_result instanceof \GDAO\Model\CollectionInterface) && !is_array($_result)) {
                
                 return $use_collections ? $this->createNewCollection() : [];
             } 
             
-            return $result;
+            return $_result;
             
         } // if( $ids !== [] )
 
@@ -1271,9 +1460,12 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
-    public function fetchRecordsIntoCollection(?object $select_obj=null, array $relations_to_include=[]): \GDAO\Model\CollectionInterface {
+    public function fetchRecordsIntoCollection(?object $query=null, array $relations_to_include=[]): \GDAO\Model\CollectionInterface {
 
-        return $this->doFetchRecordsIntoCollection($select_obj, $relations_to_include);
+        return $this->doFetchRecordsIntoCollection(
+                    ($query instanceof \Aura\SqlQuery\Common\Select) ? $query : null, 
+                    $relations_to_include
+                );
     }
 
     public function fetchRecordsIntoCollectionKeyedOnPkVal(?\Aura\SqlQuery\Common\Select $select_obj=null, array $relations_to_include=[]): \GDAO\Model\CollectionInterface {
@@ -1281,6 +1473,9 @@ SELECT {$foreign_table_name}.*
         return $this->doFetchRecordsIntoCollection($select_obj, $relations_to_include, true);
     }
 
+    /**
+     * @psalm-suppress InvalidReturnType
+     */
     protected function doFetchRecordsIntoCollection(
         ?\Aura\SqlQuery\Common\Select $select_obj=null, 
         array $relations_to_include=[], 
@@ -1302,22 +1497,28 @@ SELECT {$foreign_table_name}.*
                
                 $results = $this->createNewCollection(...$data);
             }
-
+            
+            /** @psalm-suppress MixedAssignment */
             foreach( $relations_to_include as $rel_name ) {
 
+                /** @psalm-suppress MixedArgument */
                 $this->loadRelationshipData($rel_name, $results, true, true);
             }
         }
 
+        /** @psalm-suppress InvalidReturnStatement */
         return $results;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function fetchRecordsIntoArray(?object $select_obj=null, array $relations_to_include=[]): array {
+    public function fetchRecordsIntoArray(?object $query=null, array $relations_to_include=[]): array {
         
-        return $this->doFetchRecordsIntoArray($select_obj, $relations_to_include);
+        return $this->doFetchRecordsIntoArray(
+                    ($query instanceof \Aura\SqlQuery\Common\Select) ? $query : null, 
+                    $relations_to_include
+                );
     }
 
     /**
@@ -1330,6 +1531,7 @@ SELECT {$foreign_table_name}.*
 
     /**
      * @return \GDAO\Model\RecordInterface[]
+     * @psalm-suppress MixedReturnTypeCoercion
      */
     protected function doFetchRecordsIntoArray(
         ?\Aura\SqlQuery\Common\Select $select_obj=null, 
@@ -1340,8 +1542,10 @@ SELECT {$foreign_table_name}.*
 
         if( $results !== [] ) {
 
+            /** @psalm-suppress MixedAssignment */
             foreach( $relations_to_include as $rel_name ) {
 
+                /** @psalm-suppress MixedArgument */
                 $this->loadRelationshipData($rel_name, $results, true);
             }
         }
@@ -1351,13 +1555,16 @@ SELECT {$foreign_table_name}.*
 
     /**
      * @return \GDAO\Model\RecordInterface[]
+     * @psalm-suppress MixedReturnTypeCoercion
      */
     protected function getArrayOfRecordObjects(?\Aura\SqlQuery\Common\Select $select_obj=null, bool $use_p_k_val_as_key=false): array {
 
         $results = $this->getArrayOfDbRows($select_obj, $use_p_k_val_as_key);
 
+        /** @psalm-suppress MixedAssignment */
         foreach ($results as $key=>$value) {
 
+            /** @psalm-suppress MixedArgument */
             $results[$key] = $this->createNewRecord($value)->markAsNotNew();
         }
         
@@ -1380,8 +1587,10 @@ SELECT {$foreign_table_name}.*
 
             $results_keyed_by_pk = [];
 
+            /** @psalm-suppress MixedAssignment */
             foreach( $results as $result ) {
 
+                /** @psalm-suppress MixedArgument */
                 if( !array_key_exists($this->getPrimaryCol(), $result) ) {
 
                     $msg = "ERROR: Can't key fetch results by Primary Key value."
@@ -1394,6 +1603,7 @@ SELECT {$foreign_table_name}.*
                 }
 
                 // key on primary key value
+                /** @psalm-suppress MixedArrayOffset */
                 $results_keyed_by_pk[$result[$this->getPrimaryCol()]] = $result;
             }
 
@@ -1406,9 +1616,12 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
-    public function fetchRowsIntoArray(?object $select_obj=null, array $relations_to_include=[]): array {
+    public function fetchRowsIntoArray(?object $query=null, array $relations_to_include=[]): array {
 
-        return $this->doFetchRowsIntoArray($select_obj, $relations_to_include);
+        return $this->doFetchRowsIntoArray(
+                    ($query instanceof \Aura\SqlQuery\Common\Select) ? $query : null, 
+                    $relations_to_include
+                );
     }
 
     /**
@@ -1421,6 +1634,7 @@ SELECT {$foreign_table_name}.*
 
     /**
      * @return array[]
+     * @psalm-suppress MixedReturnTypeCoercion
      */
     protected function doFetchRowsIntoArray(
         ?\Aura\SqlQuery\Common\Select $select_obj=null, 
@@ -1430,9 +1644,11 @@ SELECT {$foreign_table_name}.*
         $results = $this->getArrayOfDbRows($select_obj, $use_p_k_val_as_key);
         
         if( $results !== [] ) {
-
+            
+            /** @psalm-suppress MixedAssignment */
             foreach( $relations_to_include as $rel_name ) {
 
+                /** @psalm-suppress MixedArgument */
                 $this->loadRelationshipData($rel_name, $results);
             }
         }
@@ -1460,6 +1676,7 @@ SELECT {$foreign_table_name}.*
             $del_qry_obj->from($this->getTableName());
             $table_cols = $this->getTableColNames();
 
+            /** @psalm-suppress MixedAssignment */
             foreach ($cols_n_vals as $colname => $colval) {
 
                 if(!in_array($colname, $table_cols)) {
@@ -1471,6 +1688,7 @@ SELECT {$foreign_table_name}.*
 
                 if (is_array($colval)) {
 
+                    /** @psalm-suppress MixedAssignment */
                     foreach($colval as $key=>$val) {
 
                         if(!$this->isAcceptableDeleteQueryValue($val)) {
@@ -1478,10 +1696,11 @@ SELECT {$foreign_table_name}.*
                             $this->throwExceptionForInvalidDeleteQueryArg($val, $cols_n_vals);
                         }
 
+                        /** @psalm-suppress MixedAssignment */
                         $colval[$key] = $this->stringifyIfStringable($val);
                     }
 
-                    $this->addWhereInAndOrIsNullToQuery($colname, $colval, $del_qry_obj);
+                    $this->addWhereInAndOrIsNullToQuery(''.$colname, $colval, $del_qry_obj);
 
                 } else {
 
@@ -1504,7 +1723,7 @@ SELECT {$foreign_table_name}.*
 
                 $result = $this->db_connector->executeQuery($dlt_qry, $dlt_qry_params, true); 
 
-                if( $result['query_result'] === true ) {
+                if( is_array($result) && $result['query_result'] === true ) {
 
                     //return number of affected rows
                     $pdo_statement_used_for_query = $result['pdo_statement'];
@@ -1521,7 +1740,7 @@ SELECT {$foreign_table_name}.*
         return $result;
     }
     
-    protected function throwExceptionForInvalidDeleteQueryArg($val, array $cols_n_vals): never {
+    protected function throwExceptionForInvalidDeleteQueryArg(mixed $val, array $cols_n_vals): never {
 
         $msg = "ERROR: the value "
              . PHP_EOL . var_export($val, true) . PHP_EOL
@@ -1572,6 +1791,7 @@ SELECT {$foreign_table_name}.*
 
         if ( $record->getData() !== [] ) { //test if the record object has data
 
+            /** @psalm-suppress MixedAssignment */
             $pri_key_val = $record->getPrimaryVal();
             $cols_n_vals = [$record->getPrimaryCol() => $pri_key_val];
 
@@ -1582,44 +1802,50 @@ SELECT {$foreign_table_name}.*
                 
                 $record->markAsNew();
                 
+                /** @psalm-suppress MixedAssignment */
                 foreach ($this->getRelationNames() as $relation_name) {
                     
                     // Remove all the related data since the primary key of the 
                     // record may change or there may be ON DELETE CASACADE 
                     // constraints that may have triggred those records being 
                     // deleted from the db because of the deletion of this record
+                    /** @psalm-suppress MixedArrayOffset */
                     unset($record[$relation_name]);
                 }
                 
-                if(
-                    $this->table_cols[$record->getPrimaryCol()]['autoinc']
-                ) {
+                /** @psalm-suppress MixedArrayAccess */
+                if( $this->table_cols[$record->getPrimaryCol()]['autoinc'] ) {
+                    
                     // unset the primary key value for auto-incrementing
                     // primary key cols. It is actually set to null via
                     // Record::offsetUnset(..)
                     unset($record[$this->getPrimaryCol()]); 
                 }
                 
-            } elseif($succesfully_deleted === 0) {
+            } elseif($succesfully_deleted <= 0) {
                 
                 $succesfully_deleted = null;
                 
-            } elseif( $this->fetch([$pri_key_val], null, [], true, true)->count() === 1 ) {
+            } elseif(
+                count($this->fetch([$pri_key_val], null, [], true, true)) >= 1 
+            ) {
                 
                 //we were still able to fetch the record from the db, so delete failed
                 $succesfully_deleted = false;
             }
         }
 
-        return ( $succesfully_deleted === 1 )? true : $succesfully_deleted;
+        return ( $succesfully_deleted >= 1 ) ? true : $succesfully_deleted;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function fetchCol(?object $select_obj=null): array {
+    public function fetchCol(?object $query=null): array {
 
-        $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery($select_obj);
+        $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery(
+            ($query instanceof \Aura\SqlQuery\Common\Select) ? $query : null
+        );
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
@@ -1630,15 +1856,18 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
-    public function fetchOneRecord(?object $select_obj=null, array $relations_to_include=[]): ?\GDAO\Model\RecordInterface {
+    public function fetchOneRecord(?object $query=null, array $relations_to_include=[]): ?\GDAO\Model\RecordInterface {
 
-        $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery($select_obj);
+        $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery(
+            ($query instanceof \Aura\SqlQuery\Common\Select) ? $query : null
+        );
         $query_obj->limit(1);
 
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
+        /** @psalm-suppress MixedAssignment */
         $result = $this->db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
 
         if( $result !== false && is_array($result) && $result !== [] ) {
@@ -1661,6 +1890,8 @@ SELECT {$foreign_table_name}.*
     
     /**
      * Convenience method to fetch one record by the specified primary key value.
+     * @param string[] $relations_to_include names of relations to include
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function fetchOneByPkey(string|int $id, array $relations_to_include = []): ?\GDAO\Model\RecordInterface {
         
@@ -1673,9 +1904,11 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
-    public function fetchPairs(?object $select_obj=null): array {
+    public function fetchPairs(?object $query=null): array {
 
-        $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery($select_obj);
+        $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery(
+            ($query instanceof \Aura\SqlQuery\Common\Select) ? $query : null
+        );
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
@@ -1686,9 +1919,11 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
-    public function fetchValue(?object $select_obj=null): mixed {
+    public function fetchValue(?object $query=null): mixed {
 
-        $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery($select_obj);
+        $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery(
+            ($query instanceof \Aura\SqlQuery\Common\Select) ? $query : null
+        );
         $query_obj->limit(1);
 
         $query_obj_4_num_matching_rows = clone $query_obj;
@@ -1697,6 +1932,7 @@ SELECT {$foreign_table_name}.*
         $params_2_bind_2_sql = $query_obj->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
+        /** @psalm-suppress MixedAssignment */
         $result = $this->db_connector->dbFetchValue($sql, $params_2_bind_2_sql);
 
         // need to issue a second query to get the number of matching rows
@@ -1709,9 +1945,11 @@ SELECT {$foreign_table_name}.*
         $params_2_bind_2_sql = $query_obj_4_num_matching_rows->getBindValues();
         $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
+        /** @psalm-suppress MixedAssignment */
         $num_matching_rows = $this->db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
 
         //return null if there wasn't any matching row
+        /** @psalm-suppress MixedArrayAccess */
         return (((int)$num_matching_rows['num_rows']) > 0) ? $result : null;
     }
     
@@ -1777,9 +2015,11 @@ SELECT {$foreign_table_name}.*
         // remove non-existent table columns from the data and also
         // converts object values for objects with __toString() to 
         // their string value
+        /** @psalm-suppress MixedAssignment */
         foreach ($data as $key => $val) {
 
-            $data[$key] = $this->stringifyIfStringable($val, $key, $table_cols);
+            /** @psalm-suppress MixedAssignment */
+            $data[$key] = $this->stringifyIfStringable($val, ''.$key, $table_cols);
 
             if ( !in_array($key, $table_cols) ) {
 
@@ -1807,6 +2047,7 @@ SELECT {$foreign_table_name}.*
             // Code below was lifted from Solar_Sql_Model::insert()
             // remove empty autoinc columns to soothe postgres, which won't
             // take explicit NULLs in SERIAL cols.
+            /** @psalm-suppress MixedArrayAccess */
             if ( $this->table_cols[$key]['autoinc'] && empty($val) ) {
 
                 unset($data[$key]);
@@ -1814,8 +2055,10 @@ SELECT {$foreign_table_name}.*
             } // if ( $this->table_cols[$key]['autoinc'] && empty($val) )
         } // foreach ($data as $key => $val)
 
+        /** @psalm-suppress MixedAssignment */
         foreach($this->table_cols as $col_name=>$col_info) {
 
+            /** @psalm-suppress MixedArrayAccess */
             if ( $col_info['autoinc'] === true && $col_info['primary'] === true ) {
 
                 if(array_key_exists($col_name, $data)) {
@@ -1840,14 +2083,15 @@ SELECT {$foreign_table_name}.*
             array_key_exists($this->getPrimaryCol(), $data_2_insert)
             && !empty($data_2_insert[$this->getPrimaryCol()])
         ) {
-            $data_2_insert = 
-                $this->fetchOneRecord(
+            $record = $this->fetchOneRecord(
                         $this->getSelect()
                              ->where(
                                 " {$this->getPrimaryCol()} = :{$this->getPrimaryCol()} ",
                                 [ $this->getPrimaryCol() => $data_2_insert[$this->getPrimaryCol()]]
                              )
-                     )->getData();
+                     );
+            $data_2_insert = ($record instanceof \GDAO\Model\RecordInterface) ? $record->getData() :  $data_2_insert;
+            
         } else {
 
             // we don't have the primary key.
@@ -1857,9 +2101,11 @@ SELECT {$foreign_table_name}.*
 
             $select = $this->getSelect();
 
+            /** @psalm-suppress MixedAssignment */
             foreach ($data_2_insert as $col => $val) {
 
-                $processed_val = $this->stringifyIfStringable($val, $col, $table_cols);
+                /** @psalm-suppress MixedAssignment */
+                $processed_val = $this->stringifyIfStringable($val, ''.$col, $table_cols);
 
                 if(is_string($processed_val) || is_numeric($processed_val)) {
 
@@ -1875,6 +2121,7 @@ SELECT {$foreign_table_name}.*
 
             if(count($matching_rows) === 1) {
 
+                /** @psalm-suppress MixedAssignment */
                 $data_2_insert = array_pop($matching_rows);
             }
         }
@@ -1898,6 +2145,10 @@ SELECT {$foreign_table_name}.*
 
             // Do we still have anything left to save after removing items
             // in the array that do not map to actual db table columns
+            /**
+             * @psalm-suppress RedundantCondition
+             * @psalm-suppress TypeDoesNotContainType
+             */
             if( (is_countable($data_2_insert) ? count($data_2_insert) : 0) > 0 ) {
 
                 //Insert statement
@@ -1915,11 +2166,12 @@ SELECT {$foreign_table_name}.*
                     // return the db representation of the data
                     if($has_autoinc_pkey_col) {
 
+                        /** @psalm-suppress MixedAssignment */
                         $last_insert_sequence_name = 
                             $insrt_qry_obj->getLastInsertIdName($this->getPrimaryCol());
 
                         $pk_val_4_new_record = 
-                            $this->getPDO()->lastInsertId($last_insert_sequence_name);
+                            $this->getPDO()->lastInsertId(is_string($last_insert_sequence_name) ? $last_insert_sequence_name : null);
 
                         // Add retrieved primary key value 
                         // or null (if primary key value is empty) 
@@ -1982,6 +2234,10 @@ SELECT {$foreign_table_name}.*
 
                 $this->processRowOfDataToInsert($rows_of_data_2_insert[$key], $table_cols);
 
+                /** 
+                 * @psalm-suppress TypeDoesNotContainType
+                 * @psalm-suppress RedundantCondition
+                 */
                 if((is_countable($rows_of_data_2_insert[$key]) ? count($rows_of_data_2_insert[$key]) : 0) === 0) {
 
                     // all the keys in the curent row of data aren't valid
@@ -2005,7 +2261,7 @@ SELECT {$foreign_table_name}.*
                 $insrt_qry_params = $insrt_qry_obj->getBindValues();
 
                 $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
-                $result = $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params);
+                $result = (bool) $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params);
 
             } // if(count($rows_of_data_2_insert) > 0)
         } // if ($rows_of_data_2_insert !== [])
@@ -2013,7 +2269,7 @@ SELECT {$foreign_table_name}.*
         return $result;
     }
     
-    protected function throwExceptionForInvalidUpdateQueryArg($val, array $cols_n_vals): never {
+    protected function throwExceptionForInvalidUpdateQueryArg(mixed $val, array $cols_n_vals): never {
 
         $msg = "ERROR: the value "
              . PHP_EOL . var_export($val, true) . PHP_EOL
@@ -2032,39 +2288,42 @@ SELECT {$foreign_table_name}.*
     
     /**
      * {@inheritDoc}
+     * @psalm-suppress RedundantCondition
      */
     public function updateMatchingDbTableRows(
-        array $col_names_n_vals_2_save = [],
-        array $col_names_n_vals_2_match = []
+        array $col_names_n_values_2_save = [],
+        array $col_names_n_values_2_match = []
     ): static {
-        $num_initial_match_items = count($col_names_n_vals_2_match);
+        $num_initial_match_items = count($col_names_n_values_2_match);
 
-        if ($col_names_n_vals_2_save !== []) {
+        if ($col_names_n_values_2_save !== []) {
 
             $table_cols = $this->getTableColNames();
             $pkey_col_name = $this->getPrimaryCol();
             $this->addTimestampToData(
-                $col_names_n_vals_2_save, $this->updated_timestamp_column_name, $table_cols
+                $col_names_n_values_2_save, $this->updated_timestamp_column_name, $table_cols
             );
 
-            if(array_key_exists($pkey_col_name, $col_names_n_vals_2_save)) {
+            if(array_key_exists($pkey_col_name, $col_names_n_values_2_save)) {
 
                 //don't update the primary key
-                unset($col_names_n_vals_2_save[$pkey_col_name]);
+                unset($col_names_n_values_2_save[$pkey_col_name]);
             }
 
             // remove non-existent table columns from the data
             // and check that existent table columns have values of  
             // the right data type: ie. Boolean, NULL, Number or String.
             // Convert objects with a __toString to their string value.
-            foreach ($col_names_n_vals_2_save as $key => $val) {
+            /** @psalm-suppress MixedAssignment */
+            foreach ($col_names_n_values_2_save as $key => $val) {
 
-                $col_names_n_vals_2_save[$key] = 
-                    $this->stringifyIfStringable($val, $key, $table_cols);
+                /** @psalm-suppress MixedAssignment */
+                $col_names_n_values_2_save[$key] = 
+                    $this->stringifyIfStringable($val, ''.$key, $table_cols);
 
                 if ( !in_array($key, $table_cols) ) {
 
-                    unset($col_names_n_vals_2_save[$key]);
+                    unset($col_names_n_values_2_save[$key]);
 
                 } else if( !$this->isAcceptableUpdateValue($val) ) {
 
@@ -2077,7 +2336,7 @@ SELECT {$foreign_table_name}.*
                          . "Data supplied to "
                          . static::class . '::' . __FUNCTION__ . '(...).' 
                          . " for update:"
-                         . PHP_EOL . var_export($col_names_n_vals_2_save, true) . PHP_EOL
+                         . PHP_EOL . var_export($col_names_n_values_2_save, true) . PHP_EOL
                          . PHP_EOL;
 
                     throw new \GDAO\ModelInvalidUpdateValueSuppliedException($msg);
@@ -2086,19 +2345,20 @@ SELECT {$foreign_table_name}.*
 
             // After filtering out non-table columns, if we have any table
             // columns data left, we can do the update
-            if($col_names_n_vals_2_save !== []) {
+            if($col_names_n_values_2_save !== []) {
 
                 //update statement
                 $update_qry_obj = (new QueryFactory($this->getPdoDriverName()))->newUpdate();
                 $update_qry_obj->table($this->getTableName());
-                $update_qry_obj->cols($col_names_n_vals_2_save);
+                $update_qry_obj->cols($col_names_n_values_2_save);
 
-                foreach ($col_names_n_vals_2_match as $colname => $colval) {
+                /** @psalm-suppress MixedAssignment */
+                foreach ($col_names_n_values_2_match as $colname => $colval) {
 
                     if(!in_array($colname, $table_cols)) {
 
                         //non-existent table column
-                        unset($col_names_n_vals_2_match[$colname]);
+                        unset($col_names_n_values_2_match[$colname]);
                         continue;
                     }
 
@@ -2106,19 +2366,21 @@ SELECT {$foreign_table_name}.*
 
                         if($colval !== []) {
 
+                            /** @psalm-suppress MixedAssignment */
                             foreach ($colval as $key=>$val) {
 
                                 if(!$this->isAcceptableUpdateQueryValue($val)) {
 
                                     $this->throwExceptionForInvalidUpdateQueryArg(
-                                            $val, $col_names_n_vals_2_match
+                                            $val, $col_names_n_values_2_match
                                         );
                                 }
 
+                                /** @psalm-suppress MixedAssignment */
                                 $colval[$key] = $this->stringifyIfStringable($val);
                             }
 
-                            $this->addWhereInAndOrIsNullToQuery($colname, $colval, $update_qry_obj);
+                            $this->addWhereInAndOrIsNullToQuery(''.$colname, $colval, $update_qry_obj);
 
                         } // if($colval !== []) 
 
@@ -2127,7 +2389,7 @@ SELECT {$foreign_table_name}.*
                         if(!$this->isAcceptableUpdateQueryValue($colval)) {
 
                             $this->throwExceptionForInvalidUpdateQueryArg(
-                                    $colval, $col_names_n_vals_2_match
+                                    $colval, $col_names_n_values_2_match
                                 );
                         }
 
@@ -2156,11 +2418,11 @@ SELECT {$foreign_table_name}.*
                 // if there is still data left in $col_names_n_vals_2_match, then
                 // finish building the update query and do the update
                 if( 
-                    $col_names_n_vals_2_match !== [] // there are valid db table cols in here
+                    $col_names_n_values_2_match !== [] // there are valid db table cols in here
                     || 
                     (
                         $num_initial_match_items === 0
-                        && $col_names_n_vals_2_match === [] // empty match array passed, we are updating all rows
+                        && $col_names_n_values_2_match === [] // empty match array passed, we are updating all rows
                     )
                 ) {
 
@@ -2179,6 +2441,7 @@ SELECT {$foreign_table_name}.*
 
     /**
      * {@inheritDoc}
+     * @psalm-suppress UnusedVariable
      */
     public function updateSpecifiedRecord(\GDAO\Model\RecordInterface $record): static {
         
@@ -2204,8 +2467,10 @@ SELECT {$foreign_table_name}.*
             );
         }
 
+        /** @psalm-suppress MixedAssignment */
         $pri_key_val = $record->getPrimaryVal();
         
+        /** @psalm-suppress MixedOperand */
         if( 
             count($record) > 0  // There is data in the record
             && !$record->isNew() // This is not a new record that wasn't fetched from the DB
@@ -2243,6 +2508,9 @@ SELECT {$foreign_table_name}.*
         return $this;
     }
 
+    /**
+     * @psalm-suppress RedundantConditionGivenDocblockType
+     */
     protected function addWhereInAndOrIsNullToQuery(
         string $colname, array &$colvals, \Aura\SqlQuery\Common\WhereInterface $qry_obj
     ): void {
@@ -2306,6 +2574,8 @@ SELECT {$foreign_table_name}.*
      *              connection_status: mixed, 
      *              connection_is_persistent: mixed
      *          }
+     * 
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function getCurrentConnectionInfo(): array {
 
@@ -2322,7 +2592,10 @@ SELECT {$foreign_table_name}.*
         foreach ($attributes as $key => $value) {
             
             try {
-                
+                /**
+                 * @psalm-suppress MixedAssignment
+                 * @psalm-suppress MixedArgument
+                 */
                 $attributes[ $key ] = $pdo_obj->getAttribute(constant(\PDO::class .'::ATTR_' . $value));
                 
             } catch (\PDOException) {
@@ -2342,6 +2615,7 @@ SELECT {$foreign_table_name}.*
 
     /**
      * @return mixed[]
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function getQueryLog(): array {
 
@@ -2357,6 +2631,7 @@ SELECT {$foreign_table_name}.*
      * an instance of the class whose log you want to get.
      * 
      * @return mixed[]
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public static function getQueryLogForAllInstances(?\GDAO\Model $obj=null): array {
         
@@ -2372,6 +2647,9 @@ SELECT {$foreign_table_name}.*
                 ;
     }
     
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
     public static function clearQueryLogForAllInstances(): void {
         
         static::$all_instances_query_log = [];
@@ -2400,7 +2678,8 @@ SELECT {$foreign_table_name}.*
                 'class_method' => $calling_method,
                 'line_of_execution' => $calling_line,
             ];
-
+            
+            /** @psalm-suppress InvalidPropertyAssignmentValue */
             $this->query_log[] = $log_record;
             static::$all_instances_query_log[$key][] = $log_record;
 
@@ -2423,7 +2702,10 @@ SELECT {$foreign_table_name}.*
     ///////////////////////////////////////
     // Methods for defining relationships
     ///////////////////////////////////////
-
+    
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
     public function hasOne(
         string $relation_name,
         string $foreign_key_col_in_this_models_table,
@@ -2469,7 +2751,10 @@ SELECT {$foreign_table_name}.*
 
         return $this;
     }
-
+    
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
     public function belongsTo(
         string $relation_name,
         string $foreign_key_col_in_this_models_table,
@@ -2515,7 +2800,10 @@ SELECT {$foreign_table_name}.*
 
         return $this;
     }
-
+    
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
     public function hasMany(
         string $relation_name,
         string $foreign_key_col_in_this_models_table,
@@ -2563,6 +2851,9 @@ SELECT {$foreign_table_name}.*
         return $this;
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
     public function hasManyThrough(
         string $relation_name,
         string $col_in_my_table_linked_to_join_table,
@@ -2621,6 +2912,8 @@ SELECT {$foreign_table_name}.*
     protected function checkThatRelationNameIsNotAnActualColumnName(string $relationName): void {
 
         $tableCols = $this->getTableColNames();
+
+        /** @psalm-suppress MixedArgument */
         $tableColsLowerCase = array_map('strtolower', $tableCols);
 
         if( in_array(strtolower($relationName), $tableColsLowerCase) ) {
@@ -2639,6 +2932,9 @@ SELECT {$foreign_table_name}.*
         } // if( in_array(strtolower($relationName), $tableColsLowerCase) ) 
     }
     
+    /**
+     * @psalm-suppress PossiblyUnusedReturnValue
+     */
     protected function validateTableName(string $table_name): bool {
         
         if(!$this->tableExistsInDB($table_name)) {
@@ -2653,6 +2949,9 @@ SELECT {$foreign_table_name}.*
         return true;
     }
     
+    /**
+     * @psalm-suppress PossiblyUnusedReturnValue
+     */
     protected function validateThatTableHasColumn(string $table_name, string $column_name): bool {
         
         if(!$this->columnExistsInDbTable($table_name, $column_name)) {

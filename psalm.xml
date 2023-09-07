@@ -19,5 +19,10 @@
 
     <issueHandlers>
         <LessSpecificReturnType errorLevel="info" />
+        <UnusedPsalmSuppress>
+          <errorLevel type="suppress">
+            <file name="./src/LeanOrm/CachingModel.php" />  <!-- all UnusedPsalmSuppress issues in this file are suppressed -->
+          </errorLevel>
+        </UnusedPsalmSuppress>
     </issueHandlers>
 </psalm>

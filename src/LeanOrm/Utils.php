@@ -7,7 +7,7 @@ use Closure;
  * Description of Utils
  *
  * @author Rotimi Ade
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2023, Rotexsoft
  */
 class Utils {
     
@@ -25,7 +25,7 @@ class Utils {
      */
     public static function arrayGet(array &$array, string|int $key, mixed $default_value=null) {
 
-        if((is_int($key) || is_string($key)) && array_key_exists($key, $array)) {
+        if(array_key_exists($key, $array)) {
 
             return $array[$key];
 

@@ -13,8 +13,10 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
  * to update or delete the data. You cannot save new records to the database via
  * instances of this class.
  *
+ * @psalm-suppress PropertyNotSetInConstructor
+ * 
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2023, Rotexsoft
  */
 class ReadOnlyRecord implements \GDAO\Model\RecordInterface
 {
@@ -94,6 +96,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
      *                           load all fields in $data_2_load.
      * 
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
+     * @psalm-suppress PossiblyUnusedReturnValue
      */
     public function loadData(\GDAO\Model\RecordInterface|array $data_2_load, array $cols_2_load = []): static {
         

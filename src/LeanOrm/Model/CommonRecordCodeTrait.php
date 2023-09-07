@@ -6,7 +6,7 @@ namespace LeanOrm\Model;
  * This trait contains code shared between ReadOnlyRecord & Record
  * 
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2023, Rotexsoft
  */
 trait CommonRecordCodeTrait {
     
@@ -318,6 +318,7 @@ trait CommonRecordCodeTrait {
             if($this->data !== []) {
                 //$key is a valid relation name in the model for this record but the 
                 //related data needs to be loaded for this particular record.
+                /** @psalm-suppress UndefinedMethod */
                 $this->getModel()->loadRelationshipData($key, $this, true, true);
                 
             } else {
@@ -396,6 +397,7 @@ trait CommonRecordCodeTrait {
 
             if ( is_array($data_2_load) && $data_2_load !== [] ) {
 
+                /** @psalm-suppress MixedAssignment */
                 foreach( $data_2_load as $col_name => $value_2_load ) {
                     
                     if ( in_array($col_name, $table_col_names_4_my_model) ) {
@@ -416,8 +418,13 @@ trait CommonRecordCodeTrait {
             
         } else {
 
+            /** @psalm-suppress MixedAssignment */
             foreach ( $cols_2_load as $col_name ) {
 
+                /**
+                 * @psalm-suppress MixedArgument
+                 * @psalm-suppress MixedArrayOffset
+                 */
                 if (
                     (
                         is_array($data_2_load)

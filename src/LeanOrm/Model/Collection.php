@@ -7,7 +7,7 @@ namespace LeanOrm\Model;
  * Represents a collection of \GDAO\Model\RecordInterface objects.
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2023, Rotexsoft
  */
 class Collection implements \GDAO\Model\CollectionInterface
 {
@@ -20,9 +20,7 @@ class Collection implements \GDAO\Model\CollectionInterface
     protected array $data = [];
     
     /**
-     * 
      * @param \GDAO\Model $model The model object that transfers data between the db and this collection.
-     * @param \GDAO\Model\RecordInterface[] ...$data
      */
     public function __construct(
         \GDAO\Model $model, \GDAO\Model\RecordInterface ...$data
@@ -74,7 +72,7 @@ class Collection implements \GDAO\Model\CollectionInterface
                 
                 $delete_result = $record->delete();
 
-                if( !$delete_result && $delete_result !== null ) {
+                if( !$delete_result ) {
 
                     //record still exists in the db table
                     //it wasn't successfully deleted.
@@ -109,6 +107,7 @@ class Collection implements \GDAO\Model\CollectionInterface
         
         foreach ($this->data as $key => $record) {
             
+            /** @psalm-suppress MixedAssignment */
             $list[$key] = $record->$col;
         }
         
@@ -150,7 +149,6 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * Load the collection with a list of records.
-     * @param \GDAO\Model\RecordInterface[] ...$data_2_load
      */
     public function loadData(\GDAO\Model\RecordInterface ...$data_2_load): static {
         
@@ -170,7 +168,6 @@ class Collection implements \GDAO\Model\CollectionInterface
         
         foreach( $keys as $key ) {
             
-            $this->data[$key] = null;
             unset($this->data[$key]);
         }
         
@@ -221,7 +218,10 @@ class Collection implements \GDAO\Model\CollectionInterface
             
             $data_2_save_4_new_records = [];
             
-            /** @var \GDAO\Model\RecordInterface $record */
+            /** 
+             * @psalm-suppress UnnecessaryVarAnnotation 
+             * @var \GDAO\Model\RecordInterface $record 
+             */
             foreach ( $this->data as $key => $record ) {
 
                 $this->throwExceptionOnSaveOfReadOnlyRecord($record, __FUNCTION__);
@@ -341,8 +341,13 @@ class Collection implements \GDAO\Model\CollectionInterface
 
         $result = [];
         
+        /** @psalm-suppress MixedAssignment */
         foreach ($this as $key=>$record) {
             
+            /** 
+             * @psalm-suppress MixedAssignment
+             * @psalm-suppress MixedMethodCall
+             */
             $result[$key] = $record->toArray();
         }
         
@@ -351,6 +356,7 @@ class Collection implements \GDAO\Model\CollectionInterface
     
     /**
      * @return array an array where each value is the result of calling getData() on each record in the collection
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function getData(): array {
     
@@ -396,8 +402,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * ArrayAccess: set a key value; appends to the array when using []
      * notation.
-     *  
-     * @param string $key The requested key.
      * 
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
      * 
@@ -415,6 +419,18 @@ class Collection implements \GDAO\Model\CollectionInterface
             throw new \GDAO\Model\CollectionCanOnlyContainGDAORecordsException($msg);
         }
         
+        // only allow the key to be a string, int, Stringable object or 
+        // null (for $this[] style assignment)
+        if(!is_int($key) && !is_string($key) && $key !== null && !($key instanceof \Stringable)) {
+            
+            $msg = "ERROR: Only ints, strings, null or instances of Stringable are allowed as the first argument to "
+                   . static::class . '::' . __FUNCTION__ . '(...).'
+                   . PHP_EOL . ' Key of type `' . get_debug_type($key) . '` given.'
+                   . PHP_EOL . ' Specified key: '. var_export($val, true) . PHP_EOL;
+            
+           throw new \LeanOrm\InvalidArgumentException($msg);
+        }
+        
         if ($key === null) {
             
             //support for $this[] = $record; syntax
@@ -422,7 +438,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             $key = $this->count();
         }
         
-        $this->__set($key, $val);
+        $this->__set(($key instanceof \Stringable) ? $key->__toString() : ''.$key, $val);
     }
 
     /**

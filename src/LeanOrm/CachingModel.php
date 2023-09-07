@@ -7,16 +7,22 @@ namespace LeanOrm;
  * calls based on args supplied
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2023, Rotexsoft
+ * 
+ * @psalm-suppress UnusedClass
  */
 class CachingModel extends Model {
 
-    protected static $cachedFetchedTableListFromDB = [];
+    protected static array $cachedFetchedTableListFromDB = [];
 
-    protected static $cachedFetchedTableColsFromDB = [];
+    protected static array $cachedFetchedTableColsFromDB = [];
 
+    /**
+     * @psalm-suppress MixedInferredReturnType
+     * @psalm-suppress MixedReturnStatement
+     */
     protected function fetchTableListFromDB(): array {
-
+        
         if(array_key_exists($this->db_connector->getConnectionName(), static::$cachedFetchedTableListFromDB)) {
 
             return static::$cachedFetchedTableListFromDB[$this->db_connector->getConnectionName()];
@@ -27,6 +33,13 @@ class CachingModel extends Model {
         return static::$cachedFetchedTableListFromDB[$this->db_connector->getConnectionName()];
     }
 
+    /**
+     * @psalm-suppress MixedInferredReturnType
+     * @psalm-suppress MixedReturnStatement
+     * @psalm-suppress MixedArgument
+     * @psalm-suppress MixedArrayAccess
+     * @psalm-suppress MixedArrayAssignment
+     */
     protected function fetchTableColsFromDB(string $table_name): array {
         
         if(!array_key_exists($this->db_connector->getConnectionName(), static::$cachedFetchedTableColsFromDB)) {

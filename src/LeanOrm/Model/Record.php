@@ -8,7 +8,8 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
  * Description of Record
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2023, Rotexsoft
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class Record implements \GDAO\Model\RecordInterface
 {
@@ -109,8 +110,11 @@ class Record implements \GDAO\Model\RecordInterface
         if ($col === null) {
 
             $cols = $this->getModel()->getTableColNames();
-
+            
+            /** @psalm-suppress MixedAssignment */
             foreach ($cols as $col) {
+                
+                /** @psalm-suppress MixedArgument */
                 if ($this->isChanged($col)) {
                     return true;
                 }
@@ -210,10 +214,14 @@ class Record implements \GDAO\Model\RecordInterface
 
         if ($this->initial_data === [] && $this->data !== []) {
             
+            /** @psalm-suppress MixedAssignment */
             foreach($this->getModel()->getTableColNames() as $col_name) {
 
-                $this->initial_data[$col_name] = 
-                    array_key_exists($col_name, $this->data)? $this->data[$col_name] : '';
+                /** 
+                 * @psalm-suppress MixedArrayOffset
+                 * @psalm-suppress MixedArgument
+                 */
+                $this->initial_data[$col_name] = array_key_exists($col_name, $this->data)? $this->data[$col_name] : '';
             }
         }
         
@@ -286,11 +294,13 @@ class Record implements \GDAO\Model\RecordInterface
 
         if ( !empty($data_2_save) && count($data_2_save) > 0 ) {
             
+            /** @psalm-suppress MixedAssignment */
             $pri_val = $this->getPrimaryVal();
             
             if ( empty($pri_val) ) {
                 
                 // New record because of empty primary key value, do insert
+                /** @psalm-suppress PossiblyInvalidArgument */
                 $inserted_data = $this->getModel()->insert($data_2_save);
                 $result = ($inserted_data !== false);
                 

@@ -12,7 +12,7 @@ namespace LeanOrm;
  *      executing the statement in one single method. 
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2023, Rotexsoft
  * 
  * BSD Licensed.
  *
@@ -78,12 +78,14 @@ class DBConnector {
      */
     protected static array $db = [];
 
-//////////// ------------------------------------ //////////////////////////////
+    //////////// ------------------------------------ //////////////////////////////
     //////////// --- END CLASS PROPERTIES TO KEEP --- //////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
+    
     // ---------------------- //
     // --- STATIC METHODS --- //
     // ---------------------- //
+    
     /**
      * Pass configuration settings to the class in the form of
      * key/value pairs. As a shortcut, if the second argument
@@ -93,8 +95,14 @@ class DBConnector {
      * required to use DBConnector). If you have more than one setting
      * you wish to configure, another shortcut is to pass an array
      * of settings (and omit the second argument).
+     * 
      * @param array<int|string, mixed>|string $key_or_settings
+     * @param mixed $value value we are setting
      * @param string $connection_name Which connection to use
+     * 
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedArrayAssignment
+     * @psalm-suppress PossiblyInvalidArgument
      */
     public static function configure(array|string $key_or_settings, mixed $value = null, string $connection_name = self::DEFAULT_CONNECTION): void {
 
@@ -137,11 +145,15 @@ class DBConnector {
     /**
      * Set up the database connection used by the class
      * @param string $connection_name Which connection to use
+     * @psalm-suppress MixedArrayAccess
+     * @psalm-suppress MixedArgument
      */
     protected static function _setupDb(string $connection_name = self::DEFAULT_CONNECTION): void {
 
-        if (!array_key_exists($connection_name, static::$db) ||
-            !is_object(static::$db[$connection_name])) {
+        if (
+            !array_key_exists($connection_name, static::$db) ||
+            !(static::$db[$connection_name] instanceof \PDO)
+        ) {
 
             static::_initDbConfigWithDefaultVals($connection_name);
 
@@ -202,7 +214,7 @@ class DBConnector {
      * @param array  $parameters Optional bound parameters
      * @param bool $return_pdo_stmt_and_exec_time true to add the \PDOStatement object used by this function & time in seconds it took the query to execute to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
      * 
-     * @return bool|array bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
+     * @return bool|array{query_result: mixed, pdo_statement: \PDOStatement, exec_time_in_seconds: float} bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
      */
     public function executeQuery(string $query, array $parameters=[], bool $return_pdo_stmt_and_exec_time=false): bool|array {
 
@@ -217,12 +229,14 @@ class DBConnector {
     * @param bool $return_pdo_stmt_and_exec_time true to add the \PDOStatement object used by this function & time in seconds it took the query to execute to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
     * @param string $connection_name Which connection to use
     * 
-    * @return bool|array Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
+    * @return bool|array{query_result: mixed, pdo_statement: \PDOStatement, exec_time_in_seconds: float} Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
+    * 
     */
     protected static function _execute(string $query, array $parameters = [], bool $return_pdo_stmt_and_exec_time=false, string $connection_name = self::DEFAULT_CONNECTION): bool|array {
 
         $statement = static::getDb($connection_name)->prepare($query);
-
+        
+        /** @psalm-suppress MixedAssignment */
         foreach ($parameters as $key => &$param) {
 
             if (is_null($param)) {
@@ -289,11 +303,14 @@ class DBConnector {
      * As a shortcut, you may supply an ID as a parameter
      * to this method. This will perform a primary key
      * lookup on the table.
+     * 
+     * @return mixed result of the query or false on failure or if there are no rows
      */
     public function dbFetchOne(string $select_query, array $parameters = [] ) {
 
-       $result = static::_execute($select_query, $parameters, true, $this->connection_name);
-       $statement = $result['pdo_statement'];
+        $result = static::_execute($select_query, $parameters, true, $this->connection_name);
+        /** @psalm-suppress PossiblyInvalidArrayAccess */
+        $statement = $result['pdo_statement'];
 
         return $statement->fetch(\PDO::FETCH_ASSOC);
     }
@@ -309,6 +326,7 @@ class DBConnector {
     public function dbFetchAll(string $select_query, array $parameters = []): array {
 
         $result = static::_execute($select_query, $parameters, true, $this->connection_name);
+        /** @psalm-suppress PossiblyInvalidArrayAccess */
         $statement = $result['pdo_statement'];
 
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -325,6 +343,7 @@ class DBConnector {
     public function dbFetchCol(string $select_query, array $parameters = []): array {
 
         $result = static::_execute($select_query, $parameters, true, $this->connection_name);
+        /** @psalm-suppress PossiblyInvalidArrayAccess */
         $statement = $result['pdo_statement'];
 
         return $statement->fetchAll(\PDO::FETCH_COLUMN, 0);
@@ -337,15 +356,19 @@ class DBConnector {
      * be bound to the placeholders in the query.
      * 
      * @return array<int|string, mixed>
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedArrayOffset
+     * @psalm-suppress MixedArrayAccess
      */
     public function dbFetchPairs(string $select_query, array $parameters = []): array {
 
         $result = static::_execute($select_query, $parameters, true, $this->connection_name);
+        /** @psalm-suppress PossiblyInvalidArrayAccess */
         $statement = $result['pdo_statement'];
         $data = [];
-
+        
         while ($row = $statement->fetch(\PDO::FETCH_NUM)) {
-
+            
             $data[$row[0]] = $row[1];
         }
 
@@ -358,9 +381,10 @@ class DBConnector {
      * used, the parameters should be an array of values which will
      * be bound to the placeholders in the query.
      */
-    public function dbFetchValue(string $select_query, array $parameters = []) {
+    public function dbFetchValue(string $select_query, array $parameters = []): mixed {
 
         $result = static::_execute($select_query, $parameters, true, $this->connection_name);
+        /** @psalm-suppress PossiblyInvalidArrayAccess */
         $statement = $result['pdo_statement'];
 
         return $statement->fetchColumn(0);
