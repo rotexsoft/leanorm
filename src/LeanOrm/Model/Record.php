@@ -287,12 +287,24 @@ class Record implements \GDAO\Model\RecordInterface
 
         $result = null;
         
-        if (is_null($data_2_save) || empty($data_2_save)) {
-
+        if (
+            is_null($data_2_save) 
+            || $data_2_save === [] 
+            || ($data_2_save instanceof \GDAO\Model\RecordInterface &&  $data_2_save->getData() === [])
+        ) {
             $data_2_save = $this->getData();
+            
+        } elseif( ($data_2_save instanceof \GDAO\Model\RecordInterface &&  $data_2_save->getData() !== []) ) {
+                
+            $data_2_save = $data_2_save->getData();
+            
+        } else {
+            
+            $data_2_save = is_array($data_2_save) ? $data_2_save : [];
         }
-
-        if ( !empty($data_2_save) && count($data_2_save) > 0 ) {
+        
+        // $data_2_save must have been converted to an array at this point
+        if ( $data_2_save !== [] ) {
             
             /** @psalm-suppress MixedAssignment */
             $pri_val = $this->getPrimaryVal();
@@ -300,7 +312,6 @@ class Record implements \GDAO\Model\RecordInterface
             if ( empty($pri_val) ) {
                 
                 // New record because of empty primary key value, do insert
-                /** @psalm-suppress PossiblyInvalidArgument */
                 $inserted_data = $this->getModel()->insert($data_2_save);
                 $result = ($inserted_data !== false);
                 

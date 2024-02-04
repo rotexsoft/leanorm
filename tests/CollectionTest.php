@@ -1038,6 +1038,9 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         // non-empty collection
         self::assertSame($newRecord1, $collection->offsetGet(777));
         self::assertSame($newRecord2, $collection->offsetGet('Yabadabadoo'));
+        
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
+        $collection->offsetSet([], $newRecord2);
     }
     
     public function testThatOffsetSetThrowsException() {

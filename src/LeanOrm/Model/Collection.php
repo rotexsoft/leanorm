@@ -405,6 +405,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
      * 
      * @throws \GDAO\Model\CollectionCanOnlyContainGDAORecordsException
+     * @psalm-suppress ParamNameMismatch
      */
     public function offsetSet(mixed $key, mixed $val): void {
         

@@ -996,6 +996,14 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
                 'non_existent_col_2' => 'Some Data 2',
             ])
         );
+
+        sleep(3);
+        $existingRecord->m_timestamp = date('Y-m-d H:i:s');
+        self::assertTrue(
+            $existingRecord->save(
+                $existingRecord
+            )
+        );
         self::assertFalse($existingRecord->isNew());
         
         // verify that the data was really saved to the DB
