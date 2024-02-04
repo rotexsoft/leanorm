@@ -782,7 +782,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // acceptable insert values are
         // *bool, *null, *number, *string, *object with __toString
         // Any value outside of these is considered invalid for insert
-        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $delete_query = [
@@ -801,7 +801,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // acceptable insert values are
         // *bool, *null, *number, *string, *object with __toString
         // Any value outside of these is considered invalid for insert
-        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $delete_query = [
@@ -851,7 +851,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDeleteSpecifiedRecordThrowsExceptionForRecordBelongingToADifferentModelClassButSameDbTable()  {
         
-        $this->expectException(LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $authorsModel = new LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
@@ -863,7 +863,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDeleteSpecifiedRecordThrowsExceptionForRecordBelongingToADifferentDbTable()  {
         
-        $this->expectException(LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $authorsModel = new LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
@@ -3495,7 +3495,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // acceptable insert values are
         // *bool, *null, *number, *string, *object with __toString
         // Any value outside of these is considered invalid for insert
-        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $update_vals = ['key_name' => 'Test Key New',];
@@ -3515,7 +3515,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // acceptable insert values are
         // *bool, *null, *number, *string, *object with __toString
         // Any value outside of these is considered invalid for insert
-        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $update_vals = ['key_name' => 'Test Key New',];

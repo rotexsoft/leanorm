@@ -1753,7 +1753,7 @@ SELECT {$foreign_table_name}.*
              . PHP_EOL . var_export($cols_n_vals, true) . PHP_EOL
              . PHP_EOL;
 
-        throw new InvalidArgumentException($msg);
+        throw new \LeanOrm\Exceptions\InvalidArgumentException($msg);
     }
     
     /**
@@ -1779,7 +1779,7 @@ SELECT {$foreign_table_name}.*
                 . "using a Model instance of `%s` belonging to the database table `%s` in " 
                  . static::class . '::' . __FUNCTION__ . '(...).'
                  . PHP_EOL .'Undeleted record: ' . PHP_EOL . var_export($record, true) . PHP_EOL; 
-            throw new InvalidArgumentException(
+            throw new \LeanOrm\Exceptions\InvalidArgumentException(
                 sprintf(
                     $msg, $record::class, $record->getModel()::class, 
                     $record->getModel()->getTableName(),
@@ -2282,7 +2282,7 @@ SELECT {$foreign_table_name}.*
              . PHP_EOL . var_export($cols_n_vals, true) . PHP_EOL
              . PHP_EOL;
 
-        throw new InvalidArgumentException($msg);
+        throw new \LeanOrm\Exceptions\InvalidArgumentException($msg);
     }
     
     /**

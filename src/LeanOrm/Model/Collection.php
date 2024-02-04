@@ -427,7 +427,7 @@ class Collection implements \GDAO\Model\CollectionInterface
                    . PHP_EOL . ' Key of type `' . get_debug_type($key) . '` given.'
                    . PHP_EOL . ' Specified key: '. var_export($val, true) . PHP_EOL;
             
-           throw new \LeanOrm\InvalidArgumentException($msg);
+           throw new \LeanOrm\Exceptions\InvalidArgumentException($msg);
         }
         
         if ($key === null) {
