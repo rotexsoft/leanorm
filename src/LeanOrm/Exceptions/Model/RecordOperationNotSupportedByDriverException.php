@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace LeanOrm\Model;
+namespace LeanOrm\Exceptions\Model;
 
 /**
  * @psalm-api

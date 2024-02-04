@@ -340,11 +340,7 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * This save operation is gaurded by the PDO transaction mechanism. 
      * If the save operation fails all changes are rolled back.
-     * 
-     * If there is no transaction mechanism available a 
-     * \LeanOrm\Model\RecordOperationNotSupportedByDriverException Exception is 
-     * thrown.
-     * 
+     *  
      * @return bool|null true for a successful save, false for failed save, null: no changed data to save
      * 
      * @throws \Exception throws exception if an error occurred during transaction
