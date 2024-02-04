@@ -260,7 +260,7 @@ class Model extends \GDAO\Model {
                         . " or greater. Use a newer version of sqlite or use another"
                         . " DB server supported by this package." . PHP_EOL . 'Goodbye!!';
 
-                throw new UnsupportedPdoServerVersionException($msg);
+                throw new \LeanOrm\Exceptions\UnsupportedPdoServerVersionException($msg);
 
             } // if( version_compare($sqlite_version_number, '3.7.10', '<=') )
         } // if( strtolower($this->getPdoDriverName()) === 'sqlite' )
