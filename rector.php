@@ -36,6 +36,7 @@ return static function (RectorConfig $rectorConfigurator): void {
         \Rector\CodingStyle\Rector\Encapsed\EncapsedStringsToSprintfRector::class,
         \Rector\DeadCode\Rector\PropertyProperty\RemoveNullPropertyInitializationRector::class,
         \Rector\TypeDeclaration\Rector\ClassMethod\ReturnNeverTypeRector::class,
+        \Rector\CodeQuality\Rector\If_\CompleteMissingIfElseBracketRector::class,
     ];
     
     $rectorConfigurator->skip($skipables);

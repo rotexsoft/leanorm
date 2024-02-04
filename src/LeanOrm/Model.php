@@ -94,7 +94,6 @@ class Model extends \GDAO\Model {
     /**
      * {@inheritDoc}
      * 
-     * @psalm-suppress MixedArrayAccess
      * @psalm-suppress MixedPropertyFetch
      */
     public function __construct(
@@ -138,6 +137,7 @@ class Model extends \GDAO\Model {
         ////////////////////////////////////////////////////////
         if ( $this->table_cols === [] ) {
 
+            /** @var array $dsn_n_tname_to_schema_def_map */
             static $dsn_n_tname_to_schema_def_map;
 
             if( !$dsn_n_tname_to_schema_def_map ) {
@@ -145,7 +145,6 @@ class Model extends \GDAO\Model {
                 $dsn_n_tname_to_schema_def_map = [];
             }
 
-            /** @psalm-suppress MixedArgument */
             if( array_key_exists($dsn.$this->getTableName(), $dsn_n_tname_to_schema_def_map) ) {
 
                 // use cached schema definition for the dsn and table name combo
@@ -167,7 +166,6 @@ class Model extends \GDAO\Model {
                 $schema_definitions = $this->fetchTableColsFromDB($this->getTableName());
 
                 // cache schema definition for the current dsn and table combo
-                /** @psalm-suppress MixedArrayAssignment */
                 $dsn_n_tname_to_schema_def_map[$dsn.$this->getTableName()] = $schema_definitions;
 
             } // if( array_key_exists($dsn.$this->getTableName(), $dsn_n_tname_to_schema_def_map) )
@@ -282,6 +280,7 @@ class Model extends \GDAO\Model {
     
     /**
      * @psalm-suppress MoreSpecificReturnType
+     * @psalm-suppress UnusedPsalmSuppress
      */
     protected function getSchemaQueryingObject(): \Aura\SqlSchema\AbstractSchema {
         
@@ -379,6 +378,7 @@ class Model extends \GDAO\Model {
     /**
      * {@inheritDoc}
      * 
+     * @psalm-suppress LessSpecificReturnStatement
      * @psalm-suppress MoreSpecificReturnType
      */
     public function createNewCollection(\GDAO\Model\RecordInterface ...$list_of_records): \GDAO\Model\CollectionInterface {
@@ -1207,7 +1207,7 @@ SELECT {$foreign_table_name}.*
             $query_obj = $sql_query_modifier($query_obj);
         }
 
-        if(!$query_obj->hasCols()){
+        if($query_obj->hasCols() === false){
 
             $query_obj->cols(["{$foreign_table_name}.*"]);
         }
