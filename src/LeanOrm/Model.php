@@ -1260,7 +1260,7 @@ SELECT {$foreign_table_name}.*
                  . " associated with the foreign table class '{$f_models_class_name}'."
                  . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
-            throw new RelatedModelNotCreatedException($msg);
+            throw new \LeanOrm\Exceptions\RelatedModelNotCreatedException($msg);
             
         } catch (\GDAO\ModelTableNameNotSetDuringConstructionException) {
             
@@ -1268,7 +1268,7 @@ SELECT {$foreign_table_name}.*
                  . "  No database table name supplied."
                  . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
-            throw new RelatedModelNotCreatedException($msg);
+            throw new \LeanOrm\Exceptions\RelatedModelNotCreatedException($msg);
             
         } catch (\LeanOrm\Exceptions\BadModelTableNameException) {
             
@@ -1277,7 +1277,7 @@ SELECT {$foreign_table_name}.*
                  . " view in the database."
                  . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
-            throw new RelatedModelNotCreatedException($msg);
+            throw new \LeanOrm\Exceptions\RelatedModelNotCreatedException($msg);
             
         } catch(\LeanOrm\Exceptions\BadModelPrimaryColumnNameException) {
             
@@ -1286,7 +1286,7 @@ SELECT {$foreign_table_name}.*
                  . " does not exist in the supplied table named `{$f_table_name}`."
                  . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
-            throw new RelatedModelNotCreatedException($msg);
+            throw new \LeanOrm\Exceptions\RelatedModelNotCreatedException($msg);
         }
         
         if($this->canLogQueries()) {
