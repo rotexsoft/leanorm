@@ -194,7 +194,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithInvalidForeignCollectionClassName() {
         
-        $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadCollectionClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
@@ -338,7 +338,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithInvalidForeignCollectionClassName() {
         
-        $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadCollectionClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
@@ -464,7 +464,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithInvalidForeignCollectionClassName() {
         
-        $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadCollectionClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
@@ -604,7 +604,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithInvalidForeignCollectionClassName() {
         
-        $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadCollectionClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(

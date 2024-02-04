@@ -528,7 +528,7 @@ class Model extends \GDAO\Model {
                  . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
 
-            throw new BadCollectionClassNameForFetchingRelatedDataException($msg);
+            throw new \LeanOrm\Exceptions\BadCollectionClassNameForFetchingRelatedDataException($msg);
         }
 
         return true;
