@@ -166,7 +166,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithInvalidForeignModelClassName() {
         
-        $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
@@ -300,7 +300,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithInvalidForeignModelClassName() {
         
-        $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
@@ -425,7 +425,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithInvalidForeignModelClassName() {
         
-        $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
@@ -554,7 +554,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithInvalidForeignModelClassName() {
         
-        $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
