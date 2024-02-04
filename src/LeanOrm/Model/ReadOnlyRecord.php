@@ -23,7 +23,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     /**
      * @throws \GDAO\Model\RecordOperationNotSupportedException
      */
-    protected function throwNotSupportedException($function_name): never {
+    protected function throwNotSupportedException(string $function_name): never {
         
         $msg = "ERROR: ". static::class . '::' . $function_name . '(...)' 
              . " is not supported in a ReadOnly Record. ";
