@@ -36,9 +36,10 @@ Version 1.X of this package never got a stable release.
 
 Version 2.X+ of this package is stable & uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/tree/2.8.1#select) 2.8.0+ . 
 
-Please use version 3.X+ of this package which uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) 3.0.0+.
+Please use version 3.X+ of this package which uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) 3.0.0+ and is newer.
 
-Versions 2.X & 3.X will contain the same features, but only differ in the versions of **aura/sqlquery** their **Model::getSelect(): \Aura\SqlQuery\Common\Select** returns.
+Versions 2.X & 3.X mainly differ in the versions of **aura/sqlquery** their **Model::getSelect(): \Aura\SqlQuery\Common\Select** returns and 
+3.x has a few newer features like **Model::fetchOneByPkey($id, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**.
 
 > Deprecated **Utils::search2D(...)** in 2.X has been removed in 3.X
 
