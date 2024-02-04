@@ -28,7 +28,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatConstructorWithNonExistentTableNameWorksAsExpected() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
 
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'id','non_existent_table');
     }
@@ -208,7 +208,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithNonExistentForeignTableName() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->belongsTo(
@@ -326,7 +326,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithNonExistentForeignTableName() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
@@ -452,7 +452,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithNonExistentForeignTableName() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
@@ -580,7 +580,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentForeignTableName() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -592,7 +592,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentJoinTableName() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(

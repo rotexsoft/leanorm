@@ -160,7 +160,7 @@ class Model extends \GDAO\Model {
                     $msg = "ERROR: Table name `{$this->getTableName()}` supplied to " 
                             . static::class . '::' . __FUNCTION__ . '(...)'
                             . ' does not exist as a table or view in the database';
-                    throw new BadModelTableNameException($msg);
+                    throw new \LeanOrm\Exceptions\BadModelTableNameException($msg);
                 }
 
                 $this->table_cols = [];
@@ -1270,7 +1270,7 @@ SELECT {$foreign_table_name}.*
                  . PHP_EOL;
             throw new RelatedModelNotCreatedException($msg);
             
-        } catch (BadModelTableNameException) {
+        } catch (\LeanOrm\Exceptions\BadModelTableNameException) {
             
             $msg = "ERROR: Couldn't create foreign model of type '{$f_models_class_name}'."
                  . " The supplied table name `{$f_table_name}` does not exist as a table or"
@@ -2942,7 +2942,7 @@ SELECT {$foreign_table_name}.*
             $msg = "ERROR: The specified table `{$table_name}` does not exist in the DB."
                  . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
-            throw new BadModelTableNameException($msg);
+            throw new \LeanOrm\Exceptions\BadModelTableNameException($msg);
         } // if(!$this->tableExistsInDB($table_name))
         
         return true;
