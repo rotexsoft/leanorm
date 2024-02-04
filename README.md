@@ -43,7 +43,7 @@ Versions 2.X & 3.X mainly differ in the versions of **aura/sqlquery** their **Mo
 
 > Deprecated **Utils::search2D(...)** in 2.X has been removed in 3.X
 
-Version 4.x will require php 8.1 as the minimum PHP version. 
+Version 4.x will require php 8.1 as the minimum PHP version and it will not be backward compatible with 3.x. 
 
 A stable release of version 4.x will be available some time in 2024. 
 
