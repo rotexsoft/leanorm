@@ -179,7 +179,7 @@ class Model extends \GDAO\Model {
                 $msg = "ERROR: The Primary Key column name `{$primary_col_name}` supplied to " 
                         . static::class . '::' . __FUNCTION__ . '(...)'
                         . " does not exist as an actual column in the supplied table `{$this->getTableName()}`.";
-                throw new BadModelPrimaryColumnNameException($msg);
+                throw new \LeanOrm\Exceptions\BadModelPrimaryColumnNameException($msg);
             }
 
             /** @psalm-suppress MixedAssignment */
@@ -1279,7 +1279,7 @@ SELECT {$foreign_table_name}.*
                  . PHP_EOL;
             throw new RelatedModelNotCreatedException($msg);
             
-        } catch(BadModelPrimaryColumnNameException) {
+        } catch(\LeanOrm\Exceptions\BadModelPrimaryColumnNameException) {
             
             $msg = "ERROR: Couldn't create foreign model of type '{$f_models_class_name}'."
                  . " The supplied primary key column `{$pri_key_col_in_f_models_table}` "

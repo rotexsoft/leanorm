@@ -35,7 +35,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatConstructorWithNonExistentPrimaryColumnNameWorksAsExpected() {
         
-        $this->expectException(\LeanOrm\BadModelPrimaryColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelPrimaryColumnNameException::class);
 
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'non_existent_column','authors');
     }
