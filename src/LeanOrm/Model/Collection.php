@@ -252,7 +252,7 @@ class Collection implements \GDAO\Model\CollectionInterface
                             . " whose model is associated with the table `{$collection_table_name}` in the"
                             . " database. " . PHP_EOL .  static::class . '::' . $method_name . '(...).'
                             . PHP_EOL .'Unsaved record' . var_export($record, true) . PHP_EOL;
-                        throw new TableNameMismatchInCollectionSaveAllException($msg);
+                        throw new \LeanOrm\Exceptions\Model\TableNameMismatchInCollectionSaveAllException($msg);
                     }
                     
                     //The record is new and must be inserted into the db.
