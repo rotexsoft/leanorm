@@ -19,11 +19,9 @@ class Utils {
     /**
      * @param array $array          array from which to get a value
      * @param string|int $key       key in the array whose value is to be returned
-     * @param mixed $default_value value to be returned if key does not exist in the array
-     *
-     * @return mixed
+     * @param mixed $default_value value to be returned if key does not exist in the array 
      */
-    public static function arrayGet(array &$array, string|int $key, mixed $default_value=null) {
+    public static function arrayGet(array &$array, string|int $key, mixed $default_value=null): mixed {
 
         if(array_key_exists($key, $array)) {
 
