@@ -1351,7 +1351,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatOffsetGetThrowsException() {
         
-        $this->expectException(\LeanOrm\Model\NoSuchPropertyForRecordException::class);
+        $this->expectException(\LeanOrm\Exceptions\Model\NoSuchPropertyForRecordException::class);
         $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(
             static::$dsn, static::$username ?? "", static::$password ?? ""
         );
@@ -1500,7 +1500,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
     
     public function testThat__GetThrowsException() {
         
-        $this->expectException(\LeanOrm\Model\NoSuchPropertyForRecordException::class);
+        $this->expectException(\LeanOrm\Exceptions\Model\NoSuchPropertyForRecordException::class);
         $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(
             static::$dsn, static::$username ?? "", static::$password ?? ""
         );

@@ -336,7 +336,7 @@ trait CommonRecordCodeTrait {
             $msg = sprintf("Property '%s' does not exist in ", $key) 
                    . $this::class . PHP_EOL . $this->__toString();
             
-            throw new NoSuchPropertyForRecordException($msg);
+            throw new \LeanOrm\Exceptions\Model\NoSuchPropertyForRecordException($msg);
         }
     }
     
