@@ -1598,7 +1598,7 @@ SELECT {$foreign_table_name}.*
                          . PHP_EOL . 'Fetch Results:' . PHP_EOL . var_export($results, true) . PHP_EOL
                          . PHP_EOL . "Row without Primary Key field (`{$this->getPrimaryCol()}`):" . PHP_EOL . var_export($result, true) . PHP_EOL;
 
-                    throw new \LeanOrm\KeyingFetchResultsByPrimaryKeyFailedException($msg);
+                    throw new \LeanOrm\Exceptions\KeyingFetchResultsByPrimaryKeyFailedException($msg);
                 }
 
                 // key on primary key value
