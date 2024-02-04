@@ -2960,7 +2960,7 @@ SELECT {$foreign_table_name}.*
                  . " does not contain the specified column `{$column_name}`."
                  . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
-            throw new BadModelColumnNameException($msg);
+            throw new \LeanOrm\Exceptions\BadModelColumnNameException($msg);
         } // if(!$this->columnExistsInDbTable($table_name, $column_name))
         
         return true;

@@ -220,7 +220,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithNonExistentCol1() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
@@ -229,7 +229,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithNonExistentCol2() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
@@ -239,7 +239,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithNonExistentCol3() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
@@ -351,7 +351,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithNonExistentCol1() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne('post', 'non_existent', 'posts', 'post_id', 'post_id');
@@ -359,7 +359,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithNonExistentCol2() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne('post', 'post_id', 'posts', 'non_existent', 'post_id');
@@ -367,7 +367,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithNonExistentCol3() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne('post', 'post_id', 'posts', 'post_id', 'non_existent');
@@ -477,7 +477,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithNonExistentCol1() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany('post', 'non_existent', 'posts', 'post_id', 'post_id');
@@ -485,7 +485,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithNonExistentCol2() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany('post', 'post_id', 'posts', 'non_existent', 'post_id');
@@ -493,7 +493,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithNonExistentCol3() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany('post', 'post_id', 'posts', 'post_id', 'non_existent');
@@ -617,7 +617,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentCol1() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -629,7 +629,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentCol2() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -641,7 +641,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentCol3() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -653,7 +653,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentCol4() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -665,7 +665,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentCol5() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
