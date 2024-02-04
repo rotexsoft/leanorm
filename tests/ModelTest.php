@@ -3075,7 +3075,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // acceptable insert values are
         // *bool, *null, *number, *string, *object with __toString
         // Any value outside of these is considered invalid for insert
-        $this->expectException(\LeanOrm\CantSaveReadOnlyRecordException::class);
+        $this->expectException(\LeanOrm\Exceptions\CantSaveReadOnlyRecordException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $model->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
