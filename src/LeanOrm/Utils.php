@@ -13,7 +13,7 @@ class Utils {
     
     public static function isEmptyString(string $string): bool {
         
-        return $string === '' && mb_strlen( ''.$string, 'UTF-8') <= 0;
+        return $string === '';
     }
     
     /**

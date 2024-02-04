@@ -36,13 +36,16 @@ Version 1.X of this package never got a stable release.
 
 Version 2.X+ of this package is stable & uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/tree/2.8.1#select) 2.8.0+ . 
 
-Please use version 3.X+ of this package which uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) 3.0.0+.
+Version 3.X+ of this package is also stable & uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) 3.0.0+.
 
-Versions 2.X & 3.X will contain the same features, but only differ in the versions of **aura/sqlquery** their **Model::getSelect(): \Aura\SqlQuery\Common\Select** returns.
+Versions 2.X & 3.X mainly differ in the versions of **aura/sqlquery** their **Model::getSelect(): \Aura\SqlQuery\Common\Select** returns and 
+3.x has a few newer features like **Model::fetchOneByPkey($id, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**.
 
 > Deprecated **Utils::search2D(...)** in 2.X has been removed in 3.X
 
-A future version 4 will require php 8.1 as the minimum PHP version.
+Version 4.x will require php 8.1 as the minimum PHP version. 
+
+A stable release of version 4.x will be available some time in 2024. 
 
 Versions 2.x & 3.x are feature complete as of May 2023, only bug fixes will be applied to those versions.
  
@@ -51,7 +54,8 @@ happens, version 3 bug fixes will be added to the 3.x branch which will continue
 branch until the first stable release of version 4 is published (at that point, the 4.x branch will be merged
 into master and start being synced with master moving forward). Bug fixes for version 2.2.x will be applied to
 to the 2.2.x branch. I will continue to accept bug-fix pull requests for versions 2.x & 3.x even after version
-4 is released. New feature pull requests for versions 2.x & 3.x will be rejected, new features will only be added to the 4.x branch.
+4 is released. New feature pull requests for versions 2.x & 3.x will be rejected, new features will only be 
+added to the 4.x branch.
 
 ## Installation
 

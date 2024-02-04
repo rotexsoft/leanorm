@@ -25,7 +25,7 @@
         "phpunit/phpunit": "^10.0",
         "php-coveralls/php-coveralls": "^2.0",
         "vimeo/psalm": "^5.4.0",
-        "rector/rector": "^0.18.0",
+        "rector/rector": "^0.19.0",
         "symfony/polyfill-php82": "^1.26",
         "atlas/pdo": "^1.2",
         "rotexsoft/versatile-collections": "^5.2"

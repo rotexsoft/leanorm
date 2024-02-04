@@ -383,7 +383,6 @@ class Model extends \GDAO\Model {
      */
     public function createNewCollection(\GDAO\Model\RecordInterface ...$list_of_records): \GDAO\Model\CollectionInterface {
 
-        /** @psalm-suppress LessSpecificReturnStatement */
         return ($this->collection_class_name === null || $this->collection_class_name === '')
                 ? //default to creating new collection of type \LeanOrm\Model\Collection
                   new \LeanOrm\Model\Collection($this, ...$list_of_records)
@@ -1237,7 +1236,7 @@ SELECT {$foreign_table_name}.*
         //$foreign_models_class_name will never be empty it will default to \LeanOrm\Model
         //$foreign_table_name will never be empty because it is needed for fetching the 
         //related data
-        if( $f_models_class_name === '' ) {
+        if( ($f_models_class_name === '') ) {
 
             $f_models_class_name = \LeanOrm\Model::class;
         }
@@ -1956,7 +1955,7 @@ SELECT {$foreign_table_name}.*
     protected function addTimestampToData(array &$data, ?string $timestamp_col_name, array $table_cols): void {
         
         if(
-            ($timestamp_col_name !== null && $timestamp_col_name !== '') 
+            ($timestamp_col_name !== null && $timestamp_col_name !== '' )
             && in_array($timestamp_col_name, $table_cols)
             && 
             (
