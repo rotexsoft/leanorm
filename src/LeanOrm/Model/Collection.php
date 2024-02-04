@@ -42,7 +42,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      *                    PDOException would be thrown if the deletion failed.
      * 
      * @throws \PDOException 
-     * @throws \LeanOrm\CantDeleteReadOnlyRecordFromDBException
+     * @throws \LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException
      */
     public function deleteAll(): bool|array {
         
@@ -57,7 +57,7 @@ class Collection implements \GDAO\Model\CollectionInterface
                 $msg = "ERROR: Can't delete ReadOnlyRecord in Collection from the database in " 
                      . static::class . '::' . __FUNCTION__ . '(...).'
                      . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
-                throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+                throw new \LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException($msg);
             }
         }
 

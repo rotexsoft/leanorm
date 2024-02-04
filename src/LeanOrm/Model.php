@@ -1768,7 +1768,7 @@ SELECT {$foreign_table_name}.*
             $msg = "ERROR: Can't delete ReadOnlyRecord from the database in " 
                  . static::class . '::' . __FUNCTION__ . '(...).'
                  . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
-            throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+            throw new \LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException($msg);
         }
         
         if( 

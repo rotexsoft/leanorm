@@ -839,7 +839,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDeleteSpecifiedRecordThrowsExceptionForReadOnlyRecords()  {
         
-        $this->expectException(\LeanOrm\CantDeleteReadOnlyRecordFromDBException::class);
+        $this->expectException(\LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException::class);
         
         $authorsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         

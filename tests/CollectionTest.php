@@ -179,7 +179,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDeleteAllOnCollectionWithAtLeastOneReadOnlyRecordThrowsException() {
         
-        $this->expectException(\LeanOrm\CantDeleteReadOnlyRecordFromDBException::class);
+        $this->expectException(\LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException::class);
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
@@ -193,7 +193,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($model, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
-        // Throws \LeanOrm\CantDeleteReadOnlyRecordFromDBException
+        // Throws \LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException
         // because a ReadOnlyRecord exists in the collection
         $collection->deleteAll();
     } // public function testThatDeleteAllOnCollectionWithAtLeastOneReadOnlyRecordThrowsException()
