@@ -684,7 +684,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatSaveAllThrowsExceptionOnTryingToSaveRecordBelongingToDifferentTableNameFromCollectionsModel() {
         
-        $this->expectException(\LeanOrm\Model\TableNameMismatchInCollectionSaveAllException::class);
+        $this->expectException(\LeanOrm\Exceptions\Model\TableNameMismatchInCollectionSaveAllException::class);
         
         $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(
             static::$dsn, static::$username ?? "", static::$password ?? ""
@@ -701,7 +701,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($authorsModel, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
-        // Throws \LeanOrm\Model\TableNameMismatchInCollectionSaveAllException
+        // Throws \LeanOrm\Exceptions\Model\TableNameMismatchInCollectionSaveAllException
         // because there's a record belonging to the posts table in this
         // collection whose model is associated with the authors table
         $collection->saveAll(true);
