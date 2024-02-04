@@ -642,7 +642,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords1() {
         
-        $this->expectException(\LeanOrm\CantSaveReadOnlyRecordException::class);
+        $this->expectException(\LeanOrm\Exceptions\CantSaveReadOnlyRecordException::class);
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
@@ -656,14 +656,14 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($model, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
-        // Throws \LeanOrm\CantSaveReadOnlyRecordException
+        // Throws \LeanOrm\Exceptions\CantSaveReadOnlyRecordException
         // because the collection collects a ReadOnlyRecord
         $collection->saveAll(false);
     } // public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords1()
     
     public function testThatSaveAllWithBulkInsertThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords() {
         
-        $this->expectException(\LeanOrm\CantSaveReadOnlyRecordException::class);
+        $this->expectException(\LeanOrm\Exceptions\CantSaveReadOnlyRecordException::class);
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
@@ -677,7 +677,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($model, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
-        // Throws \LeanOrm\CantSaveReadOnlyRecordException
+        // Throws \LeanOrm\Exceptions\CantSaveReadOnlyRecordException
         // because the collection collects a ReadOnlyRecord
         $collection->saveAll(true);
     } // public function testThatSaveAllWithBulkInsertThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords()

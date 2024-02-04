@@ -314,7 +314,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             $msg = "ERROR: Can't save ReadOnlyRecord in Collection to  the database in " 
                  . static::class . '::' . $calling_function . '(...).'
                  . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
-            throw new \LeanOrm\CantSaveReadOnlyRecordException($msg);
+            throw new \LeanOrm\Exceptions\CantSaveReadOnlyRecordException($msg);
         }
     }
     

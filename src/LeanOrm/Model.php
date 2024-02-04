@@ -2449,7 +2449,7 @@ SELECT {$foreign_table_name}.*
             $msg = "ERROR: Can't save a ReadOnlyRecord to the database in " 
                  . static::class . '::' . __FUNCTION__ . '(...).'
                  . PHP_EOL .'Unupdated record' . var_export($record, true) . PHP_EOL;
-            throw new \LeanOrm\CantSaveReadOnlyRecordException($msg);
+            throw new \LeanOrm\Exceptions\CantSaveReadOnlyRecordException($msg);
         }
         
         if( $record->getModel()->getTableName() !== $this->getTableName() ) {
