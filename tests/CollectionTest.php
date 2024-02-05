@@ -1330,4 +1330,46 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         // collection is now empty because of the unset
         self:: assertCount(0, $collection);
     }
+    
+    public function testThatRemoveRecordWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[777]            = $newRecord1;
+        $collection['Yabadabadoo']  = $newRecord2;
+        
+        // non-empty collection
+        self:: assertCount(2, $collection);
+        self::assertSame($newRecord1, $collection[777]);
+        self::assertSame($newRecord2, $collection['Yabadabadoo']);
+        
+        self::assertContains($newRecord1, $collection);
+        self::assertContains($newRecord2, $collection);
+        
+        self::assertSame($collection, $collection->removeRecord($newRecord1));
+        self::assertNotContains($newRecord1, $collection);
+        self::assertContains($newRecord2, $collection);
+        self::assertFalse($collection->offsetExists(777));
+        self::assertTrue($collection->offsetExists('Yabadabadoo'));
+        
+        // collection is now contains only one item
+        self:: assertCount(1, $collection);
+    }
 }

@@ -15,10 +15,10 @@
     ],
     "require": {
         "php": ">=8.1",
-        "rotexsoft/gdao": "^3.0.0-RC1",
+        "rotexsoft/gdao": "^3.0.1",
         "aura/sqlquery": "^3.0.0",
         "aura/sqlschema": "^2.0",
-        "psr/log": "^2.0.0",
+        "psr/log": "^2.0.0 || ^3.0.0",
         "atlas/info": "^1.2"
     },
     "require-dev": {

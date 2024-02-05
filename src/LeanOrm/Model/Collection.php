@@ -341,13 +341,8 @@ class Collection implements \GDAO\Model\CollectionInterface
 
         $result = [];
         
-        /** @psalm-suppress MixedAssignment */
-        foreach ($this as $key=>$record) {
+        foreach ($this->data as $key=>$record) {
             
-            /** 
-             * @psalm-suppress MixedAssignment
-             * @psalm-suppress MixedMethodCall
-             */
             $result[$key] = $record->toArray();
         }
         
@@ -565,4 +560,23 @@ class Collection implements \GDAO\Model\CollectionInterface
      * {@inheritDoc}
      */
     public function postSaveAll(bool|array $save_all_result, bool $group_inserts_together=false): void { }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function removeRecord(\GDAO\Model\RecordInterface $record): static {
+        
+        foreach($this->data as $key => $current_record) {
+            
+            if( $record === $current_record ) {
+                
+                // only remove record from the collection & not the database
+                /** @psalm-suppress MixedArgumentTypeCoercion */
+                $this->offsetUnset($key);
+                break;
+            }
+        }
+        
+        return $this;
+    }
 }
