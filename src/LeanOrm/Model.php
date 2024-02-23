@@ -3,18 +3,16 @@ declare(strict_types=1);
 namespace LeanOrm;
 
 use Aura\SqlQuery\QueryFactory;
-use Aura\SqlSchema\ColumnFactory;
+use Rotexsoft\SqlSchema\ColumnFactory;
 use LeanOrm\Utils;
 use Psr\Log\LoggerInterface;
-use Atlas\Info\Info as AtlasInfo;
-use Atlas\Pdo\Connection as AtlasPdoConnection;
 use function sprintf;
 
 /**
  * Supported PDO drivers: mysql, pgsql, sqlite and sqlsrv
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2023, Rotexsoft
+ * @copyright (c) 2024, Rotexsoft
  */
 class Model extends \GDAO\Model {
     
@@ -282,14 +280,14 @@ class Model extends \GDAO\Model {
      * @psalm-suppress MoreSpecificReturnType
      * @psalm-suppress UnusedPsalmSuppress
      */
-    protected function getSchemaQueryingObject(): \Aura\SqlSchema\AbstractSchema {
+    protected function getSchemaQueryingObject(): \Rotexsoft\SqlSchema\AbstractSchema {
         
         // a column definition factory 
         $column_factory = new ColumnFactory();
         /** @psalm-suppress MixedAssignment */
         $pdo_driver_name = $this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME);
 
-        $schema_class_name = '\\Aura\\SqlSchema\\' . ucfirst((string) $pdo_driver_name) . 'Schema';
+        $schema_class_name = '\\Rotexsoft\\SqlSchema\\' . ucfirst((string) $pdo_driver_name) . 'Schema';
 
         // the schema discovery object
         /** @psalm-suppress LessSpecificReturnStatement */
@@ -331,35 +329,11 @@ class Model extends \GDAO\Model {
     }
     
     /**
-     * @return  mixed[]|\Aura\SqlSchema\Column[]
+     * @return \Rotexsoft\SqlSchema\Column[]
      */
     protected function fetchTableColsFromDB(string $table_name): array {
-                
-        if(strtolower((string) $this->getPDO()->getAttribute(\PDO::ATTR_DRIVER_NAME)) ===  'pgsql') {
-            
-            // Use Atlas Info to get this data for Postgresql because 
-            // Aura Sql Schema keeps blowing up when fetchTableCols
-            // is called on \Aura\SqlSchema\PgsqlSchema
-            $info = AtlasInfo::new(AtlasPdoConnection::new($this->getPDO()));
-            
-            $columns_info = $info->fetchColumns($table_name);
-
-            /** @psalm-suppress MixedAssignment */
-            foreach ($columns_info as $key=>$column_info) {
-
-                // Convert each row to objects because 
-                // $this->getSchemaQueryingObject()->fetchTableCols(..)
-                // returns an array of Aura\SqlSchema\Column objects
-                // whose properties are used to populate $this->table_cols.
-                // Converting each row to an object will allow for each
-                // row's data to be accessible via object property syntax
-                $columns_info[$key] = (object)$column_info;
-            }
-             
-             return $columns_info;
-        }
         
-        // This works so far for mysql & sqlite.  
+        // This works so far for mysql, postgres & sqlite.  
         // Will need to test what works for MS Sql Server
         return $this->getSchemaQueryingObject()->fetchTableCols($table_name);
     }
