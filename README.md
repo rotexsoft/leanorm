@@ -70,6 +70,7 @@ There's an accompanying [command-line tool](https://github.com/rotexsoft/leanorm
 >`./vendor/bin/phpunit --coverage-text`
 
 > You can set the environment variable **LEANORM_PDO_DSN** with a valid $dsn string for pdo e.g. LEANORM_PDO_DSN=sqlite::memory:
+    > For Postgres, the dsn must include **dbname=blog** and you should make sure a blog database exists in the Postgres instance. You don't need this for Sqlite, MariaDB or MySql, the database will be programatically created.
 
 > You can set the environment variable **LEANORM_PDO_USERNAME** with a valid $username string for pdo if needed e.g. LEANORM_PDO_USERNAME=jblow
 
@@ -79,7 +80,7 @@ There's an accompanying [command-line tool](https://github.com/rotexsoft/leanorm
 
 >   `LEANORM_PDO_DSN=sqlite::memory: LEANORM_PDO_USERNAME=jblow LEANORM_PDO_PASSWORD=some_password ./vendor/bin/phpunit --coverage-text`
 
->   `LEANORM_PDO_DSN="mysql:host=hostname_or_ip_address;dbname=blog" LEANORM_PDO_USERNAME="jblow" LEANORM_PDO_PASSWORD="some_password" ./vendor/bin/phpunit --coverage-text`
+>   `LEANORM_PDO_DSN="mysql:host=hostname_or_ip_address" LEANORM_PDO_USERNAME="jblow" LEANORM_PDO_PASSWORD="some_password" ./vendor/bin/phpunit --coverage-text`
 
 ### GDAO Classes & Interfaces
 
@@ -111,3 +112,16 @@ but because there are fair amount of static methods in the DBConnector class,
 its tests need to be run first before other Test Classes. 
 
 New Test files must be manually added to the phpunit.xml.dist file in order for those new tests to run.
+
+### Branching
+
+These are the branches in this repository:
+
+- **master:** meant to be in sync with the the branch containing the latest stable release of this package. As of end of March 2024 it will be in sync with the **4.x** branch. The next major version of this package should be created from this branch.
+- **4.x:** contains code for the 4.x versions of this package.
+- **3.x:** contains code for the 3.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
+- **2.2.x:** contains code for the 2.2.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
+- **1.X:** contains code for the **1.X** versions of this package. This branch is abandoned.
+- **gh-pages:** contains documentation for the 1.X versions of this package. This branch is abandoned.
+
+

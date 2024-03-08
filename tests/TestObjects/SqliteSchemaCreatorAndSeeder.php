@@ -373,4 +373,11 @@ class SqliteSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
             );
         }
     }
+
+    public function createSchema(): bool {
+        
+        // No need to explicitly create a blog database, tables will automatically
+        // be stored in the default sqlite schema
+        return true;
+    }
 }

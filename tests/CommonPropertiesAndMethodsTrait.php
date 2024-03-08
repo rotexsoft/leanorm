@@ -52,7 +52,27 @@ trait CommonPropertiesAndMethodsTrait {
         
         static::$driverName = $connection->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
         static::$auraQueryFactory = (new QueryFactory(static::$driverName));
-        $schemaCreatorAndSeeder = new TestSchemaCreatorAndSeeder($connection);
+        $schemaCreatorAndSeeder = new \TestSchemaCreatorAndSeeder($connection);
+        $schemaCreatorAndSeeder->createSchema();
+        
+        if(static::$driverName === 'mysql') {
+            
+            // append dbname=blog parameter to the dsn since 
+            // $schemaCreatorAndSeeder->createSchema() should
+            // have created the db at this point.
+            if(!str_contains(static::$dsn, 'dbname=blog')) {
+                
+                if( str_ends_with(static::$dsn, ';') ) {
+                    
+                    static::$dsn .= 'dbname=blog';
+                    
+                } else {
+                    
+                    static::$dsn .= ';dbname=blog';
+                }
+            }
+        }
+        
         $schemaCreatorAndSeeder->createTables();
         $schemaCreatorAndSeeder->populateTables();
         

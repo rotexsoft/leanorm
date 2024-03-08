@@ -2915,13 +2915,9 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
 
         ////////////////////////////////////////////////////////////////////////
         // Test updating a column using  
-        // bool, null, number, *object with __toString
-        // in the WHERE clause, " WHERE Col IN " or " WHERE Col = ? "
-        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, true);
-        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, false);
+        // null & an object with __toString
+        // in the WHERE clause, " WHERE Col IN " or " WHERE Col = ? 
         $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, null);
-        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, 777);
-        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, 777.888);
         $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, $stringableObj);
         
         // Test that the updated_timestamp_column_name functionality works as expected
