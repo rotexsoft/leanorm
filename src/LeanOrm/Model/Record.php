@@ -8,7 +8,7 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
  * Description of Record
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2023, Rotexsoft
+ * @copyright (c) 2024, Rotexsoft
  * @psalm-suppress PropertyNotSetInConstructor
  */
 class Record implements \GDAO\Model\RecordInterface

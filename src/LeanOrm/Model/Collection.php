@@ -7,7 +7,7 @@ namespace LeanOrm\Model;
  * Represents a collection of \GDAO\Model\RecordInterface objects.
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2023, Rotexsoft
+ * @copyright (c) 2024, Rotexsoft
  */
 class Collection implements \GDAO\Model\CollectionInterface
 {

@@ -7,7 +7,7 @@ use Closure;
  * Description of Utils
  *
  * @author Rotimi Ade
- * @copyright (c) 2023, Rotexsoft
+ * @copyright (c) 2024, Rotexsoft
  */
 class Utils {
     

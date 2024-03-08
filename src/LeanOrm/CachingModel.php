@@ -7,7 +7,7 @@ namespace LeanOrm;
  * calls based on args supplied
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2023, Rotexsoft
+ * @copyright (c) 2024, Rotexsoft
  * 
  * @psalm-suppress UnusedClass
  */

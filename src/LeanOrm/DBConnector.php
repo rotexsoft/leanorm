@@ -12,7 +12,7 @@ namespace LeanOrm;
  *      executing the statement in one single method. 
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2023, Rotexsoft
+ * @copyright (c) 2024, Rotexsoft
  * 
  * BSD Licensed.
  *
