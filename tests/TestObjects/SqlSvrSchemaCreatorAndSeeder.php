@@ -23,4 +23,7 @@ class SqlSvrSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
         return true;
     }
 
+    public function createSchema(): bool {
+        return true;
+    }
 }

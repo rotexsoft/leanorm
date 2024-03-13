@@ -57,7 +57,7 @@ $authorsModel =
         "u", // username
         "p", // password
         [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'], //pdo options
-        'author_id' // primary key column name
+        'author_id', // primary key column name
         'authors' // table name
     );
 

@@ -14,22 +14,19 @@
         }
     ],
     "require": {
-        "php": ">=7.4",
-        "rotexsoft/gdao": "^2.2.1",
+        "php": ">=8.1",
+        "rotexsoft/gdao": "^3.0.1",
         "aura/sqlquery": "^3.0.0",
-        "aura/sqlschema": "^2.0",
-        "psr/log": "^1.1",
-        "atlas/info": "^1.2"
+        "rotexsoft/sqlschema": "^3.1.1",
+        "psr/log": "^2.0.0 || ^3.0.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.0",
+        "phpunit/phpunit": "^10.0",
         "php-coveralls/php-coveralls": "^2.0",
         "vimeo/psalm": "^5.4.0",
-        "rector/rector": "^0.19.0",
-        "symfony/polyfill-php80": "^1.26",
-        "symfony/polyfill-php81": "^1.26",
+        "rector/rector": "^1.0.1",
         "symfony/polyfill-php82": "^1.26",
-        "atlas/pdo": "^1.2",
+        "atlas/pdo": "^2.0.0",
         "rotexsoft/versatile-collections": "^5.2"
     },
     "autoload": {
@@ -45,8 +42,9 @@
         ],
         "rector-clear": "vendor/bin/rector --clear-cache",
         "rector": "vendor/bin/rector process src --dry-run -vvv",
-        "psalm": "vendor/bin/psalm --threads=1",
-        "qa": "composer test && composer rector-clear && composer rector && composer psalm"
+        "psalm-clear-cache": "vendor/bin/psalm --clear-global-cache && vendor/bin/psalm --clear-cache",
+        "psalm": "composer psalm-clear-cache && vendor/bin/psalm --threads=1",
+        "qa": "composer test && composer rector && composer psalm"
     },
     "suggest": {
         "rotexsoft/leanorm-cli": "A Command-line tool for rotexsoft/leanorm for generating Model, Record & Collection Classes for tables & views in a specified database."

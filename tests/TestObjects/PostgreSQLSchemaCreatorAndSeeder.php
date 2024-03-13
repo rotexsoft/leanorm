@@ -346,4 +346,14 @@ class PostgreSQLSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterfac
         }
     }
 
+    public function createSchema(): bool {
+        
+        // The blog database should be manually created by the runner of 
+        // this test suite before running the test suite.
+        // The concept of DATABASES AND SCHEMAS in Postgres was causing
+        // programatically created databases to be in the default public
+        // database in Postgres
+        
+        return true;
+    }
 }

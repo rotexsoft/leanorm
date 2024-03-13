@@ -2,9 +2,9 @@ name: Run PHP Tests and Code Quality Tools
 
 on:
   push:
-    branches: [ master ]
+    branches: [ 4.x ]
   pull_request:
-    branches: [ master ]
+    branches: [ 4.x ]
   schedule:
       # Also run  every Sunday at midnight
       - cron: '0 0 * * 0'
@@ -16,7 +16,7 @@ jobs:
 
     strategy:
         matrix:
-            php: [8.2, 8.1, 8.0, 7.4]
+            php: [8.3, 8.2, 8.1]
 # prefer-lowest is causing unit tests to fail when php 7.2 is run against PHPunit 7.x, 
 # PHPUnit 8.x is the latest stable release that supports PHP 7.2 and that runs fine
 #            dependency-version: [prefer-lowest, prefer-stable]
@@ -24,11 +24,9 @@ jobs:
             os: [ubuntu-20.04, ubuntu-22.04]
             include:
                 - os: ubuntu-20.04
-                  php: 7.4
-                - os: ubuntu-20.04
-                  php: 8.0
-                - os: ubuntu-20.04
                   php: 8.1
+                - os: ubuntu-20.04
+                  php: 8.2
                 - os: ubuntu-22.04
                   php: 8.1
                 - os: ubuntu-22.04
@@ -41,7 +39,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -79,7 +77,8 @@ jobs:
       run: vendor/bin/rector process src --dry-run
       continue-on-error: true
 
-    #- name: Run Psalm
+    - name: Run Psalm
       # Run psalm for PHP 7.4 & 8.0 but not 7.2 & 7.3, psalm is currently blowing up with PHP 7.2 & 7.3
       #if: matrix.php != '7.2' && matrix.php != '7.3'
-    #  run: vendor/bin/psalm
+      run: vendor/bin/psalm
+      continue-on-error: true

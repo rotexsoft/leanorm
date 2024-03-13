@@ -179,7 +179,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDeleteAllOnCollectionWithAtLeastOneReadOnlyRecordThrowsException() {
         
-        $this->expectException(\LeanOrm\CantDeleteReadOnlyRecordFromDBException::class);
+        $this->expectException(\LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException::class);
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
@@ -193,7 +193,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($model, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
-        // Throws \LeanOrm\CantDeleteReadOnlyRecordFromDBException
+        // Throws \LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException
         // because a ReadOnlyRecord exists in the collection
         $collection->deleteAll();
     } // public function testThatDeleteAllOnCollectionWithAtLeastOneReadOnlyRecordThrowsException()
@@ -328,7 +328,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
                     [], 'author_id', 'authors'
                 ) extends \LeanOrm\Model {
             
-                public function insert(array $data_2_insert = []) {
+                public function insert(array $data_2_insert = []): array|bool {
                     return false;
                 }
                 public function insertMany(array $rows_of_data_2_insert = []): bool {
@@ -642,7 +642,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords1() {
         
-        $this->expectException(\LeanOrm\CantSaveReadOnlyRecordException::class);
+        $this->expectException(\LeanOrm\Exceptions\CantSaveReadOnlyRecordException::class);
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
@@ -656,14 +656,14 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($model, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
-        // Throws \LeanOrm\CantSaveReadOnlyRecordException
+        // Throws \LeanOrm\Exceptions\CantSaveReadOnlyRecordException
         // because the collection collects a ReadOnlyRecord
         $collection->saveAll(false);
     } // public function testThatSaveAllThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords1()
     
     public function testThatSaveAllWithBulkInsertThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords() {
         
-        $this->expectException(\LeanOrm\CantSaveReadOnlyRecordException::class);
+        $this->expectException(\LeanOrm\Exceptions\CantSaveReadOnlyRecordException::class);
         
         $model = new \LeanOrm\Model(
             static::$dsn, static::$username ?? "", static::$password ?? "", 
@@ -677,14 +677,14 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($model, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
-        // Throws \LeanOrm\CantSaveReadOnlyRecordException
+        // Throws \LeanOrm\Exceptions\CantSaveReadOnlyRecordException
         // because the collection collects a ReadOnlyRecord
         $collection->saveAll(true);
     } // public function testThatSaveAllWithBulkInsertThrowsExceptionOnTryingToSaveOneOrMoreReadOnlyRecords()
     
     public function testThatSaveAllThrowsExceptionOnTryingToSaveRecordBelongingToDifferentTableNameFromCollectionsModel() {
         
-        $this->expectException(\LeanOrm\Model\TableNameMismatchInCollectionSaveAllException::class);
+        $this->expectException(\LeanOrm\Exceptions\Model\TableNameMismatchInCollectionSaveAllException::class);
         
         $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(
             static::$dsn, static::$username ?? "", static::$password ?? ""
@@ -701,7 +701,7 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection = new \LeanOrm\Model\Collection($authorsModel, ...$records);
         self::assertCount(2, $collection); // 2 records in this collection
         
-        // Throws \LeanOrm\Model\TableNameMismatchInCollectionSaveAllException
+        // Throws \LeanOrm\Exceptions\Model\TableNameMismatchInCollectionSaveAllException
         // because there's a record belonging to the posts table in this
         // collection whose model is associated with the authors table
         $collection->saveAll(true);
@@ -895,8 +895,11 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         $collection[] = $newRecord1;
         $collection[] = $newRecord2;
         $getDataOnCollection = $collection->getData();
-        self::assertContains($newRecord1->getData(), $getDataOnCollection);
-        self::assertContains($newRecord2->getData(), $getDataOnCollection);
+        
+        foreach($collection as $record) {
+            
+            self::assertContains($record->getData(), $getDataOnCollection);
+        }
     }
     
     public function testThatToArrayWorksAsExpected() {
@@ -1035,6 +1038,9 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         // non-empty collection
         self::assertSame($newRecord1, $collection->offsetGet(777));
         self::assertSame($newRecord2, $collection->offsetGet('Yabadabadoo'));
+        
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
+        $collection->offsetSet([], $newRecord2);
     }
     
     public function testThatOffsetSetThrowsException() {
@@ -1323,5 +1329,47 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         
         // collection is now empty because of the unset
         self:: assertCount(0, $collection);
+    }
+    
+    public function testThatRemoveRecordWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[777]            = $newRecord1;
+        $collection['Yabadabadoo']  = $newRecord2;
+        
+        // non-empty collection
+        self:: assertCount(2, $collection);
+        self::assertSame($newRecord1, $collection[777]);
+        self::assertSame($newRecord2, $collection['Yabadabadoo']);
+        
+        self::assertContains($newRecord1, $collection);
+        self::assertContains($newRecord2, $collection);
+        
+        self::assertSame($collection, $collection->removeRecord($newRecord1));
+        self::assertNotContains($newRecord1, $collection);
+        self::assertContains($newRecord2, $collection);
+        self::assertFalse($collection->offsetExists(777));
+        self::assertTrue($collection->offsetExists('Yabadabadoo'));
+        
+        // collection is now contains only one item
+        self:: assertCount(1, $collection);
     }
 }

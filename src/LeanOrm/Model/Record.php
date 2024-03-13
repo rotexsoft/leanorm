@@ -8,7 +8,8 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
  * Description of Record
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2024, Rotexsoft
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class Record implements \GDAO\Model\RecordInterface
 {
@@ -38,7 +39,7 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @return bool true if record was successfully deleted from db or false if not
      */
-    public function delete($set_record_objects_data_to_empty_array=false): bool {
+    public function delete(bool $set_record_objects_data_to_empty_array=false): bool {
         
         $result = $this->getModel()->deleteSpecifiedRecord($this);
         
@@ -96,21 +97,24 @@ class Record implements \GDAO\Model\RecordInterface
      * Similarly, we need to make allowances for nulls, because a non-numeric
      * null is loosely equal to zero or an empty string.
      * 
-     * @param string $col The table-column name.
+     * @param string|null $col The table-column name.
      * 
      * @return null|bool Returns null if the table-column name does not exist,
      * boolean true if the data is changed, boolean false if not changed.
      * 
      * @todo How to handle changes to array values?
      */
-    public function isChanged($col = null): ?bool {
+    public function isChanged(?string $col = null): ?bool {
 
         // if no column specified, check if the record as a whole has changed
         if ($col === null) {
 
             $cols = $this->getModel()->getTableColNames();
-
+            
+            /** @psalm-suppress MixedAssignment */
             foreach ($cols as $col) {
+                
+                /** @psalm-suppress MixedArgument */
                 if ($this->isChanged($col)) {
                     return true;
                 }
@@ -204,102 +208,20 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      */
-    public function loadData($data_2_load, array $cols_2_load = []): self {
+    public function loadData(\GDAO\Model\RecordInterface|array $data_2_load, array $cols_2_load = []): static {
 
-        if(
-            !is_array($data_2_load) 
-            && !($data_2_load instanceof \GDAO\Model\RecordInterface)
-        ) {
-            $datasource_type = is_object($data_2_load)? 
-                                get_class($data_2_load) : gettype($data_2_load);
-            
-            $msg = "ERROR: Trying to load data into a record from an unsupported"
-                   . sprintf(" data source of type '%s'. An 'Array' or", $datasource_type)
-                   . " instance of '\\LeanOrm\\Model\\Record' or any of its"
-                   . " subclasses are the allowed data sources acceptable by "
-                   . get_class($this).'::'.__FUNCTION__.'(...)'
-                   . PHP_EOL . "Unloaded Data:"
-                   . PHP_EOL . var_export($data_2_load, true) . PHP_EOL;
-            
-            throw new LoadingDataFromInvalidSourceIntoRecordException($msg);
-        }
-        
-        if (
-            $data_2_load instanceof \GDAO\Model\RecordInterface
-            && $data_2_load->getModel()->getTableName() !== $this->getModel()->getTableName()
-        ) {
-            //Cannot load data
-            //2 records whose models are associated with different db tables.
-            //Can't load data, schemas don't match.
-            $msg = "ERROR: Can't load data from an instance of '".get_class($data_2_load)
-                   . "' into an instance of '".get_class($this)."'. Their models"
-                   . "'".get_class($data_2_load->getModel())."' and '"
-                   . get_class($this->getModel())."' are associated with different"
-                   . " db tables ('".$data_2_load->getModel()->getTableName() 
-                   ."' and '". $this->getModel()->getTableName()."')."
-                   . PHP_EOL . "Unloaded Data:"
-                   . PHP_EOL . var_export($data_2_load->getData(), true)  . PHP_EOL;
-            
-            throw new LoadingDataFromInvalidSourceIntoRecordException($msg);
-        }
-
-        $table_col_names_4_my_model = $this->getModel()->getTableColNames();
-        
-        if ( $cols_2_load === [] ) {
-
-            if ( is_array($data_2_load) && $data_2_load !== [] ) {
-
-                foreach( $data_2_load as $col_name => $value_2_load ) {
-                    
-                    if ( in_array($col_name, $table_col_names_4_my_model) ) {
-                        
-                        $this->data[$col_name] = $value_2_load;
-                        
-                    } else {
-                        
-                        $this->non_table_col_and_non_related_data[$col_name] = $value_2_load;
-                    }
-                }
-                
-            } elseif ($data_2_load instanceof \GDAO\Model\RecordInterface) {
-
-                $this->data = $data_2_load->getData();
-                $this->non_table_col_and_non_related_data = $data_2_load->getNonTableColAndNonRelatedData();
-            }
-            
-        } else {
-
-            foreach ( $cols_2_load as $col_name ) {
-
-                if (
-                    (
-                        is_array($data_2_load)
-                        && $data_2_load !== []
-                        && array_key_exists($col_name, $data_2_load)
-                    ) 
-                    || (
-                        $data_2_load instanceof \GDAO\Model\RecordInterface 
-                        && isset($data_2_load[$col_name])
-                    )
-                ) {
-                    if ( in_array($col_name, $table_col_names_4_my_model) ) {
-
-                        $this->data[$col_name] = $data_2_load[$col_name];
-
-                    } else {
-
-                        $this->non_table_col_and_non_related_data[$col_name] = $data_2_load[$col_name];
-                    }
-                }
-            } // foreach ( $cols_2_load as $col_name )
-        }// elseif ( is_array($cols_2_load) && $cols_2_load !== [] )
+        $this->injectData($data_2_load, $cols_2_load);
 
         if ($this->initial_data === [] && $this->data !== []) {
             
-            foreach($table_col_names_4_my_model as $col_name) {
+            /** @psalm-suppress MixedAssignment */
+            foreach($this->getModel()->getTableColNames() as $col_name) {
 
-                $this->initial_data[$col_name] = 
-                    array_key_exists($col_name, $this->data)? $this->data[$col_name] : '';
+                /** 
+                 * @psalm-suppress MixedArrayOffset
+                 * @psalm-suppress MixedArgument
+                 */
+                $this->initial_data[$col_name] = array_key_exists($col_name, $this->data)? $this->data[$col_name] : '';
             }
         }
         
@@ -310,7 +232,7 @@ class Record implements \GDAO\Model\RecordInterface
      * Set the is_new attribute of this record to true (meaning that the data
      * for this record has never been saved to the db).
      */
-    public function markAsNew(): self {
+    public function markAsNew(): static {
         
         $this->is_new = true;
         
@@ -321,7 +243,7 @@ class Record implements \GDAO\Model\RecordInterface
      * Set the is_new attribute of this record to false (meaning that the data
      * for this record has been saved to the db or was read from the db).
      */
-    public function markAsNotNew(): self {
+    public function markAsNotNew(): static {
         
         $this->is_new = false;
         
@@ -343,7 +265,7 @@ class Record implements \GDAO\Model\RecordInterface
      *  - or the value of initial_data could be copied to _data
      *  - etc.
      */
-    public function setStateToNew(): self {
+    public function setStateToNew(): static {
 
         $this->data = [];
         $this->related_data = [];
@@ -358,22 +280,33 @@ class Record implements \GDAO\Model\RecordInterface
      * Save the specified or already existing data for this record to the db.
      * Since this record can only talk to the db via its model property (_model)
      * the save operation will actually be done via $this->model.
-     * 
-     * @param \GDAO\Model\RecordInterface|array $data_2_save
-     * 
+     *  
      * @return null|bool true: successful save, false: failed save, null: no changed data to save
      */
-    public function save($data_2_save = null): ?bool {
+    public function save(null|\GDAO\Model\RecordInterface|array $data_2_save = null): ?bool {
 
         $result = null;
         
-        if (is_null($data_2_save) || empty($data_2_save)) {
-
+        if (
+            is_null($data_2_save) 
+            || $data_2_save === [] 
+            || ($data_2_save instanceof \GDAO\Model\RecordInterface &&  $data_2_save->getData() === [])
+        ) {
             $data_2_save = $this->getData();
-        }
-
-        if ( !empty($data_2_save) && count($data_2_save) > 0 ) {
             
+        } elseif( ($data_2_save instanceof \GDAO\Model\RecordInterface &&  $data_2_save->getData() !== []) ) {
+                
+            $data_2_save = $data_2_save->getData();
+            
+        } else {
+            
+            $data_2_save = is_array($data_2_save) ? $data_2_save : [];
+        }
+        
+        // $data_2_save must have been converted to an array at this point
+        if ( $data_2_save !== [] ) {
+            
+            /** @psalm-suppress MixedAssignment */
             $pri_val = $this->getPrimaryVal();
             
             if ( empty($pri_val) ) {
@@ -418,18 +351,12 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * This save operation is gaurded by the PDO transaction mechanism. 
      * If the save operation fails all changes are rolled back.
-     * 
-     * If there is no transaction mechanism available a 
-     * \LeanOrm\Model\RecordOperationNotSupportedByDriverException Exception is 
-     * thrown.
-     * 
-     * @param \GDAO\Model\RecordInterface|array $data_2_save
-     * 
+     *  
      * @return bool|null true for a successful save, false for failed save, null: no changed data to save
      * 
      * @throws \Exception throws exception if an error occurred during transaction
      */
-    public function saveInTransaction($data_2_save = null): ?bool {
+    public function saveInTransaction(null|\GDAO\Model\RecordInterface|array $data_2_save = null): ?bool {
 
         $pdo_obj = $this->getModel()->getPDO();
         // start the transaction
@@ -481,7 +408,7 @@ class Record implements \GDAO\Model\RecordInterface
      * 
      * @param mixed $val The value to set the data to.
      */
-    public function __set($key, $val): void {
+    public function __set($key, mixed $val): void {
         
         if ( 
             $this->getModel() instanceof \GDAO\Model 

@@ -6,7 +6,7 @@ namespace LeanOrm\Model;
  * This trait contains code shared between ReadOnlyRecord & Record
  * 
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2024, Rotexsoft
  */
 trait CommonRecordCodeTrait {
     
@@ -142,7 +142,7 @@ trait CommonRecordCodeTrait {
      * 
      * @throws \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException
      */
-    public function setRelatedData($key, $value): self {
+    public function setRelatedData(string $key, array|\GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface $value): static {
         
         $my_model = $this->getModel();
         $table_cols = $my_model->getTableColNames();
@@ -152,11 +152,11 @@ trait CommonRecordCodeTrait {
             //Error trying to add a relation whose name collides with an actual
             //name of a column in the db table associated with this record's model.
             $msg = sprintf("ERROR: You cannont add a relationship with the name '%s' ", $key)
-                 . " to the record (".get_class($this)."). The database table "
+                 . " to the record (".$this::class."). The database table "
                  . sprintf(" '%s' associated with the ", $my_model->getTableName())
-                 . " record's model (".get_class($my_model).") already contains"
+                 . " record's model (".$my_model::class.") already contains"
                  . " a column with the same name."
-                 . PHP_EOL . get_class($this) . '::' . __FUNCTION__ . '(...).' 
+                 . PHP_EOL . $this::class . '::' . __FUNCTION__ . '(...).' 
                  . PHP_EOL;
                  
             throw new \GDAO\Model\RecordRelationWithSameNameAsAnExistingDBTableColumnNameException($msg);
@@ -188,7 +188,7 @@ trait CommonRecordCodeTrait {
     /**
      * @return mixed the value stored in the primary-key column for this record.
      */
-    public function getPrimaryVal() {
+    public function getPrimaryVal(): mixed {
 
         return $this->{$this->getPrimaryCol()};
     }
@@ -198,7 +198,7 @@ trait CommonRecordCodeTrait {
      * 
      * @param \GDAO\Model $model A model object that will be used by this record to communicate with the DB
      */
-    public function setModel(\GDAO\Model $model): self {
+    public function setModel(\GDAO\Model $model): static {
         
         $this->model = $model;
         
@@ -236,11 +236,8 @@ trait CommonRecordCodeTrait {
      * ArrayAccess: get a key value.
      * 
      * @param string $key The requested key.
-     * 
-     * @return mixed
      */
-    #[\ReturnTypeWillChange]
-    public function offsetGet($key) {
+    public function offsetGet($key): mixed {
 
         return $this->__get($key);
     }
@@ -251,6 +248,7 @@ trait CommonRecordCodeTrait {
      * @param string $key The requested key.
      * 
      * @param string $val The value to set it to.
+     * @psalm-suppress ParamNameMismatch
      */
     public function offsetSet($key, $val): void {
 
@@ -289,7 +287,7 @@ trait CommonRecordCodeTrait {
      * 
      * @return mixed The data value.
      */
-    public function __get($key) {
+    public function __get($key): mixed {
 
         if ( array_key_exists($key, $this->data) ) {
             
@@ -321,6 +319,7 @@ trait CommonRecordCodeTrait {
             if($this->data !== []) {
                 //$key is a valid relation name in the model for this record but the 
                 //related data needs to be loaded for this particular record.
+                /** @psalm-suppress UndefinedMethod */
                 $this->getModel()->loadRelationshipData($key, $this, true, true);
                 
             } else {
@@ -336,9 +335,9 @@ trait CommonRecordCodeTrait {
 
             //$key is not a valid db column name or relation name.
             $msg = sprintf("Property '%s' does not exist in ", $key) 
-                   . get_class($this) . PHP_EOL . $this->__toString();
+                   . $this::class . PHP_EOL . $this->__toString();
             
-            throw new NoSuchPropertyForRecordException($msg);
+            throw new \LeanOrm\Exceptions\Model\NoSuchPropertyForRecordException($msg);
         }
     }
     
@@ -353,7 +352,7 @@ trait CommonRecordCodeTrait {
     public function __isset($key): bool {
         
         try { $this->$key;  } //access the property first to make sure the data is loaded
-        catch ( \Exception $exception ) {  } //do nothing if exception was thrown
+        catch ( \Exception ) {  } //do nothing if exception was thrown
         
         return array_key_exists($key, $this->data) 
             || array_key_exists($key, $this->related_data)
@@ -370,5 +369,86 @@ trait CommonRecordCodeTrait {
     public function __toString(): string {
         
         return var_export($this->toArray(), true);
+    }
+    
+    protected function injectData(\GDAO\Model\RecordInterface|array $data_2_load, array $cols_2_load = []): static {
+        
+        if (
+            $data_2_load instanceof \GDAO\Model\RecordInterface
+            && $data_2_load->getModel()->getTableName() !== $this->getModel()->getTableName()
+        ) {
+            //Cannot load data
+            //2 records whose models are associated with different db tables.
+            //Can't load data, schemas don't match.
+            $msg = "ERROR: Can't load data from an instance of '".$data_2_load::class
+                   . "' into an instance of '".$this::class."'. Their models"
+                   . "'".$data_2_load->getModel()::class."' and '"
+                   . $this->getModel()::class."' are associated with different"
+                   . " db tables ('".$data_2_load->getModel()->getTableName() 
+                   ."' and '". $this->getModel()->getTableName()."')."
+                   . PHP_EOL . "Unloaded Data:"
+                   . PHP_EOL . var_export($data_2_load->getData(), true)  . PHP_EOL;
+            
+            throw new \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException($msg);
+        }
+
+        $table_col_names_4_my_model = $this->getModel()->getTableColNames();
+        
+        if ( $cols_2_load === [] ) {
+
+            if ( is_array($data_2_load) && $data_2_load !== [] ) {
+
+                /** @psalm-suppress MixedAssignment */
+                foreach( $data_2_load as $col_name => $value_2_load ) {
+                    
+                    if ( in_array($col_name, $table_col_names_4_my_model) ) {
+                        
+                        $this->data[$col_name] = $value_2_load;
+                        
+                    } else {
+                        
+                        $this->non_table_col_and_non_related_data[$col_name] = $value_2_load;
+                    }
+                }
+                
+            } elseif ($data_2_load instanceof \GDAO\Model\RecordInterface) {
+
+                $this->data = $data_2_load->getData();
+                $this->non_table_col_and_non_related_data = $data_2_load->getNonTableColAndNonRelatedData();
+            }
+            
+        } else {
+
+            /** @psalm-suppress MixedAssignment */
+            foreach ( $cols_2_load as $col_name ) {
+
+                /**
+                 * @psalm-suppress MixedArgument
+                 * @psalm-suppress MixedArrayOffset
+                 */
+                if (
+                    (
+                        is_array($data_2_load)
+                        && $data_2_load !== []
+                        && array_key_exists($col_name, $data_2_load)
+                    ) 
+                    || (
+                        $data_2_load instanceof \GDAO\Model\RecordInterface 
+                        && isset($data_2_load[$col_name])
+                    )
+                ) {
+                    if ( in_array($col_name, $table_col_names_4_my_model) ) {
+
+                        $this->data[$col_name] = $data_2_load[$col_name];
+
+                    } else {
+
+                        $this->non_table_col_and_non_related_data[$col_name] = $data_2_load[$col_name];
+                    }
+                }
+            } // foreach ( $cols_2_load as $col_name )
+        }// elseif ( is_array($cols_2_load) && $cols_2_load !== [] )
+        
+        return $this;
     }
 }

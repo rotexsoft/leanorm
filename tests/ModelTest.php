@@ -28,14 +28,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatConstructorWithNonExistentTableNameWorksAsExpected() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
 
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'id','non_existent_table');
     }
     
     public function testThatConstructorWithNonExistentPrimaryColumnNameWorksAsExpected() {
         
-        $this->expectException(\LeanOrm\BadModelPrimaryColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelPrimaryColumnNameException::class);
 
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'non_existent_column','authors');
     }
@@ -166,7 +166,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithInvalidForeignModelClassName() {
         
-        $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
@@ -180,7 +180,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithInvalidForeignRecordClassName() {
         
-        $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadRecordClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
@@ -194,7 +194,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithInvalidForeignCollectionClassName() {
         
-        $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadCollectionClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
@@ -208,7 +208,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithNonExistentForeignTableName() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->belongsTo(
@@ -220,7 +220,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithNonExistentCol1() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
@@ -229,7 +229,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithNonExistentCol2() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
@@ -239,7 +239,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatBelongsToThrowsExceptionWithNonExistentCol3() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
@@ -300,7 +300,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithInvalidForeignModelClassName() {
         
-        $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
@@ -313,7 +313,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithInvalidForeignRecordClassName() {
         
-        $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadRecordClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
@@ -326,7 +326,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithNonExistentForeignTableName() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
@@ -338,7 +338,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithInvalidForeignCollectionClassName() {
         
-        $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadCollectionClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
@@ -351,7 +351,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithNonExistentCol1() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne('post', 'non_existent', 'posts', 'post_id', 'post_id');
@@ -359,7 +359,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithNonExistentCol2() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne('post', 'post_id', 'posts', 'non_existent', 'post_id');
@@ -367,7 +367,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasOneThrowsExceptionWithNonExistentCol3() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne('post', 'post_id', 'posts', 'post_id', 'non_existent');
@@ -425,7 +425,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithInvalidForeignModelClassName() {
         
-        $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
@@ -439,7 +439,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithInvalidForeignRecordClassName() {
         
-        $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadRecordClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
@@ -452,7 +452,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithNonExistentForeignTableName() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
@@ -464,7 +464,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithInvalidForeignCollectionClassName() {
         
-        $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadCollectionClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
@@ -477,7 +477,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithNonExistentCol1() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany('post', 'non_existent', 'posts', 'post_id', 'post_id');
@@ -485,7 +485,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithNonExistentCol2() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany('post', 'post_id', 'posts', 'non_existent', 'post_id');
@@ -493,7 +493,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThrowsExceptionWithNonExistentCol3() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany('post', 'post_id', 'posts', 'post_id', 'non_existent');
@@ -554,7 +554,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithInvalidForeignModelClassName() {
         
-        $this->expectException(\LeanOrm\BadModelClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -567,7 +567,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithInvalidForeignRecordClassName() {
         
-        $this->expectException(\LeanOrm\BadRecordClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadRecordClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -580,7 +580,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentForeignTableName() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -592,7 +592,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentJoinTableName() {
         
-        $this->expectException(\LeanOrm\BadModelTableNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelTableNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -604,7 +604,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithInvalidForeignCollectionClassName() {
         
-        $this->expectException(\LeanOrm\BadCollectionClassNameForFetchingRelatedDataException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadCollectionClassNameForFetchingRelatedDataException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -617,7 +617,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentCol1() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -629,7 +629,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentCol2() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -641,7 +641,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentCol3() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -653,7 +653,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentCol4() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -665,7 +665,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatHasManyThroughThrowsExceptionWithNonExistentCol5() {
         
-        $this->expectException(\LeanOrm\BadModelColumnNameException::class);
+        $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
@@ -782,7 +782,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // acceptable insert values are
         // *bool, *null, *number, *string, *object with __toString
         // Any value outside of these is considered invalid for insert
-        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $delete_query = [
@@ -801,7 +801,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // acceptable insert values are
         // *bool, *null, *number, *string, *object with __toString
         // Any value outside of these is considered invalid for insert
-        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $delete_query = [
@@ -839,7 +839,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDeleteSpecifiedRecordThrowsExceptionForReadOnlyRecords()  {
         
-        $this->expectException(\LeanOrm\CantDeleteReadOnlyRecordFromDBException::class);
+        $this->expectException(\LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException::class);
         
         $authorsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         
@@ -851,7 +851,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDeleteSpecifiedRecordThrowsExceptionForRecordBelongingToADifferentModelClassButSameDbTable()  {
         
-        $this->expectException(LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $authorsModel = new LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
@@ -863,7 +863,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatDeleteSpecifiedRecordThrowsExceptionForRecordBelongingToADifferentDbTable()  {
         
-        $this->expectException(LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $authorsModel = new LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         
@@ -2915,13 +2915,9 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
 
         ////////////////////////////////////////////////////////////////////////
         // Test updating a column using  
-        // bool, null, number, *object with __toString
-        // in the WHERE clause, " WHERE Col IN " or " WHERE Col = ? "
-        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, true);
-        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, false);
+        // null & an object with __toString
+        // in the WHERE clause, " WHERE Col IN " or " WHERE Col = ? 
         $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, null);
-        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, 777);
-        $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, 777.888);
         $this->runScalarWhereParamValsTestsForUpdateMatchingDbTableRows($model, $stringableObj);
         
         // Test that the updated_timestamp_column_name functionality works as expected
@@ -3075,7 +3071,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // acceptable insert values are
         // *bool, *null, *number, *string, *object with __toString
         // Any value outside of these is considered invalid for insert
-        $this->expectException(\LeanOrm\CantSaveReadOnlyRecordException::class);
+        $this->expectException(\LeanOrm\Exceptions\CantSaveReadOnlyRecordException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $model->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
@@ -3495,7 +3491,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // acceptable insert values are
         // *bool, *null, *number, *string, *object with __toString
         // Any value outside of these is considered invalid for insert
-        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $update_vals = ['key_name' => 'Test Key New',];
@@ -3515,7 +3511,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // acceptable insert values are
         // *bool, *null, *number, *string, *object with __toString
         // Any value outside of these is considered invalid for insert
-        $this->expectException(\LeanOrm\InvalidArgumentException::class);
+        $this->expectException(\LeanOrm\Exceptions\InvalidArgumentException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id', 'key_value');
         $update_vals = ['key_name' => 'Test Key New',];

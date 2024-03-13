@@ -42,6 +42,11 @@ class TestSchemaCreatorAndSeeder {
         }
     }
     
+    public function createSchema(): bool {
+        
+        return $this->sqlExecutor->createSchema();
+    }
+    
     public function createTables(): bool {
         
         return $this->sqlExecutor->createTables();

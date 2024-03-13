@@ -7,7 +7,7 @@ namespace LeanOrm\Model;
  * Represents a collection of \GDAO\Model\RecordInterface objects.
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2024, Rotexsoft
  */
 class Collection implements \GDAO\Model\CollectionInterface
 {
@@ -16,14 +16,11 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * @var \GDAO\Model\RecordInterface[] array of \GDAO\Model\RecordInterface records
-     * 
      */
     protected array $data = [];
     
     /**
-     * 
      * @param \GDAO\Model $model The model object that transfers data between the db and this collection.
-     * @param \GDAO\Model\RecordInterface[] ...$data
      */
     public function __construct(
         \GDAO\Model $model, \GDAO\Model\RecordInterface ...$data
@@ -45,10 +42,9 @@ class Collection implements \GDAO\Model\CollectionInterface
      *                    PDOException would be thrown if the deletion failed.
      * 
      * @throws \PDOException 
-     * @throws \LeanOrm\CantDeleteReadOnlyRecordFromDBException
-     * 
+     * @throws \LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException
      */
-    public function deleteAll() {
+    public function deleteAll(): bool|array {
         
         $this->preDeleteAll();
         
@@ -59,9 +55,9 @@ class Collection implements \GDAO\Model\CollectionInterface
             if( $record instanceof ReadOnlyRecord ) {
                 
                 $msg = "ERROR: Can't delete ReadOnlyRecord in Collection from the database in " 
-                     . get_class($this) . '::' . __FUNCTION__ . '(...).'
+                     . static::class . '::' . __FUNCTION__ . '(...).'
                      . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
-                throw new \LeanOrm\CantDeleteReadOnlyRecordFromDBException($msg);
+                throw new \LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException($msg);
             }
         }
 
@@ -76,7 +72,7 @@ class Collection implements \GDAO\Model\CollectionInterface
                 
                 $delete_result = $record->delete();
 
-                if( !$delete_result && $delete_result !== null ) {
+                if( !$delete_result ) {
 
                     //record still exists in the db table
                     //it wasn't successfully deleted.
@@ -104,14 +100,14 @@ class Collection implements \GDAO\Model\CollectionInterface
      * @return array An array of key-value pairs where the key is the collection 
      *               element key, and the value is the column value for that
      *               element.
-     * 
      */
-    public function getColVals($col): array {
+    public function getColVals(string $col): array {
         
         $list = [];
         
         foreach ($this->data as $key => $record) {
             
+            /** @psalm-suppress MixedAssignment */
             $list[$key] = $record->$col;
         }
         
@@ -133,7 +129,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Returns the model from which the data originates.
      * 
      * @return \GDAO\Model The origin model object.
-     * 
      */
     public function getModel(): \GDAO\Model {
         
@@ -145,7 +140,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Are there any records in the collection?
      * 
      * @return bool True if empty, false if not.
-     * 
      */
     public function isEmpty(): bool {
         
@@ -155,9 +149,8 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * Load the collection with a list of records.
-     * @param \GDAO\Model\RecordInterface[] ...$data_2_load
      */
-    public function loadData(\GDAO\Model\RecordInterface ...$data_2_load): self{
+    public function loadData(\GDAO\Model\RecordInterface ...$data_2_load): static {
         
         $this->data = $data_2_load;
         
@@ -167,17 +160,14 @@ class Collection implements \GDAO\Model\CollectionInterface
     
     /**
      * 
-     * Removes all records from the collection but **does not** delete them
-     * from the database.
-     * 
+     * Removes all records from the collection but **does not** delete them from the database.
      */
-    public function removeAll(): self {
+    public function removeAll(): static {
         
         $keys =  array_keys($this->data);
         
         foreach( $keys as $key ) {
             
-            $this->data[$key] = null;
             unset($this->data[$key]);
         }
         
@@ -216,9 +206,8 @@ class Collection implements \GDAO\Model\CollectionInterface
      *                    thrown if an insert or update fails.
      * 
      * @throws \PDOException
-     * 
      */
-    public function saveAll($group_inserts_together=false) {
+    public function saveAll(bool $group_inserts_together=false): bool|array {
         
         $this->preSaveAll($group_inserts_together);
         
@@ -229,7 +218,10 @@ class Collection implements \GDAO\Model\CollectionInterface
             
             $data_2_save_4_new_records = [];
             
-            /** @var \GDAO\Model\RecordInterface $record */
+            /** 
+             * @psalm-suppress UnnecessaryVarAnnotation 
+             * @var \GDAO\Model\RecordInterface $record 
+             */
             foreach ( $this->data as $key => $record ) {
 
                 $this->throwExceptionOnSaveOfReadOnlyRecord($record, __FUNCTION__);
@@ -246,10 +238,10 @@ class Collection implements \GDAO\Model\CollectionInterface
                         $record->getModel()->getTableName() 
                         !== $this->getModel()->getTableName()
                     ) {
-                        $record_class_name = get_class($record);
+                        $record_class_name = $record::class;
                         $record_table_name = $record->getModel()->getTableName();
                         
-                        $collection_class_name = get_class($this);
+                        $collection_class_name = static::class;
                         $collection_table_name = $this->getModel()->getTableName();
                         
                         $method_name = __FUNCTION__;
@@ -258,9 +250,9 @@ class Collection implements \GDAO\Model\CollectionInterface
                             . " belonging to table `{$record_table_name}` in the database via the " 
                             . " `{$method_name}` method in a Collection of type `{$collection_class_name}`"
                             . " whose model is associated with the table `{$collection_table_name}` in the"
-                            . " database. " . PHP_EOL .  get_class($this) . '::' . $method_name . '(...).'
+                            . " database. " . PHP_EOL .  static::class . '::' . $method_name . '(...).'
                             . PHP_EOL .'Unsaved record' . var_export($record, true) . PHP_EOL;
-                        throw new TableNameMismatchInCollectionSaveAllException($msg);
+                        throw new \LeanOrm\Exceptions\Model\TableNameMismatchInCollectionSaveAllException($msg);
                     }
                     
                     //The record is new and must be inserted into the db.
@@ -319,10 +311,10 @@ class Collection implements \GDAO\Model\CollectionInterface
         
         if( $record instanceof ReadOnlyRecord ) {
 
-            $msg = "ERROR: Can't save ReadOnlyRecord in Collection to the database in " 
-                 . get_class($this) . '::' . $calling_function . '(...).'
+            $msg = "ERROR: Can't save ReadOnlyRecord in Collection to  the database in " 
+                 . static::class . '::' . $calling_function . '(...).'
                  . PHP_EOL .'Undeleted record' . var_export($record, true) . PHP_EOL;
-            throw new \LeanOrm\CantSaveReadOnlyRecordException($msg);
+            throw new \LeanOrm\Exceptions\CantSaveReadOnlyRecordException($msg);
         }
     }
     
@@ -331,10 +323,8 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Injects the model from which the data originates.
      * 
      * @param \GDAO\Model $model The origin model object.
-     * 
-     * 
      */
-    public function setModel(\GDAO\Model $model): self {
+    public function setModel(\GDAO\Model $model): static {
         
         $this->model = $model;
         
@@ -346,13 +336,12 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Returns an array representation of an instance of this class.
      * 
      * @return array an array representation of an instance of this class.
-     * 
      */
     public function toArray(): array {
 
         $result = [];
         
-        foreach ($this as $key=>$record) {
+        foreach ($this->data as $key=>$record) {
             
             $result[$key] = $record->toArray();
         }
@@ -362,6 +351,7 @@ class Collection implements \GDAO\Model\CollectionInterface
     
     /**
      * @return array an array where each value is the result of calling getData() on each record in the collection
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function getData(): array {
     
@@ -383,7 +373,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * ArrayAccess: does the requested key exist?
      * 
      * @param string $key The requested key.
-     * 
      */
     public function offsetExists($key): bool {
         
@@ -407,16 +396,13 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * ArrayAccess: set a key value; appends to the array when using []
      * notation.
-     *  
-     * @param string $key The requested key.
      * 
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
      * 
-     * 
      * @throws \GDAO\Model\CollectionCanOnlyContainGDAORecordsException
-     * 
+     * @psalm-suppress ParamNameMismatch
      */
-    public function offsetSet($key, $val): void {
+    public function offsetSet(mixed $key, mixed $val): void {
         
         if( !($val instanceof \GDAO\Model\RecordInterface) ) {
             
@@ -428,6 +414,18 @@ class Collection implements \GDAO\Model\CollectionInterface
             throw new \GDAO\Model\CollectionCanOnlyContainGDAORecordsException($msg);
         }
         
+        // only allow the key to be a string, int, Stringable object or 
+        // null (for $this[] style assignment)
+        if(!is_int($key) && !is_string($key) && $key !== null && !($key instanceof \Stringable)) {
+            
+            $msg = "ERROR: Only ints, strings, null or instances of Stringable are allowed as the first argument to "
+                   . static::class . '::' . __FUNCTION__ . '(...).'
+                   . PHP_EOL . ' Key of type `' . get_debug_type($key) . '` given.'
+                   . PHP_EOL . ' Specified key: '. var_export($val, true) . PHP_EOL;
+            
+           throw new \LeanOrm\Exceptions\InvalidArgumentException($msg);
+        }
+        
         if ($key === null) {
             
             //support for $this[] = $record; syntax
@@ -435,7 +433,7 @@ class Collection implements \GDAO\Model\CollectionInterface
             $key = $this->count();
         }
         
-        $this->__set($key, $val);
+        $this->__set(($key instanceof \Stringable) ? $key->__toString() : ''.$key, $val);
     }
 
     /**
@@ -444,7 +442,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Removes a record with the specified key from the collection.
      * 
      * @param string $key The requested key.
-     * 
      */
     public function offsetUnset($key): void {
         
@@ -454,7 +451,6 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * 
      * Countable: how many keys are there?
-     * 
      */
     public function count(): int {
         
@@ -466,7 +462,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * IteratorAggregate: returns an external iterator for this collection.
      * 
      * @return \ArrayIterator an Iterator eg. an instance of \ArrayIterator
-     * 
      */
     public function getIterator(): \ArrayIterator {
         
@@ -481,9 +476,7 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * Returns a record from the collection based on its key value.
      * 
-     * @param int|string $key The sequential or associative key value for the
-     *                        record.
-     * 
+     * @param int|string $key The sequential or associative key value for the record.
      */
     public function __get($key): \GDAO\Model\RecordInterface {
         
@@ -494,7 +487,7 @@ class Collection implements \GDAO\Model\CollectionInterface
         } else {
 
             $msg = sprintf("ERROR: Item with key '%s' does not exist in ", $key) 
-                   . get_class($this) .'.'. PHP_EOL . $this->__toString();
+                   . static::class .'.'. PHP_EOL . $this->__toString();
             
             throw new \GDAO\Model\ItemNotFoundInCollectionException($msg);
         }
@@ -505,7 +498,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Does a certain key exist in the data?
      * 
      * @param string $key The requested data key.
-     *  
      */
     public function __isset($key): bool {
         
@@ -518,7 +510,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @param string $key The requested key.
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
-     *   
      */
     public function __set($key, \GDAO\Model\RecordInterface $val): void {
         
@@ -531,7 +522,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Returns a string representation of an instance of this class.
      * 
      * @return string a string representation of an instance of this class.
-     * 
      */
     public function __toString(): string {
         
@@ -543,7 +533,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * Removes a record with the specified key from the collection.
      * 
      * @param string $key The requested data key.
-     * 
      */
     public function __unset($key): void {
         
@@ -570,5 +559,24 @@ class Collection implements \GDAO\Model\CollectionInterface
     /**
      * {@inheritDoc}
      */
-    public function postSaveAll($save_all_result, bool $group_inserts_together=false): void { }
+    public function postSaveAll(bool|array $save_all_result, bool $group_inserts_together=false): void { }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function removeRecord(\GDAO\Model\RecordInterface $record): static {
+        
+        foreach($this->data as $key => $current_record) {
+            
+            if( $record === $current_record ) {
+                
+                // only remove record from the collection & not the database
+                /** @psalm-suppress MixedArgumentTypeCoercion */
+                $this->offsetUnset($key);
+                break;
+            }
+        }
+        
+        return $this;
+    }
 }

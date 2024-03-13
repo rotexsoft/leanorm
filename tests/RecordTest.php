@@ -681,22 +681,6 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
             [], 'author_id', 'authors'
         );
         
-        $record = new LeanOrm\Model\Record([], $model);
-        
-        $record->loadData(
-            null // This arg should be an array of instance of \GDAO\Model\RecordInterface
-        );
-    }
-    
-    public function testThatLoadDataThrowsException2() {
-        
-        $this->expectException(\GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException::class);
-        
-        $model = new \LeanOrm\Model(
-            static::$dsn, static::$username ?? "", static::$password ?? "", 
-            [], 'author_id', 'authors'
-        );
-        
         $postsModel = new \LeanOrm\TestObjects\PostsModel(
             static::$dsn, static::$username ?? "", static::$password ?? ""
         );
@@ -1012,6 +996,14 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
                 'non_existent_col_2' => 'Some Data 2',
             ])
         );
+
+        sleep(3);
+        $existingRecord->m_timestamp = date('Y-m-d H:i:s');
+        self::assertTrue(
+            $existingRecord->save(
+                $existingRecord
+            )
+        );
         self::assertFalse($existingRecord->isNew());
         
         // verify that the data was really saved to the DB
@@ -1032,7 +1024,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
                     [], 'author_id', 'authors'
                 ) extends \LeanOrm\Model {
             
-                public function insert(array $data_2_insert = []) {
+                public function insert(array $data_2_insert = []): array|bool {
                     return false;
                 }
                 public function insertMany(array $rows_of_data_2_insert = []): bool {
@@ -1146,7 +1138,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
                     [], 'author_id', 'authors'
                 ) extends \LeanOrm\Model {
             
-                public function insert(array $data_2_insert = []) {
+                public function insert(array $data_2_insert = []): array|bool {
                     return false;
                 }
                 public function insertMany(array $rows_of_data_2_insert = []): bool {
@@ -1188,7 +1180,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
                     [], 'author_id', 'authors'
                 ) extends \LeanOrm\Model {
 
-                public function insert(array $data_2_insert = []) {
+                public function insert(array $data_2_insert = []): array|bool {
 
                     throw new \Exception('Yabadabadoo');
 
@@ -1367,7 +1359,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
     
     public function testThatOffsetGetThrowsException() {
         
-        $this->expectException(\LeanOrm\Model\NoSuchPropertyForRecordException::class);
+        $this->expectException(\LeanOrm\Exceptions\Model\NoSuchPropertyForRecordException::class);
         $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(
             static::$dsn, static::$username ?? "", static::$password ?? ""
         );
@@ -1516,7 +1508,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
     
     public function testThat__GetThrowsException() {
         
-        $this->expectException(\LeanOrm\Model\NoSuchPropertyForRecordException::class);
+        $this->expectException(\LeanOrm\Exceptions\Model\NoSuchPropertyForRecordException::class);
         $authorsModel = new \LeanOrm\TestObjects\AuthorsModel(
             static::$dsn, static::$username ?? "", static::$password ?? ""
         );

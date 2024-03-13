@@ -19,12 +19,19 @@
 
 ## Installation Requirements
 
-PHP 7.4+.
+PHP 8.1+ for version 4.x.
+
+PHP 7.4+ for versions 2.x & 3.x
 
 [Composer](https://getcomposer.org/)
 
-Version 2.X & 3.X of this package have been rigorously tested against sqlite 3.7.11+, 
-MySQL 8.0.29+ & Postgresql 15.1+. 
+Version 2.x & 3.x of this package have been rigorously tested against sqlite 3.7.11+, MySQL 8.0.29+ & Postgresql 15.1+.
+
+Version 4.x has been rigorously tested against:
+- MariaDB 10.4.33+, 10.5.24+, 10.6.17+, 10.11.7+, 11.0.5+, 11.1.4+, 11.2.3+ & 11.3.2+
+- MySql 5.6.51, 5.7.44, 8.0.36+, 8.1.0, 8.2.0 & 8.3.0+
+- PostgreSQL 12.18+, 13.14+, 14.11+, 15.6+ & 16.2+
+- See [run-tests-against-multiple-db-versions.php](./run-tests-against-multiple-db-versions.php)
 
 MS SQL Server, is theoretically supported but hasn't been tested. 
 Will provide more updates on MS SQL Server support once testing 
@@ -32,18 +39,20 @@ on that DB engine has been done.
 
 If you are using Sqlite, version sqlite 3.7.11 or higher is required.
 
-Version 1.X of this package never got a stable release. 
+Version 1.x of this package never got a stable release. 
 
-Version 2.X+ of this package is stable & uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/tree/2.8.1#select) 2.8.0+ . 
+Version 2.x+ of this package is stable & uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/tree/2.8.1#select) 2.8.0+ . 
 
-Please use version 3.X+ of this package which uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) 3.0.0+ and is newer.
+Versions 3.x+ & 4.x+ of this package are also stable & use [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) 3.0.0+.
 
-Versions 2.X & 3.X mainly differ in the versions of **aura/sqlquery** their **Model::getSelect(): \Aura\SqlQuery\Common\Select** returns and 
+Versions 2.x & 3.x mainly differ in the versions of **aura/sqlquery** their **Model::getSelect(): \Aura\SqlQuery\Common\Select** returns and 
 3.x has a few newer features like **Model::fetchOneByPkey($id, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**.
 
-> Deprecated **Utils::search2D(...)** in 2.X has been removed in 3.X
+> Deprecated **Utils::search2D(...)** in 2.x has been removed in 3.x
 
-A future version 4 will require php 8.1 as the minimum PHP version.
+Version 4.x is not backwards compatible with 3.x.
+
+Versions 2.x & 3.x are feature complete as of May 2023, only bug fixes will be applied to those versions.
 
 Versions 2.x & 3.x are feature complete as of May 2023, only bug fixes will be applied to those versions.
  
@@ -67,6 +76,7 @@ There's an accompanying [command-line tool](https://github.com/rotexsoft/leanorm
 >`./vendor/bin/phpunit --coverage-text`
 
 > You can set the environment variable **LEANORM_PDO_DSN** with a valid $dsn string for pdo e.g. LEANORM_PDO_DSN=sqlite::memory:
+    > For Postgres, the dsn must include **dbname=blog** and you should make sure a blog database exists in the Postgres instance. You don't need this for Sqlite, MariaDB or MySql, the database will be programmatically created.
 
 > You can set the environment variable **LEANORM_PDO_USERNAME** with a valid $username string for pdo if needed e.g. LEANORM_PDO_USERNAME=jblow
 
@@ -76,13 +86,17 @@ There's an accompanying [command-line tool](https://github.com/rotexsoft/leanorm
 
 >   `LEANORM_PDO_DSN=sqlite::memory: LEANORM_PDO_USERNAME=jblow LEANORM_PDO_PASSWORD=some_password ./vendor/bin/phpunit --coverage-text`
 
->   `LEANORM_PDO_DSN="mysql:host=hostname_or_ip_address;dbname=blog" LEANORM_PDO_USERNAME="jblow" LEANORM_PDO_PASSWORD="some_password" ./vendor/bin/phpunit --coverage-text`
+>   `LEANORM_PDO_DSN="mysql:host=hostname_or_ip_address" LEANORM_PDO_USERNAME="jblow" LEANORM_PDO_PASSWORD="some_password" ./vendor/bin/phpunit --coverage-text`
 
 ### GDAO Classes & Interfaces
+
+> Take a look at the code for the most up to date listing of methods
 
 ![GDAO Classes & Interfaces](https://raw.githubusercontent.com/rotexsoft/gdao/master/class-diagram.svg)
 
 ### LeanORM Classes
+
+> Take a look at the code for the most up to date listing of methods
 
 * **\LeanOrm\Model** extends the abstract **\GDAO\Model** class
 * **\LeanOrm\Model\Record** & **\LeanOrm\Model\ReadOnlyRecord** both implement **\GDAO\Model\RecordInterface**
@@ -91,11 +105,13 @@ There's an accompanying [command-line tool](https://github.com/rotexsoft/leanorm
 ![LeanORM Classes](class-diagram.svg)
 
 ## Documentation
-Documentation for the non-stable 1.X version of this package is located at http://rotexsoft.github.io/leanorm/
+Documentation for the non-stable 1.x version of this package is located at http://rotexsoft.github.io/leanorm/
 
-Documentation for version 2.X version can be found [here](https://github.com/rotexsoft/leanorm/blob/2.2.x/docs/index.md).
+Documentation for version 2.x version can be found [here](https://github.com/rotexsoft/leanorm/blob/2.2.x/docs/index.md).
 
-Documentation for the most recent 3.X+ version can be found [here](docs/index.md).
+Documentation for version 3.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/3.x/docs/index.md).
+
+Documentation for version 4.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/4.x/docs/index.md).
 
 Please submit an issue (preferably with a pull request) to address mistakes or omissions in the documentation or to propose improvements to the documentation. 
 
@@ -108,3 +124,14 @@ but because there are fair amount of static methods in the DBConnector class,
 its tests need to be run first before other Test Classes. 
 
 New Test files must be manually added to the phpunit.xml.dist file in order for those new tests to run.
+
+### Branching
+
+These are the branches in this repository:
+
+- **master:** meant to be in sync with the the branch containing the latest stable release of this package. Currently in sync with the **4.x** branch.
+- **4.x:** contains code for the 4.x versions of this package.
+- **3.x:** contains code for the 3.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
+- **2.2.x:** contains code for the 2.2.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
+- **1.X:** contains code for the **1.X** versions of this package. This branch is abandoned.
+- **gh-pages:** contains documentation for the 1.X versions of this package. This branch is abandoned.

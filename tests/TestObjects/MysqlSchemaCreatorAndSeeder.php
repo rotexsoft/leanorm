@@ -366,4 +366,11 @@ class MysqlSchemaCreatorAndSeeder implements SchemaCreatorAndSeederInterface {
         }
     }
 
+    public function createSchema(): bool {
+        
+        $this->connection->query("DROP DATABASE IF EXISTS blog");
+        $this->connection->query("CREATE DATABASE blog");
+        $this->connection->query("USE blog");
+        return true;
+    }
 }

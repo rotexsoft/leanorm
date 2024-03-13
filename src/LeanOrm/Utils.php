@@ -7,25 +7,23 @@ use Closure;
  * Description of Utils
  *
  * @author Rotimi Ade
- * @copyright (c) 2022, Rotexsoft
+ * @copyright (c) 2024, Rotexsoft
  */
 class Utils {
     
     public static function isEmptyString(string $string): bool {
         
-        return $string === '' && mb_strlen( ''.$string, 'UTF-8') <= 0;
+        return $string === '';
     }
     
     /**
      * @param array $array          array from which to get a value
      * @param string|int $key       key in the array whose value is to be returned
-     * @param mixed $default_value  value to be returned if key does not exist in the array
-     * 
-     * @return mixed
+     * @param mixed $default_value value to be returned if key does not exist in the array 
      */
-    public static function arrayGet(array &$array, $key, $default_value=null) {
+    public static function arrayGet(array &$array, string|int $key, mixed $default_value=null): mixed {
 
-        if((is_int($key) || is_string($key)) && array_key_exists($key, $array)) {
+        if(array_key_exists($key, $array)) {
 
             return $array[$key];
 
