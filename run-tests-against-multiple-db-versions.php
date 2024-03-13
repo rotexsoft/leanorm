@@ -76,53 +76,69 @@ $pgsql_pass = 'doesntmatter';
 // and old versions that are no longer supported removed.
 ////////////////////////////////////////////////////////////////////////////////
 $container_creation_commands = [
+     [
+         'mysql:5.6.51' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:5.6.51",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ],
+     ],
+     [
+         'postgres:12.18' => [
+             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:12.18",
+             'dsn' => $pgsql_dsn,
+             'username' => $pgsql_user,
+             'password' => $pgsql_pass,
+         ], 
+     ],
+     [
+         'mysql:5.7.44' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:5.7.44",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ],
+     ],
+     [
+         'postgres:13.14' => [
+             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:13.14",
+             'dsn' => $pgsql_dsn,
+             'username' => $pgsql_user,
+             'password' => $pgsql_pass,
+         ], 
+     ],
+     [
+         'mysql:8.0.36' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:8.0.36",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ],
+     ],
+     [
+         'postgres:14.11' => [
+             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:14.11",
+             'dsn' => $pgsql_dsn,
+             'username' => $pgsql_user,
+             'password' => $pgsql_pass,
+         ], 
+     ],
     [
-        'mysql:5.6.51' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:5.6.51",
+        'mysql:8.1.0' => [
+            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:8.1.0",
             'dsn' => $mysql_maria_db_sql_dsn,
             'username' => $mysql_user,
             'password' => $mysql_root_psw,
         ],
     ],
     [
-        'postgres:12.18' => [
-            'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:12.18",
-            'dsn' => $pgsql_dsn,
-            'username' => $pgsql_user,
-            'password' => $pgsql_pass,
-        ], 
-    ],
-    [
-        'mysql:5.7.44' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:5.7.44",
+        'mysql:8.2.0' => [
+            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:8.2.0",
             'dsn' => $mysql_maria_db_sql_dsn,
             'username' => $mysql_user,
             'password' => $mysql_root_psw,
         ],
-    ],
-    [
-        'postgres:13.14' => [
-            'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:13.14",
-            'dsn' => $pgsql_dsn,
-            'username' => $pgsql_user,
-            'password' => $pgsql_pass,
-        ], 
-    ],
-    [
-        'mysql:8.0.36' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:8.0.36",
-            'dsn' => $mysql_maria_db_sql_dsn,
-            'username' => $mysql_user,
-            'password' => $mysql_root_psw,
-        ],
-    ],
-    [
-        'postgres:14.11' => [
-            'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:14.11",
-            'dsn' => $pgsql_dsn,
-            'username' => $pgsql_user,
-            'password' => $pgsql_pass,
-        ], 
     ],
     [
         'mysql:8.3.0' => [
@@ -132,86 +148,86 @@ $container_creation_commands = [
             'password' => $mysql_root_psw,
         ],
     ],
-    [
-        'postgres:15.6' => [
-            'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:15.6",
-            'dsn' => $pgsql_dsn,
-            'username' => $pgsql_user,
-            'password' => $pgsql_pass,
-        ], 
-    ],
-    [
-        'postgres:16.2' => [
-            'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:16.2",
-            'dsn' => $pgsql_dsn,
-            'username' => $pgsql_user,
-            'password' => $pgsql_pass,
-        ], 
-    ],
-    [
-        'mariadb:10.4.33' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.4.33",
-            'dsn' => $mysql_maria_db_sql_dsn,
-            'username' => $mysql_user,
-            'password' => $mysql_root_psw,
-        ],
-    ],
-    [
-        'mariadb:10.5.24' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.5.24",
-            'dsn' => $mysql_maria_db_sql_dsn,
-            'username' => $mysql_user,
-            'password' => $mysql_root_psw,
-        ],
-    ],
-    [
-        'mariadb:10.6.17' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.6.17",
-            'dsn' => $mysql_maria_db_sql_dsn,
-            'username' => $mysql_user,
-            'password' => $mysql_root_psw,
-        ],
-    ],
-    [
-        'mariadb:10.11.7' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.11.7",
-            'dsn' => $mysql_maria_db_sql_dsn,
-            'username' => $mysql_user,
-            'password' => $mysql_root_psw,
-        ],
-    ],
-    [
-        'mariadb:11.0.5' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.0.5",
-            'dsn' => $mysql_maria_db_sql_dsn,
-            'username' => $mysql_user,
-            'password' => $mysql_root_psw,
-        ],
-    ],
-    [
-        'mariadb:11.1.4' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.1.4",
-            'dsn' => $mysql_maria_db_sql_dsn,
-            'username' => $mysql_user,
-            'password' => $mysql_root_psw,
-        ], 
-    ],
-    [
-        'mariadb:11.2.3' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.2.3",
-            'dsn' => $mysql_maria_db_sql_dsn,
-            'username' => $mysql_user,
-            'password' => $mysql_root_psw,
-        ],
-    ],
-    [
-        'mariadb:11.3.2' => [
-            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.3.2",
-            'dsn' => $mysql_maria_db_sql_dsn,
-            'username' => $mysql_user,
-            'password' => $mysql_root_psw,
-        ],
-    ],
+     [
+         'postgres:15.6' => [
+             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:15.6",
+             'dsn' => $pgsql_dsn,
+             'username' => $pgsql_user,
+             'password' => $pgsql_pass,
+         ], 
+     ],
+     [
+         'postgres:16.2' => [
+             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:16.2",
+             'dsn' => $pgsql_dsn,
+             'username' => $pgsql_user,
+             'password' => $pgsql_pass,
+         ], 
+     ],
+     [
+         'mariadb:10.4.33' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.4.33",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ],
+     ],
+     [
+         'mariadb:10.5.24' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.5.24",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ],
+     ],
+     [
+         'mariadb:10.6.17' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.6.17",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ],
+     ],
+     [
+         'mariadb:10.11.7' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.11.7",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ],
+     ],
+     [
+         'mariadb:11.0.5' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.0.5",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ],
+     ],
+     [
+         'mariadb:11.1.4' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.1.4",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ], 
+     ],
+     [
+         'mariadb:11.2.3' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.2.3",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ],
+     ],
+     [
+         'mariadb:11.3.2' => [
+             'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.3.2",
+             'dsn' => $mysql_maria_db_sql_dsn,
+             'username' => $mysql_user,
+             'password' => $mysql_root_psw,
+         ],
+     ],
 ];
       
 echo PHP_EOL . PHP_EOL . 'Starting to create containers and run tests....' . PHP_EOL . PHP_EOL;
@@ -235,7 +251,7 @@ foreach($container_creation_commands as $current_container_creation_command) {
         echo PHP_EOL . PHP_EOL;
     }
     
-    sleepWithEcho(60); // allow databases to load properly
+    sleepWithEcho(90); // allow databases to load properly
 
     echo PHP_EOL . PHP_EOL;
     
@@ -251,7 +267,7 @@ foreach($container_creation_commands as $current_container_creation_command) {
     echoWithLineBreaks($phpunit_with_env);
     system($phpunit_with_env, $phpunit_retval);
 
-    echo "Stoping container instances & deleting their images" .PHP_EOL . PHP_EOL;
+    echo "Stopping container instances & deleting their images" .PHP_EOL . PHP_EOL;
     
     echoWithLineBreaks("podman stop -a");
     system("podman stop -a"); // stop the containers
