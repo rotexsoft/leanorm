@@ -27,7 +27,7 @@
         "rector/rector": "^1.0.1",
         "symfony/polyfill-php82": "^1.26",
         "atlas/pdo": "^2.0.0",
-        "rotexsoft/versatile-collections": "^5.2"
+        "rotexsoft/versatile-collections": "^6.0"
     },
     "autoload": {
         "classmap": ["src/"]

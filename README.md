@@ -53,15 +53,11 @@ Versions 2.x & 3.x mainly differ in the versions of **aura/sqlquery** their **Mo
 Version 4.x is not backwards compatible with 3.x.
 
 Versions 2.x & 3.x are feature complete as of May 2023, only bug fixes will be applied to those versions.
-
-Versions 2.x & 3.x are feature complete as of May 2023, only bug fixes will be applied to those versions.
  
-New features will all be going to version 4 on the 4.x branch. Until the first stable release of version 4
-happens, version 3 bug fixes will be added to the 3.x branch which will continue to be synced to the master 
-branch until the first stable release of version 4 is published (at that point, the 4.x branch will be merged
-into master and start being synced with master moving forward). Bug fixes for version 2.2.x will be applied to
-to the 2.2.x branch. I will continue to accept bug-fix pull requests for versions 2.x & 3.x even after version
-4 is released. New feature pull requests for versions 2.x & 3.x will be rejected, new features will only be added to the 4.x branch.
+New features will all be going to version 4 on the master branch. 
+Bug fixes for version 2.2.x will be applied to the 2.2.x branch. 
+Bug-fix pull requests for versions 2.x & 3.x will continue to be accepted even after version 4 is released. 
+New feature pull requests for versions 2.x & 3.x will be rejected, new features will only be added to the master branch.
 
 ## Installation
 
@@ -111,7 +107,7 @@ Documentation for version 2.x version can be found [here](https://github.com/rot
 
 Documentation for version 3.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/3.x/docs/index.md).
 
-Documentation for version 4.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/4.x/docs/index.md).
+Documentation for version 4.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/master/docs/index.md).
 
 Please submit an issue (preferably with a pull request) to address mistakes or omissions in the documentation or to propose improvements to the documentation. 
 
@@ -129,8 +125,7 @@ New Test files must be manually added to the phpunit.xml.dist file in order for 
 
 These are the branches in this repository:
 
-- **master:** meant to be in sync with the the branch containing the latest stable release of this package. Currently in sync with the **4.x** branch.
-- **4.x:** contains code for the 4.x versions of this package.
+- **master:** meant to be in sync with the the branch containing the latest stable release of this package.
 - **3.x:** contains code for the 3.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **2.2.x:** contains code for the 2.2.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **1.X:** contains code for the **1.X** versions of this package. This branch is abandoned.
