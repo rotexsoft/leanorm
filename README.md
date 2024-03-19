@@ -125,7 +125,7 @@ New Test files must be manually added to the phpunit.xml.dist file in order for 
 
 These are the branches in this repository:
 
-- **master:** meant to be in sync with the the branch containing the latest stable release of this package.
+- **master:** contains code for the latest major version of this package.
 - **3.x:** contains code for the 3.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **2.2.x:** contains code for the 2.2.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **1.X:** contains code for the **1.X** versions of this package. This branch is abandoned.
