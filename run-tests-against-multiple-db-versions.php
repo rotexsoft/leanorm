@@ -51,6 +51,12 @@ function readableElapsedTime($microtime, $format = null, $round = 3) {
 }
 
 $new_line = PHP_EOL;
+echoWithLineBreaks(
+    'WARNING: This test suite could take up to 4 hours to run depending on the'
+    . ' performance capability of this computer.' . $new_line
+    . "\t Podman also needs to be installed in order for the tests to run." . $new_line
+);
+
 $console_prompt = "If you have an instance of (MySql / Mariadb) and / or Postgresql"
                 . " running, please stop them and then press Enter.{$new_line}This"
                 . " script will be spawning new container instances of MySql & Postgresql"
