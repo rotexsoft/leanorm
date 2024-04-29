@@ -69,7 +69,8 @@ There's an accompanying [command-line tool](https://github.com/rotexsoft/leanorm
 >`./vendor/bin/phpunit --coverage-text`
 
 > You can set the environment variable **LEANORM_PDO_DSN** with a valid $dsn string for pdo e.g. LEANORM_PDO_DSN=sqlite::memory:
-    > For Postgres, the dsn must include **dbname=blog** and you should make sure a blog database exists in the Postgres instance. You don't need this for Sqlite, MariaDB or MySql, the database will be programmatically created.
+
+- For Postgres, the dsn must include **dbname=blog** and you should make sure a blog database exists in the Postgres instance. You don't need this for Sqlite, MariaDB or MySql, the database will be programmatically created.
 
 > You can set the environment variable **LEANORM_PDO_USERNAME** with a valid $username string for pdo if needed e.g. LEANORM_PDO_USERNAME=jblow
 
