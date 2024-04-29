@@ -78,21 +78,21 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface
     }
     
     /**
-     * This method partially or completely overwrites pre-existing data and 
+     * This method partially or completely overwrites pre-existing data and
      * replaces it with the new data.
      * 
      * Note if $cols_2_load === null all data should be replaced, else only
      * replace data for the cols in $cols_2_load.
      * 
-     * If $data_2_load is an instance of \GDAO\Model\RecordInterface and is also an instance 
+     * If $data_2_load is an instance of \GDAO\Model\RecordInterface and is also an instance
      * of a sub-class of the Record class in a package that implements this API and
-     * if $data_2_load->getModel()->getTableName() !== $this->getModel()->getTableName(), 
+     * if $data_2_load->getModel()->getTableName() !== $this->getModel()->getTableName(),
      * then the exception below should be thrown:
      * 
      *      \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      * 
-     * @param \GDAO\Model\RecordInterface|array $data_2_load
-     * @param array $cols_2_load name of field to load from $data_2_load. If empty, 
+     * @param \GDAO\Model\RecordInterface|array $data_2_load source of data to be loaded into the record
+     * @param array $cols_2_load name of field to load from $data_2_load. If empty,
      *                           load all fields in $data_2_load.
      * 
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException

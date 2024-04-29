@@ -182,27 +182,27 @@ class Record implements \GDAO\Model\RecordInterface
     }
 
     /**
-     * \GDAO\Model\Record::$initial_data should be set here only if it has the 
+     * \GDAO\Model\Record::$initial_data should be set here only if it has the
      * initial value of null.
      * 
-     * This method partially or completely overwrites pre-existing data and 
-     * replaces it with the new data. Related data should also be loaded if 
+     * This method partially or completely overwrites pre-existing data and
+     * replaces it with the new data. Related data should also be loaded if
      * $data_2_load is an instance of \GDAO\Model\RecordInterface. However,
      * because of the way __get is implemented, there's no need to load
-     * relationship data here, __get will load that data on-demand if not 
+     * relationship data here, __get will load that data on-demand if not
      * already loaded.
      * 
      * Note if $cols_2_load === null all data should be replaced, else only
      * replace data for the cols in $cols_2_load.
      * 
-     * If $data_2_load is an instance of \GDAO\Model\RecordInterface and is also an instance 
+     * If $data_2_load is an instance of \GDAO\Model\RecordInterface and is also an instance
      * of a sub-class of the Record class in a package that implements this API and
-     * if $data_2_load->getModel()->getTableName() !== $this->getModel()->getTableName(), 
+     * if $data_2_load->getModel()->getTableName() !== $this->getModel()->getTableName(),
      * then the exception below should be thrown:
      * 
      *      \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      * 
-     * @param \GDAO\Model\RecordInterface|array $data_2_load
+     * @param \GDAO\Model\RecordInterface|array $data_2_load source of data to be loaded into the record
      * @param array $cols_2_load name of field to load from $data_2_load. If empty, 
      *                           load all fields in $data_2_load.
      * 
@@ -410,10 +410,7 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function __set($key, mixed $val): void {
         
-        if ( 
-            $this->getModel() instanceof \GDAO\Model 
-            && in_array($key, $this->getModel()->getTableColNames()) 
-        ) {
+        if ( in_array($key, $this->getModel()->getTableColNames()) ) {
             //$key is a valid db column in the db table assoiciated with this 
             //model's record.
             $this->data[$key] = $val;
