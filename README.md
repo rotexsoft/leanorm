@@ -53,11 +53,7 @@ Versions 2.x & 3.x mainly differ in the versions of **aura/sqlquery** their **Mo
 Version 4.x is not backwards compatible with 3.x.
 
 Versions 2.x & 3.x are feature complete as of May 2023, only bug fixes will be applied to those versions.
- 
-New features will all be going to version 4 on the master branch. 
-Bug fixes for version 2.2.x will be applied to the 2.2.x branch. 
-Bug-fix pull requests for versions 2.x & 3.x will continue to be accepted even after version 4 is released. 
-New feature pull requests for versions 2.x & 3.x will be rejected, new features will only be added to the master branch.
+
 
 ## Installation
 

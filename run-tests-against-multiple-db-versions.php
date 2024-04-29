@@ -59,7 +59,7 @@ $console_response = readFromLine($console_prompt); // hitting enter returns an e
                                                    // maybe later other options could be read
                                                    // into this variable     
 
-$console_prompt2 = "Please enter a password that would be used for the Mysql & Mariadb root accounts (it must match the one specified in `phpunit.xml`):";
+$console_prompt2 = "Please enter a password that would be used for the Mysql & Mariadb root accounts:";
 $mysql_root_psw = readFromLine(PHP_EOL . $console_prompt2);
 
 $test_results =  [];
