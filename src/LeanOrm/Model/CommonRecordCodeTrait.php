@@ -248,7 +248,6 @@ trait CommonRecordCodeTrait {
      * @param string $key The requested key.
      * 
      * @param string $val The value to set it to.
-     * @psalm-suppress ParamNameMismatch
      */
     public function offsetSet($key, $val): void {
 
