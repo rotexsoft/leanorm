@@ -14,7 +14,7 @@ use function sprintf;
  * @author Rotimi Adegbamigbe
  * @copyright (c) 2024, Rotexsoft
  */
-class Model extends \GDAO\Model {
+class Model extends \GDAO\Model implements \Stringable {
     
     //overriden parent's properties
     /**
