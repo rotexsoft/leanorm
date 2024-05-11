@@ -18,7 +18,7 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
  * @author Rotimi Adegbamigbe
  * @copyright (c) 2024, Rotexsoft
  */
-class ReadOnlyRecord implements \GDAO\Model\RecordInterface
+class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
 {
     use CommonRecordCodeTrait;
     

@@ -11,7 +11,7 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
  * @copyright (c) 2024, Rotexsoft
  * @psalm-suppress PropertyNotSetInConstructor
  */
-class Record implements \GDAO\Model\RecordInterface
+class Record implements \GDAO\Model\RecordInterface, \Stringable
 {
     use CommonRecordCodeTrait;
     

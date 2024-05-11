@@ -9,7 +9,7 @@ namespace LeanOrm\Model;
  * @author Rotimi Adegbamigbe
  * @copyright (c) 2024, Rotexsoft
  */
-class Collection implements \GDAO\Model\CollectionInterface
+class Collection implements \GDAO\Model\CollectionInterface, \Stringable
 {
     protected \GDAO\Model $model;
 
