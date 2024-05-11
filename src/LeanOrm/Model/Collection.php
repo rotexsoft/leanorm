@@ -396,8 +396,6 @@ class Collection implements \GDAO\Model\CollectionInterface
      * 
      * @param string $key The requested key.
      * 
-     * @return mixed
-     * 
      */
     #[\ReturnTypeWillChange]
     public function offsetGet($key): \GDAO\Model\RecordInterface {
