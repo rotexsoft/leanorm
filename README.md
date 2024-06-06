@@ -25,7 +25,7 @@ PHP 7.4+ for versions 2.x & 3.x
 
 [Composer](https://getcomposer.org/)
 
-Version 2.x & 3.x of this package have been rigorously tested against sqlite 3.7.11+, MySQL 8.0.29+ & Postgresql 15.1+.
+Versions 2.x & 3.x of this package have been rigorously tested against sqlite 3.7.11+, MySQL 8.0.29+ & Postgresql 15.1+.
 
 Version 4.x has been rigorously tested against:
 - Sqlite 3.34.1+
@@ -105,7 +105,9 @@ Documentation for version 2.x version can be found [here](https://github.com/rot
 
 Documentation for version 3.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/3.x/docs/index.md).
 
-Documentation for version 4.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/master/docs/index.md).
+Documentation for version 4.0.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/4.0.x/docs/index.md).
+
+Documentation for version 4.1.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/master/docs/index.md).
 
 Please submit an issue (preferably with a pull request) to address mistakes or omissions in the documentation or to propose improvements to the documentation. 
 
@@ -123,7 +125,8 @@ New Test files must be manually added to the phpunit.xml.dist file in order for 
 
 These are the branches in this repository:
 
-- **master:** contains code for the latest major version of this package.
+- **master:** contains code for the latest major version (4.1.x) of this package.
+- **4.0.x:** contains code for the 4.0.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **3.x:** contains code for the 3.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **2.2.x:** contains code for the 2.2.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **1.X:** contains code for the **1.X** versions of this package. This branch is abandoned.

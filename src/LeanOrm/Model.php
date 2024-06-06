@@ -754,8 +754,8 @@ class Model extends \GDAO\Model implements \Stringable {
             if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
                 $query_obj->where(
-                    " {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = ? ",
-                    [$parent_data->$fkey_col_in_my_table]
+                    " {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = :leanorm_col_in_join_table_linked_to_my_models_table_val ",
+                    ['leanorm_col_in_join_table_linked_to_my_models_table_val' => $parent_data->$fkey_col_in_my_table]
                 );
 
             } else {
@@ -1151,8 +1151,8 @@ SELECT {$foreign_table_name}.*
         if ( $parent_data instanceof \GDAO\Model\RecordInterface ) {
 
             $query_obj->where(
-                " {$foreign_table_name}.{$fkey_col_in_foreign_table} = ? ",
-                [$parent_data->$fkey_col_in_my_table]
+                " {$foreign_table_name}.{$fkey_col_in_foreign_table} = :leanorm_fkey_col_in_foreign_table_val ",
+                ['leanorm_fkey_col_in_foreign_table_val' => $parent_data->$fkey_col_in_my_table]
             );
 
         } else {
@@ -1869,7 +1869,11 @@ SELECT {$foreign_table_name}.*
     public function fetchOneByPkey(string|int $id, array $relations_to_include = []): ?\GDAO\Model\RecordInterface {
         
         $select = $this->getSelect();
-        $select->where(" {$this->getPrimaryCol()} = ? ", [$id]);
+        $query_placeholder = "leanorm_{$this->getTableName()}_{$this->getPrimaryCol()}_val";
+        $select->where(
+            " {$this->getPrimaryCol()} = :{$query_placeholder} ", 
+            [ $query_placeholder => $id]
+        );
         
         return $this->fetchOneRecord($select, $relations_to_include);
     }
