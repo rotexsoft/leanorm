@@ -12,3 +12,5 @@ are being cached:
 * **fetchTableColsFromDB(string $table_name): array**
 
 Other methods that could gain performance improvements will be added and documented as time goes on.
+
+[<<< Previous](./getting-started.md) | [Next >>>](./more-about-records.md)

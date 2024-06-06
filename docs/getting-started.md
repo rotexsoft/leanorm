@@ -1590,3 +1590,5 @@ The code above should output something like this below:
 ```
 
 That's all for query logging. To learn more take a look at the source code for the query logging related methods in **\LeanOrm\Model**.
+
+[<<< Previous](./indtroduction.md) | [Next >>>](./more-about-models.md)
