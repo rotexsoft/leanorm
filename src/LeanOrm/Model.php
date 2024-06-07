@@ -1701,7 +1701,7 @@ SELECT {$foreign_table_name}.*
 
                 $matching_rows_before_delete = (int) $this->fetchValue($sel_qry_obj);
                 
-                $result = $this->db_connector->executeQuery($dlt_qry, $dlt_qry_params, true);
+                $this->db_connector->executeQuery($dlt_qry, $dlt_qry_params, true);
 
                 $matching_rows_after_delete = (int) $this->fetchValue($sel_qry_obj);
                 
