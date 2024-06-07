@@ -483,18 +483,12 @@ class Record implements \GDAO\Model\RecordInterface
      */
     public function __set($key, $val): void {
         
-        if ( 
-            $this->getModel() instanceof \GDAO\Model 
-            && in_array($key, $this->getModel()->getTableColNames()) 
-        ) {
+        if (in_array($key, $this->getModel()->getTableColNames())) {
             //$key is a valid db column in the db table assoiciated with this 
             //model's record.
             $this->data[$key] = $val;
             
-        } elseif( 
-            $this->getModel() instanceof \GDAO\Model 
-            && in_array($key, $this->getModel()->getRelationNames()) 
-        ) {
+        } elseif (in_array($key, $this->getModel()->getRelationNames())) {
             //$key is a valid relation name in the model for this record.
             $this->related_data[$key] = $val;
             
