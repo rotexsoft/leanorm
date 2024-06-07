@@ -1453,7 +1453,10 @@ SELECT {$foreign_table_name}.*
 
             //delete statement
             $del_qry_obj = (new QueryFactory($this->getPdoDriverName()))->newDelete();
+            $sel_qry_obj = (new QueryFactory($this->getPdoDriverName()))->newSelect();
             $del_qry_obj->from($this->getTableName());
+            $sel_qry_obj->from($this->getTableName());
+            $sel_qry_obj->cols([' count(*) ']);
             $table_cols = $this->getTableColNames();
 
             foreach ($cols_n_vals as $colname => $colval) {
@@ -1477,7 +1480,8 @@ SELECT {$foreign_table_name}.*
                         $colval[$key] = $this->stringifyIfStringable($val);
                     }
 
-                    $this->addWhereInAndOrIsNullToQuery($colname, $colval, $del_qry_obj);
+                    $this->addWhereInAndOrIsNullToQuery(''.$colname, $colval, $del_qry_obj);
+                    $this->addWhereInAndOrIsNullToQuery(''.$colname, $colval, $sel_qry_obj);
 
                 } else {
 
@@ -1487,6 +1491,7 @@ SELECT {$foreign_table_name}.*
                     }
 
                     $del_qry_obj->where("{$colname} = ?", $this->stringifyIfStringable($colval));
+                    $sel_qry_obj->where("{$colname} = ?", $this->stringifyIfStringable($colval));
                 }
             }
 
@@ -1498,19 +1503,14 @@ SELECT {$foreign_table_name}.*
                 $dlt_qry_params = $del_qry_obj->getBindValues();
                 $this->logQuery($dlt_qry, $dlt_qry_params, __METHOD__, '' . __LINE__);
 
-                $result = $this->db_connector->executeQuery($dlt_qry, $dlt_qry_params, true); 
+                $matching_rows_before_delete = (int) $this->fetchValue($sel_qry_obj);
 
-                if( $result['query_result'] === true ) {
+                $this->db_connector->executeQuery($dlt_qry, $dlt_qry_params, true);
 
-                    //return number of affected rows
-                    $pdo_statement_used_for_query = $result['pdo_statement'];
-                    $result = $pdo_statement_used_for_query->rowCount();
-                } else {
+                $matching_rows_after_delete = (int) $this->fetchValue($sel_qry_obj);
 
-                    // something went wrong
-                    // TODO: Maybe throw an exception
-                    $result = 0;
-                } // if( $result['query_result'] === true )
+                //number of deleted rows
+                $result = $matching_rows_before_delete - $matching_rows_after_delete;
             } // if($cols_n_vals !== []) 
         } // if ( $cols_n_vals !== [] )
 
