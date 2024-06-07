@@ -1700,14 +1700,13 @@ SELECT {$foreign_table_name}.*
                 $this->logQuery($dlt_qry, $dlt_qry_params, __METHOD__, '' . __LINE__);
 
                 $matching_rows_before_delete = (int) $this->fetchValue($sel_qry_obj);
-                
+
                 $this->db_connector->executeQuery($dlt_qry, $dlt_qry_params, true);
 
                 $matching_rows_after_delete = (int) $this->fetchValue($sel_qry_obj);
-                
+
                 //number of deleted rows
                 $result = $matching_rows_before_delete - $matching_rows_after_delete;
-                
             } // if($cols_n_vals !== []) 
         } // if ( $cols_n_vals !== [] )
 
