@@ -415,10 +415,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
             //model's record.
             $this->data[$key] = $val;
             
-        } elseif( 
-            $this->getModel() instanceof \GDAO\Model 
-            && in_array($key, $this->getModel()->getRelationNames()) 
-        ) {
+        } elseif (in_array($key, $this->getModel()->getRelationNames())) {
             //$key is a valid relation name in the model for this record.
             $this->related_data[$key] = $val;
             
