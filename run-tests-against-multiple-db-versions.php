@@ -154,6 +154,14 @@ $container_creation_commands = [
             'password' => $mysql_root_psw,
         ],
     ],
+    [
+        'mysql:8.4.0' => [
+            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:8.4.0",
+            'dsn' => $mysql_maria_db_sql_dsn,
+            'username' => $mysql_user,
+            'password' => $mysql_root_psw,
+        ],
+    ],
      [
          'postgres:15.6' => [
              'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:15.6",

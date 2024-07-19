@@ -37,6 +37,7 @@ return static function (RectorConfig $rectorConfigurator): void {
         \Rector\DeadCode\Rector\PropertyProperty\RemoveNullPropertyInitializationRector::class,
         \Rector\TypeDeclaration\Rector\ClassMethod\ReturnNeverTypeRector::class,
         \Rector\CodeQuality\Rector\If_\CompleteMissingIfElseBracketRector::class,
+        \Rector\Php80\Rector\FunctionLike\MixedTypeRector::class,
     ];
     
     $rectorConfigurator->skip($skipables);
