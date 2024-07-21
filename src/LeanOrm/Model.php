@@ -2684,18 +2684,47 @@ SELECT {$foreign_table_name}.*
      * @psalm-suppress PossiblyUnusedMethod
      */
     public function hasOne(
-        string $relation_name,
+        string $relation_name,  // name of the relation, via which the related data
+                                // will be accessed as a property with the same name 
+                                // on record objects for this model class or array key 
+                                // for the related data when data is fetched into arrays 
+                                // via this model
+        
         string $foreign_key_col_in_this_models_table,
-        string $foreign_table_name,
+        
         string $foreign_key_col_in_foreign_table,
-        string $primary_key_col_in_foreign_table,
-        string $foreign_models_class_name = \LeanOrm\Model::class,
-        string $foreign_models_record_class_name = '',
-        string $foreign_models_collection_class_name = '',
-        ?callable $sql_query_modifier = null
+        
+        string $foreign_table_name='',   // If empty, the value set in the $table_name property
+                                         // of the model class specified in $foreign_models_class_name
+                                         // will be used if $foreign_models_class_name !== '' 
+                                         // and the value of the $table_name property is not ''
+        
+        string $primary_key_col_in_foreign_table='',   // If empty, the value set in the $primary_col property
+                                                       // of the model class specified in $foreign_models_class_name
+                                                       // will be used if $foreign_models_class_name !== '' 
+                                                       // and the value of the $primary_col property is not ''
+        
+        string $foreign_models_class_name = '', // If empty, defaults to \LeanOrm\Model::class.
+                                                // If empty, you must specify $foreign_table_name & $primary_key_col_in_foreign_table
+        
+        string $foreign_models_record_class_name = '', // If empty will default to \LeanOrm\Model\Record 
+                                                       // or the value of the $record_class_name property
+                                                       // in the class specfied in $foreign_models_class_name
+        
+        string $foreign_models_collection_class_name = '',  // If empty will default to \LeanOrm\Model\Collection
+                                                            // or the value of the $collection_class_name property
+                                                            // in the class specfied in $foreign_models_class_name
+        
+        ?callable $sql_query_modifier = null // optional callback to modify the query object used to fetch the related data
     ): static {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
-        $this->validateRelatedModelClassName($foreign_models_class_name);
+        $this->setRelationshipDefinitionDefaultsIfNeeded (
+            $foreign_models_class_name,
+            $foreign_table_name,
+            $primary_key_col_in_foreign_table,
+            $foreign_models_record_class_name,
+            $foreign_models_collection_class_name
+        );
         
         if($foreign_models_collection_class_name !== '') {
             
@@ -2733,18 +2762,47 @@ SELECT {$foreign_table_name}.*
      * @psalm-suppress PossiblyUnusedMethod
      */
     public function belongsTo(
-        string $relation_name,
+        string $relation_name,  // name of the relation, via which the related data
+                                // will be accessed as a property with the same name 
+                                // on record objects for this model class or array key 
+                                // for the related data when data is fetched into arrays 
+                                // via this model
+        
         string $foreign_key_col_in_this_models_table,
-        string $foreign_table_name,
+            
         string $foreign_key_col_in_foreign_table,
-        string $primary_key_col_in_foreign_table,
-        string $foreign_models_class_name = \LeanOrm\Model::class,
-        string $foreign_models_record_class_name = '',
-        string $foreign_models_collection_class_name = '',
-        ?callable $sql_query_modifier = null
+        
+        string $foreign_table_name = '', // If empty, the value set in the $table_name property
+                                         // of the model class specified in $foreign_models_class_name
+                                         // will be used if $foreign_models_class_name !== '' 
+                                         // and the value of the $table_name property is not ''
+        
+        string $primary_key_col_in_foreign_table = '', // If empty, the value set in the $primary_col property
+                                                       // of the model class specified in $foreign_models_class_name
+                                                       // will be used if $foreign_models_class_name !== '' 
+                                                       // and the value of the $primary_col property is not ''
+        
+        string $foreign_models_class_name = '', // If empty, defaults to \LeanOrm\Model::class.
+                                                // If empty, you must specify $foreign_table_name & $primary_key_col_in_foreign_table
+        
+        string $foreign_models_record_class_name = '', // If empty will default to \LeanOrm\Model\Record 
+                                                       // or the value of the $record_class_name property
+                                                       // in the class specfied in $foreign_models_class_name
+        
+        string $foreign_models_collection_class_name = '',  // If empty will default to \LeanOrm\Model\Collection
+                                                            // or the value of the $collection_class_name property
+                                                            // in the class specfied in $foreign_models_class_name
+        
+        ?callable $sql_query_modifier = null // optional callback to modify the query object used to fetch the related data
     ): static {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
-        $this->validateRelatedModelClassName($foreign_models_class_name);
+        $this->setRelationshipDefinitionDefaultsIfNeeded (
+            $foreign_models_class_name,
+            $foreign_table_name,
+            $primary_key_col_in_foreign_table,
+            $foreign_models_record_class_name,
+            $foreign_models_collection_class_name
+        );
         
         if($foreign_models_collection_class_name !== '') {
         
@@ -2780,20 +2838,50 @@ SELECT {$foreign_table_name}.*
     
     /**
      * @psalm-suppress PossiblyUnusedMethod
+     * 
      */
     public function hasMany(
-        string $relation_name,
+        string $relation_name,  // name of the relation, via which the related data
+                                // will be accessed as a property with the same name 
+                                // on record objects for this model class or array key 
+                                // for the related data when data is fetched into arrays 
+                                // via this model
+        
         string $foreign_key_col_in_this_models_table,
-        string $foreign_table_name,
+        
         string $foreign_key_col_in_foreign_table,
-        string $primary_key_col_in_foreign_table,
-        string $foreign_models_class_name = \LeanOrm\Model::class,
-        string $foreign_models_record_class_name = '',
-        string $foreign_models_collection_class_name = '',
-        ?callable $sql_query_modifier = null
+        
+        string $foreign_table_name='',   // If empty, the value set in the $table_name property
+                                         // of the model class specified in $foreign_models_class_name
+                                         // will be used if $foreign_models_class_name !== '' 
+                                         // and the value of the $table_name property is not ''
+        
+        string $primary_key_col_in_foreign_table='',   // If empty, the value set in the $primary_col property
+                                                       // of the model class specified in $foreign_models_class_name
+                                                       // will be used if $foreign_models_class_name !== '' 
+                                                       // and the value of the $primary_col property is not ''
+        
+        string $foreign_models_class_name = '', // If empty, defaults to \LeanOrm\Model::class.
+                                                // If empty, you must specify $foreign_table_name & $primary_key_col_in_foreign_table
+        
+        string $foreign_models_record_class_name = '', // If empty will default to \LeanOrm\Model\Record 
+                                                       // or the value of the $record_class_name property
+                                                       // in the class specfied in $foreign_models_class_name
+        
+        string $foreign_models_collection_class_name = '',  // If empty will default to \LeanOrm\Model\Collection
+                                                            // or the value of the $collection_class_name property
+                                                            // in the class specfied in $foreign_models_class_name
+        
+        ?callable $sql_query_modifier = null // optional callback to modify the query object used to fetch the related data
     ): static {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
-        $this->validateRelatedModelClassName($foreign_models_class_name);
+        $this->setRelationshipDefinitionDefaultsIfNeeded (
+            $foreign_models_class_name,
+            $foreign_table_name,
+            $primary_key_col_in_foreign_table,
+            $foreign_models_record_class_name,
+            $foreign_models_collection_class_name
+        );
         
         if($foreign_models_collection_class_name !== '') {
             
@@ -2832,21 +2920,49 @@ SELECT {$foreign_table_name}.*
      * @psalm-suppress PossiblyUnusedMethod
      */
     public function hasManyThrough(
-        string $relation_name,
+        string $relation_name,  // name of the relation, via which the related data
+                                // will be accessed as a property with the same name 
+                                // on record objects for this model class or array key 
+                                // for the related data when data is fetched into arrays 
+                                // via this model
+        
         string $col_in_my_table_linked_to_join_table,
         string $join_table,
         string $col_in_join_table_linked_to_my_table,
         string $col_in_join_table_linked_to_foreign_table,
-        string $foreign_table_name,
         string $col_in_foreign_table_linked_to_join_table,
-        string $primary_key_col_in_foreign_table,
-        string $foreign_models_class_name = \LeanOrm\Model::class,
-        string $foreign_models_record_class_name = '',
-        string $foreign_models_collection_class_name = '',
-        ?callable $sql_query_modifier = null
+        
+        string $foreign_table_name = '', // If empty, the value set in the $table_name property
+                                         // of the model class specified in $foreign_models_class_name
+                                         // will be used if $foreign_models_class_name !== '' 
+                                         // and the value of the $table_name property is not ''
+            
+        string $primary_key_col_in_foreign_table = '', // If empty, the value set in the $primary_col property
+                                                       // of the model class specified in $foreign_models_class_name
+                                                       // will be used if $foreign_models_class_name !== '' 
+                                                       // and the value of the $primary_col property is not ''
+            
+        string $foreign_models_class_name = '', // If empty, defaults to \LeanOrm\Model::class.
+                                                // If empty, you must specify $foreign_table_name & $primary_key_col_in_foreign_table
+        
+        string $foreign_models_record_class_name = '', // If empty will default to \LeanOrm\Model\Record 
+                                                       // or the value of the $record_class_name property
+                                                       // in the class specfied in $foreign_models_class_name
+        
+        string $foreign_models_collection_class_name = '',  // If empty will default to \LeanOrm\Model\Collection
+                                                            // or the value of the $collection_class_name property
+                                                            // in the class specfied in $foreign_models_class_name
+        
+        ?callable $sql_query_modifier = null // optional callback to modify the query object used to fetch the related data
     ): static {
         $this->checkThatRelationNameIsNotAnActualColumnName($relation_name);
-        $this->validateRelatedModelClassName($foreign_models_class_name);
+        $this->setRelationshipDefinitionDefaultsIfNeeded (
+            $foreign_models_class_name,
+            $foreign_table_name,
+            $primary_key_col_in_foreign_table,
+            $foreign_models_record_class_name,
+            $foreign_models_collection_class_name
+        );
         
         if ($foreign_models_collection_class_name !== '') {
             
@@ -2884,6 +3000,127 @@ SELECT {$foreign_table_name}.*
         $this->relations[$relation_name]['sql_query_modifier'] = $sql_query_modifier;
 
         return $this;
+    }
+    
+    /**
+     * @psalm-suppress MixedAssignment
+     */
+    protected function setRelationshipDefinitionDefaultsIfNeeded (
+        string &$foreign_models_class_name,
+        string &$foreign_table_name,
+        string &$primary_key_col_in_foreign_table,
+        string &$foreign_models_record_class_name,
+        string &$foreign_models_collection_class_name,
+    ): void {
+        
+        if($foreign_models_class_name !== '' && $foreign_models_class_name !== \LeanOrm\Model::class) {
+           
+            $this->validateRelatedModelClassName($foreign_models_class_name);
+            
+            /**
+             * @psalm-suppress ArgumentTypeCoercion
+             */
+            $ref_class = new \ReflectionClass($foreign_models_class_name);
+            
+            if($foreign_table_name === '') {
+                
+                // Try to set it using the default value of the table_name property 
+                // in the specified foreign model class $foreign_models_class_name
+                $reflected_foreign_table_name = 
+                        $ref_class->getProperty('table_name')->getDefaultValue();
+
+                if($reflected_foreign_table_name === '' || $reflected_foreign_table_name === null) {
+                    
+                    $msg = "ERROR: '\$foreign_table_name' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+                         . $foreign_models_class_name . "'"
+                         . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' . PHP_EOL;
+
+                    // we can't use Reflection to figure out this table name
+                    throw new \LeanOrm\Exceptions\MissingRelationParamException($msg);
+                }
+                
+                $foreign_table_name = $reflected_foreign_table_name;
+            }
+            
+            if($primary_key_col_in_foreign_table === '') {
+
+                // Try to set it using the default value of the primary_col property 
+                // in the specified foreign model class $foreign_models_class_name
+                $reflected_foreign_primary_key_col = 
+                        $ref_class->getProperty('primary_col')->getDefaultValue();
+
+                if($reflected_foreign_primary_key_col === '' || $reflected_foreign_primary_key_col === null) {
+
+                    $msg = "ERROR: '\$primary_key_col_in_foreign_table' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+                         . $foreign_models_class_name . "'"
+                         . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' . PHP_EOL;
+
+                    // we can't use Reflection to figure out this primary key column name
+                    throw new \LeanOrm\Exceptions\MissingRelationParamException($msg);
+                }
+
+                // set it to the reflected value
+                $primary_key_col_in_foreign_table = $reflected_foreign_primary_key_col;
+            }
+            
+            $reflected_record_class_name = $ref_class->getProperty('record_class_name')->getDefaultValue();
+            
+            if(
+                $foreign_models_record_class_name === ''
+                && $reflected_record_class_name !== ''
+                && $reflected_record_class_name !== null
+            ) {
+                $foreign_models_record_class_name = $reflected_record_class_name;
+            }
+            
+            $reflected_collection_class_name = $ref_class->getProperty('collection_class_name')->getDefaultValue();
+            
+            if(
+                $foreign_models_collection_class_name === ''
+                && $reflected_collection_class_name !== ''
+                && $reflected_collection_class_name !== null
+            ) {
+                $foreign_models_collection_class_name = $reflected_collection_class_name;
+            }
+            
+        } else {
+            
+            $foreign_models_class_name = \LeanOrm\Model::class;
+            
+            if($foreign_table_name === '') {
+                
+                $msg = "ERROR: '\$foreign_table_name' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+                     . \LeanOrm\Model::class . "'"
+                     . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' . PHP_EOL;
+                
+                // we can't use Reflection to figure out this table name
+                // because \LeanOrm\Model->table_name has a default value of ''
+                throw new \LeanOrm\Exceptions\MissingRelationParamException($msg);
+            }
+            
+            // $foreign_table_name !== '' if we got this far
+            if($primary_key_col_in_foreign_table === '') {
+
+                $msg = "ERROR: '\$primary_key_col_in_foreign_table' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+                     . \LeanOrm\Model::class . "'"
+                     . PHP_EOL . static::class . '::' . __FUNCTION__ . '(...).' . PHP_EOL;
+
+                // We can't use Reflection to figure out this primary key col
+                // because \LeanOrm\Model->primary_col has a default value of ''
+                throw new \LeanOrm\Exceptions\MissingRelationParamException($msg);
+
+            }
+        } // if($foreign_models_class_name !== '' && $foreign_models_class_name !== \LeanOrm\Model::class)
+        
+        if($foreign_models_record_class_name === '') {
+            
+            $foreign_models_record_class_name = \LeanOrm\Model\Record::class;
+        }
+        
+        if($foreign_models_collection_class_name === '') {
+            
+            $foreign_models_collection_class_name = \LeanOrm\Model\Collection::class;
+        }
     }
     
     protected function checkThatRelationNameIsNotAnActualColumnName(string $relationName): void {
