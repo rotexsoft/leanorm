@@ -1034,7 +1034,7 @@ This type of relationship requires at least three tables. Basically many records
 
 There a two recommended ways of defining relationships between Models.
 
-1. After creating an instance of **\LeanOrm\Model** or any of its sub-classes, you should then go on to define relationships for that instance by calling the appropriate relationship defining methods (belongsTo, hasOne, hasMany or hasManyThrough) on that instance as needed. If you architect you application to only create a single Model instance for each table / view in your database, this approach would work well for you. It is recommended that you call the relationship definition methods immediately after creating each Model object. For example, if you manage objects in your application using a dependency injection container, then you should put the relationship definition method calls wherever each Model object is being created in your container setup code.
+1. After creating an instance of **\LeanOrm\Model** or any of its sub-classes, you should then go on to define relationships for that instance by calling the appropriate relationship defining methods (belongsTo, hasOne, hasMany or hasManyThrough) on that instance as needed. If you architect your application to only create a single Model instance for each table / view in your database, this approach would work well for you. It is recommended that you call the relationship definition methods immediately after creating each Model object. For example, if you manage objects in your application using a dependency injection container, then you should put the relationship definition method calls wherever each Model object is being created in your container setup code.
     > If you create more than one Model instance for each table / view in your database, then that means you will have to call the relationship definition methods on each Model instance for each database table / view, which will lead to lots of duplicate code scattered in your code-base. You should instead use the second method method of defining relationships described below if you have created individual Model classes (and optionally, Collection & Record Classes) for each database table  / view you intend to access in your application
 
 2. Define relationships inside the constructor of each Model class (which should each be a sub-class of **\LeanOrm\Model**). If you intend to use direct instances of **\LeanOrm\Model** for each table / view in your database, this technique will not work for you, you will only be able to use option 1 above in that scenario. You only need to have created a unique Model class for each database table / view to use this option. You don't really need to have defined corresponding Collection  & Record classes to pair with each Model class, it is perfectly fine for those Model classes to use 
@@ -1234,7 +1234,7 @@ class TagsModel extends \LeanOrm\Model {
 
 // If we had the  Model Class above already created, we could further 
 // shorten our relationship definition by omitting the foreign_table_name &
-// primary_key_col_in_foreign_table parameters in the call to belongsTo 
+// primary_key_col_in_foreign_table parameters in the call to hasManyThrough 
 // and just add the foreign_models_class_name parameter like so:
 
 $postsModel->hasManyThrough(
@@ -1248,6 +1248,70 @@ $postsModel->hasManyThrough(
 );
 ```
 
+A Post can have one and only one summary. Here's how to model that relationship on a Model instance associated with the **posts** table:
+
+```php
+$postsModel = new \LeanOrm\Model (
+    "mysql:host=localhost;dbname=blog", // dsn string
+    "username", // username
+    "password", // password
+    [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'], //pdo options
+    'post_id', // primary key column name
+    'posts' // table name
+);
+
+$postsModel->hasOne(
+    relation_name: 'summary', 
+    foreign_key_col_in_this_models_table: 'post_id', 
+    foreign_key_col_in_foreign_table: 'post_id',
+    foreign_table_name: 'summaries',
+    primary_key_col_in_foreign_table: 'summary_id'
+); // Post has one Summary
+
+// When you fetch all posts,
+// you can eagerly load each associated summary like so
+$postsWithEachSummary = 
+    $postsModel->fetchRowsIntoArray(null, ['summary']);
+
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
+class SummariesCollection extends \LeanOrm\Model\Collection { }
+
+class SummaryRecord extends \LeanOrm\Model\Record { }
+
+class SummariesModel extends \LeanOrm\Model {
+    
+    protected ?string $collection_class_name = SummariesCollection::class;
+    protected ?string $record_class_name = SummaryRecord::class;
+    protected string $primary_col = 'summary_id';
+    protected string $table_name = 'summaries';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+    }
+}
+
+// If we had the Model Class above already created, we could further 
+// shorten our relationship definition by omitting the foreign_table_name &
+// primary_key_col_in_foreign_table parameters in the call to hasOne 
+// and just add the foreign_models_class_name parameter like so:
+
+$postsModel->hasOne(
+    relation_name: 'summary', 
+    foreign_key_col_in_this_models_table: 'post_id', 
+    foreign_key_col_in_foreign_table: 'post_id',
+    foreign_models_class_name: SummariesModel::class
+); // Post has one Summary
+```
+
 
 ##### Option 2: define the relationships inside the constructor of each Model Class. 
 
@@ -1258,6 +1322,8 @@ We will define:
 
 1. An author has many posts relationship inside the AuthorsModel class
 2. A post belongs to an author relationship inside the PostsModel class
+3. A post has many tags through the posts_tags join table relationship inside the PostsModel class
+4. A post has one summary relationship inside the PostsModel class
 
 ```php
 class AuthorsCollection extends \LeanOrm\Model\Collection { }
@@ -1317,9 +1383,71 @@ class PostsModel extends \LeanOrm\Model {
             foreign_key_col_in_foreign_table: 'author_id',
             foreign_models_class_name: AuthorsModel::class
         ); // Post belongs to an Author
+        
+        $this->hasOne(
+            relation_name: 'summary', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: SummariesModel::class
+        ); // Post has one Summary
+        
+        $this->hasManyThrough(
+            relation_name: 'tags',
+            col_in_my_table_linked_to_join_table: 'post_id',
+            join_table: 'posts_tags',
+            col_in_join_table_linked_to_my_table: 'post_id',
+            col_in_join_table_linked_to_foreign_table: 'tag_id',
+            col_in_foreign_table_linked_to_join_table: 'tag_id',
+            foreign_models_class_name: TagsModel::class
+        ); // Post has many Tags through the posts_tags join table
     }
 }
 
+class SummariesCollection extends \LeanOrm\Model\Collection { }
+
+class SummaryRecord extends \LeanOrm\Model\Record { }
+
+class SummariesModel extends \LeanOrm\Model {
+    
+    protected ?string $collection_class_name = SummariesCollection::class;
+    protected ?string $record_class_name = SummaryRecord::class;
+    protected string $primary_col = 'summary_id';
+    protected string $table_name = 'summaries';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+    }
+}
+
+class TagsCollection extends \LeanOrm\Model\Collection { }
+
+class TagRecord extends \LeanOrm\Model\Record { }
+
+class TagsModel extends \LeanOrm\Model {
+    
+    protected ?string $collection_class_name = TagsCollection::class;
+    protected ?string $record_class_name = TagRecord::class;
+    protected string $primary_col = 'tag_id';
+    protected string $table_name = 'tags';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+    }
+}
 
 // Later on in your application when you create Model instances
 // You can fetch the related data like so:
@@ -1344,8 +1472,8 @@ $postsModel = new PostsModel(
     'post_id', // primary key column name
     'posts' // table name
 );
-$postsWithAssociatedAuthor = 
-    $postsModel->fetchRowsIntoArray(null, ['author']);
+$postsWithAuthorSummaryAndTags = 
+    $postsModel->fetchRowsIntoArray(null, ['author', 'summary', 'tags']);
 
 ```
 
