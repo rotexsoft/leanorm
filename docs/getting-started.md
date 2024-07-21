@@ -68,7 +68,7 @@ CREATE TABLE `authors` (
   `m_timestamp` DATETIME NOT NULL,
   `date_created` DATETIME NOT NULL,
   PRIMARY KEY (`author_id`)
-) ENGINE=INNODB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
+) ENGINE=INNODB;
 
 /*Table structure for table `comments` */
 
@@ -87,7 +87,7 @@ CREATE TABLE `comments` (
   PRIMARY KEY (`comment_id`),
   KEY `fk_comments_belong_to_post` (`post_id`),
   CONSTRAINT `fk_comments_belong_to_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=INNODB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=INNODB;
 
 /*Table structure for table `posts` */
 
@@ -104,7 +104,7 @@ CREATE TABLE `posts` (
   PRIMARY KEY (`post_id`),
   KEY `fk_posts_belong_to_an_author` (`author_id`),
   CONSTRAINT `fk_posts_belong_to_an_author` FOREIGN KEY (`author_id`) REFERENCES `authors` (`author_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=INNODB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=INNODB;
 
 /*Table structure for table `posts_tags` */
 
@@ -121,7 +121,7 @@ CREATE TABLE `posts_tags` (
   KEY `fk_post_tags_belongs_to_a_tag` (`tag_id`),
   CONSTRAINT `fk_post_tags_belong_to_a_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_post_tags_belongs_to_a_tag` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`tag_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=INNODB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=INNODB;
 
 /*Table structure for table `summaries` */
 
@@ -137,7 +137,7 @@ CREATE TABLE `summaries` (
   PRIMARY KEY (`summary_id`),
   UNIQUE KEY `post_id` (`post_id`),
   CONSTRAINT `fk_a_post_has_one_summary` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=INNODB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=INNODB;
 
 /*Table structure for table `tags` */
 
@@ -149,7 +149,7 @@ CREATE TABLE `tags` (
   `m_timestamp` DATETIME NOT NULL,
   `date_created` DATETIME NOT NULL,
   PRIMARY KEY (`tag_id`)
-) ENGINE=INNODB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=INNODB;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
