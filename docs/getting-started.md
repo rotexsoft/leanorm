@@ -26,6 +26,8 @@
         - [Has Many](#has-many)
         - [Has Many Through](#has-many-through-aka-many-to-many)
         - [Relationship Definition Code Samples](#relationship-definition-code-samples)
+            - [Option 1: define the relationships for each instance after creating each instance](#option-1-define-the-relationships-for-each-instance-after-creating-each-instance)
+            - [Option 2: define the relationships inside the constructor of each Model Class](#option-2-define-the-relationships-inside-the-constructor-of-each-model-class)
         - [Accessing Related Data Code Samples](#accessing-related-data-code-samples)
     - [Query Logging](#query-logging)
 
