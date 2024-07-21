@@ -1040,7 +1040,8 @@ There a two recommended ways of defining relationships between Models.
     > If you create more than one Model instance for each table / view in your database, then that means you will have to call the relationship definition methods on each Model instance for each database table / view, which will lead to lots of duplicate code scattered in your code-base. You should instead use the second method method of defining relationships described below if you have created individual Model classes (and optionally, Collection & Record Classes) for each database table  / view you intend to access in your application
 
 2. Define relationships inside the constructor of each Model class (which should each be a sub-class of **\LeanOrm\Model**). If you intend to use direct instances of **\LeanOrm\Model** for each table / view in your database, this technique will not work for you, you will only be able to use option 1 above in that scenario. You only need to have created a unique Model class for each database table / view to use this option. You don't really need to have defined corresponding Collection  & Record classes to pair with each Model class, it is perfectly fine for those Model classes to use 
-**\LeanOrm\Model\Record** & **\LeanOrm\Model\Collection** to store data from the database.
+**\LeanOrm\Model\Record** & **\LeanOrm\Model\Collection** to store data from the database. 
+    > With this option, you only need to define the relationships once in each Model class's constructor & every instance of each Model class will already have those relationships defined immediately after instantiation.
 
 
 #### Relationship Definition Code Samples
