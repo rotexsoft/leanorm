@@ -161,7 +161,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         // relation name with the same name as p key column
-        $model->belongsTo('author_id', '', '', '', '');
+        $model->belongsTo(
+                relation_name: 'author_id', 
+                foreign_key_col_in_this_models_table: '', 
+                foreign_table_name: '', 
+                foreign_key_col_in_foreign_table: '', 
+                primary_key_col_in_foreign_table: ''
+            );
     }
     
     public function testThatBelongsToThrowsExceptionWithInvalidForeignModelClassName() {
@@ -171,10 +177,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
         $model->belongsTo(
-            'post', 'post_id', 'posts', 'post_id', 'post_id',
-            \PDO::class, // bad Model class name
-            LeanOrm\TestObjects\PostRecord::class,
-            \LeanOrm\TestObjects\PostsCollection::class
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: \PDO::class, // bad Model class name
+            foreign_models_record_class_name: LeanOrm\TestObjects\PostRecord::class,
+            foreign_models_collection_class_name: \LeanOrm\TestObjects\PostsCollection::class
         );
     }
     
@@ -185,10 +195,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
         $model->belongsTo(
-            'post', 'post_id', 'posts', 'post_id', 'post_id',
-            \LeanOrm\TestObjects\PostsModel::class,
-            \PDO::class, // bad Record class name
-            \LeanOrm\TestObjects\PostsCollection::class
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: \LeanOrm\TestObjects\PostsModel::class,
+            foreign_models_record_class_name: \PDO::class, // bad Record class name
+            foreign_models_collection_class_name: \LeanOrm\TestObjects\PostsCollection::class
         );
     }
     
@@ -199,10 +213,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
         $model->belongsTo(
-            'post', 'post_id', 'posts', 'post_id', 'post_id',
-            \LeanOrm\TestObjects\PostsModel::class,
-            \LeanOrm\TestObjects\PostRecord::class,
-            \PDO::class  // bad Collection class name
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: \LeanOrm\TestObjects\PostsModel::class,
+            foreign_models_record_class_name: \LeanOrm\TestObjects\PostRecord::class,
+            foreign_models_collection_class_name: \PDO::class  // bad Collection class name
         );
     }
     
@@ -212,9 +230,11 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->belongsTo(
-            'post', 'post_id', 
-            'non_existent_foreign_table', // Non-existent foreign table
-            'post_id', 'post_id'
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'non_existent_foreign_table', // Non-existent foreign table
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id'
         );
     }
     
@@ -224,7 +244,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         // relation name with the same name as p key column
-        $model->belongsTo('post', 'non_existent', 'posts', 'post_id', 'post_id');
+        $model->belongsTo(
+                relation_name: 'post', 
+                foreign_key_col_in_this_models_table: 'non_existent', 
+                foreign_table_name: 'posts', 
+                foreign_key_col_in_foreign_table: 'post_id', 
+                primary_key_col_in_foreign_table: 'post_id'
+            );
     }
     
     public function testThatBelongsToThrowsExceptionWithNonExistentCol2() {
@@ -234,7 +260,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
         // relation name with the same name as p key column
-        $model->belongsTo('post', 'post_id', 'posts', 'non_existent', 'post_id');
+        $model->belongsTo(
+                relation_name: 'post', 
+                foreign_key_col_in_this_models_table: 'post_id', 
+                foreign_table_name: 'posts', 
+                foreign_key_col_in_foreign_table: 'non_existent', 
+                primary_key_col_in_foreign_table: 'post_id'
+            );
     }
     
     public function testThatBelongsToThrowsExceptionWithNonExistentCol3() {
@@ -244,15 +276,96 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
         // relation name with the same name as p key column
-        $model->belongsTo('post', 'post_id', 'posts', 'post_id', 'non_existent');
+        $model->belongsTo(
+                relation_name: 'post', 
+                foreign_key_col_in_this_models_table: 'post_id', 
+                foreign_table_name: 'posts', 
+                foreign_key_col_in_foreign_table: 'post_id', 
+                primary_key_col_in_foreign_table: 'non_existent'
+            );
+    }
+    
+    public function testThatBelongsToThrowsExceptionWithForeignModelWithoutDefaultTableName() {
+        
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$foreign_table_name' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\TestObjects\CommentsModel::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->belongsTo(
+            relation_name: 'comment', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
+            foreign_key_col_in_foreign_table: 'post_id'
+        );
+    }
+    
+    public function testThatBelongsToThrowsExceptionWithLeanOrmModelAsForeignModelWithoutDefaultTableName() {
+        
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$foreign_table_name' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\Model::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->belongsTo(
+            relation_name: 'comment', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_key_col_in_foreign_table: 'post_id'
+        );
+    }
+    
+    public function testThatBelongsToThrowsExceptionWithForeignModelWithoutDefaultPrimaryKeyColumnName() {
+
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$primary_key_col_in_foreign_table' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\TestObjects\CommentsModel::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->belongsTo(
+            relation_name: 'comment', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
+            foreign_key_col_in_foreign_table: 'post_id',
+            foreign_table_name: 'comments'
+        );
+    }
+    
+    public function testThatBelongsToThrowsExceptionWithLeanOrmModelAsForeignModelWithoutDefaultPrimaryKeyColumnName() {
+
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$primary_key_col_in_foreign_table' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\Model::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->belongsTo(
+            relation_name: 'comment', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_key_col_in_foreign_table: 'post_id',
+            foreign_table_name: 'comments'
+        );
     }
     
     public function testThatBelongsToWorksAsExpected() {
 
         $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->belongsTo(
-            'author', 'author_id', 'authors', 'author_id', 'author_id', $this->modelClass,
-            \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, null
+            relation_name: 'author', 
+            foreign_key_col_in_this_models_table: 'author_id', 
+            foreign_table_name: 'authors', 
+            foreign_key_col_in_foreign_table: 'author_id', 
+            primary_key_col_in_foreign_table: 'author_id', 
+            foreign_models_class_name: $this->modelClass,
+            foreign_models_record_class_name: \LeanOrm\Model\Record::class, 
+            foreign_models_collection_class_name: \LeanOrm\Model\Collection::class, 
+            sql_query_modifier: null
         );
         self::assertEquals(['author'], $postsModel->getRelationNames());
         
@@ -280,13 +393,84 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->belongsTo(
-            'author2', 'author_id', 'authors', 'author_id', 'author_id', $this->modelClass,
-            \LeanOrm\TestObjects\PostRecord::class, \LeanOrm\TestObjects\PostsCollection::class, $callback
+            relation_name: 'author2', 
+            foreign_key_col_in_this_models_table: 'author_id', 
+            foreign_table_name: 'authors', 
+            foreign_key_col_in_foreign_table: 'author_id', 
+            primary_key_col_in_foreign_table: 'author_id', 
+            foreign_models_class_name: $this->modelClass,
+            foreign_models_record_class_name: \LeanOrm\TestObjects\PostRecord::class, 
+            foreign_models_collection_class_name: \LeanOrm\TestObjects\PostsCollection::class, 
+            sql_query_modifier: $callback
         );
         self::assertEquals(['author', 'author2'], $postsModel->getRelationNames());
         self::assertEquals($callback, $postsModel->getRelations()['author2']['sql_query_modifier']);
         self::assertEquals(\LeanOrm\TestObjects\PostRecord::class, $postsModel->getRelations()['author2']['foreign_models_record_class_name']);
         self::assertEquals(\LeanOrm\TestObjects\PostsCollection::class, $postsModel->getRelations()['author2']['foreign_models_collection_class_name']);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Test Relationship definition with minimum number of parameters
+        ////////////////////////////////////////////////////////////////////////
+        $postsModel->belongsTo(
+            relation_name: 'comments2', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_models_class_name: LeanOrm\TestObjects\CommentsModel2::class,
+            foreign_key_col_in_foreign_table: 'post_id'
+        );
+        self::assertEquals(['author', 'author2', 'comments2'], $postsModel->getRelationNames());
+        $relations = $postsModel->getRelations();
+        
+        self::assertArrayHasKey('comments2', $relations);
+        self::assertArrayHasKey('relation_type', $relations['comments2']);
+        self::assertArrayHasKey('foreign_key_col_in_my_table', $relations['comments2']);
+        self::assertArrayHasKey('foreign_table', $relations['comments2']);
+        self::assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['comments2']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['comments2']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['comments2']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['comments2']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['comments2']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['comments2']);
+        
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_BELONGS_TO, $relations['comments2']['relation_type']);
+        self::assertEquals('post_id', $relations['comments2']['foreign_key_col_in_my_table']);
+        self::assertEquals('comments', $relations['comments2']['foreign_table']);
+        self::assertEquals('post_id', $relations['comments2']['foreign_key_col_in_foreign_table']);
+        self::assertEquals('comment_id', $relations['comments2']['primary_key_col_in_foreign_table']);
+        self::assertEquals(LeanOrm\TestObjects\CommentsModel2::class, $relations['comments2']['foreign_models_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\CommentRecord::class, $relations['comments2']['foreign_models_record_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\CommentsCollection::class, $relations['comments2']['foreign_models_collection_class_name']);
+        self::assertNull($relations['comments2']['sql_query_modifier']);
+        
+        $postsModel->belongsTo(
+            relation_name: 'comments3', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_key_col_in_foreign_table: 'post_id',
+            foreign_table_name: 'comments',
+            primary_key_col_in_foreign_table: 'comment_id'
+        );
+        self::assertEquals(['author', 'author2', 'comments2', 'comments3'], $postsModel->getRelationNames());
+        $relations = $postsModel->getRelations();
+        
+        self::assertArrayHasKey('comments3', $relations);
+        self::assertArrayHasKey('relation_type', $relations['comments3']);
+        self::assertArrayHasKey('foreign_key_col_in_my_table', $relations['comments3']);
+        self::assertArrayHasKey('foreign_table', $relations['comments3']);
+        self::assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['comments3']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['comments3']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['comments3']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['comments3']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['comments3']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['comments3']);
+        
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_BELONGS_TO, $relations['comments3']['relation_type']);
+        self::assertEquals('post_id', $relations['comments3']['foreign_key_col_in_my_table']);
+        self::assertEquals('comments', $relations['comments3']['foreign_table']);
+        self::assertEquals('post_id', $relations['comments3']['foreign_key_col_in_foreign_table']);
+        self::assertEquals('comment_id', $relations['comments3']['primary_key_col_in_foreign_table']);
+        self::assertEquals(LeanOrm\Model::class, $relations['comments3']['foreign_models_class_name']);
+        self::assertEquals(LeanOrm\Model\Record::class, $relations['comments3']['foreign_models_record_class_name']);
+        self::assertEquals(LeanOrm\Model\Collection::class, $relations['comments3']['foreign_models_collection_class_name']);
+        self::assertNull($relations['comments3']['sql_query_modifier']);
     }
     
     public function testThatHasOneThrowsExceptionWhenRelationNameCollidesWithColumnName() {
@@ -295,7 +479,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         // relation name with the same name as p key column
-        $model->hasOne('author_id', '', '', '', '');
+        $model->hasOne(
+                relation_name: 'author_id', 
+                foreign_key_col_in_this_models_table: '', 
+                foreign_table_name: '', 
+                foreign_key_col_in_foreign_table: '', 
+                primary_key_col_in_foreign_table: ''
+            );
     }
     
     public function testThatHasOneThrowsExceptionWithInvalidForeignModelClassName() {
@@ -304,10 +494,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
-            'post', 'post_id', 'posts', 'post_id', 'post_id',
-            \PDO::class, // bad Model class name
-            LeanOrm\TestObjects\PostRecord::class,
-            \LeanOrm\TestObjects\PostsCollection::class
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: \PDO::class, // bad Model class name
+            foreign_models_record_class_name: LeanOrm\TestObjects\PostRecord::class,
+            foreign_models_collection_class_name: \LeanOrm\TestObjects\PostsCollection::class
         );
     }
     
@@ -317,10 +511,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
-            'post', 'post_id', 'posts', 'post_id', 'post_id',
-            \LeanOrm\TestObjects\PostsModel::class,
-            \PDO::class, // bad Record class name
-            \LeanOrm\TestObjects\PostsCollection::class
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: \LeanOrm\TestObjects\PostsModel::class,
+            foreign_models_record_class_name: \PDO::class, // bad Record class name
+            foreign_models_collection_class_name: \LeanOrm\TestObjects\PostsCollection::class
         );
     }
     
@@ -330,9 +528,11 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
-            'post', 'post_id', 
-            'non_existent_foreign_table', // Non-existent foreign table
-            'post_id', 'post_id'
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'non_existent_foreign_table', // Non-existent foreign table
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id'
         );
     }
     
@@ -342,10 +542,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
-            'post', 'post_id', 'posts', 'post_id', 'post_id',
-            \LeanOrm\TestObjects\PostsModel::class,
-            \LeanOrm\TestObjects\PostRecord::class,
-            \PDO::class  // bad Collection class name
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: \LeanOrm\TestObjects\PostsModel::class,
+            foreign_models_record_class_name: \LeanOrm\TestObjects\PostRecord::class,
+            foreign_models_collection_class_name: \PDO::class  // bad Collection class name
         );
     }
     
@@ -354,7 +558,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
-        $model->hasOne('post', 'non_existent', 'posts', 'post_id', 'post_id');
+        $model->hasOne(
+                relation_name: 'post', 
+                foreign_key_col_in_this_models_table: 'non_existent', 
+                foreign_table_name: 'posts', 
+                foreign_key_col_in_foreign_table: 'post_id', 
+                primary_key_col_in_foreign_table: 'post_id'
+            );
     }
     
     public function testThatHasOneThrowsExceptionWithNonExistentCol2() {
@@ -362,7 +572,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
-        $model->hasOne('post', 'post_id', 'posts', 'non_existent', 'post_id');
+        $model->hasOne(
+                relation_name: 'post', 
+                foreign_key_col_in_this_models_table: 'post_id', 
+                foreign_table_name: 'posts', 
+                foreign_key_col_in_foreign_table: 'non_existent', 
+                primary_key_col_in_foreign_table: 'post_id'
+            );
     }
     
     public function testThatHasOneThrowsExceptionWithNonExistentCol3() {
@@ -370,15 +586,96 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
-        $model->hasOne('post', 'post_id', 'posts', 'post_id', 'non_existent');
+        $model->hasOne(
+                relation_name: 'post', 
+                foreign_key_col_in_this_models_table: 'post_id', 
+                foreign_table_name: 'posts', 
+                foreign_key_col_in_foreign_table: 'post_id', 
+                primary_key_col_in_foreign_table: 'non_existent'
+            );
+    }
+    
+    public function testThatHasOneThrowsExceptionWithForeignModelWithoutDefaultTableName() {
+        
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$foreign_table_name' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\TestObjects\CommentsModel::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasOne(
+            relation_name: 'comment', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
+            foreign_key_col_in_foreign_table: 'post_id'
+        );
+    }
+    
+    public function testThatHasOneThrowsExceptionWithLeanOrmModelAsForeignModelWithoutDefaultTableName() {
+        
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$foreign_table_name' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\Model::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasOne(
+            relation_name: 'comment', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_key_col_in_foreign_table: 'post_id'
+        );
+    }
+    
+    public function testThatHasOneThrowsExceptionWithForeignModelWithoutDefaultPrimaryKeyColumnName() {
+
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$primary_key_col_in_foreign_table' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\TestObjects\CommentsModel::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasOne(
+            relation_name: 'comment', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
+            foreign_key_col_in_foreign_table: 'post_id',
+            foreign_table_name: 'comments'
+        );
+    }
+    
+    public function testThatHasOneThrowsExceptionWithLeanOrmModelAsForeignModelWithoutDefaultPrimaryKeyColumnName() {
+
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$primary_key_col_in_foreign_table' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\Model::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasOne(
+            relation_name: 'comment', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_key_col_in_foreign_table: 'post_id',
+            foreign_table_name: 'comments'
+        );
     }
     
     public function testThatHasOneWorksAsExpected() {
 
         $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->hasOne(
-            'author', 'author_id', 'authors', 'author_id', 'author_id', $this->modelClass,
-            \LeanOrm\Model\Record::class, \LeanOrm\Model\Collection::class, null
+            relation_name: 'author', 
+            foreign_key_col_in_this_models_table: 'author_id', 
+            foreign_table_name: 'authors', 
+            foreign_key_col_in_foreign_table: 'author_id', 
+            primary_key_col_in_foreign_table: 'author_id', 
+            foreign_models_class_name: $this->modelClass,
+            foreign_models_record_class_name: \LeanOrm\Model\Record::class, 
+            foreign_models_collection_class_name: \LeanOrm\Model\Collection::class, 
+            sql_query_modifier: null
         );
         self::assertEquals(['author'], $postsModel->getRelationNames());
         $relations = $postsModel->getRelations();
@@ -405,13 +702,84 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasOne(
-            'author2', 'author_id', 'authors', 'author_id', 'author_id', $this->modelClass,
-            \LeanOrm\TestObjects\AuthorRecord::class, \LeanOrm\TestObjects\AuthorsCollection::class, $callback
+            relation_name: 'author2', 
+            foreign_key_col_in_this_models_table: 'author_id', 
+            foreign_table_name: 'authors', 
+            foreign_key_col_in_foreign_table: 'author_id', 
+            primary_key_col_in_foreign_table: 'author_id', 
+            foreign_models_class_name: $this->modelClass,
+            foreign_models_record_class_name: \LeanOrm\TestObjects\AuthorRecord::class, 
+            foreign_models_collection_class_name: \LeanOrm\TestObjects\AuthorsCollection::class, 
+            sql_query_modifier: $callback
         );
         self::assertEquals(['author', 'author2'], $postsModel->getRelationNames());
         self::assertEquals($callback, $postsModel->getRelations()['author2']['sql_query_modifier']);
         self::assertEquals(\LeanOrm\TestObjects\AuthorRecord::class, $postsModel->getRelations()['author2']['foreign_models_record_class_name']);
         self::assertEquals(\LeanOrm\TestObjects\AuthorsCollection::class, $postsModel->getRelations()['author2']['foreign_models_collection_class_name']);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Test Relationship definition with minimum number of parameters
+        ////////////////////////////////////////////////////////////////////////
+        $postsModel->hasOne(
+            relation_name: 'comments2', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_models_class_name: LeanOrm\TestObjects\CommentsModel2::class,
+            foreign_key_col_in_foreign_table: 'post_id'
+        );
+        self::assertEquals(['author', 'author2', 'comments2'], $postsModel->getRelationNames());
+        $relations = $postsModel->getRelations();
+        
+        self::assertArrayHasKey('comments2', $relations);
+        self::assertArrayHasKey('relation_type', $relations['comments2']);
+        self::assertArrayHasKey('foreign_key_col_in_my_table', $relations['comments2']);
+        self::assertArrayHasKey('foreign_table', $relations['comments2']);
+        self::assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['comments2']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['comments2']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['comments2']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['comments2']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['comments2']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['comments2']);
+        
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_HAS_ONE, $relations['comments2']['relation_type']);
+        self::assertEquals('post_id', $relations['comments2']['foreign_key_col_in_my_table']);
+        self::assertEquals('comments', $relations['comments2']['foreign_table']);
+        self::assertEquals('post_id', $relations['comments2']['foreign_key_col_in_foreign_table']);
+        self::assertEquals('comment_id', $relations['comments2']['primary_key_col_in_foreign_table']);
+        self::assertEquals(LeanOrm\TestObjects\CommentsModel2::class, $relations['comments2']['foreign_models_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\CommentRecord::class, $relations['comments2']['foreign_models_record_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\CommentsCollection::class, $relations['comments2']['foreign_models_collection_class_name']);
+        self::assertNull($relations['comments2']['sql_query_modifier']);
+        
+        $postsModel->hasOne(
+            relation_name: 'comments3', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_key_col_in_foreign_table: 'post_id',
+            foreign_table_name: 'comments',
+            primary_key_col_in_foreign_table: 'comment_id'
+        );
+        self::assertEquals(['author', 'author2', 'comments2', 'comments3'], $postsModel->getRelationNames());
+        $relations = $postsModel->getRelations();
+        
+        self::assertArrayHasKey('comments3', $relations);
+        self::assertArrayHasKey('relation_type', $relations['comments3']);
+        self::assertArrayHasKey('foreign_key_col_in_my_table', $relations['comments3']);
+        self::assertArrayHasKey('foreign_table', $relations['comments3']);
+        self::assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['comments3']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['comments3']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['comments3']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['comments3']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['comments3']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['comments3']);
+        
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_HAS_ONE, $relations['comments3']['relation_type']);
+        self::assertEquals('post_id', $relations['comments3']['foreign_key_col_in_my_table']);
+        self::assertEquals('comments', $relations['comments3']['foreign_table']);
+        self::assertEquals('post_id', $relations['comments3']['foreign_key_col_in_foreign_table']);
+        self::assertEquals('comment_id', $relations['comments3']['primary_key_col_in_foreign_table']);
+        self::assertEquals(LeanOrm\Model::class, $relations['comments3']['foreign_models_class_name']);
+        self::assertEquals(LeanOrm\Model\Record::class, $relations['comments3']['foreign_models_record_class_name']);
+        self::assertEquals(LeanOrm\Model\Collection::class, $relations['comments3']['foreign_models_collection_class_name']);
+        self::assertNull($relations['comments3']['sql_query_modifier']);
     }
     
     public function testThatHasManyThrowsExceptionWhenRelationNameCollidesWithColumnName() {
@@ -420,7 +788,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         // relation name with the same name as p key column
-        $model->hasMany('author_id', '', '', '', '');
+        $model->hasMany(
+            relation_name: 'author_id', 
+            foreign_key_col_in_this_models_table: '', 
+            foreign_table_name: '', 
+            foreign_key_col_in_foreign_table: '', 
+            primary_key_col_in_foreign_table: ''
+        );
     }
     
     public function testThatHasManyThrowsExceptionWithInvalidForeignModelClassName() {
@@ -430,10 +804,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         
         $model->hasMany(
-            'posts', 'post_id', 'posts', 'post_id', 'post_id',
-            \PDO::class, // bad Model class name
-            LeanOrm\TestObjects\PostRecord::class,
-            \LeanOrm\TestObjects\PostsCollection::class
+            relation_name: 'posts', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: \PDO::class, // bad Model class name
+            foreign_models_record_class_name: LeanOrm\TestObjects\PostRecord::class,
+            foreign_models_collection_class_name: \LeanOrm\TestObjects\PostsCollection::class
         );
     }
     
@@ -443,10 +821,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
-            'post', 'post_id', 'posts', 'post_id', 'post_id',
-            \LeanOrm\TestObjects\PostsModel::class,
-            \PDO::class, // bad Record class name
-            \LeanOrm\TestObjects\PostsCollection::class
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: \LeanOrm\TestObjects\PostsModel::class,
+            foreign_models_record_class_name: \PDO::class, // bad Record class name
+            foreign_models_collection_class_name: \LeanOrm\TestObjects\PostsCollection::class
         );
     }
     
@@ -456,9 +838,11 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
-            'post', 'post_id', 
-            'non_existent', // non-existent foreign table
-            'post_id', 'post_id'
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'non_existent', // non-existent foreign table
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id'
         );
     }
     
@@ -468,10 +852,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
-            'post', 'post_id', 'posts', 'post_id', 'post_id',
-            \LeanOrm\TestObjects\PostsModel::class,
-            \LeanOrm\TestObjects\PostRecord::class,
-            \PDO::class  // bad Collection class name
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: \LeanOrm\TestObjects\PostsModel::class,
+            foreign_models_record_class_name: \LeanOrm\TestObjects\PostRecord::class,
+            foreign_models_collection_class_name: \PDO::class  // bad Collection class name
         );
     }
     
@@ -480,7 +868,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
-        $model->hasMany('post', 'non_existent', 'posts', 'post_id', 'post_id');
+        $model->hasMany(
+                relation_name: 'post', 
+                foreign_key_col_in_this_models_table: 'non_existent', 
+                foreign_table_name: 'posts', 
+                foreign_key_col_in_foreign_table: 'post_id', 
+                primary_key_col_in_foreign_table: 'post_id'
+            );
     }
     
     public function testThatHasManyThrowsExceptionWithNonExistentCol2() {
@@ -488,7 +882,13 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
-        $model->hasMany('post', 'post_id', 'posts', 'non_existent', 'post_id');
+        $model->hasMany(
+                relation_name: 'post', 
+                foreign_key_col_in_this_models_table: 'post_id', 
+                foreign_table_name: 'posts', 
+                foreign_key_col_in_foreign_table: 'non_existent', 
+                primary_key_col_in_foreign_table: 'post_id'
+            );
     }
     
     public function testThatHasManyThrowsExceptionWithNonExistentCol3() {
@@ -496,17 +896,95 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->expectException(\LeanOrm\Exceptions\BadModelColumnNameException::class);
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
-        $model->hasMany('post', 'post_id', 'posts', 'post_id', 'non_existent');
+        $model->hasMany(
+                relation_name: 'post', 
+                foreign_key_col_in_this_models_table: 'post_id', 
+                foreign_table_name: 'posts', 
+                foreign_key_col_in_foreign_table: 'post_id', 
+                primary_key_col_in_foreign_table: 'non_existent'
+            );
+    }
+    
+    public function testThatHasManyThrowsExceptionWithForeignModelWithoutDefaultTableName() {
+        
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$foreign_table_name' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\TestObjects\CommentsModel::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasMany(
+            relation_name: 'comments', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
+            foreign_key_col_in_foreign_table: 'post_id'
+        );
+    }
+    
+    public function testThatHasManyThrowsExceptionWithLeanOrmModelAsForeignModelWithoutDefaultTableName() {
+        
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$foreign_table_name' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\Model::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasMany(
+            relation_name: 'comments', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_key_col_in_foreign_table: 'post_id'
+        );
+    }
+    
+    public function testThatHasManyThrowsExceptionWithForeignModelWithoutDefaultPrimaryKeyColumnName() {
+
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$primary_key_col_in_foreign_table' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\TestObjects\CommentsModel::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasMany(
+            relation_name: 'comments', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
+            foreign_key_col_in_foreign_table: 'post_id',
+            foreign_table_name: 'comments'
+        );
+    }
+    
+    public function testThatHasManyThrowsExceptionWithLeanOrmModelAsForeignModelWithoutDefaultPrimaryKeyColumnName() {
+
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        $msg = "ERROR: '\$primary_key_col_in_foreign_table' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\Model::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasMany(
+            relation_name: 'comments', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_key_col_in_foreign_table: 'post_id',
+            foreign_table_name: 'comments'
+        );
     }
     
     public function testThatHasManyWorksAsExpected() {
 
         $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->hasMany(
-            'comments', 'post_id', 'comments', 'post_id', 'comment_id',
-            LeanOrm\TestObjects\CommentsModel::class,
-            LeanOrm\TestObjects\CommentRecord::class,
-            LeanOrm\TestObjects\CommentsCollection::class
+            relation_name: 'comments', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'comments', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'comment_id',
+            foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
+            foreign_models_record_class_name: LeanOrm\TestObjects\CommentRecord::class,
+            foreign_models_collection_class_name: LeanOrm\TestObjects\CommentsCollection::class
         );
         self::assertEquals(['comments'], $postsModel->getRelationNames());
         $relations = $postsModel->getRelations();
@@ -533,14 +1011,84 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasMany(
-            'comments2', 'post_id', 'comments', 'post_id', 'comment_id', $this->modelClass,
-            \LeanOrm\TestObjects\CommentRecord::class, \LeanOrm\TestObjects\CommentsCollection::class, 
-            $callback
+            relation_name: 'comments2', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'comments', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'comment_id', 
+            foreign_models_class_name: $this->modelClass,
+            foreign_models_record_class_name: \LeanOrm\TestObjects\CommentRecord::class, 
+            foreign_models_collection_class_name: \LeanOrm\TestObjects\CommentsCollection::class, 
+            sql_query_modifier: $callback
         );
         self::assertEquals(['comments', 'comments2'], $postsModel->getRelationNames());
         self::assertEquals($callback, $postsModel->getRelations()['comments2']['sql_query_modifier']);
         self::assertEquals(\LeanOrm\TestObjects\CommentRecord::class, $postsModel->getRelations()['comments2']['foreign_models_record_class_name']);
         self::assertEquals(\LeanOrm\TestObjects\CommentsCollection::class, $postsModel->getRelations()['comments2']['foreign_models_collection_class_name']);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Test Relationship definition with minimum number of parameters
+        ////////////////////////////////////////////////////////////////////////
+        $postsModel->hasMany(
+            relation_name: 'comments2', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_models_class_name: LeanOrm\TestObjects\CommentsModel2::class,
+            foreign_key_col_in_foreign_table: 'post_id'
+        );
+        self::assertEquals(['comments', 'comments2'], $postsModel->getRelationNames());
+        $relations = $postsModel->getRelations();
+        
+        self::assertArrayHasKey('comments2', $relations);
+        self::assertArrayHasKey('relation_type', $relations['comments2']);
+        self::assertArrayHasKey('foreign_key_col_in_my_table', $relations['comments2']);
+        self::assertArrayHasKey('foreign_table', $relations['comments2']);
+        self::assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['comments2']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['comments2']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['comments2']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['comments2']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['comments2']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['comments2']);
+        
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY, $relations['comments2']['relation_type']);
+        self::assertEquals('post_id', $relations['comments2']['foreign_key_col_in_my_table']);
+        self::assertEquals('comments', $relations['comments2']['foreign_table']);
+        self::assertEquals('post_id', $relations['comments2']['foreign_key_col_in_foreign_table']);
+        self::assertEquals('comment_id', $relations['comments2']['primary_key_col_in_foreign_table']);
+        self::assertEquals(LeanOrm\TestObjects\CommentsModel2::class, $relations['comments2']['foreign_models_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\CommentRecord::class, $relations['comments2']['foreign_models_record_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\CommentsCollection::class, $relations['comments2']['foreign_models_collection_class_name']);
+        self::assertNull($relations['comments2']['sql_query_modifier']);
+        
+        $postsModel->hasMany(
+            relation_name: 'comments3', 
+            foreign_key_col_in_this_models_table: 'post_id',
+            foreign_key_col_in_foreign_table: 'post_id',
+            foreign_table_name: 'comments',
+            primary_key_col_in_foreign_table: 'comment_id'
+        );
+        self::assertEquals(['comments', 'comments2', 'comments3'], $postsModel->getRelationNames());
+        $relations = $postsModel->getRelations();
+        
+        self::assertArrayHasKey('comments3', $relations);
+        self::assertArrayHasKey('relation_type', $relations['comments3']);
+        self::assertArrayHasKey('foreign_key_col_in_my_table', $relations['comments3']);
+        self::assertArrayHasKey('foreign_table', $relations['comments3']);
+        self::assertArrayHasKey('foreign_key_col_in_foreign_table', $relations['comments3']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['comments3']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['comments3']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['comments3']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['comments3']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['comments3']);
+        
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY, $relations['comments3']['relation_type']);
+        self::assertEquals('post_id', $relations['comments3']['foreign_key_col_in_my_table']);
+        self::assertEquals('comments', $relations['comments3']['foreign_table']);
+        self::assertEquals('post_id', $relations['comments3']['foreign_key_col_in_foreign_table']);
+        self::assertEquals('comment_id', $relations['comments3']['primary_key_col_in_foreign_table']);
+        self::assertEquals(LeanOrm\Model::class, $relations['comments3']['foreign_models_class_name']);
+        self::assertEquals(LeanOrm\Model\Record::class, $relations['comments3']['foreign_models_record_class_name']);
+        self::assertEquals(LeanOrm\Model\Collection::class, $relations['comments3']['foreign_models_collection_class_name']);
+        self::assertNull($relations['comments3']['sql_query_modifier']);
     }
     
     public function testThatHasManyThroughThrowsExceptionWhenRelationNameCollidesWithColumnName() {
@@ -549,7 +1097,16 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'author_id','authors');
         // relation name with the same name as p key column
-        $model->hasManyThrough('author_id', '', '', '', '', '', '', '');
+        $model->hasManyThrough(
+                relation_name: 'author_id', 
+                col_in_my_table_linked_to_join_table: '', 
+                join_table: '', 
+                col_in_join_table_linked_to_my_table: '', 
+                col_in_join_table_linked_to_foreign_table: '', 
+                foreign_table_name: '', 
+                col_in_foreign_table_linked_to_join_table: '', 
+                primary_key_col_in_foreign_table: ''
+            );
     }
     
     public function testThatHasManyThroughThrowsExceptionWithInvalidForeignModelClassName() {
@@ -558,10 +1115,17 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
-            'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
-            \PDO::class, // bad Model class name
-            LeanOrm\TestObjects\TagRecord::class,
-            LeanOrm\TestObjects\TagsCollection::class
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id', 
+            foreign_table_name: 'tags', 
+            col_in_foreign_table_linked_to_join_table: 'tag_id', 
+            primary_key_col_in_foreign_table: 'tag_id',
+            foreign_models_class_name: \PDO::class, // bad Model class name
+            foreign_models_record_class_name: LeanOrm\TestObjects\TagRecord::class,
+            foreign_models_collection_class_name: LeanOrm\TestObjects\TagsCollection::class
         );
     }
     
@@ -571,10 +1135,17 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
-            'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
-            LeanOrm\TestObjects\TagsModel::class,
-            \PDO::class, // bad Record class name
-            LeanOrm\TestObjects\TagsCollection::class
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id', 
+            foreign_table_name: 'tags', 
+            col_in_foreign_table_linked_to_join_table: 'tag_id', 
+            primary_key_col_in_foreign_table: 'tag_id',
+            foreign_models_class_name: LeanOrm\TestObjects\TagsModel::class,
+            foreign_models_record_class_name: \PDO::class, // bad Record class name
+            foreign_models_collection_class_name: LeanOrm\TestObjects\TagsCollection::class
         );
     }
     
@@ -584,9 +1155,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
-            'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id',
-            'non_existent_table', // non-existent foreign table
-            'tag_id', 'tag_id'
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id',
+            foreign_table_name: 'non_existent_table', // non-existent foreign table
+            col_in_foreign_table_linked_to_join_table: 'tag_id', 
+            primary_key_col_in_foreign_table: 'tag_id'
         );
     }
     
@@ -596,9 +1172,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
-            'tags', 'post_id',
-            'non_existent', // non-existent join table
-            'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id'
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id',
+            join_table: 'non_existent', // non-existent join table
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id', 
+            foreign_table_name: 'tags', 
+            col_in_foreign_table_linked_to_join_table: 'tag_id', 
+            primary_key_col_in_foreign_table: 'tag_id'
         );
     }
     
@@ -608,10 +1189,17 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
-            'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
-            LeanOrm\TestObjects\TagsModel::class,
-            LeanOrm\TestObjects\TagRecord::class,
-            \PDO::class  // bad Collection class name
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id', 
+            foreign_table_name: 'tags', 
+            col_in_foreign_table_linked_to_join_table: 'tag_id', 
+            primary_key_col_in_foreign_table: 'tag_id',
+            foreign_models_class_name: LeanOrm\TestObjects\TagsModel::class,
+            foreign_models_record_class_name: LeanOrm\TestObjects\TagRecord::class,
+            foreign_models_collection_class_name: \PDO::class  // bad Collection class name
         );
     }
     
@@ -621,9 +1209,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
-            'tags', 
-            'non_existent', // post_id
-            'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id'
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'non_existent', // post_id
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id', 
+            foreign_table_name: 'tags', 
+            col_in_foreign_table_linked_to_join_table: 'tag_id', 
+            primary_key_col_in_foreign_table: 'tag_id'
         );
     }
     
@@ -633,9 +1226,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
-            'tags', 'post_id', 'posts_tags',
-            'non_existent', // post_id
-            'tag_id', 'tags', 'tag_id', 'tag_id'
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags',
+            col_in_join_table_linked_to_my_table: 'non_existent', // post_id
+            col_in_join_table_linked_to_foreign_table: 'tag_id', 
+            foreign_table_name: 'tags', 
+            col_in_foreign_table_linked_to_join_table: 'tag_id', 
+            primary_key_col_in_foreign_table: 'tag_id'
         );
     }
     
@@ -645,9 +1243,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
-            'tags', 'post_id', 'posts_tags', 'post_id',
-            'non_existent', // tag_id
-            'tags', 'tag_id', 'tag_id'
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id',
+            col_in_join_table_linked_to_foreign_table: 'non_existent', // tag_id
+            foreign_table_name: 'tags', 
+            col_in_foreign_table_linked_to_join_table: 'tag_id', 
+            primary_key_col_in_foreign_table: 'tag_id'
         );
     }
     
@@ -657,9 +1260,14 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
-            'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags',
-            'non_existent', // tag_id
-            'tag_id'
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id', 
+            foreign_table_name: 'tags',
+            col_in_foreign_table_linked_to_join_table: 'non_existent', // tag_id
+            primary_key_col_in_foreign_table: 'tag_id'
         );
     }
     
@@ -669,8 +1277,102 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'post_id', 'posts');
         $model->hasManyThrough(
-            'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id',
-            'non_existent' // bad col name
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id', 
+            foreign_table_name: 'tags', 
+            col_in_foreign_table_linked_to_join_table: 'tag_id',
+            primary_key_col_in_foreign_table: 'non_existent' // bad col name
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithForeignModelWithoutDefaultTableName() {
+        
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        
+        $msg = "ERROR: '\$foreign_table_name' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\TestObjects\PostsModel2::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasManyThrough(
+            relation_name: 'posts', 
+            col_in_my_table_linked_to_join_table: 'tag_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'tag_id', 
+            col_in_join_table_linked_to_foreign_table: 'post_id',
+            col_in_foreign_table_linked_to_join_table: 'post_id',
+            foreign_models_class_name: \LeanOrm\TestObjects\PostsModel2::class
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithLeanOrmModelAsForeignModelWithoutDefaultTableName() {
+        
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        
+        $msg = "ERROR: '\$foreign_table_name' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\Model::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasManyThrough(
+            relation_name: 'posts', 
+            col_in_my_table_linked_to_join_table: 'tag_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'tag_id', 
+            col_in_join_table_linked_to_foreign_table: 'post_id',
+            col_in_foreign_table_linked_to_join_table: 'post_id'
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithForeignModelWithoutDefaultPrimaryKeyColumnName() {
+        
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        
+        $msg = "ERROR: '\$primary_key_col_in_foreign_table' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\TestObjects\PostsModel2::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasManyThrough(
+            relation_name: 'posts', 
+            col_in_my_table_linked_to_join_table: 'tag_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'tag_id', 
+            col_in_join_table_linked_to_foreign_table: 'post_id',
+            foreign_models_class_name: \LeanOrm\TestObjects\PostsModel2::class,
+            col_in_foreign_table_linked_to_join_table: 'post_id',
+            foreign_table_name: 'posts'
+        );
+    }
+    
+    public function testThatHasManyThroughThrowsExceptionWithLeanOrmModelAsForeignModelWithoutDefaultPrimaryKeyColumnName() {
+        
+        $this->expectException(\LeanOrm\Exceptions\MissingRelationParamException::class);
+        
+        $msg = "ERROR: '\$primary_key_col_in_foreign_table' cannot be empty when  '\$foreign_models_class_name' has a value of '"
+             . \LeanOrm\Model::class . "'"
+             . PHP_EOL . $this->modelClass . '::setRelationshipDefinitionDefaultsIfNeeded(...).' . PHP_EOL;
+        
+        $this->expectExceptionMessage($msg);
+        
+        $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
+        $model->hasManyThrough(
+            relation_name: 'posts', 
+            col_in_my_table_linked_to_join_table: 'tag_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'tag_id', 
+            col_in_join_table_linked_to_foreign_table: 'post_id',
+            col_in_foreign_table_linked_to_join_table: 'post_id',
+            foreign_table_name: 'posts'
         );
     }
     
@@ -678,8 +1380,17 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
 
         $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->hasManyThrough(
-            'tags', 'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
-            LeanOrm\TestObjects\TagsModel::class, LeanOrm\TestObjects\TagRecord::class, LeanOrm\TestObjects\TagsCollection::class
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id', 
+            foreign_table_name: 'tags', 
+            col_in_foreign_table_linked_to_join_table: 'tag_id', 
+            primary_key_col_in_foreign_table: 'tag_id',
+            foreign_models_class_name: LeanOrm\TestObjects\TagsModel::class, 
+            foreign_models_record_class_name: LeanOrm\TestObjects\TagRecord::class, 
+            foreign_models_collection_class_name: LeanOrm\TestObjects\TagsCollection::class
         );
         self::assertEquals(['tags'], $postsModel->getRelationNames());
         $relations = $postsModel->getRelations();
@@ -712,14 +1423,152 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasManyThrough(
-            'tags2',  'post_id', 'posts_tags', 'post_id', 'tag_id', 'tags', 'tag_id', 'tag_id',
-            \LeanOrm\TestObjects\TagsModel::class, \LeanOrm\TestObjects\TagRecord::class, 
-            \LeanOrm\TestObjects\TagsCollection::class, $callback
+            relation_name: 'tags2',  
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id', 
+            foreign_table_name: 'tags', 
+            col_in_foreign_table_linked_to_join_table: 'tag_id', 
+            primary_key_col_in_foreign_table: 'tag_id',
+            foreign_models_class_name: \LeanOrm\TestObjects\TagsModel::class, 
+            foreign_models_record_class_name: \LeanOrm\TestObjects\TagRecord::class, 
+            foreign_models_collection_class_name: \LeanOrm\TestObjects\TagsCollection::class, 
+            sql_query_modifier: $callback
         );
         self::assertEquals(['tags', 'tags2'], $postsModel->getRelationNames());
         self::assertEquals($callback, $postsModel->getRelations()['tags2']['sql_query_modifier']);
         self::assertEquals(\LeanOrm\TestObjects\TagRecord::class, $postsModel->getRelations()['tags2']['foreign_models_record_class_name']);
         self::assertEquals(\LeanOrm\TestObjects\TagsCollection::class, $postsModel->getRelations()['tags2']['foreign_models_collection_class_name']);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Test with only required arguments set, see if default relationship 
+        // params are internally set properly
+        ////////////////////////////////////////////////////////////////////////
+        $postsModel2 = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
+        $postsModel2->hasManyThrough(
+            relation_name: 'tags', 
+            col_in_my_table_linked_to_join_table: 'post_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'post_id', 
+            col_in_join_table_linked_to_foreign_table: 'tag_id',
+            col_in_foreign_table_linked_to_join_table: 'tag_id',
+            foreign_models_class_name: LeanOrm\TestObjects\TagsModel::class
+        );
+        
+        self::assertEquals(['tags'], $postsModel2->getRelationNames());
+        $relations = $postsModel2->getRelations();
+        self::assertArrayHasKey('tags', $relations);
+        self::assertArrayHasKey('relation_type', $relations['tags']);
+        self::assertArrayHasKey('col_in_my_table_linked_to_join_table', $relations['tags']);
+        self::assertArrayHasKey('join_table', $relations['tags']);
+        self::assertArrayHasKey('col_in_join_table_linked_to_my_table', $relations['tags']);
+        self::assertArrayHasKey('col_in_join_table_linked_to_foreign_table', $relations['tags']);
+        self::assertArrayHasKey('foreign_table', $relations['tags']);
+        self::assertArrayHasKey('col_in_foreign_table_linked_to_join_table', $relations['tags']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['tags']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['tags']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['tags']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['tags']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['tags']);
+        
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH, $relations['tags']['relation_type']);
+        self::assertEquals('post_id', $relations['tags']['col_in_my_table_linked_to_join_table']);
+        self::assertEquals('posts_tags', $relations['tags']['join_table']);
+        self::assertEquals('post_id', $relations['tags']['col_in_join_table_linked_to_my_table']);
+        self::assertEquals('tag_id', $relations['tags']['col_in_join_table_linked_to_foreign_table']);
+        self::assertEquals('tags', $relations['tags']['foreign_table']);
+        self::assertEquals('tag_id', $relations['tags']['col_in_foreign_table_linked_to_join_table']);
+        self::assertEquals('tag_id', $relations['tags']['primary_key_col_in_foreign_table']);
+        self::assertEquals(LeanOrm\TestObjects\TagsModel::class, $relations['tags']['foreign_models_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\TagRecord::class, $relations['tags']['foreign_models_record_class_name']);
+        self::assertEquals(LeanOrm\TestObjects\TagsCollection::class, $relations['tags']['foreign_models_collection_class_name']);
+        self::assertNull($relations['tags']['sql_query_modifier']);
+        
+        // A foreign model class that doesn't have explicit default values for
+        // its record & collection class properties should inherit
+        // \LeanOrm\Model\Collection & LeanOrm\Model\Record classes
+        $tagsModel2 = new \LeanOrm\TestObjects\TagsModel(static::$dsn, static::$username ?? "", static::$password ?? "",[]);
+        $tagsModel2->hasManyThrough(
+            relation_name: 'posts3', 
+            col_in_my_table_linked_to_join_table: 'tag_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'tag_id', 
+            col_in_join_table_linked_to_foreign_table: 'post_id',
+            col_in_foreign_table_linked_to_join_table: 'post_id',
+            foreign_models_class_name: LeanOrm\TestObjects\PostsModel::class
+        );
+        
+        self::assertEquals(['posts_tags', 'posts','posts3'], $tagsModel2->getRelationNames());
+        $relations = $tagsModel2->getRelations();
+        self::assertArrayHasKey('posts3', $relations);
+        self::assertArrayHasKey('relation_type', $relations['posts3']);
+        self::assertArrayHasKey('col_in_my_table_linked_to_join_table', $relations['posts3']);
+        self::assertArrayHasKey('join_table', $relations['posts3']);
+        self::assertArrayHasKey('col_in_join_table_linked_to_my_table', $relations['posts3']);
+        self::assertArrayHasKey('col_in_join_table_linked_to_foreign_table', $relations['posts3']);
+        self::assertArrayHasKey('foreign_table', $relations['posts3']);
+        self::assertArrayHasKey('col_in_foreign_table_linked_to_join_table', $relations['posts3']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['posts3']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['posts3']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['posts3']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['posts3']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['posts3']);
+        
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH, $relations['posts3']['relation_type']);
+        self::assertEquals('tag_id', $relations['posts3']['col_in_my_table_linked_to_join_table']);
+        self::assertEquals('posts_tags', $relations['posts3']['join_table']);
+        self::assertEquals('tag_id', $relations['posts3']['col_in_join_table_linked_to_my_table']);
+        self::assertEquals('post_id', $relations['posts3']['col_in_join_table_linked_to_foreign_table']);
+        self::assertEquals('posts', $relations['posts3']['foreign_table']);
+        self::assertEquals('post_id', $relations['posts3']['col_in_foreign_table_linked_to_join_table']);
+        self::assertEquals('post_id', $relations['posts3']['primary_key_col_in_foreign_table']);
+        self::assertEquals(\LeanOrm\TestObjects\PostsModel::class, $relations['posts3']['foreign_models_class_name']);
+        self::assertEquals(\LeanOrm\Model\Record::class, $relations['posts3']['foreign_models_record_class_name']);
+        self::assertEquals(\LeanOrm\Model\Collection::class, $relations['posts3']['foreign_models_collection_class_name']);
+        self::assertNull($relations['posts3']['sql_query_modifier']);
+        
+        
+        $tagsModel2->hasManyThrough(
+            relation_name: 'posts4', 
+            col_in_my_table_linked_to_join_table: 'tag_id', 
+            join_table: 'posts_tags', 
+            col_in_join_table_linked_to_my_table: 'tag_id', 
+            col_in_join_table_linked_to_foreign_table: 'post_id',
+            col_in_foreign_table_linked_to_join_table: 'post_id',
+            foreign_table_name: 'posts',
+            primary_key_col_in_foreign_table: 'post_id'
+        );
+        
+        self::assertEquals(['posts_tags', 'posts','posts3', 'posts4'], $tagsModel2->getRelationNames());
+        $relations = $tagsModel2->getRelations();
+        self::assertArrayHasKey('posts4', $relations);
+        self::assertArrayHasKey('relation_type', $relations['posts4']);
+        self::assertArrayHasKey('col_in_my_table_linked_to_join_table', $relations['posts4']);
+        self::assertArrayHasKey('join_table', $relations['posts4']);
+        self::assertArrayHasKey('col_in_join_table_linked_to_my_table', $relations['posts4']);
+        self::assertArrayHasKey('col_in_join_table_linked_to_foreign_table', $relations['posts4']);
+        self::assertArrayHasKey('foreign_table', $relations['posts4']);
+        self::assertArrayHasKey('col_in_foreign_table_linked_to_join_table', $relations['posts4']);
+        self::assertArrayHasKey('primary_key_col_in_foreign_table', $relations['posts4']);
+        self::assertArrayHasKey('foreign_models_class_name', $relations['posts4']);
+        self::assertArrayHasKey('foreign_models_record_class_name', $relations['posts4']);
+        self::assertArrayHasKey('foreign_models_collection_class_name', $relations['posts4']);
+        self::assertArrayHasKey('sql_query_modifier', $relations['posts4']);
+        
+        self::assertEquals(\GDAO\Model::RELATION_TYPE_HAS_MANY_THROUGH, $relations['posts4']['relation_type']);
+        self::assertEquals('tag_id', $relations['posts4']['col_in_my_table_linked_to_join_table']);
+        self::assertEquals('posts_tags', $relations['posts4']['join_table']);
+        self::assertEquals('tag_id', $relations['posts4']['col_in_join_table_linked_to_my_table']);
+        self::assertEquals('post_id', $relations['posts4']['col_in_join_table_linked_to_foreign_table']);
+        self::assertEquals('posts', $relations['posts4']['foreign_table']);
+        self::assertEquals('post_id', $relations['posts4']['col_in_foreign_table_linked_to_join_table']);
+        self::assertEquals('post_id', $relations['posts4']['primary_key_col_in_foreign_table']);
+        self::assertEquals(\LeanOrm\Model::class, $relations['posts4']['foreign_models_class_name']);
+        self::assertEquals(\LeanOrm\Model\Record::class, $relations['posts4']['foreign_models_record_class_name']);
+        self::assertEquals(\LeanOrm\Model\Collection::class, $relations['posts4']['foreign_models_collection_class_name']);
+        self::assertNull($relations['posts4']['sql_query_modifier']);
+        
     }
     
     public function testThatCanLogQueriesWorksAsExpected() {
