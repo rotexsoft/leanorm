@@ -3,7 +3,9 @@
 ![GitHub](https://img.shields.io/github/license/rotexsoft/leanorm) &nbsp; 
 [![Coverage Status](https://coveralls.io/repos/github/rotexsoft/leanorm/badge.svg)](https://coveralls.io/github/rotexsoft/leanorm) &nbsp; 
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/rotexsoft/leanorm) &nbsp; 
+<!--
 ![Packagist Downloads](https://img.shields.io/packagist/dt/rotexsoft/leanorm) &nbsp; 
+-->
 ![GitHub top language](https://img.shields.io/github/languages/top/rotexsoft/leanorm) &nbsp; 
 ![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/rotexsoft/leanorm) &nbsp; 
 ![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/rotexsoft/leanorm/latest) &nbsp; 
