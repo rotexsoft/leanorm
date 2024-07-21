@@ -43,6 +43,120 @@ All examples are based on the schema below:
 
 ![Blog Schema](../demo/blog-db.png)
 
+Below are the Sql statements for setting up this database in Mysql 8.0+
+
+```sql
+/*!40101 SET NAMES utf8 */;
+
+/*!40101 SET SQL_MODE=''*/;
+
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/`blog` /*!40100 DEFAULT CHARACTER SET latin1 */ /*!80016 DEFAULT ENCRYPTION='N' */;
+
+USE `blog`;
+
+/*Table structure for table `authors` */
+
+DROP TABLE IF EXISTS `authors`;
+
+CREATE TABLE `authors` (
+  `author_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) DEFAULT NULL,
+  `m_timestamp` DATETIME NOT NULL,
+  `date_created` DATETIME NOT NULL,
+  PRIMARY KEY (`author_id`)
+) ENGINE=INNODB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
+
+/*Table structure for table `comments` */
+
+DROP TABLE IF EXISTS `comments`;
+
+CREATE TABLE `comments` (
+  `comment_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `post_id` INT UNSIGNED NOT NULL,
+  `datetime` DATETIME DEFAULT NULL,
+  `name` VARCHAR(255) DEFAULT NULL,
+  `email` VARCHAR(255) DEFAULT NULL,
+  `website` VARCHAR(255) DEFAULT NULL,
+  `body` TEXT,
+  `m_timestamp` DATETIME NOT NULL,
+  `date_created` DATETIME NOT NULL,
+  PRIMARY KEY (`comment_id`),
+  KEY `fk_comments_belong_to_post` (`post_id`),
+  CONSTRAINT `fk_comments_belong_to_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+
+/*Table structure for table `posts` */
+
+DROP TABLE IF EXISTS `posts`;
+
+CREATE TABLE `posts` (
+  `post_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `author_id` INT UNSIGNED NOT NULL,
+  `datetime` DATETIME DEFAULT NULL,
+  `title` VARCHAR(255) DEFAULT NULL,
+  `body` TEXT,
+  `m_timestamp` DATETIME NOT NULL,
+  `date_created` DATETIME NOT NULL,
+  PRIMARY KEY (`post_id`),
+  KEY `fk_posts_belong_to_an_author` (`author_id`),
+  CONSTRAINT `fk_posts_belong_to_an_author` FOREIGN KEY (`author_id`) REFERENCES `authors` (`author_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+
+/*Table structure for table `posts_tags` */
+
+DROP TABLE IF EXISTS `posts_tags`;
+
+CREATE TABLE `posts_tags` (
+  `posts_tags_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `post_id` INT UNSIGNED NOT NULL,
+  `tag_id` INT UNSIGNED NOT NULL,
+  `m_timestamp` DATETIME NOT NULL,
+  `date_created` DATETIME NOT NULL,
+  PRIMARY KEY (`posts_tags_id`),
+  KEY `fk_post_tags_belong_to_a_post` (`post_id`),
+  KEY `fk_post_tags_belongs_to_a_tag` (`tag_id`),
+  CONSTRAINT `fk_post_tags_belong_to_a_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_post_tags_belongs_to_a_tag` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`tag_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+
+/*Table structure for table `summaries` */
+
+DROP TABLE IF EXISTS `summaries`;
+
+CREATE TABLE `summaries` (
+  `summary_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `post_id` INT UNSIGNED NOT NULL,
+  `view_count` INT DEFAULT NULL,
+  `comment_count` INT DEFAULT NULL,
+  `m_timestamp` DATETIME NOT NULL,
+  `date_created` DATETIME NOT NULL,
+  PRIMARY KEY (`summary_id`),
+  UNIQUE KEY `post_id` (`post_id`),
+  CONSTRAINT `fk_a_post_has_one_summary` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+
+/*Table structure for table `tags` */
+
+DROP TABLE IF EXISTS `tags`;
+
+CREATE TABLE `tags` (
+  `tag_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) DEFAULT NULL,
+  `m_timestamp` DATETIME NOT NULL,
+  `date_created` DATETIME NOT NULL,
+  PRIMARY KEY (`tag_id`)
+) ENGINE=INNODB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+```
+
 ### Defining and Creating Model Objects
 
 There are two basic ways to use this package:
