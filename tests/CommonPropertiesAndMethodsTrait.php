@@ -244,15 +244,15 @@ trait CommonPropertiesAndMethodsTrait {
                     )
                 )
                 ->hasMany(
-                    'posts', 
-                    'author_id', 
-                    'posts', 
-                    'author_id', 
-                    'post_id', 
-                    \ModelForTestingPublicAndProtectedMethods::class, 
-                    \RecordForTestingPublicAndProtectedMethods::class, 
-                    \CollectionForTestingPublicAndProtectedMethods::class, 
-                    null
+                    relation_name: 'posts', 
+                    foreign_key_col_in_this_models_table: 'author_id', 
+                    foreign_table_name: 'posts', 
+                    foreign_key_col_in_foreign_table: 'author_id', 
+                    primary_key_col_in_foreign_table: 'post_id', 
+                    foreign_models_class_name: \ModelForTestingPublicAndProtectedMethods::class, 
+                    foreign_models_record_class_name: \RecordForTestingPublicAndProtectedMethods::class, 
+                    foreign_models_collection_class_name: \CollectionForTestingPublicAndProtectedMethods::class, 
+                    sql_query_modifier: null
                 )
                 ->setCollectionClassName(\CollectionForTestingPublicAndProtectedMethods::class)
                 ->setRecordClassName(\RecordForTestingPublicAndProtectedMethods::class)
