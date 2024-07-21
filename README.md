@@ -30,7 +30,7 @@ Versions 2.x & 3.x of this package have been rigorously tested against sqlite 3.
 Version 4.x & 5.x have been rigorously tested against:
 - Sqlite 3.34.1+
 - MariaDB 10.4.33+, 10.5.24+, 10.6.17+, 10.11.7+, 11.0.5+, 11.1.4+, 11.2.3+ & 11.3.2+
-- MySql 5.6.51, 5.7.44, 8.0.36+, 8.1.0, 8.2.0 & 8.3.0+
+- MySql 5.6.51, 5.7.44, 8.0.36+, 8.1.0, 8.2.0, 8.3.0+ & 8.4+
 - PostgreSQL 12.18+, 13.14+, 14.11+, 15.6+ & 16.2+
 - See [run-tests-against-multiple-db-versions.php](./run-tests-against-multiple-db-versions.php)
 
