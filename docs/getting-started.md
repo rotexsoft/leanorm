@@ -1000,6 +1000,8 @@ LeanOrm allows you to define relationships between Model classes. These relation
 
 > Just as LeanOrm does not work with tables with composite primary keys, it likewise does not support composite keys for defining relationship between tables, the relationships are defined on a single column in each table.
 
+> When calling Model methods for defining relationships, it is strongly recommended that you PHP 8's named argument syntax for passing arguments to these methods, because these methods have a fair amount of arguments that can be passed to them and using named arguments will make your relationship definition code clearer and easier to understand.
+
 The schema below will be used in the examples to demonstrate how to define relationships.
 
 ![Blog Schema](../demo/blog-db.png)
@@ -1478,160 +1480,47 @@ $postsWithAuthorSummaryAndTags =
 ```
 
 
-
-
+All the relationship definition methods (belongsTo, hasOne, hasMany & hasManyThrough) have an optional argument named **sql_query_modifier** which they can all accept. This argument is supposed to be a callback function that can be used to modify the query object used for fetching related data. The callable should have the syntax below:
 
 ```php
-<?php
-// IT IS RECOMMENDED TO DEFINE THE RELATIONSHIPS IN A MODEL CLASS' CONSTRUCTOR METHOD, 
-// AS SHOWN IN THE EXAMPLES BELOW.
-
-// The first argument (the relationship name) to any of the relationship definition methods 
-// (belongsTo, hasOne, hasMany & hasManyThrough) must be a string that adheres to php's
-// variable naming convention (https://www.php.net/manual/en/language.variables.basics.php)
-
-// NOTE: RELATIONSHIPS COULD ALSO BE DEFINED ON INDIVIDUAL INSTANCES OF A MODEL CLASS.
-
-class PostsModel extends \LeanOrm\Model{
+function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
     
-    protected ?string $collection_class_name = PostsCollection::class;
-    protected ?string $record_class_name = PostRecord::class;
-    protected ?string $created_timestamp_column_name = 'date_created';
-    protected ?string $updated_timestamp_column_name = 'm_timestamp';
-    protected string $primary_col = 'post_id';
-    protected string $table_name = 'posts';
+    // call some methods on $selectObj
 
-    public function __construct(
-        string $dsn = '', 
-        string $username = '', 
-        string $passwd = '', 
-        array $pdo_driver_opts = [], 
-        string $primary_col_name = '', 
-        string $table_name = ''
-    ) { 
-        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
-
-        $this->belongsTo(
-                'author',    // The property or field name via which related data will be 
-                             // accessed on each post record or on each array of posts table data
-
-                'author_id', // Foreign key column in this Model's db table (i.e. posts table)
-
-                'authors',   // Foreign db table from which related data will be fetched
-
-                'author_id', // Foreign key column in foreign Model's db table (i.e. authors table)
-
-                'author_id', // Primary key column in foreign Model's db table (i.e. authors table)
-
-                AuthorsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
-
-                AuthorRecord::class, // Foreign Record Class, if blank, defaults to the Record class 
-                                     // set in the foreign Model Class when related data is fetched
-
-                AuthorsCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
-                                          // set in the foreign Model Class when related data is fetched
-
-                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
-                    
-                    $selectObj->orderBy(['author_id']);
-
-                    return $selectObj;
-                } // Optional callback to manipulate query object used to fetch related data
-            )
-            ->hasOne(
-                'summary',    // The property or field name via which related data will be 
-                              // accessed on each post record or on each array of posts table data
-
-                'post_id',    // Foreign key column in this Model's db table (i.e. posts table)
-
-                'summaries',  // Foreign db table from which related data will be fetched
-
-                'post_id',    // Foreign key column in foreign Model's db table (i.e. summaries table)
-
-                'summary_id', // Primary key column in foreign Model's db table (i.e. summaries table)
-
-                SummariesModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
-
-                SummaryRecord::class,  // Foreign Record Class, if blank, defaults to the Record class 
-                                       // set in the foreign Model Class when related data is fetched
-
-                SummariesCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
-                                            // set in the foreign Model Class when related data is fetched
-
-                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
-                    
-                    $selectObj->orderBy(['summary_id']);
-
-                    return $selectObj;
-                } // Optional callback to manipulate query object used to fetch related data
-            )
-            ->hasMany(
-                'comments', // The property or field name via which related data will be 
-                            // accessed on each post record or on each array of posts table data
-
-                'post_id',  // Foreign key column in this Model's db table (i.e. posts table)
-
-                'comments', // Foreign db table from which related data will be fetched
-
-                'post_id',  // Foreign key column in foreign Model's db table (i.e. comments table)
-
-                'comment_id', // Primary key column in foreign Model's db table (i.e. comments table)
-
-                CommentsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
-
-                CommentRecord::class, // Foreign Record Class, if blank, defaults to the Record class 
-                                      // set in the foreign Model Class when related data is fetched
-
-                CommentsCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
-                                           // set in the foreign Model Class when related data is fetched
-
-                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
-                    
-                    $selectObj->orderBy(['comment_id']);
-
-                    return $selectObj;
-                } // Optional callback to manipulate query object used to fetch related data
-            )
-            ->hasManyThrough(
-                'tags',         // The property or field name via which related data will be 
-                                // accessed on each post record or on each array of posts table data
-                
-                'post_id',      // Foreign key column in this Model's db table (i.e. posts table)
-                
-                'posts_tags',   // Foreign JOIN db table which contains the associations between records in this
-                                // model's db table (i.e. the posts table) and the records in the foreign db table
-                                // (i.e. the tags table)
-                
-                'post_id',      // Join column in this Model's db table (i.e. posts table) linked to the 
-                                // foreign JOIN db table (i.e. posts_tags)
-                
-                'tag_id',       // Join column in foreign Model's db table (i.e. tags table) linked to the 
-                                // foreign JOIN db table (i.e. posts_tags)
-                
-                'tags',         // Foreign db table from which related data will be fetched
-                
-                'tag_id',       // Foreign key column in foreign Model's db table (i.e. tags table)
-                
-                'tag_id',       // Primary key column in foreign Model's db table (i.e. tags table)
-
-                TagsModel::class, // Foreign Model Class, defaults to \LeanOrm\Model
-
-                TagRecord::class, // Foreign Record Class, if blank, defaults to the Record class 
-                                  // set in the foreign Model Class when related data is fetched
-
-                TagsCollection::class, // Foreign Collection Class, if blank, defaults to the Collection class 
-                                       // set in the foreign Model Class when related data is fetched
-
-                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
-
-                    $selectObj->orderBy(['tags.tag_id']);
-
-                    return $selectObj;
-                } // Optional callback to manipulate query object used to fetch related data
-            );
-    }
-}
+    return $selectObj; // and finally return $selectObj
+} // Optional callback to manipulate query object used to fetch related data
 ```
+
+Using one of the relationship definition examples above, we can further ensure in the call to **hasMany** defining the Author has many Posts relationship   that the Posts returned when fetching authors and their associated posts will have the posts returned in reverse chronological order using the code below:
+
+```php
+$authorsModel = new \LeanOrm\Model(
+    "mysql:host=localhost;dbname=blog", // dsn string
+    "username", // username
+    "password", // password
+    [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'], //pdo options
+    'author_id', // primary key column name
+    'authors' // table name
+);
+
+$authorsModel->hasMany(
+    relation_name: 'posts', 
+    foreign_key_col_in_this_models_table: 'author_id', 
+    foreign_key_col_in_foreign_table: 'author_id',
+    foreign_models_class_name: PostsModel::class,
+    sql_query_modifier: function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+
+        // This will ensure that the posts associated
+        // with each author are sorted in reverse
+        // chronological order
+        $selectObj->orderBy(['date_created DESC']);
+
+        return $selectObj; // and finally return $selectObj
+    } // Optional callback to manipulate query object used to fetch related data
+);
+```
+
+> Take a look at the relationship definition methods (belongsTo, hasOne, hasMany & hasManyThrough) in **\LeanOrm\Model** to see all the arguments each method accepts to get ideas on how to further configure your Model relationship definitions in your applications.
 
 #### Accessing Related Data Code Samples
 
