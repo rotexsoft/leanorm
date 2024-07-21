@@ -2,4 +2,4 @@
 declare(strict_types=1);
 namespace LeanOrm\Exceptions;
     
-class BadModelPrimaryColumnNameException extends \Exception{}
+class BadModelPrimaryColumnNameException extends BaseException {}

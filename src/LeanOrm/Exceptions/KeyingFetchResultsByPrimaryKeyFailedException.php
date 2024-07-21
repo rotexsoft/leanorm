@@ -2,4 +2,4 @@
 declare(strict_types=1);
 namespace LeanOrm\Exceptions;
     
-class KeyingFetchResultsByPrimaryKeyFailedException extends \Exception{}
+class KeyingFetchResultsByPrimaryKeyFailedException extends BaseException {}

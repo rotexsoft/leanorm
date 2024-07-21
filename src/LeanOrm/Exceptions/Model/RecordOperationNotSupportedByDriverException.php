@@ -6,4 +6,4 @@ namespace LeanOrm\Exceptions\Model;
 /**
  * @psalm-api
  */
-class RecordOperationNotSupportedByDriverException extends \Exception { }
+class RecordOperationNotSupportedByDriverException extends \LeanOrm\Exceptions\BaseException { }

@@ -2,4 +2,4 @@
 declare(strict_types=1);
 namespace LeanOrm\Exceptions;
     
-class InvalidArgumentException extends \InvalidArgumentException{}
+class InvalidArgumentException extends BaseException {}
