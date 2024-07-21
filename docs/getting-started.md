@@ -1025,7 +1025,333 @@ This type of relationship requires at least three tables. Basically many records
 
 > For the purpose of this documentation, we will call the Model class that we are trying to define a relationship on as the native Model and the other Model (whose row(s) / record(s) are to be returned when the relationship is executed) as the foreign Model.
 
-#### Relationship Definition Code Samples 
+**\LeanOrm\Model** has four instance methods for defining relationships between Models:
+
+- **belongsTo**
+- **hasOne**
+- **hasMany**
+- **hasManyThrough**
+
+There a two recommended ways of defining relationships between Models.
+
+1. After creating an instance of **\LeanOrm\Model** or any of its sub-classes, you should then go on to define relationships for that instance by calling the appropriate relationship defining methods (belongsTo, hasOne, hasMany or hasManyThrough) on that instance as needed. If you architect you application to only create a single Model instance for each table / view in your database, this approach would work well for you. It is recommended that you call the relationship definition methods immediately after creating each Model object. For example, if you manage objects in your application using a dependency injection container, then you should put the relationship definition method calls wherever each Model object is being created in your container setup code.
+    > If you create more than one Model instance for each table / view in your database, then that means you will have to call the relationship definition methods on each Model instance for each database table / view, which will lead to lots of duplicate code scattered in your code-base. You should instead use the second method method of defining relationships described below if you have created individual Model classes (and optionally, Collection & Record Classes) for each database table  / view you intend to access in your application
+
+2. Define relationships inside the constructor of each Model class (which should each be a sub-class of **\LeanOrm\Model**). If you intend to use direct instances of **\LeanOrm\Model** for each table / view in your database, this technique will not work for you, you will only be able to use option 1 above in that scenario. You only need to have created a unique Model class for each database table / view to use this option. You don't really need to have defined corresponding Collection  & Record classes to pair with each Model class, it is perfectly fine for those Model classes to use 
+**\LeanOrm\Model\Record** & **\LeanOrm\Model\Collection** to store data from the database.
+
+
+#### Relationship Definition Code Samples
+
+
+We will demonstrate via code samples the various ways to define Model relationships using the schema shown earlier in this section for concrete examples.
+
+##### Option 1: define the relationships for each instance after creating each instance.
+
+An Author can have many Posts. Here's how to model that relationship on a Model instance associated with the **authors** table:
+
+
+```php
+
+$authorsModel = new \LeanOrm\Model(
+    "mysql:host=localhost;dbname=blog", // dsn string
+    "username", // username
+    "password", // password
+    [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'], //pdo options
+    'author_id', // primary key column name
+    'authors' // table name
+);
+
+$authorsModel->hasMany(
+    relation_name: 'posts', 
+    foreign_key_col_in_this_models_table: 'author_id', 
+    foreign_key_col_in_foreign_table: 'author_id',
+    foreign_table_name: 'posts',
+    primary_key_col_in_foreign_table: 'post_id'
+);
+
+// When you fetch all authors,
+// you can eagerly load all their associated posts like so
+$authorsWithPosts = $authorsModel->fetchRowsIntoArray(null, ['posts']);
+
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
+class PostsCollection extends \LeanOrm\Model\Collection { }
+
+class PostRecord extends \LeanOrm\Model\Record { }
+
+class PostsModel extends \LeanOrm\Model {
+    
+    protected ?string $collection_class_name = PostsCollection::class;
+    protected ?string $record_class_name = PostRecord::class;
+    protected string $primary_col = 'post_id';
+    protected string $table_name = 'posts';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+    }
+}
+
+// If we had the  Model Class above already created, we could further 
+// shorten our relationship definition by omitting the foreign_table_name &
+// primary_key_col_in_foreign_table parameters in the call to hasMany and just
+// add the foreign_models_class_name parameter like so:
+
+$authorsModel->hasMany(
+    relation_name: 'posts', 
+    foreign_key_col_in_this_models_table: 'author_id', 
+    foreign_key_col_in_foreign_table: 'author_id',
+    foreign_models_class_name: PostsModel::class
+); // does the same thing as the previous call to hasMany above
+
+```
+
+A Post can belong to a single Author. Here's how to model that relationship on a Model instance associated with the **posts** table:
+
+```php
+$postsModel = new \LeanOrm\Model(
+    "mysql:host=localhost;dbname=blog", // dsn string
+    "username", // username
+    "password", // password
+    [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'], //pdo options
+    'post_id', // primary key column name
+    'posts' // table name
+);
+
+$postsModel->belongsTo(
+    relation_name: 'author', 
+    foreign_key_col_in_this_models_table: 'author_id', 
+    foreign_key_col_in_foreign_table: 'author_id',
+    foreign_table_name: 'authors',
+    primary_key_col_in_foreign_table: 'author_id'
+);
+
+// When you fetch all posts,
+// you can eagerly load each author each post belongs to like so
+$postsWithAssociatedAuthor = 
+    $postsModel->fetchRowsIntoArray(null, ['author']);
+
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
+class AuthorsCollection extends \LeanOrm\Model\Collection { }
+
+class AuthorRecord extends \LeanOrm\Model\Record { }
+
+class AuthorsModel extends \LeanOrm\Model {
+    
+    protected ?string $collection_class_name = AuthorsCollection::class;
+    protected ?string $record_class_name = AuthorRecord::class;
+    protected string $primary_col = 'author_id';
+    protected string $table_name = 'authors';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+    }
+}
+
+// If we had the  Model Class above already created, we could further 
+// shorten our relationship definition by omitting the foreign_table_name &
+// primary_key_col_in_foreign_table parameters in the call to belongsTo 
+// and just add the foreign_models_class_name parameter like so:
+
+$postsModel->belongsTo(
+    relation_name: 'author', 
+    foreign_key_col_in_this_models_table: 'author_id', 
+    foreign_key_col_in_foreign_table: 'author_id',
+    foreign_models_class_name: AuthorsModel::class
+);
+```
+
+A Post can have many tags via associations in a **posts_tags** join table. Here's how to model that relationship on a Model instance associated with the **posts** table:
+
+```php
+$postsModel = new \LeanOrm\Model(
+    "mysql:host=localhost;dbname=blog", // dsn string
+    "username", // username
+    "password", // password
+    [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'], //pdo options
+    'post_id', // primary key column name
+    'posts' // table name
+);
+
+$postsModel->hasManyThrough(
+    relation_name: 'tags',
+    col_in_my_table_linked_to_join_table: 'post_id',
+    join_table: 'posts_tags',
+    col_in_join_table_linked_to_my_table: 'post_id',
+    col_in_join_table_linked_to_foreign_table: 'tag_id',
+    col_in_foreign_table_linked_to_join_table: 'tag_id',
+    foreign_table_name: 'tags',            
+    primary_key_col_in_foreign_table: 'tag_id'
+);
+
+// When you fetch all posts,
+// you can eagerly load their associated tags like so
+$postsWithTags = 
+    $postsModel->fetchRowsIntoArray(null, ['tags']);
+
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
+class TagsCollection extends \LeanOrm\Model\Collection { }
+
+class TagRecord extends \LeanOrm\Model\Record { }
+
+class TagsModel extends \LeanOrm\Model {
+    
+    protected ?string $collection_class_name = TagsCollection::class;
+    protected ?string $record_class_name = TagRecord::class;
+    protected string $primary_col = 'tag_id';
+    protected string $table_name = 'tags';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+    }
+}
+
+// If we had the  Model Class above already created, we could further 
+// shorten our relationship definition by omitting the foreign_table_name &
+// primary_key_col_in_foreign_table parameters in the call to belongsTo 
+// and just add the foreign_models_class_name parameter like so:
+
+$postsModel->hasManyThrough(
+    relation_name: 'tags',
+    col_in_my_table_linked_to_join_table: 'post_id',
+    join_table: 'posts_tags',
+    col_in_join_table_linked_to_my_table: 'post_id',
+    col_in_join_table_linked_to_foreign_table: 'tag_id',
+    col_in_foreign_table_linked_to_join_table: 'tag_id',
+    foreign_models_class_name: TagsModel::class
+);
+```
+
+
+##### Option 2: define the relationships inside the constructor of each Model Class. 
+
+
+It is assumed that you have generated a Model class for each database table  / view you want your application to access.
+
+We will define:
+
+1. An author has many posts relationship inside the AuthorsModel class
+2. A post belongs to an author relationship inside the PostsModel class
+
+```php
+class AuthorsCollection extends \LeanOrm\Model\Collection { }
+
+class AuthorRecord extends \LeanOrm\Model\Record { }
+
+class AuthorsModel extends \LeanOrm\Model {
+    
+    protected ?string $collection_class_name = AuthorsCollection::class;
+    protected ?string $record_class_name = AuthorRecord::class;
+    protected string $primary_col = 'author_id';
+    protected string $table_name = 'authors';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+        
+        $this->hasMany(
+            relation_name: 'posts', 
+            foreign_key_col_in_this_models_table: 'author_id', 
+            foreign_key_col_in_foreign_table: 'author_id',
+            foreign_models_class_name: PostsModel::class
+        ); // Author has Many Posts
+    }
+}
+
+class PostsCollection extends \LeanOrm\Model\Collection { }
+
+class PostRecord extends \LeanOrm\Model\Record { }
+
+class PostsModel extends \LeanOrm\Model {
+    
+    protected ?string $collection_class_name = PostsCollection::class;
+    protected ?string $record_class_name = PostRecord::class;
+    protected string $primary_col = 'post_id';
+    protected string $table_name = 'posts';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+        
+        $this->belongsTo(
+            relation_name: 'author', 
+            foreign_key_col_in_this_models_table: 'author_id', 
+            foreign_key_col_in_foreign_table: 'author_id',
+            foreign_models_class_name: AuthorsModel::class
+        ); // Post belongs to an Author
+    }
+}
+
+
+// Later on in your application when you create Model instances
+// You can fetch the related data like so:
+
+$authorsModel = new AuthorsModel(
+    "mysql:host=localhost;dbname=blog", // dsn string
+    "username", // username
+    "password", // password
+    [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'], //pdo options
+    'author_id', // primary key column name
+    'authors' // table name
+);
+$authorsWithPosts = 
+    $authorsModel->fetchRowsIntoArray(null, ['posts']);
+
+
+$postsModel = new PostsModel(
+    "mysql:host=localhost;dbname=blog", // dsn string
+    "username", // username
+    "password", // password
+    [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'], //pdo options
+    'post_id', // primary key column name
+    'posts' // table name
+);
+$postsWithAssociatedAuthor = 
+    $postsModel->fetchRowsIntoArray(null, ['author']);
+
+```
+
+
+
+
 
 ```php
 <?php
