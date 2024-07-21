@@ -8,6 +8,10 @@ namespace LeanOrm\TestObjects;
  */
 class PostsModel extends \LeanOrm\Model{
     
+    protected string $primary_col = 'post_id';
+    
+    protected string $table_name = 'posts';
+    
     public function __construct(
         string $dsn = '', 
         string $username = '', 
@@ -15,30 +19,28 @@ class PostsModel extends \LeanOrm\Model{
         array $pdo_driver_opts = [], 
         string $primary_col_name = '', 
         string $table_name = ''
-    ) {
-        $this->setTableName('posts')->setPrimaryCol('post_id');
-        
+    ) {        
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
         $this->belongsTo(
-                'author', 
-                'author_id', 
-                'authors', 
-                'author_id', 
-                'author_id',
-                AuthorsModel::class,
-                AuthorRecord::class,
-                AuthorsCollection::class
+                relation_name: 'author', 
+                foreign_key_col_in_this_models_table: 'author_id', 
+                foreign_table_name: 'authors', 
+                foreign_key_col_in_foreign_table: 'author_id', 
+                primary_key_col_in_foreign_table: 'author_id',
+                foreign_models_class_name: AuthorsModel::class,
+                foreign_models_record_class_name: AuthorRecord::class,
+                foreign_models_collection_class_name: AuthorsCollection::class
             )
             ->belongsTo(
-                'author_with_callback', 
-                'author_id', 
-                'authors', 
-                'author_id', 
-                'author_id',
-                AuthorsModel::class,
-                \RecordForTestingPublicAndProtectedMethods::class,
-                \CollectionForTestingPublicAndProtectedMethods::class,
-                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                relation_name: 'author_with_callback', 
+                foreign_key_col_in_this_models_table: 'author_id', 
+                foreign_table_name: 'authors', 
+                foreign_key_col_in_foreign_table: 'author_id', 
+                primary_key_col_in_foreign_table: 'author_id',
+                foreign_models_class_name: AuthorsModel::class,
+                foreign_models_record_class_name: \RecordForTestingPublicAndProtectedMethods::class,
+                foreign_models_collection_class_name: \CollectionForTestingPublicAndProtectedMethods::class,
+                sql_query_modifier: function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['author_id']); // just for testing that the query object gets manipulated
 
@@ -46,25 +48,25 @@ class PostsModel extends \LeanOrm\Model{
                 }
             )
             ->hasOne(
-                'summary',
-                'post_id', 
-                'summaries', 
-                'post_id', 
-                'summary_id',
-                SummariesModel::class,
-                SummaryRecord::class,
-                SummariesCollection::class
+                relation_name: 'summary',
+                foreign_key_col_in_this_models_table: 'post_id', 
+                foreign_table_name: 'summaries', 
+                foreign_key_col_in_foreign_table: 'post_id', 
+                primary_key_col_in_foreign_table: 'summary_id',
+                foreign_models_class_name: SummariesModel::class,
+                foreign_models_record_class_name: SummaryRecord::class,
+                foreign_models_collection_class_name: SummariesCollection::class
             )
             ->hasOne(
-                'summary_with_callback', 
-                'post_id', 
-                'summaries', 
-                'post_id', 
-                'summary_id',
-                SummariesModel::class,
-                \RecordForTestingPublicAndProtectedMethods::class,
-                \CollectionForTestingPublicAndProtectedMethods::class,
-                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                relation_name: 'summary_with_callback', 
+                foreign_key_col_in_this_models_table: 'post_id', 
+                foreign_table_name: 'summaries', 
+                foreign_key_col_in_foreign_table: 'post_id', 
+                primary_key_col_in_foreign_table: 'summary_id',
+                foreign_models_class_name: SummariesModel::class,
+                foreign_models_record_class_name: \RecordForTestingPublicAndProtectedMethods::class,
+                foreign_models_collection_class_name: \CollectionForTestingPublicAndProtectedMethods::class,
+                sql_query_modifier: function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['summary_id']); // just for testing that the query object gets manipulated
 
@@ -72,25 +74,25 @@ class PostsModel extends \LeanOrm\Model{
                 }
             )
             ->hasMany(
-                'comments', 
-                'post_id', 
-                'comments', 
-                'post_id', 
-                'comment_id',
-                CommentsModel::class,
-                CommentRecord::class,
-                CommentsCollection::class
+                relation_name: 'comments', 
+                foreign_key_col_in_this_models_table: 'post_id', 
+                foreign_table_name: 'comments', 
+                foreign_key_col_in_foreign_table: 'post_id', 
+                primary_key_col_in_foreign_table: 'comment_id',
+                foreign_models_class_name: CommentsModel::class,
+                foreign_models_record_class_name: CommentRecord::class,
+                foreign_models_collection_class_name: CommentsCollection::class
             )
             ->hasMany(
-                'comments_with_callback', 
-                'post_id', 
-                'comments', 
-                'post_id', 
-                'comment_id',
-                CommentsModel::class,
-                \RecordForTestingPublicAndProtectedMethods::class,
-                \CollectionForTestingPublicAndProtectedMethods::class,
-                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                relation_name: 'comments_with_callback', 
+                foreign_key_col_in_this_models_table: 'post_id', 
+                foreign_table_name: 'comments', 
+                foreign_key_col_in_foreign_table: 'post_id', 
+                primary_key_col_in_foreign_table: 'comment_id',
+                foreign_models_class_name: CommentsModel::class,
+                foreign_models_record_class_name: \RecordForTestingPublicAndProtectedMethods::class,
+                foreign_models_collection_class_name: \CollectionForTestingPublicAndProtectedMethods::class,
+                sql_query_modifier: function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                     $selectObj->orderBy(['comment_id']); // just for testing that the query object gets manipulated
 
@@ -98,41 +100,41 @@ class PostsModel extends \LeanOrm\Model{
                 }
             )
             ->hasMany(
-                'posts_tags',
-                'post_id',
-                'posts_tags',
-                'post_id',
-                'posts_tags_id',
-                PostsTagsModel::class,
-                PostTagRecord::class,
-                PostsTagsCollection::class
+                relation_name: 'posts_tags',
+                foreign_key_col_in_this_models_table: 'post_id',
+                foreign_table_name: 'posts_tags',
+                foreign_key_col_in_foreign_table: 'post_id',
+                primary_key_col_in_foreign_table: 'posts_tags_id',
+                foreign_models_class_name: PostsTagsModel::class,
+                foreign_models_record_class_name: PostTagRecord::class,
+                foreign_models_collection_class_name: PostsTagsCollection::class
             )
             ->hasManyThrough(
-                'tags',
-                'post_id',
-                'posts_tags',
-                'post_id',
-                'tag_id',
-                'tags',
-                'tag_id',
-                'tag_id',
-                TagsModel::class,
-                TagRecord::class,
-                TagsCollection::class
+                relation_name: 'tags',
+                col_in_my_table_linked_to_join_table: 'post_id',
+                join_table: 'posts_tags',
+                col_in_join_table_linked_to_my_table: 'post_id',
+                col_in_join_table_linked_to_foreign_table: 'tag_id',
+                foreign_table_name: 'tags',
+                col_in_foreign_table_linked_to_join_table: 'tag_id',
+                primary_key_col_in_foreign_table: 'tag_id',
+                foreign_models_class_name: TagsModel::class,
+                foreign_models_record_class_name: TagRecord::class,
+                foreign_models_collection_class_name: TagsCollection::class
             )
             ->hasManyThrough(
-                'tags_with_callback',
-                'post_id',
-                'posts_tags',
-                'post_id',
-                'tag_id',
-                'tags',
-                'tag_id',
-                'tag_id',
-                TagsModel::class,
-                \RecordForTestingPublicAndProtectedMethods::class,
-                \CollectionForTestingPublicAndProtectedMethods::class,
-                function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+                relation_name: 'tags_with_callback',
+                col_in_my_table_linked_to_join_table: 'post_id',
+                join_table: 'posts_tags',
+                col_in_join_table_linked_to_my_table: 'post_id',
+                col_in_join_table_linked_to_foreign_table: 'tag_id',
+                foreign_table_name: 'tags',
+                col_in_foreign_table_linked_to_join_table: 'tag_id',
+                primary_key_col_in_foreign_table: 'tag_id',
+                foreign_models_class_name: TagsModel::class,
+                foreign_models_record_class_name: \RecordForTestingPublicAndProtectedMethods::class,
+                foreign_models_collection_class_name: \CollectionForTestingPublicAndProtectedMethods::class,
+                sql_query_modifier: function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
 
                     $selectObj->orderBy(['tags.tag_id']); // just for testing that the query object gets manipulated
 

@@ -14,14 +14,14 @@ class CommentsModel extends \LeanOrm\Model {
         
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
         $this->belongsTo(
-            'post', 
-            'post_id', 
-            'posts', 
-            'post_id', 
-            'post_id',
-            PostsModel::class,
-            PostRecord::class,
-            PostsCollection::class
+            relation_name: 'post', 
+            foreign_key_col_in_this_models_table: 'post_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'post_id', 
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: PostsModel::class,
+            foreign_models_record_class_name: PostRecord::class,
+            foreign_models_collection_class_name: PostsCollection::class
         )
         ->setCollectionClassName(CommentsCollection::class)
         ->setRecordClassName(CommentRecord::class);

@@ -15,26 +15,26 @@ class AuthorsModel extends \LeanOrm\Model {
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
         
         $this->hasMany(
-            'posts', 
-            'author_id', 
-            'posts', 
-            'author_id', 
-            'post_id', 
-            PostsModel::class, 
-            PostRecord::class, 
-            PostsCollection::class, 
-            null
+            relation_name: 'posts', 
+            foreign_key_col_in_this_models_table: 'author_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'author_id', 
+            primary_key_col_in_foreign_table: 'post_id', 
+            foreign_models_class_name: PostsModel::class, 
+            foreign_models_record_class_name: PostRecord::class, 
+            foreign_models_collection_class_name: PostsCollection::class, 
+            sql_query_modifier: null
         )
         ->hasMany(
-            'one_post', 
-            'author_id', 
-            'posts', 
-            'author_id', 
-            'post_id', 
-            PostsModel::class, 
-            PostRecord::class, 
-            PostsCollection::class, 
-            function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
+            relation_name: 'one_post', 
+            foreign_key_col_in_this_models_table: 'author_id', 
+            foreign_table_name: 'posts', 
+            foreign_key_col_in_foreign_table: 'author_id', 
+            primary_key_col_in_foreign_table: 'post_id', 
+            foreign_models_class_name: PostsModel::class, 
+            foreign_models_record_class_name: PostRecord::class, 
+            foreign_models_collection_class_name: PostsCollection::class, 
+            sql_query_modifier: function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {
                     
                 $selectObj->limit(1);
             

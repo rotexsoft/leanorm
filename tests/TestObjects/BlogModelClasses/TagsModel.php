@@ -9,37 +9,42 @@ use Psr\Log\LogLevel;
  * @author rotimi
  */
 class TagsModel extends \LeanOrm\Model {
+    
+    protected string $primary_col = 'tag_id';
+    
+    protected string $table_name = 'tags';
+    
+    protected ?string $collection_class_name = \LeanOrm\TestObjects\TagsCollection::class;
+    
+    protected ?string $record_class_name = \LeanOrm\TestObjects\TagRecord::class;
 
     public function __construct(string $dsn = '', string $username = '', string $passwd = '', array $pdo_driver_opts = [], string $primary_col_name = '', string $table_name = '') {
-        
-        $this->setTableName('tags')->setPrimaryCol('tag_id');
-        
+                
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+        
         $this->hasMany(
-            'posts_tags',
-            'tag_id',
-            'posts_tags',
-            'tag_id',
-            'posts_tags_id',
-            PostsTagsModel::class,
-            PostTagRecord::class,
-            PostsTagsCollection::class
+            relation_name: 'posts_tags',
+            foreign_key_col_in_this_models_table: 'tag_id',
+            foreign_table_name: 'posts_tags',
+            foreign_key_col_in_foreign_table: 'tag_id',
+            primary_key_col_in_foreign_table: 'posts_tags_id',
+            foreign_models_class_name: PostsTagsModel::class,
+            foreign_models_record_class_name: PostTagRecord::class,
+            foreign_models_collection_class_name: PostsTagsCollection::class
         )
         ->hasManyThrough(
-            'posts',
-            'tag_id',
-            'posts_tags',
-            'tag_id',
-            'post_id',
-            'posts',
-            'post_id',
-            'post_id',
-            PostsModel::class,
-            PostRecord::class,
-            PostsCollection::class
-        )        
-        ->setCollectionClassName(TagsCollection::class)
-        ->setRecordClassName(TagRecord::class);
+            relation_name: 'posts',
+            col_in_my_table_linked_to_join_table: 'tag_id',
+            join_table: 'posts_tags',
+            col_in_join_table_linked_to_my_table: 'tag_id',
+            col_in_join_table_linked_to_foreign_table: 'post_id',
+            foreign_table_name: 'posts',
+            col_in_foreign_table_linked_to_join_table: 'post_id',
+            primary_key_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: PostsModel::class,
+            foreign_models_record_class_name: PostRecord::class,
+            foreign_models_collection_class_name: PostsCollection::class
+        );
         
         $psrLogger = new class extends \Psr\Log\AbstractLogger {
             
