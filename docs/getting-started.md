@@ -1069,7 +1069,7 @@ $authorsModel = new \LeanOrm\Model(
 
 $authorsModel->hasMany(
     relation_name: 'posts', 
-    foreign_key_col_in_this_models_table: 'author_id', 
+    relationship_col_in_my_table: 'author_id', 
     foreign_key_col_in_foreign_table: 'author_id',
     foreign_table_name: 'posts',
     primary_key_col_in_foreign_table: 'post_id'
@@ -1112,7 +1112,7 @@ class PostsModel extends \LeanOrm\Model {
 
 $authorsModel->hasMany(
     relation_name: 'posts', 
-    foreign_key_col_in_this_models_table: 'author_id', 
+    relationship_col_in_my_table: 'author_id', 
     foreign_key_col_in_foreign_table: 'author_id',
     foreign_models_class_name: PostsModel::class
 ); // does the same thing as the previous call to hasMany above
@@ -1133,7 +1133,7 @@ $postsModel = new \LeanOrm\Model(
 
 $postsModel->belongsTo(
     relation_name: 'author', 
-    foreign_key_col_in_this_models_table: 'author_id', 
+    relationship_col_in_my_table: 'author_id', 
     foreign_key_col_in_foreign_table: 'author_id',
     foreign_table_name: 'authors',
     primary_key_col_in_foreign_table: 'author_id'
@@ -1177,7 +1177,7 @@ class AuthorsModel extends \LeanOrm\Model {
 
 $postsModel->belongsTo(
     relation_name: 'author', 
-    foreign_key_col_in_this_models_table: 'author_id', 
+    relationship_col_in_my_table: 'author_id', 
     foreign_key_col_in_foreign_table: 'author_id',
     foreign_models_class_name: AuthorsModel::class
 );
@@ -1267,7 +1267,7 @@ $postsModel = new \LeanOrm\Model (
 
 $postsModel->hasOne(
     relation_name: 'summary', 
-    foreign_key_col_in_this_models_table: 'post_id', 
+    relationship_col_in_my_table: 'post_id', 
     foreign_key_col_in_foreign_table: 'post_id',
     foreign_table_name: 'summaries',
     primary_key_col_in_foreign_table: 'summary_id'
@@ -1311,7 +1311,7 @@ class SummariesModel extends \LeanOrm\Model {
 
 $postsModel->hasOne(
     relation_name: 'summary', 
-    foreign_key_col_in_this_models_table: 'post_id', 
+    relationship_col_in_my_table: 'post_id', 
     foreign_key_col_in_foreign_table: 'post_id',
     foreign_models_class_name: SummariesModel::class
 ); // Post has one Summary
@@ -1354,7 +1354,7 @@ class AuthorsModel extends \LeanOrm\Model {
         
         $this->hasMany(
             relation_name: 'posts', 
-            foreign_key_col_in_this_models_table: 'author_id', 
+            relationship_col_in_my_table: 'author_id', 
             foreign_key_col_in_foreign_table: 'author_id',
             foreign_models_class_name: PostsModel::class
         ); // Author has Many Posts
@@ -1384,14 +1384,14 @@ class PostsModel extends \LeanOrm\Model {
         
         $this->belongsTo(
             relation_name: 'author', 
-            foreign_key_col_in_this_models_table: 'author_id', 
+            relationship_col_in_my_table: 'author_id', 
             foreign_key_col_in_foreign_table: 'author_id',
             foreign_models_class_name: AuthorsModel::class
         ); // Post belongs to an Author
         
         $this->hasOne(
             relation_name: 'summary', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_key_col_in_foreign_table: 'post_id',
             foreign_models_class_name: SummariesModel::class
         ); // Post has one Summary
@@ -1508,7 +1508,7 @@ $authorsModel = new \LeanOrm\Model(
 
 $authorsModel->hasMany(
     relation_name: 'posts', 
-    foreign_key_col_in_this_models_table: 'author_id', 
+    relationship_col_in_my_table: 'author_id', 
     foreign_key_col_in_foreign_table: 'author_id',
     foreign_models_class_name: PostsModel::class,
     sql_query_modifier: function(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select {

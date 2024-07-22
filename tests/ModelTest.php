@@ -163,7 +163,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // relation name with the same name as p key column
         $model->belongsTo(
                 relation_name: 'author_id', 
-                foreign_key_col_in_this_models_table: '', 
+                relationship_col_in_my_table: '', 
                 foreign_table_name: '', 
                 foreign_key_col_in_foreign_table: '', 
                 primary_key_col_in_foreign_table: ''
@@ -178,7 +178,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // relation name with the same name as p key column
         $model->belongsTo(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',
@@ -196,7 +196,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // relation name with the same name as p key column
         $model->belongsTo(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',
@@ -214,7 +214,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // relation name with the same name as p key column
         $model->belongsTo(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',
@@ -231,7 +231,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->belongsTo(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'non_existent_foreign_table', // Non-existent foreign table
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id'
@@ -246,7 +246,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // relation name with the same name as p key column
         $model->belongsTo(
                 relation_name: 'post', 
-                foreign_key_col_in_this_models_table: 'non_existent', 
+                relationship_col_in_my_table: 'non_existent', 
                 foreign_table_name: 'posts', 
                 foreign_key_col_in_foreign_table: 'post_id', 
                 primary_key_col_in_foreign_table: 'post_id'
@@ -262,7 +262,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // relation name with the same name as p key column
         $model->belongsTo(
                 relation_name: 'post', 
-                foreign_key_col_in_this_models_table: 'post_id', 
+                relationship_col_in_my_table: 'post_id', 
                 foreign_table_name: 'posts', 
                 foreign_key_col_in_foreign_table: 'non_existent', 
                 primary_key_col_in_foreign_table: 'post_id'
@@ -278,7 +278,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // relation name with the same name as p key column
         $model->belongsTo(
                 relation_name: 'post', 
-                foreign_key_col_in_this_models_table: 'post_id', 
+                relationship_col_in_my_table: 'post_id', 
                 foreign_table_name: 'posts', 
                 foreign_key_col_in_foreign_table: 'post_id', 
                 primary_key_col_in_foreign_table: 'non_existent'
@@ -296,7 +296,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->belongsTo(
             relation_name: 'comment', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
             foreign_key_col_in_foreign_table: 'post_id'
         );
@@ -313,7 +313,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->belongsTo(
             relation_name: 'comment', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_key_col_in_foreign_table: 'post_id'
         );
     }
@@ -329,7 +329,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->belongsTo(
             relation_name: 'comment', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
             foreign_key_col_in_foreign_table: 'post_id',
             foreign_table_name: 'comments'
@@ -347,7 +347,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->belongsTo(
             relation_name: 'comment', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_key_col_in_foreign_table: 'post_id',
             foreign_table_name: 'comments'
         );
@@ -358,7 +358,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->belongsTo(
             relation_name: 'author', 
-            foreign_key_col_in_this_models_table: 'author_id', 
+            relationship_col_in_my_table: 'author_id', 
             foreign_table_name: 'authors', 
             foreign_key_col_in_foreign_table: 'author_id', 
             primary_key_col_in_foreign_table: 'author_id', 
@@ -394,7 +394,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->belongsTo(
             relation_name: 'author2', 
-            foreign_key_col_in_this_models_table: 'author_id', 
+            relationship_col_in_my_table: 'author_id', 
             foreign_table_name: 'authors', 
             foreign_key_col_in_foreign_table: 'author_id', 
             primary_key_col_in_foreign_table: 'author_id', 
@@ -413,7 +413,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         ////////////////////////////////////////////////////////////////////////
         $postsModel->belongsTo(
             relation_name: 'comments2', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_models_class_name: LeanOrm\TestObjects\CommentsModel2::class,
             foreign_key_col_in_foreign_table: 'post_id'
         );
@@ -443,7 +443,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $postsModel->belongsTo(
             relation_name: 'comments3', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_key_col_in_foreign_table: 'post_id',
             foreign_table_name: 'comments',
             primary_key_col_in_foreign_table: 'comment_id'
@@ -481,7 +481,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // relation name with the same name as p key column
         $model->hasOne(
                 relation_name: 'author_id', 
-                foreign_key_col_in_this_models_table: '', 
+                relationship_col_in_my_table: '', 
                 foreign_table_name: '', 
                 foreign_key_col_in_foreign_table: '', 
                 primary_key_col_in_foreign_table: ''
@@ -495,7 +495,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',
@@ -512,7 +512,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',
@@ -529,7 +529,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'non_existent_foreign_table', // Non-existent foreign table
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id'
@@ -543,7 +543,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',
@@ -560,7 +560,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
                 relation_name: 'post', 
-                foreign_key_col_in_this_models_table: 'non_existent', 
+                relationship_col_in_my_table: 'non_existent', 
                 foreign_table_name: 'posts', 
                 foreign_key_col_in_foreign_table: 'post_id', 
                 primary_key_col_in_foreign_table: 'post_id'
@@ -574,7 +574,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
                 relation_name: 'post', 
-                foreign_key_col_in_this_models_table: 'post_id', 
+                relationship_col_in_my_table: 'post_id', 
                 foreign_table_name: 'posts', 
                 foreign_key_col_in_foreign_table: 'non_existent', 
                 primary_key_col_in_foreign_table: 'post_id'
@@ -588,7 +588,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasOne(
                 relation_name: 'post', 
-                foreign_key_col_in_this_models_table: 'post_id', 
+                relationship_col_in_my_table: 'post_id', 
                 foreign_table_name: 'posts', 
                 foreign_key_col_in_foreign_table: 'post_id', 
                 primary_key_col_in_foreign_table: 'non_existent'
@@ -606,7 +606,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->hasOne(
             relation_name: 'comment', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
             foreign_key_col_in_foreign_table: 'post_id'
         );
@@ -623,7 +623,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->hasOne(
             relation_name: 'comment', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_key_col_in_foreign_table: 'post_id'
         );
     }
@@ -639,7 +639,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->hasOne(
             relation_name: 'comment', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
             foreign_key_col_in_foreign_table: 'post_id',
             foreign_table_name: 'comments'
@@ -657,7 +657,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->hasOne(
             relation_name: 'comment', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_key_col_in_foreign_table: 'post_id',
             foreign_table_name: 'comments'
         );
@@ -668,7 +668,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->hasOne(
             relation_name: 'author', 
-            foreign_key_col_in_this_models_table: 'author_id', 
+            relationship_col_in_my_table: 'author_id', 
             foreign_table_name: 'authors', 
             foreign_key_col_in_foreign_table: 'author_id', 
             primary_key_col_in_foreign_table: 'author_id', 
@@ -703,7 +703,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasOne(
             relation_name: 'author2', 
-            foreign_key_col_in_this_models_table: 'author_id', 
+            relationship_col_in_my_table: 'author_id', 
             foreign_table_name: 'authors', 
             foreign_key_col_in_foreign_table: 'author_id', 
             primary_key_col_in_foreign_table: 'author_id', 
@@ -722,7 +722,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         ////////////////////////////////////////////////////////////////////////
         $postsModel->hasOne(
             relation_name: 'comments2', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_models_class_name: LeanOrm\TestObjects\CommentsModel2::class,
             foreign_key_col_in_foreign_table: 'post_id'
         );
@@ -752,7 +752,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $postsModel->hasOne(
             relation_name: 'comments3', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_key_col_in_foreign_table: 'post_id',
             foreign_table_name: 'comments',
             primary_key_col_in_foreign_table: 'comment_id'
@@ -790,7 +790,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         // relation name with the same name as p key column
         $model->hasMany(
             relation_name: 'author_id', 
-            foreign_key_col_in_this_models_table: '', 
+            relationship_col_in_my_table: '', 
             foreign_table_name: '', 
             foreign_key_col_in_foreign_table: '', 
             primary_key_col_in_foreign_table: ''
@@ -805,7 +805,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $model->hasMany(
             relation_name: 'posts', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',
@@ -822,7 +822,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',
@@ -839,7 +839,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'non_existent', // non-existent foreign table
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id'
@@ -853,7 +853,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',
@@ -870,7 +870,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
                 relation_name: 'post', 
-                foreign_key_col_in_this_models_table: 'non_existent', 
+                relationship_col_in_my_table: 'non_existent', 
                 foreign_table_name: 'posts', 
                 foreign_key_col_in_foreign_table: 'post_id', 
                 primary_key_col_in_foreign_table: 'post_id'
@@ -884,7 +884,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
                 relation_name: 'post', 
-                foreign_key_col_in_this_models_table: 'post_id', 
+                relationship_col_in_my_table: 'post_id', 
                 foreign_table_name: 'posts', 
                 foreign_key_col_in_foreign_table: 'non_existent', 
                 primary_key_col_in_foreign_table: 'post_id'
@@ -898,7 +898,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'comment_id', 'comments');
         $model->hasMany(
                 relation_name: 'post', 
-                foreign_key_col_in_this_models_table: 'post_id', 
+                relationship_col_in_my_table: 'post_id', 
                 foreign_table_name: 'posts', 
                 foreign_key_col_in_foreign_table: 'post_id', 
                 primary_key_col_in_foreign_table: 'non_existent'
@@ -916,7 +916,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->hasMany(
             relation_name: 'comments', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
             foreign_key_col_in_foreign_table: 'post_id'
         );
@@ -933,7 +933,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->hasMany(
             relation_name: 'comments', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_key_col_in_foreign_table: 'post_id'
         );
     }
@@ -949,7 +949,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->hasMany(
             relation_name: 'comments', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_models_class_name: LeanOrm\TestObjects\CommentsModel::class,
             foreign_key_col_in_foreign_table: 'post_id',
             foreign_table_name: 'comments'
@@ -967,7 +967,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $model = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [],'tag_id', 'tags');
         $model->hasMany(
             relation_name: 'comments', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_key_col_in_foreign_table: 'post_id',
             foreign_table_name: 'comments'
         );
@@ -978,7 +978,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $postsModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "",[],'post_id','posts');
         $postsModel->hasMany(
             relation_name: 'comments', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'comments', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'comment_id',
@@ -1012,7 +1012,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $callback = fn(\Aura\SqlQuery\Common\Select $selectObj): \Aura\SqlQuery\Common\Select => $selectObj;
         $postsModel->hasMany(
             relation_name: 'comments2', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'comments', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'comment_id', 
@@ -1031,7 +1031,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         ////////////////////////////////////////////////////////////////////////
         $postsModel->hasMany(
             relation_name: 'comments2', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_models_class_name: LeanOrm\TestObjects\CommentsModel2::class,
             foreign_key_col_in_foreign_table: 'post_id'
         );
@@ -1061,7 +1061,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $postsModel->hasMany(
             relation_name: 'comments3', 
-            foreign_key_col_in_this_models_table: 'post_id',
+            relationship_col_in_my_table: 'post_id',
             foreign_key_col_in_foreign_table: 'post_id',
             foreign_table_name: 'comments',
             primary_key_col_in_foreign_table: 'comment_id'

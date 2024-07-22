@@ -15,7 +15,7 @@ class SummariesModel extends \LeanOrm\Model {
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
         $this->belongsTo(
             relation_name: 'post', 
-            foreign_key_col_in_this_models_table: 'post_id', 
+            relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
             foreign_key_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',

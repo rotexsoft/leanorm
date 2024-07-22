@@ -24,7 +24,7 @@ class TagsModel extends \LeanOrm\Model {
         
         $this->hasMany(
             relation_name: 'posts_tags',
-            foreign_key_col_in_this_models_table: 'tag_id',
+            relationship_col_in_my_table: 'tag_id',
             foreign_table_name: 'posts_tags',
             foreign_key_col_in_foreign_table: 'tag_id',
             primary_key_col_in_foreign_table: 'posts_tags_id',

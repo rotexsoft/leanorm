@@ -23,7 +23,7 @@ class PostsModel extends \LeanOrm\Model{
         parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
         $this->belongsTo(
                 relation_name: 'author', 
-                foreign_key_col_in_this_models_table: 'author_id', 
+                relationship_col_in_my_table: 'author_id', 
                 foreign_table_name: 'authors', 
                 foreign_key_col_in_foreign_table: 'author_id', 
                 primary_key_col_in_foreign_table: 'author_id',
@@ -33,7 +33,7 @@ class PostsModel extends \LeanOrm\Model{
             )
             ->belongsTo(
                 relation_name: 'author_with_callback', 
-                foreign_key_col_in_this_models_table: 'author_id', 
+                relationship_col_in_my_table: 'author_id', 
                 foreign_table_name: 'authors', 
                 foreign_key_col_in_foreign_table: 'author_id', 
                 primary_key_col_in_foreign_table: 'author_id',
@@ -49,7 +49,7 @@ class PostsModel extends \LeanOrm\Model{
             )
             ->hasOne(
                 relation_name: 'summary',
-                foreign_key_col_in_this_models_table: 'post_id', 
+                relationship_col_in_my_table: 'post_id', 
                 foreign_table_name: 'summaries', 
                 foreign_key_col_in_foreign_table: 'post_id', 
                 primary_key_col_in_foreign_table: 'summary_id',
@@ -59,7 +59,7 @@ class PostsModel extends \LeanOrm\Model{
             )
             ->hasOne(
                 relation_name: 'summary_with_callback', 
-                foreign_key_col_in_this_models_table: 'post_id', 
+                relationship_col_in_my_table: 'post_id', 
                 foreign_table_name: 'summaries', 
                 foreign_key_col_in_foreign_table: 'post_id', 
                 primary_key_col_in_foreign_table: 'summary_id',
@@ -75,7 +75,7 @@ class PostsModel extends \LeanOrm\Model{
             )
             ->hasMany(
                 relation_name: 'comments', 
-                foreign_key_col_in_this_models_table: 'post_id', 
+                relationship_col_in_my_table: 'post_id', 
                 foreign_table_name: 'comments', 
                 foreign_key_col_in_foreign_table: 'post_id', 
                 primary_key_col_in_foreign_table: 'comment_id',
@@ -85,7 +85,7 @@ class PostsModel extends \LeanOrm\Model{
             )
             ->hasMany(
                 relation_name: 'comments_with_callback', 
-                foreign_key_col_in_this_models_table: 'post_id', 
+                relationship_col_in_my_table: 'post_id', 
                 foreign_table_name: 'comments', 
                 foreign_key_col_in_foreign_table: 'post_id', 
                 primary_key_col_in_foreign_table: 'comment_id',
@@ -101,7 +101,7 @@ class PostsModel extends \LeanOrm\Model{
             )
             ->hasMany(
                 relation_name: 'posts_tags',
-                foreign_key_col_in_this_models_table: 'post_id',
+                relationship_col_in_my_table: 'post_id',
                 foreign_table_name: 'posts_tags',
                 foreign_key_col_in_foreign_table: 'post_id',
                 primary_key_col_in_foreign_table: 'posts_tags_id',

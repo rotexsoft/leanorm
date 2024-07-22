@@ -2690,7 +2690,7 @@ SELECT {$foreign_table_name}.*
                                 // for the related data when data is fetched into arrays 
                                 // via this model
         
-        string $foreign_key_col_in_this_models_table,
+        string $relationship_col_in_my_table,
         
         string $foreign_key_col_in_foreign_table,
         
@@ -2738,13 +2738,13 @@ SELECT {$foreign_table_name}.*
         
         $this->validateTableName($foreign_table_name);
         
-        $this->validateThatTableHasColumn($this->getTableName(), $foreign_key_col_in_this_models_table);
+        $this->validateThatTableHasColumn($this->getTableName(), $relationship_col_in_my_table);
         $this->validateThatTableHasColumn($foreign_table_name, $foreign_key_col_in_foreign_table);
         $this->validateThatTableHasColumn($foreign_table_name, $primary_key_col_in_foreign_table);
         
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_ONE;
-        $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
+        $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $relationship_col_in_my_table;
         $this->relations[$relation_name]['foreign_table'] = $foreign_table_name;
         $this->relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
         $this->relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
@@ -2768,7 +2768,7 @@ SELECT {$foreign_table_name}.*
                                 // for the related data when data is fetched into arrays 
                                 // via this model
         
-        string $foreign_key_col_in_this_models_table,
+        string $relationship_col_in_my_table,
             
         string $foreign_key_col_in_foreign_table,
         
@@ -2816,13 +2816,13 @@ SELECT {$foreign_table_name}.*
         
         $this->validateTableName($foreign_table_name);
         
-        $this->validateThatTableHasColumn($this->getTableName(), $foreign_key_col_in_this_models_table);
+        $this->validateThatTableHasColumn($this->getTableName(), $relationship_col_in_my_table);
         $this->validateThatTableHasColumn($foreign_table_name, $foreign_key_col_in_foreign_table);
         $this->validateThatTableHasColumn($foreign_table_name, $primary_key_col_in_foreign_table);
         
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_BELONGS_TO;
-        $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
+        $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $relationship_col_in_my_table;
         $this->relations[$relation_name]['foreign_table'] = $foreign_table_name;
         $this->relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
         $this->relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;
@@ -2847,7 +2847,7 @@ SELECT {$foreign_table_name}.*
                                 // for the related data when data is fetched into arrays 
                                 // via this model
         
-        string $foreign_key_col_in_this_models_table,
+        string $relationship_col_in_my_table,
         
         string $foreign_key_col_in_foreign_table,
         
@@ -2896,13 +2896,13 @@ SELECT {$foreign_table_name}.*
         
         $this->validateTableName($foreign_table_name);
         
-        $this->validateThatTableHasColumn($this->getTableName(), $foreign_key_col_in_this_models_table);
+        $this->validateThatTableHasColumn($this->getTableName(), $relationship_col_in_my_table);
         $this->validateThatTableHasColumn($foreign_table_name, $foreign_key_col_in_foreign_table);
         $this->validateThatTableHasColumn($foreign_table_name, $primary_key_col_in_foreign_table);
         
         $this->relations[$relation_name] = [];
         $this->relations[$relation_name]['relation_type'] = \GDAO\Model::RELATION_TYPE_HAS_MANY;
-        $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $foreign_key_col_in_this_models_table;
+        $this->relations[$relation_name]['foreign_key_col_in_my_table'] = $relationship_col_in_my_table;
         $this->relations[$relation_name]['foreign_table'] = $foreign_table_name;
         $this->relations[$relation_name]['foreign_key_col_in_foreign_table'] = $foreign_key_col_in_foreign_table;
         $this->relations[$relation_name]['primary_key_col_in_foreign_table'] = $primary_key_col_in_foreign_table;

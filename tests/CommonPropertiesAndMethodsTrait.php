@@ -245,7 +245,7 @@ trait CommonPropertiesAndMethodsTrait {
                 )
                 ->hasMany(
                     relation_name: 'posts', 
-                    foreign_key_col_in_this_models_table: 'author_id', 
+                    relationship_col_in_my_table: 'author_id', 
                     foreign_table_name: 'posts', 
                     foreign_key_col_in_foreign_table: 'author_id', 
                     primary_key_col_in_foreign_table: 'post_id', 

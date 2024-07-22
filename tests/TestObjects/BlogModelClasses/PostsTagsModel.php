@@ -72,7 +72,7 @@ class PostsTagsModel extends \LeanOrm\Model {
 
         $this->belongsTo(
                         relation_name: 'post',
-                        foreign_key_col_in_this_models_table: 'post_id',
+                        relationship_col_in_my_table: 'post_id',
                         foreign_table_name: 'posts',
                         foreign_key_col_in_foreign_table: 'post_id',
                         primary_key_col_in_foreign_table: 'post_id',
@@ -82,7 +82,7 @@ class PostsTagsModel extends \LeanOrm\Model {
                 )
                 ->belongsTo(
                         relation_name: 'tag',
-                        foreign_key_col_in_this_models_table: 'tag_id',
+                        relationship_col_in_my_table: 'tag_id',
                         foreign_table_name: 'tags',
                         foreign_key_col_in_foreign_table: 'tag_id',
                         primary_key_col_in_foreign_table: 'tag_id',
