@@ -17,7 +17,7 @@ class CommentsModel extends \LeanOrm\Model {
             relation_name: 'post', 
             relationship_col_in_my_table: 'post_id', 
             foreign_table_name: 'posts', 
-            foreign_key_col_in_foreign_table: 'post_id', 
+            relationship_col_in_foreign_table: 'post_id', 
             primary_key_col_in_foreign_table: 'post_id',
             foreign_models_class_name: PostsModel::class,
             foreign_models_record_class_name: PostRecord::class,

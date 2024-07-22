@@ -247,7 +247,7 @@ trait CommonPropertiesAndMethodsTrait {
                     relation_name: 'posts', 
                     relationship_col_in_my_table: 'author_id', 
                     foreign_table_name: 'posts', 
-                    foreign_key_col_in_foreign_table: 'author_id', 
+                    relationship_col_in_foreign_table: 'author_id', 
                     primary_key_col_in_foreign_table: 'post_id', 
                     foreign_models_class_name: \ModelForTestingPublicAndProtectedMethods::class, 
                     foreign_models_record_class_name: \RecordForTestingPublicAndProtectedMethods::class, 

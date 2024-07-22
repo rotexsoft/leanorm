@@ -2084,7 +2084,7 @@
       <text x="374.6" y="15" clip-path="url(#clipPath128)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
       <text fill="rgb(102,0,0)" x="381" xml:space="preserve" y="15" clip-path="url(#clipPath128)" stroke="none">foreign_table_name</text>
       <text x="485.8" y="15" clip-path="url(#clipPath128)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
-      <text fill="rgb(102,0,0)" x="492.2" xml:space="preserve" y="15" clip-path="url(#clipPath128)" stroke="none">foreign_key_col_in_foreign_table</text>
+      <text fill="rgb(102,0,0)" x="492.2" xml:space="preserve" y="15" clip-path="url(#clipPath128)" stroke="none">relationship_col_in_foreign_table</text>
       <text x="663.4" y="15" clip-path="url(#clipPath128)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
       <text fill="rgb(102,0,0)" x="669.8" xml:space="preserve" y="15" clip-path="url(#clipPath128)" stroke="none">primary_key_col_in_foreign_table</text>
       <text x="843.4" y="15" clip-path="url(#clipPath128)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
@@ -2591,7 +2591,7 @@
       <text x="365" y="15" clip-path="url(#clipPath200)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
       <text fill="rgb(102,0,0)" x="371.4" xml:space="preserve" y="15" clip-path="url(#clipPath200)" stroke="none">foreign_table_name</text>
       <text x="476.2" y="15" clip-path="url(#clipPath200)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
-      <text fill="rgb(102,0,0)" x="482.6" xml:space="preserve" y="15" clip-path="url(#clipPath200)" stroke="none">foreign_key_col_in_foreign_table</text>
+      <text fill="rgb(102,0,0)" x="482.6" xml:space="preserve" y="15" clip-path="url(#clipPath200)" stroke="none">relationship_col_in_foreign_table</text>
       <text x="653.7999" y="15" clip-path="url(#clipPath200)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
       <text fill="rgb(102,0,0)" x="660.2" xml:space="preserve" y="15" clip-path="url(#clipPath200)" stroke="none">primary_key_col_in_foreign_table</text>
       <text x="833.7999" y="15" clip-path="url(#clipPath200)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
@@ -2663,7 +2663,7 @@
       <text x="357.8" y="15" clip-path="url(#clipPath206)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
       <text fill="rgb(102,0,0)" x="364.2" xml:space="preserve" y="15" clip-path="url(#clipPath206)" stroke="none">foreign_table_name</text>
       <text x="469" y="15" clip-path="url(#clipPath206)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
-      <text fill="rgb(102,0,0)" x="475.4" xml:space="preserve" y="15" clip-path="url(#clipPath206)" stroke="none">foreign_key_col_in_foreign_table</text>
+      <text fill="rgb(102,0,0)" x="475.4" xml:space="preserve" y="15" clip-path="url(#clipPath206)" stroke="none">relationship_col_in_foreign_table</text>
       <text x="646.6" y="15" clip-path="url(#clipPath206)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
       <text fill="rgb(102,0,0)" x="653" xml:space="preserve" y="15" clip-path="url(#clipPath206)" stroke="none">primary_key_col_in_foreign_table</text>
       <text x="826.6" y="15" clip-path="url(#clipPath206)" fill="rgb(8,8,8)" stroke="none" font-weight="bold" xml:space="preserve">, </text>
