@@ -1017,7 +1017,11 @@ SELECT {$foreign_table_name}.*
                          * @psalm-suppress MixedArrayOffset
                          * @psalm-suppress MixedMethodCall
                          */
-                        $parent_data[$p_rec_key]->setRelatedData($rel_name, $matching_related_rows[0]);
+                        $parent_data[$p_rec_key]->setRelatedData(
+                                $rel_name, 
+                                (\count($matching_related_rows) > 0) 
+                                    ? $matching_related_rows[0] : []
+                            );
 
                     } else {
 
@@ -1032,7 +1036,9 @@ SELECT {$foreign_table_name}.*
                          * @psalm-suppress MixedArrayAssignment
                          * @psalm-suppress MixedArgument
                          */
-                        $parent_data[$p_rec_key][$rel_name] = $matching_related_rows[0];
+                        $parent_data[$p_rec_key][$rel_name] = 
+                                (\count($matching_related_rows) > 0) 
+                                    ? $matching_related_rows[0] : [];
                     }
                 } // foreach( $parent_data as $p_rec_key => $parent_record )
 
@@ -1050,7 +1056,10 @@ SELECT {$foreign_table_name}.*
 
                 //stitch the related data to the parent record
                 /** @psalm-suppress MixedArgument */
-                $parent_data->setRelatedData($rel_name, array_shift($related_data));
+                $parent_data->setRelatedData(
+                    $rel_name, 
+                    (\count($related_data > 0)) ? \array_shift($related_data) : []
+                );
             } // else if ($parent_data instanceof \GDAO\Model\RecordInterface)
         } // if( array_key_exists($rel_name, $this->relations) )
     }
