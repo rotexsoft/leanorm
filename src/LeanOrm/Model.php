@@ -1035,6 +1035,7 @@ SELECT {$foreign_table_name}.*
                          * @psalm-suppress MixedArrayOffset
                          * @psalm-suppress MixedArrayAssignment
                          * @psalm-suppress MixedArgument
+                         * @psalm-suppress PossiblyInvalidArgument
                          */
                         $parent_data[$p_rec_key][$rel_name] = 
                                 (\count($matching_related_rows) > 0) 
