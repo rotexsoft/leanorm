@@ -2411,7 +2411,6 @@ SELECT {$foreign_table_name}.*
                         && $col_names_n_values_2_match === [] // empty match array passed, we are updating all rows
                     )
                 ) {
-
                     $updt_qry = $update_qry_obj->__toString();
                     $updt_qry_params = $update_qry_obj->getBindValues();
                     $this->logQuery($updt_qry, $updt_qry_params, __METHOD__, '' . __LINE__);
