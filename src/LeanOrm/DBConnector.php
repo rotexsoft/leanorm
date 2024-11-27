@@ -306,7 +306,7 @@ class DBConnector {
      * 
      * @return mixed result of the query or false on failure or if there are no rows
      */
-    public function dbFetchOne(string $select_query, array $parameters = [] ) {
+    public function dbFetchOne(string $select_query, array $parameters = [] ): mixed {
 
         $result = static::_execute($select_query, $parameters, true, $this->connection_name);
         /** @psalm-suppress PossiblyInvalidArrayAccess */
