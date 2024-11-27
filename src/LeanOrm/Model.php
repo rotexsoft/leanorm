@@ -1058,7 +1058,7 @@ SELECT {$foreign_table_name}.*
                 /** @psalm-suppress MixedArgument */
                 $parent_data->setRelatedData(
                     $rel_name, 
-                    (\count($related_data > 0)) ? \array_shift($related_data) : []
+                    (\count($related_data) > 0) ? \array_shift($related_data) : []
                 );
             } // else if ($parent_data instanceof \GDAO\Model\RecordInterface)
         } // if( array_key_exists($rel_name, $this->relations) )
