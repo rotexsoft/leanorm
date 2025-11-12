@@ -65,7 +65,7 @@ class TagsModel extends \LeanOrm\Model {
                 $this->min_level = $min_level;
             }
 
-            public function log($level, Stringable|string $message, array $context = array()): void
+            public function log($level, \Stringable|string $message, array $context = array()): void
             {
                 if (!$this->min_level_reached($level)) {
                     return;
