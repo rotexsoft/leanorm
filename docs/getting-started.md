@@ -1558,7 +1558,7 @@ Eager-loading code samples are shown below. If you remove the array of relations
 
 > **NOTE:** You cannot eager-load related data when **fetchCol**, **fetchPairs** or **fetchValue** is called on any instance of **\LeanOrm\Model** or its sub-classes.
 
-
+> See [Fetching Nested Related Data](./more-about-collections.md#fetching-nested-related-data) for examples of how to load data related to fetched related data.
 
 ```php
 <?php
