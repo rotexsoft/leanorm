@@ -579,4 +579,36 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
         
         return $this;
     }
+    
+    /**
+     * Eager load related data into each record in this collection.
+     * This will save us having to execute individual queries to the database for the 
+     * related data for each record if we didn't eager load them. 
+     * 
+     * For example if you have a collection of 5 BlogPost records that each belong 
+     * to an author, if you don't eager load, each time you access the Author 
+     * relation for each BlogPost record, a query will be made to the database
+     * to fetch the Author data for each BlogPost record, which will lead to 
+     * 5 queries by the time you finish looping through all the BlogPost 
+     * records in the collection. If you instead, eager load the Authors,
+     * all the authors will be fetched by one extra query and stitched into
+     * the corresponding BlogPost record.
+     * 
+     * @param array $relationsToInclude an array of relation names defined in the 
+     *                                  corresponding Model Class for this collection
+     *                                  via the relationship definition methods 
+     *                                  (belongsTo, hasOne, hasMany, hasManyThrough)
+     * @return static
+     */
+    public function eagerLoadRelatedData(array $relationsToInclude): static {
+
+        /** @psalm-suppress MixedAssignment */
+        foreach( $relationsToInclude as $relName ) {
+
+            /** @psalm-suppress MixedArgument */
+            $this->getModel()->loadRelationshipData($relName, $this, true, true);
+        }
+        
+        return $this;
+    }
 }
