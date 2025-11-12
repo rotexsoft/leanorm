@@ -34,7 +34,7 @@ $anAuthorWithPosts->posts->eagerLoadRelatedData(['tags']);
 > Some form of eager loading of nested related data will be implemented in the fetch methods that return a record, or a collection of records or an array of records in the future. It might look something like this: 
 
 ```php
-$anAuthorWithPostsAndTags = $authorModel->fetchOneRecord(null, ['posts'=>['tags]]);
+$anAuthorWithPostsAndTags = $authorModel->fetchOneRecord(null, ['posts'=>['tags']]);
 ```
 
 [<<< Previous](./more-about-records.md)
