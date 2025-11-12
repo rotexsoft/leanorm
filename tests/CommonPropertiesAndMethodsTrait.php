@@ -143,7 +143,7 @@ trait CommonPropertiesAndMethodsTrait {
                 $this->min_level = $min_level;
             }
 
-            public function log($level, Stringable|string $message, array $context = [])
+            public function log($level, Stringable|string $message, array $context = []): void
             {
                 if (!$this->min_level_reached($level)) {
                     return;
