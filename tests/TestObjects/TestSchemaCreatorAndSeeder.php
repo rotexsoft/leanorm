@@ -9,7 +9,7 @@ class TestSchemaCreatorAndSeeder {
     protected ?Connection $connection;
     protected SchemaCreatorAndSeederInterface $sqlExecutor;
 
-    public function __construct(Connection $conn=null) {
+    public function __construct(?Connection $conn=null) {
         
         $this->connection = $conn;
         

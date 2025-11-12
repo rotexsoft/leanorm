@@ -120,7 +120,7 @@ class TagsModel extends \LeanOrm\Model {
              * @param string|null $timestamp A Timestamp string in format 'Y-m-d H:i:s', defaults to current time
              * @return string
              */
-            protected function format($level, $message, $context, $timestamp = null)
+            protected function format(string $level, string $message, array $context, ?string $timestamp = null)
             {
                 if ($timestamp === null) $timestamp = date('Y-m-d H:i:s');
                 return PHP_EOL . '[' . $timestamp . '] ' . strtoupper($level) . ': ' . $this->interpolate($message, $context) . PHP_EOL;

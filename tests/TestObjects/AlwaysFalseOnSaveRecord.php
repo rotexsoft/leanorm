@@ -6,11 +6,11 @@
  */
 class AlwaysFalseOnSaveRecord extends \LeanOrm\Model\Record {
 
-    public function save($data_2_save = null): ?bool {
+    public function save(null|\GDAO\Model\RecordInterface|array $data_2_save = null): ?bool {
         return false;
     }
     
-    public function saveInTransaction($data_2_save = null): ?bool {
+    public function saveInTransaction(null|\GDAO\Model\RecordInterface|array $data_2_save = null): ?bool {
         return false;
     }
 }
