@@ -37,7 +37,11 @@ return static function (RectorConfig $rectorConfigurator): void {
         \Rector\DeadCode\Rector\PropertyProperty\RemoveNullPropertyInitializationRector::class,
         \Rector\TypeDeclaration\Rector\ClassMethod\ReturnNeverTypeRector::class,
         \Rector\CodeQuality\Rector\If_\CompleteMissingIfElseBracketRector::class,
-        \Rector\Php80\Rector\FunctionLike\MixedTypeRector::class
+        \Rector\DeadCode\Rector\If_\RemoveAlwaysTrueIfConditionRector::class,
+        \Rector\DeadCode\Rector\MethodCall\RemoveNullArgOnNullDefaultParamRector::class,
+        \Rector\DeadCode\Rector\FunctionLike\NarrowWideUnionReturnTypeRector::class,
+        \Rector\CodingStyle\Rector\FuncCall\CountArrayToEmptyArrayComparisonRector::class,
+        \Rector\DeadCode\Rector\If_\RemoveDeadInstanceOfRector::class,
     ];
     
     $rectorConfigurator->skip($skipables);
