@@ -24,7 +24,7 @@
         "phpunit/phpunit": "^10.5",
         "php-coveralls/php-coveralls": "^2.7",
         "vimeo/psalm": "^5.25.0 || ^6.0",
-        "rector/rector": "^1.2.1",
+        "rector/rector": "^2.2.8",
         "symfony/polyfill-php82": "^1.30",
         "atlas/pdo": "^2.0.0",
         "rotexsoft/versatile-collections": "^6.0"
@@ -41,7 +41,7 @@
             "vendor/bin/phpunit --coverage-text"
         ],
         "rector-clear": "vendor/bin/rector --clear-cache",
-        "rector": "vendor/bin/rector process src --dry-run -vvv",
+        "rector": "vendor/bin/rector process src --dry-run",
         "psalm-clear-cache": "vendor/bin/psalm --clear-global-cache && vendor/bin/psalm --clear-cache",
         "psalm": "composer psalm-clear-cache && vendor/bin/psalm --threads=1",
         "qa": "composer test && composer rector && composer psalm"
