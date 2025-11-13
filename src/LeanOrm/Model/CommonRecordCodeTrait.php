@@ -55,7 +55,7 @@ trait CommonRecordCodeTrait {
         unset($this->data);
 
         if(property_exists($this, 'initial_data')) {
-            
+
             /** @psalm-suppress UndefinedThisPropertyFetch */
             unset($this->initial_data);
         }

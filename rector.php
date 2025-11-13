@@ -42,6 +42,7 @@ return static function (RectorConfig $rectorConfigurator): void {
         \Rector\DeadCode\Rector\FunctionLike\NarrowWideUnionReturnTypeRector::class,
         \Rector\CodingStyle\Rector\FuncCall\CountArrayToEmptyArrayComparisonRector::class,
         \Rector\DeadCode\Rector\If_\RemoveDeadInstanceOfRector::class,
+        \Rector\CodeQuality\Rector\FunctionLike\SimplifyUselessVariableRector::class,
     ];
     
     $rectorConfigurator->skip($skipables);

@@ -632,11 +632,12 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
 
         $model = $this->getModel();
         
-        /** @psalm-suppress MixedAssignment */
-        foreach( $relationsToInclude as $relName ) {
+        if(($model instanceof \LeanOrm\Model)) {
+            /** @psalm-suppress MixedAssignment */
+            foreach( $relationsToInclude as $relName ) {
 
-            ($model instanceof \LeanOrm\Model)
-            && $model->loadRelationshipData((string)$relName, $this, true, true);
+                $model->loadRelationshipData((string)$relName, $this, true, true);
+            }
         }
         
         return $this;
