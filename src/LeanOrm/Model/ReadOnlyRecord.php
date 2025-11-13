@@ -14,6 +14,7 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
  * instances of this class.
  *
  * @psalm-suppress PropertyNotSetInConstructor
+ * @psalm-suppress ClassMustBeFinal
  * 
  * @author Rotimi Adegbamigbe
  * @copyright (c) 2024, Rotexsoft
@@ -36,6 +37,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
     /**
      * Not Supported, not overridable.
      */
+    #[\Override]
     public final function delete(bool $set_record_objects_data_to_empty_array=false): bool{
         
         $this->throwNotSupportedException(__FUNCTION__);
@@ -45,6 +47,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
      * Not Supported, not overridable.
      * @return mixed[]
      */
+    #[\Override]
     public final function getInitialData():array {
         
         return [];
@@ -54,6 +57,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
      * Not Supported, not overridable.
      * @return mixed[]
      */
+    #[\Override]
     public final function &getInitialDataByRef(): array {
         
         $result = [];
@@ -64,6 +68,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
     /**
      * Not overridable.
      */
+    #[\Override]
     public final function isChanged(?string $col = null): ?bool {
         
         return false;
@@ -72,6 +77,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
     /**
      * Cannot be a new record, not overridable.
      */
+    #[\Override]
     public final function isNew(): bool {
         
         return false;
@@ -98,6 +104,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      * @psalm-suppress PossiblyUnusedReturnValue
      */
+    #[\Override]
     public function loadData(\GDAO\Model\RecordInterface|array $data_2_load, array $cols_2_load = []): static {
         
         return $this->injectData($data_2_load, $cols_2_load);
@@ -106,6 +113,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
     /**
      * Not Supported, not overridable.
      */
+    #[\Override]
     public final function markAsNew(): static {
         
         return $this;
@@ -114,6 +122,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
     /**
      * Not Supported, not overridable.
      */
+    #[\Override]
     public final function markAsNotNew(): static {
         
         return $this;
@@ -122,6 +131,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
     /**
      * Not Supported, not overridable.
      */
+    #[\Override]
     public final function setStateToNew(): static {
         
         return $this;
@@ -130,6 +140,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
     /**
      * Not Supported, not overridable.
      */
+    #[\Override]
     public final function save(null|\GDAO\Model\RecordInterface|array $data_2_save = null): ?bool {
         
         return null;
@@ -138,6 +149,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
     /**
      * Not Supported, not overridable.
      */
+    #[\Override]
     public final function saveInTransaction(null|\GDAO\Model\RecordInterface|array $data_2_save = null): ?bool {
         
         return null;
@@ -152,6 +164,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
      * 
      * @param mixed $val The value to set the data to.
      */
+    #[\Override]
     public final function __set($key, $val): void {
         
         $this->throwNotSupportedException(__FUNCTION__);
@@ -162,6 +175,7 @@ class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
      * 
      * @param string $key The requested data key.
      */
+    #[\Override]
     public final function __unset($key): void {
         
         $this->throwNotSupportedException(__FUNCTION__);

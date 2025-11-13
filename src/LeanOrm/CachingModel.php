@@ -10,6 +10,7 @@ namespace LeanOrm;
  * @copyright (c) 2024, Rotexsoft
  * 
  * @psalm-suppress UnusedClass
+ * @psalm-suppress ClassMustBeFinal
  */
 class CachingModel extends Model {
 
@@ -21,6 +22,7 @@ class CachingModel extends Model {
      * @psalm-suppress MixedInferredReturnType
      * @psalm-suppress MixedReturnStatement
      */
+    #[\Override]
     protected function fetchTableListFromDB(): array {
         
         if(array_key_exists($this->db_connector->getConnectionName(), static::$cachedFetchedTableListFromDB)) {
@@ -40,6 +42,7 @@ class CachingModel extends Model {
      * @psalm-suppress MixedArrayAccess
      * @psalm-suppress MixedArrayAssignment
      */
+    #[\Override]
     protected function fetchTableColsFromDB(string $table_name): array {
         
         if(!array_key_exists($this->db_connector->getConnectionName(), static::$cachedFetchedTableColsFromDB)) {

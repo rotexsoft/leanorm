@@ -7,7 +7,9 @@ namespace LeanOrm\Model;
  * Represents a collection of \GDAO\Model\RecordInterface objects.
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2024, Rotexsoft
+ * @copyright (c) 2025, Rotexsoft
+ * 
+ * @psalm-suppress ClassMustBeFinal
  */
 class Collection implements \GDAO\Model\CollectionInterface, \Stringable
 {
@@ -44,6 +46,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * @throws \PDOException 
      * @throws \LeanOrm\Exceptions\CantDeleteReadOnlyRecordFromDBException
      */
+    #[\Override]
     public function deleteAll(): bool|array {
         
         $this->preDeleteAll();
@@ -101,6 +104,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      *               element key, and the value is the column value for that
      *               element.
      */
+    #[\Override]
     public function getColVals(string $col): array {
         
         $list = [];
@@ -119,6 +123,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * Returns all the keys for this collection.
      * @return int[]|string[]
      */
+    #[\Override]
     public function getKeys(): array {
         
         return array_keys($this->data);
@@ -130,6 +135,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @return \GDAO\Model The origin model object.
      */
+    #[\Override]
     public function getModel(): \GDAO\Model {
         
         return $this->model;
@@ -141,6 +147,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @return bool True if empty, false if not.
      */
+    #[\Override]
     public function isEmpty(): bool {
         
         return $this->data === [];
@@ -150,6 +157,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * Load the collection with a list of records.
      */
+    #[\Override]
     public function loadData(\GDAO\Model\RecordInterface ...$data_2_load): static {
         
         $this->data = $data_2_load;
@@ -162,6 +170,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * Removes all records from the collection but **does not** delete them from the database.
      */
+    #[\Override]
     public function removeAll(): static {
         
         $keys =  array_keys($this->data);
@@ -207,6 +216,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @throws \PDOException
      */
+    #[\Override]
     public function saveAll(bool $group_inserts_together=false): bool|array {
         
         $this->preSaveAll($group_inserts_together);
@@ -324,6 +334,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @param \GDAO\Model $model The origin model object.
      */
+    #[\Override]
     public function setModel(\GDAO\Model $model): static {
         
         $this->model = $model;
@@ -337,6 +348,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @return array an array representation of an instance of this class.
      */
+    #[\Override]
     public function toArray(): array {
 
         $result = [];
@@ -374,6 +386,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @param string $key The requested key.
      */
+    #[\Override]
     public function offsetExists($key): bool {
         
         return $this->__isset($key);
@@ -386,6 +399,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * @param string $key The requested key.
      * 
      */
+    #[\Override]
     #[\ReturnTypeWillChange]
     public function offsetGet($key): \GDAO\Model\RecordInterface {
         
@@ -402,6 +416,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * @throws \GDAO\Model\CollectionCanOnlyContainGDAORecordsException
      * @psalm-suppress ParamNameMismatch
      */
+    #[\Override]
     public function offsetSet(mixed $key, mixed $val): void {
         
         if( !($val instanceof \GDAO\Model\RecordInterface) ) {
@@ -443,6 +458,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @param string $key The requested key.
      */
+    #[\Override]
     public function offsetUnset($key): void {
         
         $this->__unset($key);
@@ -452,6 +468,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * Countable: how many keys are there?
      */
+    #[\Override]
     public function count(): int {
         
         return count($this->data);
@@ -463,6 +480,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @return \ArrayIterator an Iterator eg. an instance of \ArrayIterator
      */
+    #[\Override]
     public function getIterator(): \ArrayIterator {
         
         return new \ArrayIterator($this->data);
@@ -478,6 +496,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @param int|string $key The sequential or associative key value for the record.
      */
+    #[\Override]
     public function __get($key): \GDAO\Model\RecordInterface {
         
         if (array_key_exists($key, $this->data)) {
@@ -499,6 +518,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @param string $key The requested data key.
      */
+    #[\Override]
     public function __isset($key): bool {
         
         return array_key_exists($key, $this->data);
@@ -511,6 +531,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * @param string $key The requested key.
      * @param \GDAO\Model\RecordInterface $val The value to set it to.
      */
+    #[\Override]
     public function __set($key, \GDAO\Model\RecordInterface $val): void {
         
         // set the value
@@ -523,6 +544,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @return string a string representation of an instance of this class.
      */
+    #[\Override]
     public function __toString(): string {
         
         return var_export($this->toArray(), true);
@@ -534,6 +556,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      * 
      * @param string $key The requested data key.
      */
+    #[\Override]
     public function __unset($key): void {
         
         unset($this->data[$key]);
@@ -544,26 +567,31 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function preDeleteAll(): void { }
     
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function postDeleteAll(): void { }
     
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function preSaveAll(bool $group_inserts_together=false): void { }
     
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function postSaveAll(bool|array $save_all_result, bool $group_inserts_together=false): void { }
 
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function removeRecord(\GDAO\Model\RecordInterface $record): static {
         
         foreach($this->data as $key => $current_record) {
@@ -598,15 +626,17 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      *                                  corresponding Model Class for this collection
      *                                  via the relationship definition methods 
      *                                  (belongsTo, hasOne, hasMany, hasManyThrough)
-     * @return static
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function eagerLoadRelatedData(array $relationsToInclude): static {
 
+        $model = $this->getModel();
+        
         /** @psalm-suppress MixedAssignment */
         foreach( $relationsToInclude as $relName ) {
 
-            /** @psalm-suppress MixedArgument */
-            $this->getModel()->loadRelationshipData($relName, $this, true, true);
+            ($model instanceof \LeanOrm\Model)
+            && $model->loadRelationshipData((string)$relName, $this, true, true);
         }
         
         return $this;

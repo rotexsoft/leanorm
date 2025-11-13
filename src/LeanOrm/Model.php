@@ -353,8 +353,8 @@ class Model extends \GDAO\Model implements \Stringable {
      * {@inheritDoc}
      * 
      * @psalm-suppress LessSpecificReturnStatement
-     * @psalm-suppress MoreSpecificReturnType
      */
+    #[\Override]
     public function createNewCollection(\GDAO\Model\RecordInterface ...$list_of_records): \GDAO\Model\CollectionInterface {
 
         return ($this->collection_class_name === null || $this->collection_class_name === '')
@@ -365,16 +365,18 @@ class Model extends \GDAO\Model implements \Stringable {
 
     /**
      * {@inheritDoc}
-     * 
-     * @psalm-suppress MoreSpecificReturnType
      */
+    #[\Override]
     public function createNewRecord(array $col_names_and_values = []): \GDAO\Model\RecordInterface {
 
+
+        $result = ($this->record_class_name === null || $this->record_class_name === '')
+                    ? //default to creating new record of type \LeanOrm\Model\Record
+                      new \LeanOrm\Model\Record($col_names_and_values, $this)
+                    : new $this->record_class_name($col_names_and_values, $this);
+        
         /** @psalm-suppress LessSpecificReturnStatement */
-        return ($this->record_class_name === null || $this->record_class_name === '')
-                ? //default to creating new record of type \LeanOrm\Model\Record
-                  new \LeanOrm\Model\Record($col_names_and_values, $this)
-                : new $this->record_class_name($col_names_and_values, $this);
+        return $result;
     }
 
     /**
@@ -1443,6 +1445,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function fetchRecordsIntoCollection(?object $query=null, array $relations_to_include=[]): \GDAO\Model\CollectionInterface {
 
         return $this->doFetchRecordsIntoCollection(
@@ -1496,6 +1499,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function fetchRecordsIntoArray(?object $query=null, array $relations_to_include=[]): array {
         
         return $this->doFetchRecordsIntoArray(
@@ -1599,6 +1603,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function fetchRowsIntoArray(?object $query=null, array $relations_to_include=[]): array {
 
         return $this->doFetchRowsIntoArray(
@@ -1639,6 +1644,7 @@ SELECT {$foreign_table_name}.*
         return $results;
     }
 
+    #[\Override]
     public function getPDO(): \PDO {
 
         //return pdo object associated with the current dsn
@@ -1648,6 +1654,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function deleteMatchingDbTableRows(array $cols_n_vals): int {
 
         $result = 0;
@@ -1743,6 +1750,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function deleteSpecifiedRecord(\GDAO\Model\RecordInterface $record): ?bool {
 
         $succesfully_deleted = null;
@@ -1824,6 +1832,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function fetchCol(?object $query=null): array {
 
         $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery(
@@ -1839,6 +1848,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function fetchOneRecord(?object $query=null, array $relations_to_include=[]): ?\GDAO\Model\RecordInterface {
 
         $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery(
@@ -1891,6 +1901,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function fetchPairs(?object $query=null): array {
 
         $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery(
@@ -1906,6 +1917,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function fetchValue(?object $query=null): mixed {
 
         $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery(
@@ -2117,6 +2129,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function insert(array $data_2_insert = []): bool|array {
         
         $result = false;
@@ -2191,6 +2204,7 @@ SELECT {$foreign_table_name}.*
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function insertMany(array $rows_of_data_2_insert = []): bool {
 
         $result = false;
@@ -2277,6 +2291,7 @@ SELECT {$foreign_table_name}.*
      * {@inheritDoc}
      * @psalm-suppress RedundantCondition
      */
+    #[\Override]
     public function updateMatchingDbTableRows(
         array $col_names_n_values_2_save = [],
         array $col_names_n_values_2_match = []
@@ -2429,6 +2444,7 @@ SELECT {$foreign_table_name}.*
      * {@inheritDoc}
      * @psalm-suppress UnusedVariable
      */
+    #[\Override]
     public function updateSpecifiedRecord(\GDAO\Model\RecordInterface $record): static {
         
         if( $record instanceof \LeanOrm\Model\ReadOnlyRecord ) {
@@ -3136,8 +3152,8 @@ SELECT {$foreign_table_name}.*
 
         $tableCols = $this->getTableColNames();
 
-        /** @psalm-suppress MixedArgument */
-        $tableColsLowerCase = array_map('strtolower', $tableCols);
+
+        $tableColsLowerCase = array_map(strtolower(...), $tableCols);
 
         if( in_array(strtolower($relationName), $tableColsLowerCase) ) {
 

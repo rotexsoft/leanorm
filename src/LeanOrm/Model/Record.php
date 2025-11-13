@@ -9,6 +9,7 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
  *
  * @author Rotimi Adegbamigbe
  * @copyright (c) 2024, Rotexsoft
+ * @psalm-suppress ClassMustBeFinal
  * @psalm-suppress PropertyNotSetInConstructor
  */
 class Record implements \GDAO\Model\RecordInterface, \Stringable
@@ -39,6 +40,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      * 
      * @return bool true if record was successfully deleted from db or false if not
      */
+    #[\Override]
     public function delete(bool $set_record_objects_data_to_empty_array=false): bool {
         
         $result = $this->getModel()->deleteSpecifiedRecord($this);
@@ -62,6 +64,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      * 
      * @return array a copy of the initial data loaded into this record.
      */
+    #[\Override]
     public function getInitialData(): array {
         
         return $this->initial_data;
@@ -73,6 +76,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      * 
      * @return array a reference to the initial data loaded into this record.
      */
+    #[\Override]
     public function &getInitialDataByRef(): array {
         
         return $this->initial_data;
@@ -104,6 +108,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      * 
      * @todo How to handle changes to array values?
      */
+    #[\Override]
     public function isChanged(?string $col = null): ?bool {
 
         // if no column specified, check if the record as a whole has changed
@@ -165,7 +170,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
 
             if ($both_numeric) {
                 
-                return ''.$this->initial_data[$col] !== ''.$this->data[$col];
+                return ((string)$this->initial_data[$col]) !== ((string)$this->data[$col]);
             }
 
             // use strict inequality
@@ -176,7 +181,8 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
     /**
      * Is the record new? (I.e. its data has never been saved to the db)
      */
-	public function isNew(): bool {
+    #[\Override]
+    public function isNew(): bool {
         
         return $this->is_new;
     }
@@ -208,6 +214,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      * 
      * @throws \GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException
      */
+    #[\Override]
     public function loadData(\GDAO\Model\RecordInterface|array $data_2_load, array $cols_2_load = []): static {
 
         $this->injectData($data_2_load, $cols_2_load);
@@ -232,6 +239,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      * Set the is_new attribute of this record to true (meaning that the data
      * for this record has never been saved to the db).
      */
+    #[\Override]
     public function markAsNew(): static {
         
         $this->is_new = true;
@@ -243,6 +251,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      * Set the is_new attribute of this record to false (meaning that the data
      * for this record has been saved to the db or was read from the db).
      */
+    #[\Override]
     public function markAsNotNew(): static {
         
         $this->is_new = false;
@@ -265,6 +274,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      *  - or the value of initial_data could be copied to _data
      *  - etc.
      */
+    #[\Override]
     public function setStateToNew(): static {
 
         $this->data = [];
@@ -283,6 +293,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      *  
      * @return null|bool true: successful save, false: failed save, null: no changed data to save
      */
+    #[\Override]
     public function save(null|\GDAO\Model\RecordInterface|array $data_2_save = null): ?bool {
 
         $result = null;
@@ -356,6 +367,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      * 
      * @throws \Exception throws exception if an error occurred during transaction
      */
+    #[\Override]
     public function saveInTransaction(null|\GDAO\Model\RecordInterface|array $data_2_save = null): ?bool {
 
         $pdo_obj = $this->getModel()->getPDO();
@@ -408,6 +420,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      * 
      * @param mixed $val The value to set the data to.
      */
+    #[\Override]
     public function __set($key, mixed $val): void {
         
         if ( in_array($key, $this->getModel()->getTableColNames()) ) {
@@ -433,6 +446,7 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
      * 
      * @param string $key The requested data key.
      */
+    #[\Override]
     public function __unset($key): void {
         
         if( array_key_exists($key, $this->initial_data) ) {

@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace LeanOrm\Exceptions;
 
 /**
- * Description of MissingRelationParamException
- *
- * @author rotimi
+ * @psalm-suppress ClassMustBeFinal
  */
 class MissingRelationParamException extends BaseException { }
