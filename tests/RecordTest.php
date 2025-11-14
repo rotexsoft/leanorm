@@ -1411,12 +1411,12 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         
         self::assertNull($emptyRecordOnCreation->offsetGet('posts'));
         self::assertNull($emptyRecordOnCreation->offsetGet('name'));
-        self::assertNull($emptyRecordOnCreation->offsetGet('non_table_and_non_relation_name'));
+        self::assertFalse($emptyRecordOnCreation->offsetExists('non_table_and_non_relation_name'));
         
         self::assertEquals([], $emptyRecordOnCreation->getInitialData());
         self::assertEquals(['name'=>null], $emptyRecordOnCreation->getData());
         self::assertEquals(['posts'=>null], $emptyRecordOnCreation->getRelatedData());
-        self::assertEquals(['non_table_and_non_relation_name'=>null], $emptyRecordOnCreation->getNonTableColAndNonRelatedData());
+        self::assertEquals([], $emptyRecordOnCreation->getNonTableColAndNonRelatedData());
         
         ////////////////////////////////////////////////////////////////////////
         $nonEmptyRecordOnCreation = $authorsModel->createNewRecord(['name' => 'Author Name 2']);
@@ -1426,8 +1426,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         $nonEmptyRecordOnCreation->offsetUnset('name');
         self::assertNull($nonEmptyRecordOnCreation->offsetGet('name'));
         
-        self::assertArrayHasKey('name', $nonEmptyRecordOnCreation->getInitialData());
-        self::assertNull($nonEmptyRecordOnCreation->getInitialData()['name']);
+        self::assertArrayNotHasKey('name', $nonEmptyRecordOnCreation->getInitialData());
         
         self::assertEquals(['name'=>null], $nonEmptyRecordOnCreation->getData());
         self::assertEquals([], $nonEmptyRecordOnCreation->getRelatedData());
@@ -1584,12 +1583,12 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         
         self::assertNull($emptyRecordOnCreation->offsetGet('posts'));
         self::assertNull($emptyRecordOnCreation->offsetGet('name'));
-        self::assertNull($emptyRecordOnCreation->offsetGet('non_table_and_non_relation_name'));
+        self::assertFalse($emptyRecordOnCreation->offsetExists('non_table_and_non_relation_name'));
         
         self::assertEquals([], $emptyRecordOnCreation->getInitialData());
         self::assertEquals(['name'=>null], $emptyRecordOnCreation->getData());
         self::assertEquals(['posts'=>null], $emptyRecordOnCreation->getRelatedData());
-        self::assertEquals(['non_table_and_non_relation_name'=>null], $emptyRecordOnCreation->getNonTableColAndNonRelatedData());
+        self::assertEquals([], $emptyRecordOnCreation->getNonTableColAndNonRelatedData());
         
         ////////////////////////////////////////////////////////////////////////
         $nonEmptyRecordOnCreation = $authorsModel->createNewRecord(['name' => 'Author Name 2']);
@@ -1599,8 +1598,7 @@ class RecordTest extends \PHPUnit\Framework\TestCase {
         $nonEmptyRecordOnCreation->__unset('name');
         self::assertNull($nonEmptyRecordOnCreation->offsetGet('name'));
         
-        self::assertArrayHasKey('name', $nonEmptyRecordOnCreation->getInitialData());
-        self::assertNull($nonEmptyRecordOnCreation->getInitialData()['name']);
+        self::assertArrayNotHasKey('name', $nonEmptyRecordOnCreation->getInitialData());
         
         self::assertEquals(['name'=>null], $nonEmptyRecordOnCreation->getData());
         self::assertEquals([], $nonEmptyRecordOnCreation->getRelatedData());

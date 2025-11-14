@@ -451,26 +451,26 @@ class Record implements \GDAO\Model\RecordInterface, \Stringable
         
         if( array_key_exists($key, $this->initial_data) ) {
             
-            unset($this->initial_data[$key]);
             $this->initial_data[$key] = null;
+            unset($this->initial_data[$key]);
         }
         
         if( array_key_exists($key, $this->data) ) {
             
-            unset($this->data[$key]);
             $this->data[$key] = null;
+            unset($this->data[$key]);
         }
         
         if( array_key_exists($key, $this->related_data) ) {
             
-            unset($this->related_data[$key]);
             $this->related_data[$key] = null;
+            unset($this->related_data[$key]);
         }
         
         if( array_key_exists($key, $this->non_table_col_and_non_related_data) ) {
             
-            unset($this->non_table_col_and_non_related_data[$key]);
             $this->non_table_col_and_non_related_data[$key] = null;
+            unset($this->non_table_col_and_non_related_data[$key]);
         }
     }
 }
