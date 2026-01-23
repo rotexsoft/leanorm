@@ -58,9 +58,13 @@ class DBConnector {
     final public const NANO_SECOND_TO_SECOND_DIVISOR = 1_000_000_000;
     
     final public const CONFIG_KEY_USERNAME = 'username';
+    
     final public const CONFIG_KEY_PASSWORD = 'password';
+    
     final public const CONFIG_KEY_ERR_MODE = 'error_mode';
+    
     final public const CONFIG_KEY_DRIVER_OPTS = 'driver_options';
+    
     final public const CONFIG_KEY_CONNECTION_STR = 'connection_string';
     
 
