@@ -9,7 +9,7 @@
 ![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/rotexsoft/leanorm/latest) &nbsp; 
 ![GitHub last commit](https://img.shields.io/github/last-commit/rotexsoft/leanorm) &nbsp; 
 ![GitHub Release Date](https://img.shields.io/github/release-date/rotexsoft/leanorm) &nbsp; 
-<a href="https://libraries.io/github/rotexsoft/leanorm">
+<a href="https://libraries.io/packagist/rotexsoft%2Fleanorm">
     <img alt="Libraries.io dependency status for GitHub repo" src="https://img.shields.io/librariesio/github/rotexsoft/leanorm">
 </a>
 
