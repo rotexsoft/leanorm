@@ -2924,7 +2924,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             // post's comments
             self::assertIsArray($postRecord['comments']);
             self::assertCount(1, $postRecord['comments']);
-            self::assertContainsOnly('array', $postRecord['comments']);
+            self::assertContainsOnlyArray($postRecord['comments']);
             
             // summary of the post
             self::assertIsArray($postRecord['summary']);
@@ -2932,12 +2932,12 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             // post's posts_tags
             self::assertIsArray($postRecord['posts_tags']);
             self::assertCount(1, $postRecord['posts_tags']);
-            self::assertContainsOnly('array', $postRecord['posts_tags']);
+            self::assertContainsOnlyArray($postRecord['posts_tags']);
             
             // post's tags
             self::assertIsArray($postRecord['tags']);
             self::assertCount(1, $postRecord['tags']);
-            self::assertContainsOnly('array', $postRecord['tags']);
+            self::assertContainsOnlyArray($postRecord['tags']);
             
         } // foreach($allPostsWithAllRelateds as $postRecord)
         unset($allPostsWithAllRelateds);
@@ -3053,7 +3053,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             // post's comments
             self::assertIsArray($postRecord['comments']);
             self::assertCount(1, $postRecord['comments']);
-            self::assertContainsOnly('array', $postRecord['comments']);
+            self::assertContainsOnlyArray($postRecord['comments']);
             
             // summary of the post
             self::assertIsArray($postRecord['summary']);
@@ -3061,12 +3061,12 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             // post's posts_tags
             self::assertIsArray($postRecord['posts_tags']);
             self::assertCount(1, $postRecord['posts_tags']);
-            self::assertContainsOnly('array', $postRecord['posts_tags']);
+            self::assertContainsOnlyArray($postRecord['posts_tags']);
             
             // post's tags
             self::assertIsArray($postRecord['tags']);
             self::assertCount(1, $postRecord['tags']);
-            self::assertContainsOnly('array', $postRecord['tags']);
+            self::assertContainsOnlyArray($postRecord['tags']);
             
         } // foreach($allPostsWithAllRelateds as $postRecord)
         unset($allPostsWithAllRelateds);

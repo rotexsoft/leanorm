@@ -97,7 +97,7 @@ class Model extends \GDAO\Model implements \Stringable {
     public function __construct(
         string $dsn = '', 
         string $username = '', 
-        string $passwd = '', 
+        #[\SensitiveParameter] string $passwd = '', 
         array $pdo_driver_opts = [],
         string $primary_col_name='',
         string $table_name=''

@@ -19,24 +19,32 @@
 
 ## Installation Requirements
 
+PHP 8.2+ for version 6.x.
+
 PHP 8.1+ for versions 4.x & 5.x.
 
 PHP 7.4+ for versions 2.x & 3.x
 
 [Composer](https://getcomposer.org/)
 
-Versions 2.x & 3.x of this package have been rigorously tested against sqlite 3.7.11+, MySQL 8.0.29+ & Postgresql 15.1+.
+Versions 2.x & 3.x of this package have been rigorously tested against sqlite 3.7.11+, MySQL 8.0.29+ & PostgreSQL 15.1+.
 
 Version 4.x & 5.x have been rigorously tested against:
 - Sqlite 3.34.1+
 - MariaDB 10.4.33+, 10.5.24+, 10.6.17+, 10.11.7+, 11.0.5+, 11.1.4+, 11.2.3+ & 11.4.2+
-- MySql 5.6.51, 5.7.44, 8.0.36+, 8.1.0, 8.2.0, 8.3.0+ & 8.4+
+- MySQL 5.6.51, 5.7.44, 8.0.36+, 8.1.0, 8.2.0, 8.3.0+ & 8.4+
 - PostgreSQL 12.18+, 13.14+, 14.11+, 15.6+ & 16.2+
 - See [run-tests-against-multiple-db-versions.php](./run-tests-against-multiple-db-versions.php)
 
+Version 6.x has been rigorously tested against:
+- Sqlite 3.45.1
+- MariaDB 10.4.34, 10.5.29, 10.6.24, 10.11.15, 11.4.9, 11.8.5 & 12.1.2
+- MySQL 5.6.51, 5.7.44, 8.0.45 & 8.4.8
+- PostgreSQL 12.22, 13.23, 14.20, 15.15, 16.11, 17.7 & 18.1
+- See [run-tests-against-multiple-db-versions.php](./run-tests-against-multiple-db-versions.php)
+
 MS SQL Server, is theoretically supported but hasn't been tested. 
-Will provide more updates on MS SQL Server support once testing 
-on that DB engine has been done.
+Will provide more updates on MS SQL Server support once testing on that DB engine has been done.
 
 If you are using Sqlite, version sqlite 3.7.11 or higher is required.
 
@@ -111,7 +119,9 @@ Documentation for version 4.0.x+ can be found [here](https://github.com/rotexsof
 
 Documentation for version 4.1.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/4.1.x/docs/index.md).
 
-Documentation for version 5.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/master/docs/index.md).
+Documentation for version 5.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/5.x/docs/index.md).
+
+Documentation for version 6.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/master/docs/index.md).
 
 Please submit an issue (preferably with a pull request) to address mistakes or omissions in the documentation or to propose improvements to the documentation. 
 
@@ -129,7 +139,8 @@ New Test files must be manually added to the phpunit.xml.dist file in order for 
 
 These are the branches in this repository:
 
-- **master:** contains code for the latest major version (5.x) of this package.
+- **master:** contains code for the latest major version (6.x) of this package.
+- **5.x:** contains code for the 5.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **4.1.x:** contains code for the 4.1.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **4.0.x:** contains code for the 4.0.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **3.x:** contains code for the 3.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
