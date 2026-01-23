@@ -17,7 +17,7 @@ use GDAO\Model\LoadingDataFromInvalidSourceIntoRecordException;
  * @psalm-suppress ClassMustBeFinal
  * 
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2024, Rotexsoft
+ * @copyright (c) 2026, Rotexsoft
  */
 class ReadOnlyRecord implements \GDAO\Model\RecordInterface, \Stringable
 {

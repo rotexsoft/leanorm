@@ -7,7 +7,7 @@ namespace LeanOrm\Model;
  * Represents a collection of \GDAO\Model\RecordInterface objects.
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2025, Rotexsoft
+ * @copyright (c) 2026, Rotexsoft
  * 
  * @psalm-suppress ClassMustBeFinal
  */

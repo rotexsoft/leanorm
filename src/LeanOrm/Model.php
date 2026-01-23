@@ -12,7 +12,10 @@ use function sprintf;
  * Supported PDO drivers: mysql, pgsql, sqlite and sqlsrv
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2024, Rotexsoft
+ * @copyright (c) 2026, Rotexsoft
+ * 
+ * @psalm-suppress MixedPropertyFetch
+ * @psalm-suppress MoreSpecificReturnType
  */
 class Model extends \GDAO\Model implements \Stringable {
     
@@ -91,8 +94,6 @@ class Model extends \GDAO\Model implements \Stringable {
     
     /**
      * {@inheritDoc}
-     * 
-     * @psalm-suppress MixedPropertyFetch
      */
     public function __construct(
         string $dsn = '', 
@@ -116,12 +117,12 @@ class Model extends \GDAO\Model implements \Stringable {
         }
         
         DBConnector::configure($dsn, null, $dsn);//use $dsn as connection name in 3rd parameter
-        DBConnector::configure('username', $username, $dsn);//use $dsn as connection name in 3rd parameter
-        DBConnector::configure('password', $passwd, $dsn);//use $dsn as connection name in 3rd parameter
+        DBConnector::configure(DBConnector::CONFIG_KEY_USERNAME, $username, $dsn);//use $dsn as connection name in 3rd parameter
+        DBConnector::configure(DBConnector::CONFIG_KEY_PASSWORD, $passwd, $dsn);//use $dsn as connection name in 3rd parameter
 
         if( $pdo_driver_opts !== [] ) {
 
-            DBConnector::configure( 'driver_options', $pdo_driver_opts, $dsn);//use $dsn as connection name in 3rd parameter
+            DBConnector::configure(DBConnector::CONFIG_KEY_DRIVER_OPTS, $pdo_driver_opts, $dsn);//use $dsn as connection name in 3rd parameter
         }
 
         $this->db_connector = DBConnector::create($dsn);//use $dsn as connection name

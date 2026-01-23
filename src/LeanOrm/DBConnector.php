@@ -12,7 +12,7 @@ namespace LeanOrm;
  *      executing the statement in one single method. 
  *
  * @author Rotimi Adegbamigbe
- * @copyright (c) 2024, Rotexsoft
+ * @copyright (c) 2026, Rotexsoft
  * 
  * BSD Licensed.
  *
@@ -56,6 +56,13 @@ class DBConnector {
      * @var int
      */
     final public const NANO_SECOND_TO_SECOND_DIVISOR = 1_000_000_000;
+    
+    final public const CONFIG_KEY_USERNAME = 'username';
+    final public const CONFIG_KEY_PASSWORD = 'password';
+    final public const CONFIG_KEY_ERR_MODE = 'error_mode';
+    final public const CONFIG_KEY_DRIVER_OPTS = 'driver_options';
+    final public const CONFIG_KEY_CONNECTION_STR = 'connection_string';
+    
 
 ////////////////////////////////////////////////////////////////////////////////        
 //////////// -------------------------------- //////////////////////////////////
@@ -63,11 +70,11 @@ class DBConnector {
 ////////////////////////////////////////////////////////////////////////////////
     // Class configuration
     protected static array $default_config = [
-        'connection_string' => 'sqlite::memory:',
-        'error_mode' => \PDO::ERRMODE_EXCEPTION,
-        'username' => null,
-        'password' => null,
-        'driver_options' => null,
+        self::CONFIG_KEY_CONNECTION_STR => 'sqlite::memory:',
+        self::CONFIG_KEY_ERR_MODE => \PDO::ERRMODE_EXCEPTION,
+        self::CONFIG_KEY_USERNAME => null,
+        self::CONFIG_KEY_PASSWORD => null,
+        self::CONFIG_KEY_DRIVER_OPTS => null,
     ];
 
     // Map of configuration settings
@@ -124,7 +131,7 @@ class DBConnector {
                 // Shortcut: If only one string argument is passed, 
                 // assume it's a connection string
                 $value = $key_or_settings;
-                $key_or_settings = 'connection_string';
+                $key_or_settings = self::CONFIG_KEY_CONNECTION_STR;
             }
 
             static::$config[$connection_name][$key_or_settings] = $value;
@@ -159,13 +166,13 @@ class DBConnector {
             static::_initDbConfigWithDefaultVals($connection_name);
 
             $db = new \PDO(
-                static::$config[$connection_name]['connection_string'],
-                static::$config[$connection_name]['username'],
-                static::$config[$connection_name]['password'],
-                static::$config[$connection_name]['driver_options']
+                static::$config[$connection_name][self::CONFIG_KEY_CONNECTION_STR],
+                static::$config[$connection_name][self::CONFIG_KEY_USERNAME],
+                static::$config[$connection_name][self::CONFIG_KEY_PASSWORD],
+                static::$config[$connection_name][self::CONFIG_KEY_DRIVER_OPTS]
             );
 
-            $db->setAttribute(\PDO::ATTR_ERRMODE, static::$config[$connection_name]['error_mode']);
+            $db->setAttribute(\PDO::ATTR_ERRMODE, static::$config[$connection_name][self::CONFIG_KEY_ERR_MODE]);
             static::setDb($db, $connection_name);
         }
     }
@@ -231,7 +238,6 @@ class DBConnector {
     * @param string $connection_name Which connection to use
     * 
     * @return bool|array{query_result: mixed, pdo_statement: \PDOStatement, exec_time_in_seconds: float} Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
-    * 
     */
     protected static function _execute(string $query, array $parameters = [], bool $return_pdo_stmt_and_exec_time=false, string $connection_name = self::DEFAULT_CONNECTION): bool|array {
 

@@ -7,7 +7,7 @@ use Closure;
  * Description of Utils
  *
  * @author Rotimi Ade
- * @copyright (c) 2025, Rotexsoft
+ * @copyright (c) 2026, Rotexsoft
  * 
  * @psalm-suppress ClassMustBeFinal
  */
