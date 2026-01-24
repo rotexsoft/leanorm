@@ -15,6 +15,8 @@
 
 # LeanOrm
 
+![Leanorm](./leanorm.png)
+
 #### A light-weight, highly performant PHP data access library. Good alternative to Doctrine & Eloquent without all the bells & whistles that are not needed in most applications.
 
 ## Installation Requirements
