@@ -279,11 +279,11 @@ trait CommonPropertiesAndMethodsTrait {
     
     public static function tearDownAfterClass(): void { parent::tearDownAfterClass(); }
     
-    protected function tearDown(): void { parent::tearDown(); 
-
+    protected function tearDown(): void { 
+        
+        parent::tearDown();
         \gc_enable();
         \gc_collect_cycles();
-    
     }
     
     protected function insertDataIntoTable(string $tableName, array $tableData, \PDO $pdo) {
