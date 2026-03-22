@@ -19,18 +19,19 @@ class TestSchemaCreatorAndSeeder {
         }
         
         $db = $this->connection->getPdo();
+        $pdoDriverName = strtolower((string)$db->getAttribute(\PDO::ATTR_DRIVER_NAME));
         
-        if ( str_contains ($db->getAttribute(\PDO::ATTR_DRIVER_NAME), 'mysql') ) {
+        if ( str_contains ($pdoDriverName, 'mysql') ) {
             
             // mysql
             $this->sqlExecutor = new MysqlSchemaCreatorAndSeeder($this->connection);
             
-        } elseif ( str_contains ($db->getAttribute(\PDO::ATTR_DRIVER_NAME), 'sqlsrv') ) {
+        } elseif ( str_contains ($pdoDriverName, 'sqlsrv') ) {
             
             //sql server
             $this->sqlExecutor = new SqlSvrSchemaCreatorAndSeeder($this->connection);
             
-        } elseif ( str_contains ($db->getAttribute(\PDO::ATTR_DRIVER_NAME), 'pgsql') ) {
+        } elseif ( str_contains ($pdoDriverName, 'pgsql') ) {
             
             //pgsql
             $this->sqlExecutor = new PostgreSQLSchemaCreatorAndSeeder($this->connection);
