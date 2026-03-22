@@ -3184,6 +3184,23 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $this->modelClass::clearQueryLogForAllInstances();
     }
     
+    public function testThatClearQueryLogWorksAsExpected() {
+        
+        $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        //$commentsModel->setLogger(static::$psrLogger);
+        $commentsModel->enableQueryLogging();
+        
+        $commentsModel->fetchCol();
+        $commentsModel->fetchValue();
+        $commentsModel->fetchRecordsIntoCollection();
+        
+        self::assertNotEquals([], $commentsModel->getQueryLog());
+        self::assertSame($commentsModel, $commentsModel->clearQueryLog());
+        self::assertEquals([], $commentsModel->getQueryLog());
+        $this->modelClass::clearQueryLogForAllInstances();
+    }
+    
     public function testThatGetQueryLogForAllInstancesWorksAsExpected() {
         
         $commentsModel = new LeanOrm\TestObjects\CommentsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
