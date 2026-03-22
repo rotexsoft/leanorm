@@ -461,7 +461,140 @@ class Model extends \GDAO\Model implements \Stringable {
 
         return $this;
     }
-    
+
+    public function recursivelyStitchRelatedData(
+        Model $model,
+        array $relations_to_include,
+        \GDAO\Model\RecordInterface|\GDAO\Model\CollectionInterface|array &$fetched_data,
+        bool $wrap_records_in_collection = false
+    ): void {
+
+        if ($relations_to_include !== []) {
+
+            foreach ($relations_to_include as $potential_relation_name => $potential_array_of_relations_to_include_next) {
+
+                $current_relation_name = $potential_relation_name;
+
+                if (\is_numeric($potential_relation_name)) {
+
+                    // $potential_array_of_relations_to_include_next must be a string containing the name of a relation to fetch
+                    $current_relation_name = (string) $potential_array_of_relations_to_include_next; // value has to be relation name
+
+                    // no need for recursion here, just load data for current relation name
+                    $model->loadRelationshipData($current_relation_name, $fetched_data, true, $wrap_records_in_collection);
+                    
+                } elseif (
+                    \is_array($potential_array_of_relations_to_include_next)
+                    && \count($potential_array_of_relations_to_include_next) > 0
+                ) {
+
+                    // $potential_array_of_relations_to_include_next is
+                    // a sub array of relation names to be eager loaded into 
+                    // the related records fetched based on the relationship
+                    // defined by $current_relation_name
+                    // 
+                    // E.g if $fetched_data contains data fetched from authors table
+                    // $potential_relation_name could be something like 'posts' meaning 
+                    // we want posts associated with each author to be eager loaded
+                    // 
+                    // $potential_array_of_next_level_relation_names could be something like 
+                    // ['comments', 'tags'] meaning that we want to eager load
+                    // the comments and also tags associated with the posts we 
+                    // just eager loaded for the fetched authors
+                    // 
+                    // $relations_to_include would look something like this:
+                    // ['posts'=> ['comments', 'tags'], ...]
+
+                    $model->loadRelationshipData($current_relation_name, $fetched_data, true, $wrap_records_in_collection);
+
+                    $model_obj_for_recursive_call = null;
+                    $fetched_data_for_recursive_call = [];
+
+                    if(
+                        $fetched_data instanceof \GDAO\Model\RecordInterface
+                        && 
+                        (
+                            ($fetched_data->{$current_relation_name} instanceof \GDAO\Model\RecordInterface)
+                            ||
+                            (
+                                (
+                                    $fetched_data->{$current_relation_name} instanceof \GDAO\Model\CollectionInterface
+                                    || \is_array($fetched_data->{$current_relation_name})
+                                )
+                                && count($fetched_data->{$current_relation_name}) > 0
+                            )
+                        )
+                    ) {
+                        $fetched_data_for_recursive_call = $fetched_data->{$current_relation_name};
+
+                        if (
+                            $fetched_data->{$current_relation_name} instanceof \GDAO\Model\RecordInterface 
+                            || $fetched_data->{$current_relation_name} instanceof \GDAO\Model\CollectionInterface
+                        ) {
+                            $model_obj_for_recursive_call = $fetched_data->{$current_relation_name}->getModel();
+                            
+                        } else {
+                            
+                            // $fetched_data->{$current_relation_name} is an array
+                            $model_obj_for_recursive_call = reset($fetched_data->{$current_relation_name})->getModel();
+                        }
+                    } elseif(
+                        (
+                            $fetched_data instanceof \GDAO\Model\CollectionInterface
+                            || \is_array($fetched_data)
+                        )
+                        && count($fetched_data) > 0
+                    ) {
+                        foreach ($fetched_data as $current_record) {
+
+                            if (
+                                ($current_record->{$current_relation_name} instanceof \GDAO\Model\RecordInterface)
+                            ) {
+                                $fetched_data_for_recursive_call[] = $current_record->{$current_relation_name};
+
+                                if ($model_obj_for_recursive_call === null) {
+
+                                    $model_obj_for_recursive_call = $current_record->{$current_relation_name}->getModel();
+                                }
+                                
+                            } elseif (
+                                (
+                                    $current_record->{$current_relation_name} instanceof \GDAO\Model\CollectionInterface 
+                                    || \is_array($current_record->{$current_relation_name})
+                                ) && count($current_record->{$current_relation_name}) > 0
+                            ) {
+                                foreach ($current_record->{$current_relation_name} as $current_related_record) {
+
+                                    $fetched_data_for_recursive_call[] = $current_related_record;
+
+                                    if ($model_obj_for_recursive_call === null) {
+
+                                        $model_obj_for_recursive_call = $current_related_record->getModel();
+                                        
+                                    } // if ($model_obj_for_recursive_call === null)
+                                } // foreach ($current_record->{$current_relation_name} as $current_related_record)
+                            } // if( ($current_record->{$current_relation_name} instanceof \GDAO\Model\RecordInterface) ) ......
+                        } // foreach ($fetched_data as $current_record)
+                    } // if( $fetched_data instanceof \GDAO\Model\RecordInterface .....
+
+                    if (
+                        $model_obj_for_recursive_call !== null
+                        && $fetched_data_for_recursive_call !== []
+                        && $model_obj_for_recursive_call instanceof Model
+                    ) {
+                        // do recursive call
+                        $this->recursivelyStitchRelatedData(
+                                $model_obj_for_recursive_call,
+                                $potential_array_of_relations_to_include_next,
+                                $fetched_data_for_recursive_call,
+                                $wrap_records_in_collection
+                        );
+                    } // if ($model_obj_for_recursive_call !== null && $fetched_data_for_recursive_call !== [])
+                } // if (\is_numeric($potential_relation_name)) ..elseif (\is_array($potential_array_of_next_level_relation_names))
+            } // foreach ($relations_to_include as $potential_relation_name => $potential_array_of_next_level_relation_names)
+        } // if ($relations_to_include !== []) 
+    }
+
     /**
      * @psalm-suppress PossiblyUnusedReturnValue
      */
@@ -1485,12 +1618,12 @@ SELECT {$foreign_table_name}.*
                 $results = $this->createNewCollection(...$data);
             }
             
-            /** @psalm-suppress MixedAssignment */
-            foreach( $relations_to_include as $rel_name ) {
-
-                /** @psalm-suppress MixedArgument */
-                $this->loadRelationshipData($rel_name, $results, true, true);
-            }
+            $this->recursivelyStitchRelatedData(
+                model: $this,
+                relations_to_include: $relations_to_include, 
+                fetched_data: $results, 
+                wrap_records_in_collection: true
+            );
         }
 
         /** @psalm-suppress InvalidReturnStatement */
@@ -1529,13 +1662,13 @@ SELECT {$foreign_table_name}.*
         $results = $this->getArrayOfRecordObjects($select_obj, $use_p_k_val_as_key);
 
         if( $results !== [] ) {
-
-            /** @psalm-suppress MixedAssignment */
-            foreach( $relations_to_include as $rel_name ) {
-
-                /** @psalm-suppress MixedArgument */
-                $this->loadRelationshipData($rel_name, $results, true);
-            }
+            
+            $this->recursivelyStitchRelatedData(
+                model: $this,
+                relations_to_include: $relations_to_include, 
+                fetched_data: $results, 
+                wrap_records_in_collection: false
+            );
         }
 
         return $results;
@@ -1635,8 +1768,23 @@ SELECT {$foreign_table_name}.*
         if( $results !== [] ) {
             
             /** @psalm-suppress MixedAssignment */
-            foreach( $relations_to_include as $rel_name ) {
+            foreach( $relations_to_include as $key=>$rel_name ) {
 
+                if(\is_array($rel_name) && \in_array($key, $this->getRelationNames())) {
+                    
+                    /////////////////////////////////////////////////////////////////
+                    // In case $relations_to_include contains nested relation names
+                    // only take the top level relations as doFetchRowsIntoArray
+                    // currently doesn't support nested eager fetching of related
+                    // data
+                    /////////////////////////////////////////////////////////////////
+                    $rel_name = $key;
+                    
+                } elseif(\is_array($rel_name) && !\in_array($key, $this->getRelationNames())) {
+                    
+                    continue;
+                } // else $rel_name is a potential relationship name
+                
                 /** @psalm-suppress MixedArgument */
                 $this->loadRelationshipData($rel_name, $results);
             }
@@ -1867,11 +2015,13 @@ SELECT {$foreign_table_name}.*
         if( $result !== false && is_array($result) && $result !== [] ) {
 
             $result = $this->createNewRecord($result)->markAsNotNew();
-
-            foreach( $relations_to_include as $rel_name ) {
-
-                $this->loadRelationshipData($rel_name, $result, true, true);
-            }
+            
+            $this->recursivelyStitchRelatedData(
+                model: $this,
+                relations_to_include: $relations_to_include, 
+                fetched_data: $result, 
+                wrap_records_in_collection: true
+            );
         }
         
         if(!($result instanceof \GDAO\Model\RecordInterface)) {
@@ -2614,6 +2764,17 @@ SELECT {$foreign_table_name}.*
         }
 
         return $attributes;
+    }
+
+    /**
+     * @return mixed[]
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function clearQueryLog(): static {
+
+        $this->query_log = [];
+        
+        return $this;
     }
 
     /**
