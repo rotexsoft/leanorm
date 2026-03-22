@@ -68,7 +68,8 @@ $console_response = readFromLine($console_prompt); // hitting enter returns an e
 $console_prompt2 = "Please enter a password that would be used for the Mysql & Mariadb root accounts:";
 $mysql_root_psw = readFromLine(PHP_EOL . $console_prompt2);
 
-$test_results =  [];
+$test_results = [];
+$test_failures = [];
 
 $mysql_maria_db_sql_dsn = 'mysql:host=127.0.0.1;port=3306';
 $mysql_user = 'root';
@@ -294,9 +295,7 @@ foreach($container_creation_commands as $current_container_creation_command) {
         // see https://github.com/sebastianbergmann/phpunit/blob/10.5/src/TextUI/ShellExitCodeCalculator.php
         // for phpunit shell exit codes
         ////////////////////////////////////////////////////////////////////////
-        echo PHP_EOL . "Test failed for the following databases:" . PHP_EOL . $db_versions;
-        echo PHP_EOL . 'Goodbye!'. PHP_EOL;
-        exit(1);
+        $test_failures[] = $db_versions;
         
     } eLse {
         
@@ -321,7 +320,14 @@ if (count($test_results) > 0) {
         echo $test_result . PHP_EOL;
         
     } // foreach ($test_results as $test_result)
-} // if (count($test_results) > 0)
+} else if(count($test_failures) > 0){
+    
+    echo PHP_EOL . "Test failed for the following databases:" . PHP_EOL . PHP_EOL;
+    echo implode(PHP_EOL . PHP_EOL, $test_failures);
+    
+}// if (count($test_results) > 0)
 
 echo PHP_EOL . 'Time taken: ' . readableElapsedTime($elapsed). PHP_EOL. PHP_EOL;
 echo PHP_EOL . 'Goodbye!'. PHP_EOL;
+
+($test_failures !== []) && exit(1);
