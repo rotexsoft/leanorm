@@ -4395,7 +4395,6 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $postsModel = new LeanOrm\TestObjects\PostsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
         $postsModel->setLogger(static::$psrLogger);
-
         $compareLoggers = 
             function(
                 \LeanOrm\TestObjects\PostRecord $post, 
