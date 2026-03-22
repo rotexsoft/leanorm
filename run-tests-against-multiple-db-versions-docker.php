@@ -86,7 +86,7 @@ $runtime_name_placeholder= "{{runtime_name}}";
 $container_creation_commands = [
      [
          'mysql:5.6.51' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:5.6.51",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:5.6.51",
              'dsn' => $mysql_maria_db_sql_dsn,
              'username' => $mysql_user,
              'password' => $mysql_root_psw,
@@ -94,7 +94,7 @@ $container_creation_commands = [
      ],
      [
          'postgres:12.22' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:12.22",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:12.22",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
@@ -102,7 +102,7 @@ $container_creation_commands = [
      ],
      [
          'mysql:5.7.44' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:5.7.44",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:5.7.44",
              'dsn' => $mysql_maria_db_sql_dsn,
              'username' => $mysql_user,
              'password' => $mysql_root_psw,
@@ -110,7 +110,7 @@ $container_creation_commands = [
      ],
      [
          'postgres:13.23' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:13.23",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:13.23",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
@@ -118,7 +118,7 @@ $container_creation_commands = [
      ],
      [
          'mysql:8.0.45' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:8.0.45",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:8.0.45",
              'dsn' => $mysql_maria_db_sql_dsn,
              'username' => $mysql_user,
              'password' => $mysql_root_psw,
@@ -126,7 +126,7 @@ $container_creation_commands = [
      ],
      [
          'postgres:14.20' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:14.20",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:14.20",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
@@ -134,7 +134,7 @@ $container_creation_commands = [
      ],
     [
         'mysql:8.4.8' => [
-            'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:8.4.8",
+            'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:8.4.8",
             'dsn' => $mysql_maria_db_sql_dsn,
             'username' => $mysql_user,
             'password' => $mysql_root_psw,
@@ -142,7 +142,7 @@ $container_creation_commands = [
     ],
     [
          'postgres:15.15' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:15.15",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:15.15",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
@@ -150,7 +150,7 @@ $container_creation_commands = [
      ],
      [
          'postgres:16.11' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:16.11",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:16.11",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
@@ -158,7 +158,7 @@ $container_creation_commands = [
      ],
      [
          'postgres:17.7' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:17.7",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:17.7",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
@@ -166,7 +166,7 @@ $container_creation_commands = [
      ],
      [
          'postgres:18.1' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:18.1",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:18.1",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
@@ -174,7 +174,7 @@ $container_creation_commands = [
      ],
      [
          'mariadb:10.4.34' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.4.34",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.4.34",
              'dsn' => $mysql_maria_db_sql_dsn,
              'username' => $mysql_user,
              'password' => $mysql_root_psw,
@@ -182,7 +182,7 @@ $container_creation_commands = [
      ],
      [
          'mariadb:10.5.29' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.5.29",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.5.29",
              'dsn' => $mysql_maria_db_sql_dsn,
              'username' => $mysql_user,
              'password' => $mysql_root_psw,
@@ -190,7 +190,7 @@ $container_creation_commands = [
      ],
      [
          'mariadb:10.6.25' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.6.25",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.6.25",
              'dsn' => $mysql_maria_db_sql_dsn,
              'username' => $mysql_user,
              'password' => $mysql_root_psw,
@@ -198,7 +198,7 @@ $container_creation_commands = [
      ],
      [
          'mariadb:10.11.16' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.11.16",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:10.11.16",
              'dsn' => $mysql_maria_db_sql_dsn,
              'username' => $mysql_user,
              'password' => $mysql_root_psw,
@@ -206,7 +206,7 @@ $container_creation_commands = [
      ],
      [
          'mariadb:11.4.10' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.4.10",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.4.10",
              'dsn' => $mysql_maria_db_sql_dsn,
              'username' => $mysql_user,
              'password' => $mysql_root_psw,
@@ -214,7 +214,7 @@ $container_creation_commands = [
      ],
      [
          'mariadb:11.8.6' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.8.6",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:11.8.6",
              'dsn' => $mysql_maria_db_sql_dsn,
              'username' => $mysql_user,
              'password' => $mysql_root_psw,
@@ -222,7 +222,7 @@ $container_creation_commands = [
      ],
      [
          'mariadb:12.2.2' => [
-             'run_container' => "docker run --rm--name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:12.2.2",
+             'run_container' => "docker run --rm --name {$runtime_name_placeholder} -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mariadb:12.2.2",
              'dsn' => $mysql_maria_db_sql_dsn,
              'username' => $mysql_user,
              'password' => $mysql_root_psw,
