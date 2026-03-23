@@ -376,6 +376,22 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
         return $rows;
     }
     
+    /**
+     * @return array an array where each value is the result of calling getDataAndRelatedData() on each record in the collection
+     */
+    public function getDataAndRelatedData(): array {
+    
+        $rows = [];
+        foreach ($this->data as $row) {
+
+            /** @psalm-suppress MixedAssignment */
+            /** @psalm-suppress UndefinedInterfaceMethod */
+            $rows[] = $row->getDataAndRelatedData();
+        }
+
+        return $rows;
+    }
+    
     /////////////////////
     // Interface Methods
     /////////////////////
@@ -633,13 +649,153 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
         $model = $this->getModel();
         
         if(($model instanceof \LeanOrm\Model)) {
-            /** @psalm-suppress MixedAssignment */
-            foreach( $relationsToInclude as $relName ) {
-
-                $model->loadRelationshipData((string)$relName, $this, true, true);
-            }
+            
+            $model->recursivelyStitchRelatedData($model, $relationsToInclude, $this, true);
         }
         
         return $this;
+    }
+
+    public function firstRecord(): \GDAO\Model\RecordInterface|null {
+
+        $key = \array_key_first($this->data);
+        return ($this->count() > 0) ? $this[$key] : null;
+    }
+
+    public function lastRecord(): \GDAO\Model\RecordInterface|null{
+
+        $key = \array_key_last($this->data);
+        return ($this->count() > 0) ? $this[$key] : null;
+    }
+    
+    /**
+     * Find and return the first record that matches the filtration logic in supplied callback 
+     * or whose columns & values match the specified columns and values in $colsAndVals
+     * 
+     * @param array $colsAndVals an array of record column / field names with corresponding value to be matched for each field
+     *                           only used when $comparator === null.
+     * @param callable|null $comparator should have the signature below:
+     *                                  function ($key, \GDAO\Model\RecordInterface $item): bool
+     *                                      $key will hold the key value of each record in the collection
+     *                                      $item is each record being checked for comparison
+     *                                      must return true if current record matches or false if not
+     * @param bool $removeFoundRecord remove matched /found record from the collection this method was called on if true
+     */
+    public function findRecord(
+        array $colsAndVals, // only used when $comparator === null, otherwise $comparator should contain all your filteration logic
+        callable|null $comparator=null,
+        bool $removeFoundRecord=false
+    ): \GDAO\Model\RecordInterface|null {
+
+        $result = null;
+
+        if($this->count() > 0) {
+
+            foreach ($colsAndVals as $colName=>$val) {
+
+                if(!\in_array($colName, $this->getModel()->getTableColNames())) {
+
+                    // remove names that aren't actual column names in the DB table
+                    unset($colsAndVals[$colName]);
+                } // if(!\in_array($colName, $this->getModel()->getTableColNames()))
+            } // foreach ($colsAndVals as $colName=>$val)
+
+            if($comparator === null && count($colsAndVals) > 0) {
+
+                $comparator = function ($key, \GDAO\Model\RecordInterface $item)use($colsAndVals): bool {
+
+                    $res = true;
+
+                    foreach ($colsAndVals as $col => $val) {
+
+                        $res = $res && (\is_array($val) ? \in_array($item->$col, $val, true) : $item->$col === $val);
+
+                        if(!$res) {break;}
+                    }
+
+                    return $res;
+                }; // $comparator = function (BaseRecord $item)use($colsAndVals)
+            } // if($comparator === null && count($colsAndVals) > 0) {
+
+            if($comparator !== null) {
+
+                foreach ($this->data as $key=>$record) {
+
+                    if($comparator($key, $record) === true) {
+
+                        $result = $record;
+                        $removeFoundRecord && $this->offsetUnset($key); // remove record from this collection if applicable
+                        break;
+                    }
+                }
+            }
+        } // if($this->count() > 0)
+
+        return $result;
+    }
+
+    /**
+     * Find and return all records that match the filtration logic in supplied callback 
+     * or whose columns & values match the specified columns and values in $colsAndVals
+     * 
+     * @param array $colsAndVals an array of record column / field names with corresponding value to be matched for each field
+     *                           only used when $comparator === null.
+     * @param callable|null $comparator should have the signature below:
+     *                                  function ($key, \GDAO\Model\RecordInterface $item): bool
+     *                                      $key will hold the key value of each record in the collection
+     *                                      $item is each record being checked for comparison
+     *                                      must return true if current record matches or false if not
+     * @param bool $removeFoundRecords remove each matched /found record from the collection this method was called on if true
+     */
+    public function findRecords(
+        array $colsAndVals, // only used when $comparator === null, otherwise $comparator should contain all your filteration logic
+        callable|null $comparator=null,
+        bool $removeFoundRecords=false
+    ): \GDAO\Model\CollectionInterface {
+        
+        $result = $this->getModel()->createNewCollection();
+        
+        if($this->count() > 0) {
+            
+            foreach ($colsAndVals as $colName=>$val) {
+                
+                if(!\in_array($colName, $this->getModel()->getTableColNames())) {
+                    
+                    // remove names that aren't actual column names in the DB table
+                    unset($colsAndVals[$colName]);
+                } // if(!$this->getModel()->isAnActualTableCol($colName))
+            } // foreach ($colsAndVals as $colName=>$val)
+
+            if($comparator === null && \count($colsAndVals) > 0) {
+
+                $comparator = function ($key, \GDAO\Model\RecordInterface $item)use($colsAndVals): bool {
+
+                    $res = true;
+
+                    foreach ($colsAndVals as $col => $val) {
+
+                        $res = $res &&  (\is_array($val) ? \in_array($item->$col, $val, true) : $item->$col === $val);
+
+                        if(!$res) {break;}
+                    }
+
+                    return $res;
+                }; // $comparator = function ($key, BaseRecord $item)use($colsAndVals)
+            } // if($comparator === null) {
+
+            if($comparator !== null) {
+                
+                foreach ($this->data as $key=>$record) {
+
+                    if($comparator($key, $record) === true) {
+
+                        $result[] = $record;
+                        $removeFoundRecords && $this->offsetUnset($key); // remove record from this collection if applicable
+                    }
+                }
+            }
+        } // if($this->count() > 0 && count($colsAndVals) > 0)
+
+        return $result;
     }
 }
