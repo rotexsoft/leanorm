@@ -12,6 +12,7 @@
       <file>./tests/DBConnectorTest.php</file>
       <file>./tests/CachingModelTest.php</file>
       <file>./tests/ModelTest.php</file>
+      <file>./tests/ModelNestedEagerFetchingTest.php</file>
       <file>./tests/CollectionTest.php</file>
       <file>./tests/ReadOnlyRecordTest.php</file>
       <file>./tests/RecordTest.php</file>
