@@ -247,12 +247,16 @@ foreach($container_creation_commands as $current_container_creation_command) {
         
         $retval=null;
         $output=null;
+        $sanitized_db_version_name = \str_replace([':','.'],['_', '_'], $db_version);
         $run_container_command = \str_replace(
             $runtime_name_placeholder,
-            $db_version,
+            $sanitized_db_version_name,
             $command['run_container']
         );
-        $container_names_to_stop[] = $db_versions;
+        $container_names_to_stop[] = [
+            'container_name'=>$sanitized_db_version_name,
+            'image_name'=>$db_version,
+        ];
         echoWithLineBreaks($run_container_command);
         exec($run_container_command, $output, $retval);
         
@@ -279,12 +283,12 @@ foreach($container_creation_commands as $current_container_creation_command) {
     
     foreach($container_names_to_stop as $container_to_stop) {
 
-        echoWithLineBreaks("docker stop {$container_to_stop}");
-        system("docker stop {$container_to_stop}"); // stop the containers
+        echoWithLineBreaks("docker stop {$container_to_stop['container_name']}");
+        system("docker stop {$container_to_stop['container_name']}"); // stop the containers
 
         // remove their images from the machine to save disk space
-        echoWithLineBreaks("docker image rm --force {$container_to_stop}");
-        system("docker image rm --force {$container_to_stop}");
+        echoWithLineBreaks("docker image rm --force {$container_to_stop['image_name']}");
+        system("docker image rm --force {$container_to_stop['image_name']}");
     }
         
     if($phpunit_retval !== 0) {
