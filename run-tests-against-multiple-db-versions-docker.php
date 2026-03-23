@@ -324,7 +324,9 @@ if (count($test_results) > 0) {
         echo $test_result . PHP_EOL;
         
     } // foreach ($test_results as $test_result)
-} else if(count($test_failures) > 0){
+} 
+
+if(count($test_failures) > 0){
     
     echo PHP_EOL . "Test failed for the following databases:" . PHP_EOL . PHP_EOL;
     echo implode(PHP_EOL . PHP_EOL, $test_failures);
