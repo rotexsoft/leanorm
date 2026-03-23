@@ -656,14 +656,28 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
         return $this;
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
     public function firstRecord(): \GDAO\Model\RecordInterface|null {
 
-        return ($this->count() > 0) ? $this[\array_key_first($this->data)] : null;
+        /** @psalm-suppress PossiblyNullArrayOffset */
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        /** @psalm-suppress PossiblyNullArgument */
+        return ($this->count() > 0) 
+                    ? $this[\array_key_first($this->data)] : null;
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
     public function lastRecord(): \GDAO\Model\RecordInterface|null{
 
-        return ($this->count() > 0) ? $this[\array_key_last($this->data)] : null;
+        /** @psalm-suppress PossiblyNullArrayOffset */
+        /** @psalm-suppress MixedArgumentTypeCoercion */
+        /** @psalm-suppress PossiblyNullArgument */
+        return ($this->count() > 0) 
+                    ? $this[\array_key_last($this->data)] : null;
     }
     
     /**
@@ -678,6 +692,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      *                                      $item is each record being checked for comparison
      *                                      must return true if current record matches or false if not
      * @param bool $removeFoundRecord remove matched /found record from the collection this method was called on if true
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function findRecord(
         array $colsAndVals, // only used when $comparator === null, otherwise $comparator should contain all your filteration logic
@@ -689,23 +704,26 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
 
         if($this->count() > 0) {
 
-            foreach ($colsAndVals as $colName=>$val) {
+            foreach (\array_keys($colsAndVals) as $colName) {
 
                 if(!\in_array($colName, $this->getModel()->getTableColNames())) {
 
                     // remove names that aren't actual column names in the DB table
                     unset($colsAndVals[$colName]);
                 } // if(!\in_array($colName, $this->getModel()->getTableColNames()))
-            } // foreach ($colsAndVals as $colName=>$val)
+            } // foreach (\array_keys($colsAndVals) as $colName)
 
             if($comparator === null && count($colsAndVals) > 0) {
 
+                /** @psalm-suppress MissingClosureParamType */
                 $comparator = function ($key, \GDAO\Model\RecordInterface $item)use($colsAndVals): bool {
 
                     $res = true;
 
+                    /** @psalm-suppress MixedAssignment */
                     foreach ($colsAndVals as $col => $val) {
 
+                        /** @psalm-suppress RedundantCondition */
                         $res = $res && (\is_array($val) ? \in_array($item->$col, $val, true) : $item->$col === $val);
 
                         if(!$res) {break;}
@@ -722,7 +740,13 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
                     if($comparator($key, $record) === true) {
 
                         $result = $record;
-                        $removeFoundRecord && $this->offsetUnset($key); // remove record from this collection if applicable
+
+                        if($removeFoundRecord) {
+
+                            /** @psalm-suppress MixedArgumentTypeCoercion */
+                            $this->offsetUnset($key); // remove record from this collection
+                        }
+
                         break;
                     }
                 }
@@ -744,6 +768,7 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
      *                                      $item is each record being checked for comparison
      *                                      must return true if current record matches or false if not
      * @param bool $removeFoundRecords remove each matched /found record from the collection this method was called on if true
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function findRecords(
         array $colsAndVals, // only used when $comparator === null, otherwise $comparator should contain all your filteration logic
@@ -752,26 +777,29 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
     ): \GDAO\Model\CollectionInterface {
         
         $result = $this->getModel()->createNewCollection();
-        
+
         if($this->count() > 0) {
-            
-            foreach ($colsAndVals as $colName=>$val) {
-                
+
+            foreach (\array_keys($colsAndVals) as $colName) {
+
                 if(!\in_array($colName, $this->getModel()->getTableColNames())) {
-                    
+
                     // remove names that aren't actual column names in the DB table
                     unset($colsAndVals[$colName]);
                 } // if(!$this->getModel()->isAnActualTableCol($colName))
-            } // foreach ($colsAndVals as $colName=>$val)
+            } // foreach (\array_keys($colsAndVals) as $colName)
 
             if($comparator === null && \count($colsAndVals) > 0) {
 
+                /** @psalm-suppress MissingClosureParamType */
                 $comparator = function ($key, \GDAO\Model\RecordInterface $item)use($colsAndVals): bool {
 
                     $res = true;
 
+                    /** @psalm-suppress MixedAssignment */
                     foreach ($colsAndVals as $col => $val) {
 
+                        /** @psalm-suppress RedundantCondition */
                         $res = $res &&  (\is_array($val) ? \in_array($item->$col, $val, true) : $item->$col === $val);
 
                         if(!$res) {break;}
@@ -782,13 +810,18 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
             } // if($comparator === null) {
 
             if($comparator !== null) {
-                
+
                 foreach ($this->data as $key=>$record) {
 
                     if($comparator($key, $record) === true) {
 
                         $result[] = $record;
-                        $removeFoundRecords && $this->offsetUnset($key); // remove record from this collection if applicable
+
+                        if($removeFoundRecords) {
+
+                            /** @psalm-suppress MixedArgumentTypeCoercion */
+                            $this->offsetUnset($key); // remove record from this collection
+                        }
                     }
                 }
             }
