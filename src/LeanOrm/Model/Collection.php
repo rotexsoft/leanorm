@@ -658,14 +658,12 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
 
     public function firstRecord(): \GDAO\Model\RecordInterface|null {
 
-        $key = \array_key_first($this->data);
-        return ($this->count() > 0) ? $this[$key] : null;
+        return ($this->count() > 0) ? $this[\array_key_first($this->data)] : null;
     }
 
     public function lastRecord(): \GDAO\Model\RecordInterface|null{
 
-        $key = \array_key_last($this->data);
-        return ($this->count() > 0) ? $this[$key] : null;
+        return ($this->count() > 0) ? $this[\array_key_last($this->data)] : null;
     }
     
     /**
