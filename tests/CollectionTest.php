@@ -1372,4 +1372,232 @@ class CollectionTest extends \PHPUnit\Framework\TestCase {
         // collection is now contains only one item
         self:: assertCount(1, $collection);
     }
+    
+    public function testThatFirstRecordWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[] = $newRecord1;
+        $collection[] = $newRecord2;
+        
+        // non-empty collection
+        self:: assertCount(2, $collection);
+        self::assertSame($newRecord1, $collection->firstRecord());
+                
+        $collection->removeRecord($newRecord1);
+        // collection is now contains only one item
+        self:: assertCount(1, $collection);
+        self::assertSame($newRecord2, $collection->firstRecord());
+    }
+    
+    public function testThatLastRecordWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2 for toArray Testing',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        $collection[] = $newRecord1;
+        $collection[] = $newRecord2;
+        
+        // non-empty collection
+        self:: assertCount(2, $collection);
+        self::assertSame($newRecord2, $collection->lastRecord());
+                
+        $collection->removeRecord($newRecord2);
+        // collection is now contains only one item
+        self:: assertCount(1, $collection);
+        self::assertSame($newRecord1, $collection->lastRecord());
+    }
+    
+    public function testThatFindRecordWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord3 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 3',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        // empty collection
+        self:: assertCount(0, $collection);
+        self::assertNull($collection->findRecord([]));
+        self::assertNull($collection->findRecord(['name'=>'Boo']));
+        
+        $collection[] = $newRecord1;
+        $collection[] = $newRecord2;
+        $collection[] = $newRecord3;
+        
+        // non-empty collection
+        self:: assertCount(3, $collection);
+        self::assertNull($collection->findRecord([]));
+        self::assertNull($collection->findRecord(['name'=>'Boo']));
+        self::assertSame($newRecord1, $collection->findRecord(['name'=>'Author 1', 'non_existent_column'=>'Boo']));
+        self::assertSame($newRecord2, $collection->findRecord(['name'=>'Author 2']));
+        self::assertSame($newRecord3, $collection->findRecord(['name'=>'Author 3']));
+        
+        //use custom-comparator that does a !== comparison to match
+        $comparator = function ($key, \GDAO\Model\RecordInterface $item): bool {
+
+            return $item->name !== 'Author 1';
+        }; // $comparator = function (BaseRecord $item)use($colsAndVals)
+
+        self::assertNotSame($newRecord1, $collection->findRecord(['name'=>'Author 1', 'non_existent_column'=>'Boo'], $comparator));
+
+        // first record in collection whose $newRecord2->name !== 'Author 1'
+        self::assertSame($newRecord2, $collection->findRecord(['name'=>'Author 1', 'non_existent_column'=>'Boo'], $comparator));
+        
+        // test find and remove
+        self:: assertCount(3, $collection);
+        self::assertSame($newRecord1, $collection->findRecord(['name'=>'Author 1'], null, true));
+        self:: assertCount(2, $collection);
+        self::assertSame($newRecord2, $collection->findRecord(['name'=>'Author 2'], null, true));
+        self:: assertCount(1, $collection);
+        self::assertSame($newRecord3, $collection->findRecord(['name'=>'Author 3'], null, true));
+        self:: assertCount(0, $collection);
+    }
+    
+    public function testThatFindRecordsWorksAsExpected() {
+        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", [], 'author_id', 'authors'
+        );
+        $collection = new \LeanOrm\Model\Collection($model);
+        
+        $timestamp = date('Y-m-d H:i:s');
+        $newRecord1 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 1',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord2 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 2',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord3 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 3',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        $newRecord4 = $model->createNewRecord([
+            //'author_id'     => 777, // new record, no need for primary key
+            'name'          => 'Author 4',
+            'm_timestamp'   => $timestamp,
+            'date_created'  => $timestamp,
+        ]);
+        
+        // empty collection
+        self:: assertCount(0, $collection);
+        self::assertInstanceOf(\LeanOrm\Model\Collection::class, $collection->findRecords([]));
+        
+        self:: assertCount(0, $collection);
+        self::assertInstanceOf(\LeanOrm\Model\Collection::class, $collection->findRecords(['name'=>'Boo']));
+        
+        $collection[] = $newRecord1;
+        $collection[] = $newRecord2;
+        $collection[] = $newRecord3;
+        $collection[] = $newRecord4;
+        
+        // non-empty collection
+        self:: assertCount(4, $collection);
+        self::assertCount(0, $collection->findRecords([]));
+        self::assertCount(0, $collection->findRecords(['name'=>'Boo']));
+
+        self::assertCount(1, $collection->findRecords(['name'=>'Author 1', 'non_existent_column'=>'Boo']));
+        self::assertSame($newRecord1, $collection->findRecords(['name'=>'Author 1', 'non_existent_column'=>'Boo'])->firstRecord());
+
+        self::assertCount(1, $collection->findRecords(['name'=>'Author 2']));
+        self::assertSame($newRecord2, $collection->findRecords(['name'=>'Author 2'])->firstRecord());
+
+        self::assertCount(1, $collection->findRecords(['name'=>'Author 3']));
+        self::assertSame($newRecord3, $collection->findRecords(['name'=>'Author 3'])->firstRecord());
+        
+        //use custom-comparator that does a !== comparison to match
+        $comparator = function ($key, \GDAO\Model\RecordInterface $item): bool {
+
+            return $item->name !== 'Author 1';
+        }; // $comparator = function (BaseRecord $item)use($colsAndVals)
+
+        self::assertNotSame($newRecord1, $collection->findRecords(['name'=>'Author 1', 'non_existent_column'=>'Boo'], $comparator)->firstRecord());
+
+        // returns records in collection whose $newRecord2->name !== 'Author 1'
+        $result3Records = $collection->findRecords(['name'=>'Author 1', 'non_existent_column'=>'Boo'], $comparator);
+        self::assertCount(3, $result3Records);
+        self::assertContains($newRecord2, $result3Records);
+        self::assertContains($newRecord3, $result3Records);
+        self::assertContains($newRecord4, $result3Records);
+        
+        // test find and remove
+        self:: assertCount(4, $collection);
+        $result1 = $collection->findRecords(['name'=>'Author 1'], null, true);
+        self::assertCount(1, $result1);
+        self::assertSame($newRecord1, $result1->firstRecord());
+        self:: assertCount(3, $collection);
+        
+        $result1 = $collection->findRecords(['name'=>'Author 2'], null, true);
+        self::assertCount(1, $result1);
+        self::assertSame($newRecord2, $result1->firstRecord());
+        self:: assertCount(2, $collection);
+        
+        $result1 = $collection->findRecords(['name'=>'Author 3'], null, true);
+        self::assertCount(1, $result1);
+        self::assertSame($newRecord3, $result1->firstRecord());
+        self:: assertCount(1, $collection);
+        
+        self::assertContains($newRecord4, $collection);
+        
+    }
 }
