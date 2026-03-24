@@ -8,6 +8,7 @@ use \LeanOrm\TestObjects\{
     TagsModel, TagRecord, TagsCollection
 };
 use \LeanOrm\Model as LeanOrmModel;
+use \LeanOrm\Model\Record as LeanOrmRecord;
 use \GDAO\Model\{CollectionInterface, RecordInterface};
 
 /**
@@ -19,7 +20,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
     
     use CommonPropertiesAndMethodsTrait;
 
-    protected function getLeanOrmModel(string $modelClassName, string $tableName='', string $primaryColName=''): LeanOrmModel {
+    protected function getLeanOrmModel(string $modelClassName, string $tableName='', string $primaryColName=''): \LeanOrm\Model {
 
         static $models; if(!$models) { $models = []; }
 
@@ -36,8 +37,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         /** @var \LeanOrm\Model $model */
         $model = new $modelClassName (
             static::$dsn, static::$username ?? "", static::$password ?? "",
-            [ PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8', ],
-            $primaryColName, $tableName
+            [], $primaryColName, $tableName
         );
         $model->setCreatedTimestampColumnName('date_created')
               ->setUpdatedTimestampColumnName('m_timestamp');
@@ -543,7 +543,6 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         $authorsModel->clearQueryLog();
         LeanOrmModel::clearQueryLogForAllInstances();
         $authorsModel->enableQueryLogging();
-        /** @var \LeanOrm\TestObjects\AuthorRecord $authorWithRelatedData */
         $authors = $authorsModel->fetchRecordsIntoArray(
             null, $relationsToLoad
         );
@@ -588,7 +587,6 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         $authorsModel->clearQueryLog();
         LeanOrmModel::clearQueryLogForAllInstances();
         $authorsModel->enableQueryLogging();
-        /** @var \LeanOrm\TestObjects\AuthorRecord $authorWithRelatedData */
         $authors = $authorsModel->fetchRecordsIntoArrayKeyedOnPkVal(
             null, $relationsToLoad
         );
@@ -633,7 +631,6 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         $authorsModel->clearQueryLog();
         LeanOrmModel::clearQueryLogForAllInstances();
         $authorsModel->enableQueryLogging();
-        /** @var \LeanOrm\TestObjects\AuthorRecord $authorWithRelatedData */
         $authors = $authorsModel->fetchRecordsIntoCollection(
             null, $relationsToLoad
         );
@@ -678,7 +675,6 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         $authorsModel->clearQueryLog();
         LeanOrmModel::clearQueryLogForAllInstances();
         $authorsModel->enableQueryLogging();
-        /** @var \LeanOrm\TestObjects\AuthorRecord $authorWithRelatedData */
         $authors = $authorsModel->fetchRecordsIntoCollectionKeyedOnPkVal(
             null, $relationsToLoad
         );
@@ -699,6 +695,280 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
             true
         );
         
+        $authorsModel->clearQueryLog();
+        LeanOrmModel::clearQueryLogForAllInstances();
+        $this->tearDownNestedEagerFetchData(
+            $testData['author1'], $testData['author2']
+        );
+    }
+    
+    public function testThatCollection_EagerLoadRelatedDataWorksAsExpected() {
+
+        $testData = $this->setUpNestedEagerFetchData();
+        $authorsModel = $this->getLeanOrmModel(AuthorsModel::class);
+
+        $relationsToLoad = [
+            'posts' => [
+                'comments',
+                'posts_tags' => ['tag'], 
+                'summary',
+                'tags', // has many through posts_tags
+            ]
+        ];
+        $authorsModel->clearQueryLog();
+        LeanOrmModel::clearQueryLogForAllInstances();
+        
+        $authorsModel->enableQueryLogging();
+        /** @var \LeanOrmModel\Collection $authors */
+        $authors = $authorsModel->fetch(
+            [
+                $testData['author1']->getPrimaryVal(),
+                $testData['author2']->getPrimaryVal(),
+            ], 
+            null, [], true, true
+        );
+        $authorsAsArray = $authors->getDataAndRelatedData();
+
+        self::assertCount(2, $authors);
+        self::assertArrayHasKey('posts', $authorsAsArray[0]);
+        self::assertArrayHasKey('posts', $authorsAsArray[1]);
+        self::assertEquals(LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG, $authorsAsArray[0]['posts']);
+        self::assertEquals(LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG, $authorsAsArray[1]['posts']);
+        
+        $authors->eagerLoadRelatedData($relationsToLoad);
+        $authorsModel->disableQueryLogging();
+        
+        $authorsAsArray2 = $authors->getDataAndRelatedData();
+        self::assertNotEquals(LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG, $authorsAsArray2[0]['posts']);
+        self::assertNotEquals(LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG, $authorsAsArray2[1]['posts']);
+        
+        $this->doEagerLoadTestForTwoAuthors(
+            $this->getMatchingRecordInCollectionOrArray(
+                records: $authors,
+                record: $testData['author1'],
+                fieldNames:  [$authorsModel->getPrimaryCol()]
+            ),
+            $this->getMatchingRecordInCollectionOrArray(
+                records: $authors,
+                record: $testData['author2'],
+                fieldNames:  [$authorsModel->getPrimaryCol()]
+            ),
+            $testData,
+            true
+        );
+        
+        $authorsModel->clearQueryLog();
+        LeanOrmModel::clearQueryLogForAllInstances();
+        $this->tearDownNestedEagerFetchData(
+            $testData['author1'], $testData['author2']
+        );
+    }
+    
+    public function testThatCollectionAndRecord_GetDataAndRelatedDataWorksAsExpected() {
+
+        $testData = $this->setUpNestedEagerFetchData();
+        $authorsModel = $this->getLeanOrmModel(AuthorsModel::class);
+        $postsModel = $this->getLeanOrmModel(PostsModel::class);
+        $commentsModel = $this->getLeanOrmModel(CommentsModel::class);
+        $postsTagsModel = $this->getLeanOrmModel(PostsTagsModel::class);
+        $summariesModel = $this->getLeanOrmModel(SummariesModel::class);
+        $tagsModel = $this->getLeanOrmModel(TagsModel::class);
+
+        $relationsToLoad = [
+            'posts' => [
+                'comments',
+                'posts_tags' /*=> ['tag']*/, 
+                'summary',
+                'tags', // has many through posts_tags
+            ]
+        ];
+
+        /** @var \LeanOrmModel\Collection $authors */
+        $authors = $authorsModel->fetch(
+            [
+                $testData['author1']->getPrimaryVal(),
+                $testData['author2']->getPrimaryVal(),
+            ], 
+            null, [], true, true
+        );
+        $authorsAsArray = $authors->getDataAndRelatedData();
+
+        self::assertCount(2, $authors);
+        
+        // compare the author table data
+        foreach ($authorsModel->getTableColNames() as $colName) {
+         
+            self::assertEquals($testData['author1'][$colName], $authorsAsArray[0][$colName]);
+            self::assertEquals($testData['author2'][$colName], $authorsAsArray[1][$colName]);
+        }
+        
+        self::assertArrayHasKey('posts', $authorsAsArray[0]);
+        self::assertArrayHasKey('posts', $authorsAsArray[1]);
+        self::assertEquals(LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG, $authorsAsArray[0]['posts']);
+        self::assertEquals(LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG, $authorsAsArray[1]['posts']);
+        self::assertEquals(LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG, $authorsAsArray[0]['one_post']);
+        self::assertEquals(LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG, $authorsAsArray[1]['one_post']);
+        
+        // Now eager-load data into the first author record we got back in 
+        // $testData and the collection of authors we fetched above
+        $authors->eagerLoadRelatedData($relationsToLoad);
+        $author1 = $testData['author1'];
+        $authorsModel->recursivelyStitchRelatedData($authorsModel, $relationsToLoad, $author1, true);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Test that the related data got loaded
+        $authorsAsArray2 = $authors->getDataAndRelatedData();
+        
+        // compare the author table data
+        foreach ($authorsModel->getTableColNames() as $colName) {
+         
+            self::assertEquals($author1[$colName], $authorsAsArray[0][$colName]);
+            self::assertEquals($testData['author2'][$colName], $authorsAsArray[1][$colName]);
+        }
+        
+        // one_post was not specified in the $relationsToLoad array
+        self::assertEquals(LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG, $authorsAsArray2[1]['one_post']);
+        
+        self::assertArrayHasKey('posts', $authorsAsArray2[0]);
+        self::assertArrayHasKey('posts', $authorsAsArray2[1]);
+        
+        // author that has related posts data should have that data loaded now
+        self::assertNotEquals(LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG, $authorsAsArray2[0]['posts']);
+        
+        // author that has no related posts data should have it set to an empty array
+        self::assertEquals([], $authorsAsArray2[1]['posts']);
+        
+        // loop through the posts for the author with related posts to inspect
+        // the related post data and other nested related data
+        foreach($authorsAsArray2[0]['posts'] as $post) {
+            
+            $postToCompare = $author1->posts->findRecord([
+                $postsModel->getPrimaryCol() => $post[$postsModel->getPrimaryCol()]
+            ]);
+            self::assertInstanceOf(PostRecord::class, $postToCompare);
+            
+            // compare posts table data
+            foreach ($postsModel->getTableColNames() as $colName) {
+                
+                self::assertEquals($postToCompare[$colName], $post[$colName]);
+            }
+            
+            // compare comments table data for each comment associated with the
+            // current post
+            foreach($post['comments'] as $comment) {
+                
+                $commentToCompare = $postToCompare->comments->findRecord([
+                    $commentsModel->getPrimaryCol() =>
+                        $comment[$commentsModel->getPrimaryCol()]
+                ]);
+                self::assertInstanceOf(CommentRecord::class, $commentToCompare);
+                
+                foreach ($commentsModel->getTableColNames() as $colName) {
+
+                    self::assertEquals($commentToCompare[$colName], $comment[$colName]);
+                }
+                
+                // the nested comment should not have the post data loaded
+                // we didn't specify for it to be loaded in our fetch
+                self::assertEquals(
+                    LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                    $comment['post']
+                );
+            }
+            
+            // compare summaries table data for the summary associated with the
+            // current post
+            foreach($summariesModel->getTableColNames() as $colName) {
+                
+                ($post['summary'] !== []) 
+                    && self::assertEquals($postToCompare['summary'][$colName], $post['summary'][$colName]);
+            }
+
+            // These nested relationships were not specified to be loaded
+            ($post['summary'] !== []) 
+                && self::assertEquals(
+                    LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                    $post['summary']['post']
+                );
+            self::assertEquals(
+                LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                $post['summary_with_callback']
+            );
+            self::assertEquals(
+                LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                $post['comments_with_callback']
+            );
+            
+            // compare posts_tags table data for each post_tag associated with the
+            // current post
+            foreach($post['posts_tags'] as $postTag) {
+                
+                $postTagToCompare = $postToCompare->posts_tags->findRecord([
+                    $postsTagsModel->getPrimaryCol() =>
+                        $postTag[$postsTagsModel->getPrimaryCol()]
+                ]);
+                self::assertInstanceOf(PostTagRecord::class, $postTagToCompare);
+                
+                foreach ($postsTagsModel->getTableColNames() as $colName) {
+
+                    self::assertEquals($postTagToCompare[$colName], $postTag[$colName]);
+                }
+                
+                // nested data below wasn't specified to be eager loaded
+                self::assertEquals(
+                    LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                    $postTag['post']
+                );
+                self::assertEquals(
+                    LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                    $postTag['tag']
+                );
+            }
+            
+            // compare tags table data for each tag associated with the
+            // current post via the posts_tags join table
+            foreach($post['tags'] as $tag) {
+                
+                $tagToCompare = $postToCompare->tags->findRecord([
+                    $tagsModel->getPrimaryCol() =>
+                        $tag[$tagsModel->getPrimaryCol()]
+                ]);
+                self::assertInstanceOf(TagRecord::class, $tagToCompare);
+                
+                foreach ($tagsModel->getTableColNames() as $colName) {
+
+                    self::assertEquals($tagToCompare[$colName], $tag[$colName]);
+                }
+                
+                // nested data below wasn't specified to be fetched
+                self::assertEquals(
+                    LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                    $tag['posts_tags']
+                );
+                self::assertEquals(
+                    LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                    $tag['posts']
+                );
+            }
+            
+            // nested data below wasn't specified to be loaded
+            self::assertEquals(
+                LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                $post['author']
+            );
+            
+            self::assertEquals(
+                LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                $post['author_with_callback']
+            );
+            
+            self::assertEquals(
+                LeanOrmRecord::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG,
+                $post['tags_with_callback']
+            );
+            
+        } // foreach($authorsAsArray2[0]['posts'] as $post)
+
         $authorsModel->clearQueryLog();
         LeanOrmModel::clearQueryLogForAllInstances();
         $this->tearDownNestedEagerFetchData(
@@ -834,6 +1104,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
                 // One for the query to select from the authors table
                 // One to eager load posts for the selected authors
                 self::assertCount(2, $logEntries);
+                
                 self::assertStringContainsString(
                     'SELECT\n     authors.* \nFROM\n',
                     \json_encode($logEntries)
