@@ -51,7 +51,12 @@ class Model extends \GDAO\Model implements \Stringable {
      *  An object for interacting with the db
      */
     protected \LeanOrm\DBConnector $db_connector;
-
+    
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function getDbConnector(): \LeanOrm\DBConnector { return $this->db_connector; }
+    
     // Query Logging related properties
     protected bool $can_log_queries = false;
 
@@ -471,6 +476,7 @@ class Model extends \GDAO\Model implements \Stringable {
 
         if ($relations_to_include !== []) {
 
+            /** @psalm-suppress MixedAssignment */
             foreach ($relations_to_include as $potential_relation_name => $potential_array_of_relations_to_include_next) {
 
                 $current_relation_name = $potential_relation_name;
@@ -482,7 +488,7 @@ class Model extends \GDAO\Model implements \Stringable {
 
                     // no need for recursion here, just load data for current relation name
                     $model->loadRelationshipData($current_relation_name, $fetched_data, true, $wrap_records_in_collection);
-                    
+
                 } elseif (
                     \is_array($potential_array_of_relations_to_include_next)
                     && \count($potential_array_of_relations_to_include_next) > 0
@@ -505,11 +511,13 @@ class Model extends \GDAO\Model implements \Stringable {
                     // $relations_to_include would look something like this:
                     // ['posts'=> ['comments', 'tags'], ...]
 
+                    /** @psalm-suppress MixedArgumentTypeCoercion */
                     $model->loadRelationshipData($current_relation_name, $fetched_data, true, $wrap_records_in_collection);
 
                     $model_obj_for_recursive_call = null;
                     $fetched_data_for_recursive_call = [];
 
+                    /** @psalm-suppress MixedArgument */
                     if(
                         $fetched_data instanceof \GDAO\Model\RecordInterface
                         && 
@@ -531,11 +539,13 @@ class Model extends \GDAO\Model implements \Stringable {
                             $fetched_data->{$current_relation_name} instanceof \GDAO\Model\RecordInterface 
                             || $fetched_data->{$current_relation_name} instanceof \GDAO\Model\CollectionInterface
                         ) {
+                            /** @psalm-suppress MixedMethodCall */
                             $model_obj_for_recursive_call = $fetched_data->{$current_relation_name}->getModel();
-                            
+
                         } else {
-                            
+
                             // $fetched_data->{$current_relation_name} is an array
+                            /** @psalm-suppress MixedMethodCall */
                             $model_obj_for_recursive_call = reset($fetched_data->{$current_relation_name})->getModel();
                         }
                     } elseif(
@@ -554,9 +564,10 @@ class Model extends \GDAO\Model implements \Stringable {
 
                                 if ($model_obj_for_recursive_call === null) {
 
+                                    /** @psalm-suppress MixedMethodCall */
                                     $model_obj_for_recursive_call = $current_record->{$current_relation_name}->getModel();
                                 }
-                                
+
                             } elseif (
                                 (
                                     $current_record->{$current_relation_name} instanceof \GDAO\Model\CollectionInterface 
@@ -569,8 +580,9 @@ class Model extends \GDAO\Model implements \Stringable {
 
                                     if ($model_obj_for_recursive_call === null) {
 
+                                        /** @psalm-suppress MixedMethodCall */
                                         $model_obj_for_recursive_call = $current_related_record->getModel();
-                                        
+
                                     } // if ($model_obj_for_recursive_call === null)
                                 } // foreach ($current_record->{$current_relation_name} as $current_related_record)
                             } // if( ($current_record->{$current_relation_name} instanceof \GDAO\Model\RecordInterface) ) ......
@@ -583,6 +595,7 @@ class Model extends \GDAO\Model implements \Stringable {
                         && $model_obj_for_recursive_call instanceof Model
                     ) {
                         // do recursive call
+                        /** @psalm-suppress MixedArgument */
                         $this->recursivelyStitchRelatedData(
                                 $model_obj_for_recursive_call,
                                 $potential_array_of_relations_to_include_next,
@@ -1953,8 +1966,7 @@ SELECT {$foreign_table_name}.*
                     unset($record[$relation_name]);
                 }
                 
-                /** @psalm-suppress MixedArrayAccess */
-                if( $this->table_cols[$record->getPrimaryCol()]['autoinc'] ) {
+                if( $this->isAutoIncrementingField($record->getPrimaryCol()) ) {
                     
                     // unset the primary key value for auto-incrementing
                     // primary key cols. It is actually set to null via
@@ -2026,6 +2038,7 @@ SELECT {$foreign_table_name}.*
         
         if(!($result instanceof \GDAO\Model\RecordInterface)) {
             
+            /** @psalm-suppress ReferenceConstraintViolation */
             $result = null;
         }
 
@@ -2767,7 +2780,6 @@ SELECT {$foreign_table_name}.*
     }
 
     /**
-     * @return mixed[]
      * @psalm-suppress PossiblyUnusedMethod
      */
     public function clearQueryLog(): static {
@@ -2861,6 +2873,113 @@ SELECT {$foreign_table_name}.*
         }
 
         return $this;
+    }
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function hasAnyDataInTable(): bool {
+
+        return $this->fetchOneRecord() instanceof \GDAO\Model\RecordInterface;
+    }
+
+    ////////////////////////////////
+    // Metadata retreiving methods.
+    ////////////////////////////////
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function getFieldDefaultValue(string $fieldName): mixed {
+
+        $fieldDefaultValue= null;
+        $fieldMetaData = $this->getFieldMetadata($fieldName);
+
+        if($fieldMetaData !== [] && \array_key_exists('default', $fieldMetaData)) {
+
+            /** @psalm-suppress MixedAssignment */
+            $fieldDefaultValue = $fieldMetaData['default'];
+        }
+
+        return $fieldDefaultValue;
+    }
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function getFieldLength(string $fieldName): ?int {
+
+        $fieldLength= null;
+        $fieldMetaData = $this->getFieldMetadata($fieldName);
+
+        if($fieldMetaData !== [] && \array_key_exists('size', $fieldMetaData)) {
+
+            /** @psalm-suppress MixedAssignment */
+            $fieldLength = $fieldMetaData['size'] ?? $fieldLength;
+        }
+
+        /** @psalm-suppress MixedReturnStatement */
+        return $fieldLength;
+    }
+    
+    public function getFieldMetadata(string $fieldName): array {
+
+        $fieldMetaData = [];
+
+        if(
+            $this->isAnActualTableCol($fieldName)
+            && \array_key_exists($fieldName, $this->getTableCols())
+        ) {
+            /** @psalm-suppress MixedAssignment */
+            $fieldMetaData = $this->getTableCols()[$fieldName]; 
+        }
+
+        /** @psalm-suppress MixedReturnStatement */
+        return $fieldMetaData;
+    }
+
+    public function isAnActualTableCol(string $columnName): bool {
+
+        return \in_array($columnName, $this->getTableColNames());
+    }
+
+    public function isAutoIncrementingField(string $fieldName): bool {
+
+        $isAutoIncing= false;
+        $fieldMetaData = $this->getFieldMetadata($fieldName);
+
+        if($fieldMetaData !== [] && \array_key_exists('autoinc', $fieldMetaData)) {
+
+            $isAutoIncing = (bool)$fieldMetaData['autoinc'];
+        }
+
+        return $isAutoIncing;
+    }
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function isPrimaryKeyField(string $fieldName): bool {
+
+        return $this->getPrimaryCol() === $fieldName;
+    }
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function isRequiredField(string $fieldName): bool {
+
+        $isRequired= false;
+        $fieldMetaData = $this->getFieldMetadata($fieldName);
+
+        if(
+            $fieldMetaData !== []
+            && \array_key_exists('notnull', $fieldMetaData)
+        ) {
+            $isRequired = (bool)$fieldMetaData['notnull'];
+        }
+
+        return $isRequired;
     }
 
     ///////////////////////////////////////
