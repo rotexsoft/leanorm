@@ -4602,6 +4602,6 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         self::assertFalse($modelObject->isRequiredField('non-existent-field'));
         self::assertFalse($modelObject->isRequiredField('name'));
-        self::assertTrue($modelObject->isRequiredField('author_id'));
+        self::assertTrue($modelObject->isRequiredField('m_timestamp'));
     }
 }
