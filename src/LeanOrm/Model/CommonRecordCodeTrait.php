@@ -10,6 +10,8 @@ namespace LeanOrm\Model;
  */
 trait CommonRecordCodeTrait {
     
+    public const RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG = "Data either not loaded or doesn't exist in the database";
+    
     /**
      * Data for this record ([to be saved to the db] or [as read from the db]).
      */
@@ -81,6 +83,73 @@ trait CommonRecordCodeTrait {
     public function getData(): array {
         
         return $this->data;
+    }
+    
+    /**
+     * Get the data contained in an instance of the record class and all
+     * loaded related data for the record. Related data that was not loaded
+     * for a record before calling this method will not be loaded even if it
+     * exists in the database, it will be marked as not loaded or not existent.
+     */
+    public function getDataAndRelatedData(): array {
+
+        $data = $this->data; // take a copy of the db table data for this record
+
+        /** @psalm-suppress MixedAssignment */
+        foreach ($this->getModel()->getRelationNames() as $relation) {
+
+            /** @psalm-suppress MixedArrayOffset */
+            if(isset($this->related_data[$relation])) {
+
+                // Make sure the related data was load before a call to this method
+                if(
+                    $this->related_data[$relation] instanceof Record
+                    || $this->related_data[$relation] instanceof ReadOnlyRecord
+                    || $this->related_data[$relation] instanceof Collection
+                ) {
+                    /** @psalm-suppress MixedArrayOffset */
+                    $data[$relation] = $this->related_data[$relation]->getDataAndRelatedData();
+
+                } elseif(\is_array($this->related_data[$relation])) {
+
+                    /** @psalm-suppress MixedArrayOffset */
+                    $data[$relation] = [];
+
+                    foreach ($this->related_data[$relation] as $record) {
+
+                        if(
+                            $record instanceof Record
+                            || $record  instanceof ReadOnlyRecord
+                        ) {
+                            // definitely an array of records
+                            /** @psalm-suppress MixedArrayOffset */
+                            $data[$relation][] = $record->getDataAndRelatedData();
+
+                        } else {
+
+                            /** @psalm-suppress MixedArrayOffset */
+                            $data[$relation][] = $record;
+                        }
+                    }
+
+                } else {
+
+                    /** @psalm-suppress MixedArrayOffset */
+                    $data[$relation] = $this->related_data[$relation];
+                }
+
+            } else {
+
+                // Related data was not loaded before this method was called
+                // Either the data exists in the db but was not eager loaded
+                // or the data does not exist.
+                /** @psalm-suppress MixedArrayOffset */
+                $data[$relation] = static::RELATED_DATA_NOT_LOADED_OR_EXISTENT_MSG;
+
+            } // if(isset($this->related_data[$relation]))
+        } // foreach ($this->getModel()->getRelationNames() as $relation)
+
+        return $data;
     }
     
     /**
@@ -451,5 +520,63 @@ trait CommonRecordCodeTrait {
         }// elseif ( is_array($cols_2_load) && $cols_2_load !== [] )
         
         return $this;
+    }
+
+    ///////////////////////////////
+    // Metadata retreiving methods.
+    ///////////////////////////////
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function isAutoIncrementingField(string $fieldName): bool {
+
+        /** @psalm-suppress UndefinedMethod */
+        return $this->getModel()->isAutoIncrementingField($fieldName);
+    }
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function isPrimaryKeyField(string $fieldName): bool {
+
+        /** @psalm-suppress UndefinedMethod */
+        return $this->getModel()->isPrimaryKeyField($fieldName);
+    }
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function isRequiredField(string $fieldName): bool {
+
+        /** @psalm-suppress UndefinedMethod */
+        return $this->getModel()->isRequiredField($fieldName);
+    }
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function getFieldLength(string $fieldName): ?int {
+
+        /** @psalm-suppress UndefinedMethod */
+        return $this->getModel()->getFieldLength($fieldName);
+    }
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function getFieldDefaultValue(string $fieldName): mixed {
+
+        /** @psalm-suppress UndefinedMethod */
+        return $this->getModel()->getFieldDefaultValue($fieldName);
+    }
+
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function getFieldMetadata(string $fieldName): array {
+
+        /** @psalm-suppress UndefinedMethod */
+        return $this->getModel()->getFieldMetadata($fieldName);
     }
 }
