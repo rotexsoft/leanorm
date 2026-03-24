@@ -269,7 +269,6 @@ trait CommonPropertiesAndMethodsTrait {
         $schemaCreatorAndSeeder->createTables();
         $schemaCreatorAndSeeder->populateTables();
         
-        
         // cleanup to trigger connection close
         unset($schemaCreatorAndSeeder);
         $schemaCreatorAndSeeder = null; 
@@ -279,15 +278,15 @@ trait CommonPropertiesAndMethodsTrait {
     
     public static function tearDownAfterClass(): void { parent::tearDownAfterClass(); }
     
-    protected function tearDown(): void { 
-        
+    protected function tearDown(): void {
+
         parent::tearDown();
         \gc_enable();
         \gc_collect_cycles();
     }
     
     protected function insertDataIntoTable(string $tableName, array $tableData, \PDO $pdo) {
-        
+
         $insertBuilder = static::$auraQueryFactory->newInsert();
         $insertBuilder->into($tableName)->cols($tableData);
         
