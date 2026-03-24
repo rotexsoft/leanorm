@@ -1914,6 +1914,7 @@ In addition to logging queries into the arrays described above, LeanOrm allows i
 
 LeanOrm has the following instance methods on the **\LeanOrm\Model** class that are related to logging:
 - **canLogQueries:** returns true if query logging is enabled on a particular instance of the Model class or any of its sub-classes or false if query logging is disabled on the model instance. It returns false by default.
+- **clearQueryLog:** resets the internal array containing all the logged query entries for a particular instance of the model class.
 - **disableQueryLogging:** turns query logging off on the instance of the model class that it's called on. After calling this method, the instance of the model class which it is called on will stop logging queries.
 - **enableQueryLogging:** turns query logging on on the instance of the model class that it's called on. After calling this method, the instance of the model class which it is called on will start logging queries.
 - **getQueryLog:** returns an array containing all the logged query entries (each of which is also a sub-array described in the log entry section earlier above) for a particular instance of the model class.
@@ -1921,7 +1922,7 @@ LeanOrm has the following instance methods on the **\LeanOrm\Model** class that 
 - **setLogger:** it is used to inject a [PSR-3](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md) compliant logger into the instance of the model class this method is being called on. It can also set the current logger to null if you want to stop using the currently set logger.
 
 LeanOrm has the following static methods on the **\LeanOrm\Model** class that are related to logging:
-- **clearQueryLogForAllInstances:** it clears the static internal array containing all query log entries across all instances of the model class that have logging turned on.
+- **clearQueryLogForAllInstances:** it clears the static internal array containing all query log entries across all instances of the model class that have logging turned on. This does not clear the query log for each individual instance of the Model class, you would have to call the **clearQueryLog** method on each instance to do that.
 - **getQueryLogForAllInstances:** it returns a copy of the static internal array containing all query log entries across all instances of the model class that have logging turned on. It can also return all the query log entries (if any) for a particular instance of model, if that instance is passed as an argument (it's equivalent to calling **getQueryLog** directly on the instance of the model class).
 
 > If you only want to debug queries executed by a single instance of the model class, you should just call the **getQueryLog** method on that instance. If you also have a logger set for that model instance, you will be able to see in real-time the queries executed on that instance in the destination where your logger is logging to.
