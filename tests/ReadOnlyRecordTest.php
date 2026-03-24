@@ -630,4 +630,90 @@ class ReadOnlyRecordTest extends \PHPUnit\Framework\TestCase {
         
         $readOnlyRecord->__unset('name');
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    
+    public function testThatIsAutoIncrementingFieldWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $modelObject->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
+        /** @var \LeanOrm\Model\Record $record */
+        $record = $modelObject->createNewRecord();
+        
+        self::assertFalse($record->isAutoIncrementingField('non-existent-field'));
+        self::assertFalse($record->isAutoIncrementingField('name'));
+        
+        (\strtolower($modelObject->getPdoDriverName()) !== 'sqlite') 
+            && self::assertTrue($record->isAutoIncrementingField('author_id'));
+    }
+    
+    public function testThatIsPrimaryKeyFieldWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $modelObject->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
+        /** @var \LeanOrm\Model\Record $record */
+        $record = $modelObject->createNewRecord();
+        
+        self::assertFalse($record->isPrimaryKeyField('non-existent-field'));
+        self::assertFalse($record->isPrimaryKeyField('name'));
+        self::assertTrue($record->isPrimaryKeyField('author_id'));
+    }
+    
+    public function testThatIsRequiredFieldWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $modelObject->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
+        /** @var \LeanOrm\Model\Record $record */
+        $record = $modelObject->createNewRecord();
+        
+        self::assertFalse($record->isRequiredField('non-existent-field'));
+        self::assertFalse($record->isRequiredField('name'));
+        self::assertTrue($record->isRequiredField('m_timestamp'));
+    }
+    
+    public function testThatGetFieldDefaultValueWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $modelObject->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
+        /** @var \LeanOrm\Model\Record $record */
+        $record = $modelObject->createNewRecord();
+        
+        self::assertNull($record->getFieldDefaultValue('non-existent-field'));
+        
+        $expectedDefaultValue = $modelObject->getTableCols()['name'] ?? [];
+        $expectedDefaultValue = $expectedDefaultValue['default'] ?? null;
+        
+        self::assertEquals($expectedDefaultValue, $record->getFieldDefaultValue('name'));
+    }
+
+    public function testThatGetFieldLengthWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $modelObject->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
+        /** @var \LeanOrm\Model\Record $record */
+        $record = $modelObject->createNewRecord();
+        
+        self::assertNull($record->getFieldLength('non-existent-field'));
+        
+        $expectedValue = $modelObject->getTableCols()['name'] ?? [];
+        $expectedValue = $expectedValue['size'] ?? null;
+        
+        self::assertEquals($expectedValue, $record->getFieldLength('name'));
+    }
+
+    public function testThatGetFieldMetadataWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        $modelObject->setRecordClassName(\LeanOrm\Model\ReadOnlyRecord::class);
+        /** @var \LeanOrm\Model\Record $record */
+        $record = $modelObject->createNewRecord();
+        
+        self::assertEquals([], $record->getFieldMetadata('non-existent-field'));
+        
+        //$this->table_cols[$colname]['default']
+        $expectedValue = $modelObject->getTableCols()['name'] ?? [];
+        
+        self::assertEquals($expectedValue, $record->getFieldMetadata('name'));
+    }
 }
