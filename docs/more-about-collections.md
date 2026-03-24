@@ -37,4 +37,4 @@ $anAuthorWithPosts->posts->eagerLoadRelatedData(['tags']);
 $anAuthorWithPostsAndTags = $authorModel->fetchOneRecord(null, ['posts'=>['tags']]);
 ```
 
-[<<< Previous](./more-about-records.md)
+[<<< Previous](./more-about-records.md) | [Next >>>](./db-connector-class.md)

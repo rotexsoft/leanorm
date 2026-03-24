@@ -5,3 +5,4 @@
 3. [More about Models](./more-about-models.md)
 4. [More about Records](./more-about-records.md)
 5. [More about Collections](./more-about-collections.md)
+5. [The DBConnector Class (A PDO Connection Manager & Query Executor)](./db-connector-class.md)
