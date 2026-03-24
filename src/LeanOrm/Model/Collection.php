@@ -506,6 +506,13 @@ class Collection implements \GDAO\Model\CollectionInterface, \Stringable
     // Magic Methods
     /////////////////////
     
+    // DO NOT IMPLEMENT __destruct that calls __destruct on each record in this
+    // collection as records in this collection may still be contained in other
+    // collections or referenced by other variables or be stored in another
+    // array. We would not want to destroy the record data when the reference 
+    // to this collection is unset or there are no more variables referencing 
+    // this collection
+    
     /**
      * 
      * Returns a record from the collection based on its key value.
