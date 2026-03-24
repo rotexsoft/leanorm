@@ -4508,4 +4508,100 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         
         $postsModel->disableQueryLogging();
     }
+    
+    public function testThatHasAnyDataInTableWorksAsExpected() {
+
+        /** @var \LeanOrm\Model $keyValueModel */
+        $keyValueModel = new $this->modelClass(static::$dsn, static::$username ?? "", static::$password ?? "", [], 'id','key_value');
+        $recordsToInsert = [
+            ['key_name'=> 'key 1', 'value'=> 'value 1', 'm_timestamp' => date('Y-m-d H:i:s',  strtotime("+2 minutes")), 'date_created'=> date('Y-m-d H:i:s',  strtotime("+1 minutes"))],
+            ['key_name'=> 'key 2', 'value'=> 'value 1', 'm_timestamp' => date('Y-m-d H:i:s',  strtotime("+3 minutes")), 'date_created'=> date('Y-m-d H:i:s',  strtotime("+2 minutes"))],
+            ['key_name'=> 'key 3', 'value'=> 'value 1', 'm_timestamp' => date('Y-m-d H:i:s',  strtotime("+4 minutes")), 'date_created'=> date('Y-m-d H:i:s',  strtotime("+3 minutes"))],
+        ];
+        
+        // Deleting a record that has never been saved to the DB
+        $this->insertDataIntoTable('key_value', $recordsToInsert[0], $keyValueModel->getPDO());
+        $this->insertDataIntoTable('key_value', $recordsToInsert[1], $keyValueModel->getPDO());
+        $this->insertDataIntoTable('key_value', $recordsToInsert[2], $keyValueModel->getPDO());
+
+        self::assertTrue($keyValueModel->hasAnyDataInTable());
+        
+        $keyValueModel->fetchRecordsIntoCollection()->deleteAll();
+        
+        self::assertFalse($keyValueModel->hasAnyDataInTable());
+    }
+
+    public function testThatGetFieldDefaultValueWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        self::assertNull($modelObject->getFieldDefaultValue('non-existent-field'));
+        
+        $expectedDefaultValue = $modelObject->getTableCols()['name'] ?? [];
+        $expectedDefaultValue = $expectedDefaultValue['default'] ?? null;
+        
+        self::assertEquals($expectedDefaultValue, $modelObject->getFieldDefaultValue('name'));
+    }
+
+    public function testThatGetFieldLengthWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        self::assertNull($modelObject->getFieldLength('non-existent-field'));
+        
+        $expectedValue = $modelObject->getTableCols()['name'] ?? [];
+        $expectedValue = $expectedValue['size'] ?? null;
+        
+        self::assertEquals($expectedValue, $modelObject->getFieldLength('name'));
+    }
+
+    public function testThatGetFieldMetadataWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        self::assertEquals([], $modelObject->getFieldMetadata('non-existent-field'));
+        
+        //$this->table_cols[$colname]['default']
+        $expectedValue = $modelObject->getTableCols()['name'] ?? [];
+        
+        self::assertEquals($expectedValue, $modelObject->getFieldMetadata('name'));
+    }
+
+    public function testThatIsAnActualTableColWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        self::assertFalse($modelObject->isAnActualTableCol('non-existent-field'));
+        self::assertTrue($modelObject->isAnActualTableCol('name'));
+    }
+
+    public function testThatIsAutoIncrementingFieldWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        self::assertFalse($modelObject->isAutoIncrementingField('non-existent-field'));
+        self::assertFalse($modelObject->isAutoIncrementingField('name'));
+        
+        (\strtolower($modelObject->getPdoDriverName()) !== 'sqlite') 
+            && self::assertTrue($modelObject->isAutoIncrementingField('author_id'));
+    }
+
+    public function testThatIsPrimaryKeyFieldWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        self::assertFalse($modelObject->isPrimaryKeyField('non-existent-field'));
+        self::assertFalse($modelObject->isPrimaryKeyField('name'));
+        (\strtolower($modelObject->getPdoDriverName()) !== 'sqlite') 
+            && self::assertTrue($modelObject->isPrimaryKeyField('author_id'));
+    }
+
+    public function testThatIsRequiredFieldWorksAsExpected() {
+
+        $modelObject = new \LeanOrm\TestObjects\AuthorsModel(static::$dsn, static::$username ?? "", static::$password ?? "");
+        
+        self::assertFalse($modelObject->isRequiredField('non-existent-field'));
+        self::assertFalse($modelObject->isRequiredField('name'));
+        self::assertTrue($modelObject->isRequiredField('author_id'));
+    }
 }
