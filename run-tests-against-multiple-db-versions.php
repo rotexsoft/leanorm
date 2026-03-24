@@ -123,8 +123,8 @@ $container_creation_commands = [
          ],
      ],
      [
-         'postgres:14.20' => [
-             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:14.20",
+         'postgres:14.22' => [
+             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:14.22",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
@@ -139,32 +139,40 @@ $container_creation_commands = [
         ],
     ],
     [
-         'postgres:15.15' => [
-             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:15.15",
+        'mysql:9.6.0' => [
+            'run_container' => "podman run -dt -p 3306:3306 -e MYSQL_ROOT_PASSWORD={$mysql_root_psw} docker.io/library/mysql:9.6.0",
+            'dsn' => $mysql_maria_db_sql_dsn,
+            'username' => $mysql_user,
+            'password' => $mysql_root_psw,
+        ],
+    ],
+    [
+         'postgres:15.17' => [
+             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:15.17",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
          ], 
      ],
      [
-         'postgres:16.11' => [
-             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:16.11",
+         'postgres:16.13' => [
+             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:16.13",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
          ], 
      ],
      [
-         'postgres:17.7' => [
-             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:17.7",
+         'postgres:17.9' => [
+             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:17.9",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
          ], 
      ],
      [
-         'postgres:18.1' => [
-             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:18.1",
+         'postgres:18.3' => [
+             'run_container' => "podman run -dt -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=blog docker.io/library/postgres:18.3",
              'dsn' => $pgsql_dsn,
              'username' => $pgsql_user,
              'password' => $pgsql_pass,
