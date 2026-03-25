@@ -466,7 +466,7 @@ class DBConnector {
         string $query,
         array $parameters = [],
         string $connection_name = self::DEFAULT_CONNECTION,
-        object $calling_object = null
+        ?object $calling_object = null
     ): DBExceuteQueryResult {
 
         if($calling_object === null) { $calling_object = $this; }
@@ -549,7 +549,7 @@ class DBConnector {
      * @param array  $parameters Optional bound parameters
      * @param null|object $calling_object object that called this method
      */
-    public function runQuery(string $query, array $parameters=[], object $calling_object=null): DBExceuteQueryResult {
+    public function runQuery(string $query, array $parameters=[], ?object $calling_object=null): DBExceuteQueryResult {
 
         return $this->execute($query, $parameters, $this->connection_name, $calling_object);
     }
@@ -563,7 +563,7 @@ class DBConnector {
      * 
      * @return mixed result of the query or false on failure or if there are no rows
      */
-    public function dbFetchOne(string $select_query, array $parameters = [], object $calling_object=null): mixed {
+    public function dbFetchOne(string $select_query, array $parameters = [], ?object $calling_object=null): mixed {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
@@ -579,7 +579,7 @@ class DBConnector {
      * 
      * @return mixed[]
      */
-    public function dbFetchAll(string $select_query, array $parameters = [], object $calling_object=null): array {
+    public function dbFetchAll(string $select_query, array $parameters = [], ?object $calling_object=null): array {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
@@ -596,7 +596,7 @@ class DBConnector {
      * 
      * @return mixed[]
      */
-    public function dbFetchCol(string $select_query, array $parameters = [], object $calling_object=null): array {
+    public function dbFetchCol(string $select_query, array $parameters = [], ?object $calling_object=null): array {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
@@ -630,7 +630,7 @@ class DBConnector {
      * @psalm-suppress MixedArrayOffset
      * @psalm-suppress MixedArrayAccess
      */
-    public function dbFetchPairs(string $select_query, array $parameters = [], object $calling_object=null): array {
+    public function dbFetchPairs(string $select_query, array $parameters = [], ?object $calling_object=null): array {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
         $data = [];
@@ -653,7 +653,7 @@ class DBConnector {
      * @param array  $parameters Parameters that can be bound to $select_query via \PDOStatement->bindParam(..)
      * @param null|object $calling_object object that called this method
      */
-    public function dbFetchValue(string $select_query, array $parameters = [], object $calling_object=null): mixed {
+    public function dbFetchValue(string $select_query, array $parameters = [], ?object $calling_object=null): mixed {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
