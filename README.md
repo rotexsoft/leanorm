@@ -39,11 +39,11 @@ Version 4.x & 5.x have been rigorously tested against:
 - See [run-tests-against-multiple-db-versions.php](./run-tests-against-multiple-db-versions.php)
 
 Version 6.x has been rigorously tested against:
-- Sqlite 3.45.1
-- MariaDB 10.4.34, 10.5.29, 10.6.24, 10.11.15, 11.4.9, 11.8.5 & 12.1.2
-- MySQL 5.6.51, 5.7.44, 8.0.45 & 8.4.8
-- PostgreSQL 12.22, 13.23, 14.20, 15.15, 16.11, 17.7 & 18.1
-- See [run-tests-against-multiple-db-versions.php](./run-tests-against-multiple-db-versions.php)
+- Sqlite 3.46.1
+- MariaDB 10.4.34, 10.5.29, 10.6.25, 10.11.16, 11.4.10, 11.8.6 & 12.2.2
+- MySQL 5.6.51, 5.7.44, 8.0.45, 8.4.8 & 9.6.0
+- PostgreSQL 12.22, 13.23, 14.22, 15.17, 16.13, 17.9 & 18.3
+- See [run-tests-against-multiple-db-versions.php](./run-tests-against-multiple-db-versions.php) & [run-tests-against-multiple-db-versions-docker.php](./run-tests-against-multiple-db-versions-docker.php)
 
 MS SQL Server, is theoretically supported but hasn't been tested. 
 Will provide more updates on MS SQL Server support once testing on that DB engine has been done.
@@ -54,7 +54,7 @@ Version 1.x of this package never got a stable release.
 
 Version 2.x+ of this package is stable & uses [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/tree/2.8.1#select) 2.8.0+ . 
 
-Versions 3.x+, 4.x+ & 5.x+ of this package are also stable & use [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) 3.0.0+.
+Version 3.x+ and higher of this package are also stable & use [**aura/sqlquery**](https://github.com/auraphp/Aura.SqlQuery/blob/3.x/docs/select.md) 3.0.0+.
 
 Versions 2.x & 3.x mainly differ in the versions of **aura/sqlquery** their **Model::getSelect(): \Aura\SqlQuery\Common\Select** returns and 
 3.x has a few newer features like **Model::fetchOneByPkey($id, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**.

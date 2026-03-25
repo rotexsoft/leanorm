@@ -15,12 +15,14 @@ For the most part, users of this package will only be interacting with the Model
 Instances of the Model class can be used to:
 
 - Fetch data from the database into 
-    - one Record object or multiple Record objects wrapped in either an array or a Collection object
-    - or one array (representing a row of data from the database) or multiple arrays (i.e. an array of arrays with each sub-array representing a row of data from the database)
+    - one Record object or multiple Record objects stored in either an array or a Collection object
+    - one array (representing a row of data from the database) or multiple arrays (i.e. an array of arrays with each sub-array representing a row of data from the database)
 - Insert new data into the database table associated with the Model (You cannot insert data into views)
 - Update existing data in the database table associated with the Model (You cannot update data in views)
 - Delete data from the database table associated with the Model (You cannot delete data from views)
-- Define relationship(s) between its associated database table / view and other database tables / views
+- Define a Model's relationship(s) to other Model(s).
+    - These relationships can be used to fetch related data from other Models when fetching data from the Model where the relationships are defined
+    - For example an Authors model class can have a relationship like an Author has many Posts defined in it. When fetching Authors you can also specify that the associated Posts for each Author be included in the fetched data
 - Get database table / view metadata for the table / view the Model is associated with
 - and some other database operations
 
@@ -31,7 +33,7 @@ The Model class generates all the SQL for accessing and manipulating data in the
 The Model class also acts as a Data Mapper by being able to map:
 
 - a row of data in a database table to a Record object
-- rows of data in a database table in to a Collection object containing one or more Record objects
+- rows of data in a database table into a Collection object containing one or more Record objects
 - foreign key relationship(s) between database tables into attribute(s) of a record object. Four relationship types are supported:
     1. Belongs-To 
     2. Has-One
