@@ -1,33 +1,44 @@
 # More about Models
 
-    - [Methods for Fetching data from the Database](#methods-for-fetching-data-from-the-database)
-        - [Fetching data from the Database via fetchCol](#fetching-data-from-the-database-via-fetchcol)
-        - [Fetching data from the Database via fetchOneRecord](#fetching-data-from-the-database-via-fetchonerecord)
-        - [Fetching data from the Database via fetchOneByPkey](#fetching-data-from-the-database-via-fetchonebypkey)
-        - [Fetching data from the Database via fetchPairs](#fetching-data-from-the-database-via-fetchpairs)
-        - [Fetching data from the Database via fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray)
-        - [Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrecordsintoarraykeyedonpkval)
-        - [Fetching data from the Database via fetchRecordsIntoCollection](#fetching-data-from-the-database-via-fetchrecordsintocollection)
-        - [Fetching data from the Database via fetchRecordsIntoCollectionKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrecordsintocollectionkeyedonpkval)
-        - [Fetching data from the Database via fetchRowsIntoArray](#fetching-data-from-the-database-via-fetchrowsintoarray)
-        - [Fetching data from the Database via fetchRowsIntoArrayKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrowsintoarraykeyedonpkval)
-        - [Fetching data from the Database via fetchValue](#fetching-data-from-the-database-via-fetchvalue)
-        - [Fetching data from the Database via fetch](#fetching-data-from-the-database-via-fetch)
-    - [Deleting Data](#deleting-data)
-    - [Updating Data](#updating-data)
-    - [Defining Relationships between Models and Working with Related Data](#defining-relationships-between-models-and-working-with-related-data)
-        - [Belongs To](#belongs-to)
-        - [Has One](#has-one)
-        - [Has Many](#has-many)
-        - [Has Many Through](#has-many-through-aka-many-to-many)
-        - [Relationship Definition Code Samples](#relationship-definition-code-samples)
-            - [Option 1: define the relationships for each instance after creating each instance](#option-1-define-the-relationships-for-each-instance-after-creating-each-instance)
-            - [Option 2: define the relationships inside the constructor of each Model Class](#option-2-define-the-relationships-inside-the-constructor-of-each-model-class)
-        - [Accessing Related Data Code Samples](#accessing-related-data-code-samples)
-    - [Query Logging](#query-logging)
+- [Methods for Fetching data from the Database](#methods-for-fetching-data-from-the-database)
+    - [Fetching data from the Database via fetchCol](#fetching-data-from-the-database-via-fetchcol)
+    - [Fetching data from the Database via fetchOneRecord](#fetching-data-from-the-database-via-fetchonerecord)
+    - [Fetching data from the Database via fetchOneByPkey](#fetching-data-from-the-database-via-fetchonebypkey)
+    - [Fetching data from the Database via fetchPairs](#fetching-data-from-the-database-via-fetchpairs)
+    - [Fetching data from the Database via fetchRecordsIntoArray](#fetching-data-from-the-database-via-fetchrecordsintoarray)
+    - [Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrecordsintoarraykeyedonpkval)
+    - [Fetching data from the Database via fetchRecordsIntoCollection](#fetching-data-from-the-database-via-fetchrecordsintocollection)
+    - [Fetching data from the Database via fetchRecordsIntoCollectionKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrecordsintocollectionkeyedonpkval)
+    - [Fetching data from the Database via fetchRowsIntoArray](#fetching-data-from-the-database-via-fetchrowsintoarray)
+    - [Fetching data from the Database via fetchRowsIntoArrayKeyedOnPkVal](#fetching-data-from-the-database-via-fetchrowsintoarraykeyedonpkval)
+    - [Fetching data from the Database via fetchValue](#fetching-data-from-the-database-via-fetchvalue)
+    - [Fetching data from the Database via fetch](#fetching-data-from-the-database-via-fetch)
+- [Deleting Data](#deleting-data)
+- [Updating Data](#updating-data)
+- [Defining Relationships between Models and Working with Related Data](#defining-relationships-between-models-and-working-with-related-data)
+    - [Belongs To](#belongs-to)
+    - [Has One](#has-one)
+    - [Has Many](#has-many)
+    - [Has Many Through](#has-many-through-aka-many-to-many)
+    - [Relationship Definition Code Samples](#relationship-definition-code-samples)
+        - [Option 1: define the relationships for each instance after creating each instance](#option-1-define-the-relationships-for-each-instance-after-creating-each-instance)
+        - [Option 2: define the relationships inside the constructor of each Model Class](#option-2-define-the-relationships-inside-the-constructor-of-each-model-class)
+    - [Accessing Related Data Code Samples](#accessing-related-data-code-samples)
+- [Query Logging](#query-logging)
 
+The Model class generates all the SQL for accessing and manipulating data in the database; it uses the DBConnector class to execute the SQL statements. The Model class together with the DBConnector class act as a Table Data Gateway.
 
-There is **\LeanOrm\CachingModel** class that is meant to cache method return values across
+The Model class also acts as a Data Mapper by being able to map:
+
+- a row of data in a database table to a Record object
+- rows of data in a database table into a Collection object containing one or more Record objects
+- foreign key relationship(s) between database tables into attribute(s) of a record object. Four relationship types are supported:
+    1. Belongs-To 
+    2. Has-One
+    3. Has-Many
+    4. Has-Many-Through a.k.a Many to Many)
+
+There is also **\LeanOrm\CachingModel** class that is meant to cache method return values across
 all instances of **\LeanOrm\CachingModel** and its sub-classes (on each invocation of a php script
 via command line or a webserver) where possible to improve performance. You can use it instead of 
 **\LeanOrm\Model** in your applications. The cached results do not persist between different
