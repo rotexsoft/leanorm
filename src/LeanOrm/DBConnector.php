@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
+
 namespace LeanOrm;
+
+use \Psr\Log\LoggerInterface;
 
 /**
  * 
@@ -67,6 +70,13 @@ class DBConnector {
     
     final public const CONFIG_KEY_CONNECTION_STR = 'connection_string';
     
+    final public const LOG_ENTRY_SQL_KEY = 'sql';
+    final public const LOG_ENTRY_BIND_PARAMS_KEY = 'bind_params';
+    final public const LOG_ENTRY_DATE_EXECUTED_KEY = 'date_executed';
+    final public const LOG_ENTRY_CALL_STACK_KEY = 'call_stack';
+    final public const LOG_ENTRY_CALLING_OBJECT_HASH = 'calling_object';
+    final public const LOG_ENTRY_EXEC_TIME_KEY = 'query_execution_time_in_seconds';
+    
 
 ////////////////////////////////////////////////////////////////////////////////        
 //////////// -------------------------------- //////////////////////////////////
@@ -90,6 +100,17 @@ class DBConnector {
      */
     protected static array $db = [];
     
+    /**
+     * An array containing a log of all queries executed by all instances of this class
+     * 
+     * @var array
+     */
+    protected static $query_log = [];
+    
+    protected bool $can_log_queries = false;
+    
+    protected null|LoggerInterface $logger = null;
+    
     //////////// ------------------------------------ //////////////////////////////
     //////////// --- END CLASS PROPERTIES TO KEEP --- //////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
@@ -97,6 +118,103 @@ class DBConnector {
     // ---------------------- //
     // --- STATIC METHODS --- //
     // ---------------------- //
+    
+    /**
+     * @param string $connection_name the name of a connection used to create an instance of this class. Will fallback to self::DEFAULT_CONNECTION
+     *
+     * @param null|object $object_to_match an object that triggered calling of methods of this class that executed queries in this class.
+     *                                     Only queries associated with $object_to_match will be cleared from the queries logged for
+     *                                     $connection_name. If $object_to_match is null then all logged queries for $connection_name
+     *                                     will be cleared
+     * @return void
+     */
+    public static function clearQueryLog(
+             string $connection_name = self::DEFAULT_CONNECTION,
+        null|object $object_to_match = null
+    ): void {
+
+        if($object_to_match === null) {
+
+            static::$query_log[$connection_name] = [];
+            
+        } else { // $object_to_match !== null
+            
+            $object_class_name = $object_to_match::class;
+            
+            if(
+                isset(static::$query_log[$connection_name])
+                && \is_array(static::$query_log[$connection_name])
+                && \array_key_exists($object_class_name, static::$query_log[$connection_name])
+            ) {
+
+                $object_hash = \spl_object_hash($object_to_match);
+                
+                foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry) {
+
+                    if($object_hash === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_HASH]) {
+
+                        unset(static::$query_log[$connection_name][$object_class_name][$curr_key]);
+
+                    } // if($object_to_match === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_KEY])
+                } // foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry)
+                    
+            } // if(isset(static::$query_log[$connection_name]) &&  \is_array(static::$query_log[$connection_name]) ...
+        } // if($object_to_match === null) {} else {}
+    }
+    
+    /**
+     * @param string $connection_name the name of a connection used to create an instance of this class. Will fallback to self::DEFAULT_CONNECTION
+     *
+     * @param null|object $object_to_match an object that triggered calling of methods of this class that executed queries in this class.
+     *                                     Only queries associated with $object_to_match will be returned from the queries logged for
+     *                                     $connection_name. If $object_to_match is null then all logged queries for $connection_name
+     *                                     will be returned
+     * @return void
+     */
+    public static function getQueryLog(
+             string $connection_name = self::DEFAULT_CONNECTION,
+        null|object $object_to_match = null
+    ): array {
+        
+        $log_entries = [];
+
+        if($object_to_match === null) {
+            
+            if(isset(static::$query_log[$connection_name])) {
+
+                $log_entries = static::$query_log[$connection_name];
+            }
+            
+        } else { // $object_to_match !== null
+            
+            $object_class_name = $object_to_match::class;
+            
+            if(
+                isset(static::$query_log[$connection_name])
+                && \is_array(static::$query_log[$connection_name])
+                && \array_key_exists($object_class_name, static::$query_log[$connection_name])
+            ) {
+                $object_hash = \spl_object_hash($object_to_match);
+                
+                foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry) {
+
+                    if($object_hash === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_HASH]) {
+                        
+                        if(!isset($log_entries[$connection_name])) {
+                            
+                            $log_entries[$connection_name] = [$object_class_name=>[]];
+                        }
+                        
+                        $log_entries[$connection_name][$object_class_name][$curr_key] = $curr_entry;
+
+                    } // if($object_to_match === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_KEY])
+                } // foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry)
+                    
+            } // if(isset(static::$query_log[$connection_name]) &&  \is_array(static::$query_log[$connection_name]) ...
+        } // if($object_to_match === null) {} else {}
+        
+        return $log_entries;
+    }
     
     /**
      * Pass configuration settings to the class in the form of
@@ -219,29 +337,15 @@ class DBConnector {
         return static::$db[$connection_name];
     }
 
-    /**
-     * Executes a raw query as a wrapper for PDOStatement::execute.
-     * 
-     * @param string $query The raw SQL query
-     * @param array  $parameters Optional bound parameters
-     * @param bool $return_pdo_stmt_and_exec_time true to add the \PDOStatement object used by this function & time in seconds it took the query to execute to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
-     * 
-     * @return bool|array{query_result: mixed, pdo_statement: \PDOStatement, exec_time_in_seconds: float} bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
-     */
-    public function executeQuery(string $query, array $parameters=[], bool $return_pdo_stmt_and_exec_time=false): bool|array {
-
-        return static::_execute($query, $parameters, $return_pdo_stmt_and_exec_time, $this->connection_name);
-    }
-
    /**
-    * Internal helper method for executing statments. Logs queries, and
-    * stores statement object in ::_last_statment, accessible publicly
-    * through ::get_last_statement()
+    * Internal helper method for executing statements.
+    * 
     * @param array $parameters An array of parameters to be bound in to the query
     * @param bool $return_pdo_stmt_and_exec_time true to add the \PDOStatement object used by this function & time in seconds it took the query to execute to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
     * @param string $connection_name Which connection to use
     * 
     * @return bool|array{query_result: mixed, pdo_statement: \PDOStatement, exec_time_in_seconds: float} Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
+    * @deprecated since 7.0, use execute() instead. Will be removed in 8.0.
     */
     protected static function _execute(string $query, array $parameters = [], bool $return_pdo_stmt_and_exec_time=false, string $connection_name = self::DEFAULT_CONNECTION): bool|array {
 
@@ -305,99 +409,255 @@ class DBConnector {
 
         return $this->connection_name;
     }
+    
+    public function canLogQueries(): bool {
+        
+        return $this->can_log_queries;
+    }
+    
+    /** @psalm-suppress PossiblyUnusedMethod */
+    public function enableQueryLogging(): static {
+
+        $this->can_log_queries = true;
+        return $this;
+    }
+    
+    /** @psalm-suppress PossiblyUnusedMethod */
+    public function disableQueryLogging(): static {
+
+        $this->can_log_queries = false;
+        return $this;
+    }
+    
+
+    /** @psalm-suppress PossiblyUnusedMethod */
+    public function setLogger(?LoggerInterface $logger): static {
+        
+        $this->logger = $logger;
+        return $this;
+    }
+    
+    public function getLogger(): ?LoggerInterface { return $this->logger; }
 
     /**
-     * Tell the DBConnector that you are expecting a single result
-     * back from your query, and execute it. Will return
-     * a single instance of the DBConnector class, or false if no
-     * rows were returned.
-     * As a shortcut, you may supply an ID as a parameter
-     * to this method. This will perform a primary key
-     * lookup on the table.
+     * Executes a raw query as a wrapper for PDOStatement::execute.
+     * 
+     * @param string $query The raw SQL query
+     * @param array  $parameters Optional bound parameters
+     * @param bool $return_pdo_stmt_and_exec_time true to add the \PDOStatement object used by this function & time in seconds it took the query to execute to an array of results to be returned or false to return only the Response of \PDOStatement::execute()
+     * 
+     * @return bool|array{query_result: mixed, pdo_statement: \PDOStatement, exec_time_in_seconds: float} bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
+     * @deprecated since 7.0, use runQuery() instead. Will be removed in 8.0.
+     */
+    public function executeQuery(string $query, array $parameters=[], bool $return_pdo_stmt_and_exec_time=false): bool|array {
+
+        return static::_execute($query, $parameters, $return_pdo_stmt_and_exec_time, $this->connection_name);
+    }
+
+   /**
+    * Internal helper method for executing statements.
+    * 
+    * @param string $query Sql query to execute
+    * @param  array $parameters An array of parameters to be bound in to the query
+    * @param string $connection_name Which connection to use
+    * @param null|object $calling_object object that called a method which triggered the calling of this method. To be used for logging queries in version 7.0
+    */
+    protected function execute(
+        string $query,
+        array $parameters = [],
+        string $connection_name = self::DEFAULT_CONNECTION,
+        object $calling_object = null
+    ): DBExceuteQueryResult {
+
+        if($calling_object === null) { $calling_object = $this; }
+        
+        $statement = static::getDb($connection_name)->prepare($query);
+        
+        /** @psalm-suppress MixedAssignment */
+        foreach ($parameters as $key => &$param) {
+
+            if (is_null($param)) {
+
+                $type = \PDO::PARAM_NULL;
+
+            } else if (is_bool($param)) {
+
+                $type = \PDO::PARAM_BOOL;
+
+            } else {
+
+                $type = is_int($param) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
+            }
+
+            $statement->bindParam((is_int($key) ? ++$key : $key), $param, $type);
+        }
+        
+        $start_time = \hrtime(true); // start timing
+        $result = $statement->execute();
+        $end_time = \hrtime(true); // stop timing
+        $total_execution_time_in_seconds = (($end_time - $start_time) / self::NANO_SECOND_TO_SECOND_DIVISOR);
+
+        if($this->canLogQueries()) {
+            
+            $call_trace = \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
+            
+            if(!array_key_exists($connection_name, static::$query_log)) {
+                
+                static::$query_log[$connection_name] = [];
+            }
+            
+            if(!array_key_exists($calling_object::class, static::$query_log[$connection_name])) {
+                
+                static::$query_log[$connection_name][$calling_object::class] = [];
+            }
+            
+            $log_entry = [
+                static::LOG_ENTRY_SQL_KEY => $query,
+                static::LOG_ENTRY_BIND_PARAMS_KEY => $parameters,
+                static::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
+                static::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds,
+                static::LOG_ENTRY_CALL_STACK_KEY => $call_trace,
+                static::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($calling_object),
+            ];
+            static::$query_log[$connection_name][$calling_object::class][] = $log_entry;
+            
+            if($this->getLogger() instanceof \Psr\Log\LoggerInterface) {
+
+                $this->getLogger()->info(
+                    PHP_EOL . PHP_EOL
+                    . '<<<=============================================>>>' . PHP_EOL
+                    . 'SQL:' . PHP_EOL . "{$query}" . PHP_EOL . PHP_EOL
+                    . 'BIND PARAMS:' . PHP_EOL . var_export($parameters, true)
+                    . PHP_EOL . "Call Backtrace: "  . var_export($call_trace, true)
+                    . '[[[=============================================]]]' . PHP_EOL
+                    . PHP_EOL . PHP_EOL . PHP_EOL
+                );
+            }
+        }
+        
+        return new DBExceuteQueryResult(
+            pdo_statement: ($statement === false) ? null : $statement,
+            pdo_statement_execute_result: $result,
+            query_execution_time_in_seconds: $total_execution_time_in_seconds
+        );
+    }
+    
+    /**
+     * Executes a raw query as a wrapper for PDOStatement::execute.
+     * 
+     * @param string $query  A SQL query that's valid for \PDO->prepare(..) usage
+     * @param array  $parameters Optional bound parameters
+     * @param null|object $calling_object object that called this method
+     */
+    public function runQuery(string $query, array $parameters=[], object $calling_object=null): DBExceuteQueryResult {
+
+        return $this->execute($query, $parameters, $this->connection_name, $calling_object);
+    }
+    
+    /**
+     * Runs a query that is supposed to return a row of data from a database table
+     * 
+     * @param string $select_query A SQL Select query that's valid for \PDO->prepare(..) usage
+     * @param array  $parameters Parameters that can be bound to $select_query via \PDOStatement->bindParam(..)
+     * @param null|object $calling_object object that called this method
      * 
      * @return mixed result of the query or false on failure or if there are no rows
      */
-    public function dbFetchOne(string $select_query, array $parameters = [] ): mixed {
+    public function dbFetchOne(string $select_query, array $parameters = [], object $calling_object=null): mixed {
 
-        $result = static::_execute($select_query, $parameters, true, $this->connection_name);
-        /** @psalm-suppress PossiblyInvalidArrayAccess */
-        $statement = $result['pdo_statement'];
+        $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
-        return $statement->fetch(\PDO::FETCH_ASSOC);
+        return ($result->pdo_statement === null) ? null : $result->pdo_statement->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
-     * Perform a raw query. The query can contain placeholders in
-     * either named or question mark style. If placeholders are
-     * used, the parameters should be an array of values which will
-     * be bound to the placeholders in the query.
+     * Runs a query that is supposed to return rows of data from a database table
+     * 
+     * @param string $select_query A SQL Select query that's valid for \PDO->prepare(..) usage
+     * @param array  $parameters Parameters that can be bound to $select_query via \PDOStatement->bindParam(..)
+     * @param null|object $calling_object object that called this method
      * 
      * @return mixed[]
      */
-    public function dbFetchAll(string $select_query, array $parameters = []): array {
+    public function dbFetchAll(string $select_query, array $parameters = [], object $calling_object=null): array {
 
-        $result = static::_execute($select_query, $parameters, true, $this->connection_name);
-        /** @psalm-suppress PossiblyInvalidArrayAccess */
-        $statement = $result['pdo_statement'];
+        $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
-        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+        return ($result->pdo_statement === null) 
+                    ? [] : $result->pdo_statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
-     * Perform a raw query. The query can contain placeholders in
-     * either named or question mark style. If placeholders are
-     * used, the parameters should be an array of values which will
-     * be bound to the placeholders in the query.
+     * Runs a query that is supposed to return an array of values from a column in a database table
+     * 
+     * @param string $select_query A SQL Select query that's valid for \PDO->prepare(..) usage
+     * @param array  $parameters Parameters that can be bound to $select_query via \PDOStatement->bindParam(..)
+     * @param null|object $calling_object object that called this method
      * 
      * @return mixed[]
      */
-    public function dbFetchCol(string $select_query, array $parameters = []): array {
+    public function dbFetchCol(string $select_query, array $parameters = [], object $calling_object=null): array {
 
-        $result = static::_execute($select_query, $parameters, true, $this->connection_name);
-        /** @psalm-suppress PossiblyInvalidArrayAccess */
-        $statement = $result['pdo_statement'];
+        $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
-        return $statement->fetchAll(\PDO::FETCH_COLUMN, 0);
+        return ($result->pdo_statement === null) 
+                    ? [] : $result->pdo_statement->fetchAll(\PDO::FETCH_COLUMN, 0);
     }
 
     /**
-     * Perform a raw query. The query can contain placeholders in
-     * either named or question mark style. If placeholders are
-     * used, the parameters should be an array of values which will
-     * be bound to the placeholders in the query.
+     * Runs a query that is supposed to return an associative array of data from a database table
+     * where the keys are the values from the first database column in the select query
+     * and the values are values from the second database column in the select query.
+     * 
+     * For example:
+     * 
+     * $key_value_pairs = $this->dbFetchPairs(
+     *  'Select col_1, col_2 from a_table'
+     * );
+     * 
+     * $key_value_pairs2 = $this->dbFetchPairs(
+     *   'Select col_1, col_2 from a_table where col_3 > :min_val',
+     *   ['min_val' => 3]
+     * );
+     *  
+     * 
+     * @param string $select_query A SQL Select query that's valid for \PDO->prepare(..) usage
+     * @param array  $parameters Parameters that can be bound to $select_query via \PDOStatement->bindParam(..)
+     * @param null|object $calling_object object that called this method
      * 
      * @return array<int|string, mixed>
      * @psalm-suppress MixedAssignment
      * @psalm-suppress MixedArrayOffset
      * @psalm-suppress MixedArrayAccess
      */
-    public function dbFetchPairs(string $select_query, array $parameters = []): array {
+    public function dbFetchPairs(string $select_query, array $parameters = [], object $calling_object=null): array {
 
-        $result = static::_execute($select_query, $parameters, true, $this->connection_name);
-        /** @psalm-suppress PossiblyInvalidArrayAccess */
-        $statement = $result['pdo_statement'];
+        $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
         $data = [];
         
-        while ($row = $statement->fetch(\PDO::FETCH_NUM)) {
-            
-            $data[$row[0]] = $row[1];
+        if($result->pdo_statement !== null) {
+
+            while ($row = $result->pdo_statement->fetch(\PDO::FETCH_NUM)) {
+
+                $data[$row[0]] = $row[1];
+            }
         }
 
         return $data;
     }
 
     /**
-     * Perform a raw query. The query can contain placeholders in
-     * either named or question mark style. If placeholders are
-     * used, the parameters should be an array of values which will
-     * be bound to the placeholders in the query.
+     * Runs a select query and returns the result of the select query
+     * 
+     * @param string $select_query A SQL Select query that's valid for \PDO->prepare(..) usage
+     * @param array  $parameters Parameters that can be bound to $select_query via \PDOStatement->bindParam(..)
+     * @param null|object $calling_object object that called this method
      */
-    public function dbFetchValue(string $select_query, array $parameters = []): mixed {
+    public function dbFetchValue(string $select_query, array $parameters = [], object $calling_object=null): mixed {
 
-        $result = static::_execute($select_query, $parameters, true, $this->connection_name);
-        /** @psalm-suppress PossiblyInvalidArrayAccess */
-        $statement = $result['pdo_statement'];
+        $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
-        return $statement->fetchColumn(0);
+        return ($result->pdo_statement === null) 
+                    ? null : $result->pdo_statement->fetchColumn(0);
     }
 }

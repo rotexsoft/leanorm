@@ -66,6 +66,8 @@ class Model extends \GDAO\Model implements \Stringable {
     public function enableQueryLogging(): static {
 
         $this->can_log_queries = true;
+        $this->db_connector->enableQueryLogging();
+
         return $this;
     }
     
@@ -73,18 +75,10 @@ class Model extends \GDAO\Model implements \Stringable {
     public function disableQueryLogging(): static {
 
         $this->can_log_queries = false;
+        $this->db_connector->disableQueryLogging();
+        
         return $this;
     }
-
-    /**
-     * @var array<string, array>
-     */
-    protected array $query_log = [];
-
-    /**
-     * @var array<string, array>
-     */
-    protected static array $all_instances_query_log = [];
 
     protected ?LoggerInterface $logger = null;
 
@@ -92,6 +86,8 @@ class Model extends \GDAO\Model implements \Stringable {
     public function setLogger(?LoggerInterface $logger): static {
         
         $this->logger = $logger;
+        $this->getDbConnector()->setLogger($logger);
+        
         return $this;
     }
     
@@ -316,7 +312,7 @@ class Model extends \GDAO\Model implements \Stringable {
                 UNION ALL
                 SELECT name FROM sqlite_temp_master
                 ORDER BY name
-            ");
+            ", [], $this);
         }
         
         $schema = $this->getSchemaQueryingObject();
@@ -325,7 +321,7 @@ class Model extends \GDAO\Model implements \Stringable {
             
             // Calculate schema name for postgresql
             /** @psalm-suppress MixedAssignment */
-            $schema_name = $this->db_connector->dbFetchValue('SELECT CURRENT_SCHEMA');
+            $schema_name = $this->db_connector->dbFetchValue('SELECT CURRENT_SCHEMA', [], $this);
             
             /** @psalm-suppress MixedArgument */
             return $schema->fetchTableList($schema_name);
@@ -958,13 +954,10 @@ SELECT {$foreign_table_name}.*,
   JOIN {$join_table_name} ON {$join_table_name}.{$col_in_join_table_linked_to_foreign_models_table} = {$foreign_table_name}.{$fkey_col_in_foreign_table}
  WHERE {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = {$parent_data->$fkey_col_in_my_table}
 */
-            /** @psalm-suppress MixedArgument */
-            $this->logQuery($sql_2_get_related_data, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
-
             //GRAB DA RELATED DATA
             $related_data = 
                 $this->db_connector
-                     ->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql);
+                     ->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql, $this);
 
             if ( 
                 $parent_data instanceof \GDAO\Model\CollectionInterface
@@ -1351,12 +1344,9 @@ SELECT {$foreign_table_name}.*
         /** @psalm-suppress MixedAssignment */
         $sql_2_get_related_data = $query_obj->__toString();
         
-        /** @psalm-suppress MixedArgument */
-        $this->logQuery($sql_2_get_related_data, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
-        
         return [
             $fkey_col_in_foreign_table, $fkey_col_in_my_table, $foreign_model_obj,
-            $this->db_connector->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql) // fetch the related data
+            $this->db_connector->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql, $this) // fetch the related data
         ]; 
     }
     
@@ -1713,9 +1703,8 @@ SELECT {$foreign_table_name}.*
         $query_obj = $this->createQueryObjectIfNullAndAddColsToQuery($select_obj);
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
-        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
-        
-        $results = $this->db_connector->dbFetchAll($sql, $params_2_bind_2_sql);
+
+        $results = $this->db_connector->dbFetchAll($sql, $params_2_bind_2_sql, $this);
         
         if( $use_p_k_val_as_key && $results !== [] && $this->getPrimaryCol() !== '' ) {
 
@@ -1876,11 +1865,10 @@ SELECT {$foreign_table_name}.*
 
                 $dlt_qry = $del_qry_obj->__toString();
                 $dlt_qry_params = $del_qry_obj->getBindValues();
-                $this->logQuery($dlt_qry, $dlt_qry_params, __METHOD__, '' . __LINE__);
 
                 $matching_rows_before_delete = (int) $this->fetchValue($sel_qry_obj);
 
-                $this->db_connector->executeQuery($dlt_qry, $dlt_qry_params, true);
+                $this->db_connector->runQuery($dlt_qry, $dlt_qry_params, $this);
 
                 $matching_rows_after_delete = (int) $this->fetchValue($sel_qry_obj);
 
@@ -1978,9 +1966,7 @@ SELECT {$foreign_table_name}.*
                 
                 $succesfully_deleted = null;
                 
-            } elseif(
-                count($this->fetch([$pri_key_val], null, [], true, true)) >= 1 
-            ) {
+            } elseif(count($this->fetch([$pri_key_val], null, [], true, true)) >= 1) {
                 
                 //we were still able to fetch the record from the db, so delete failed
                 $succesfully_deleted = false;
@@ -2001,9 +1987,8 @@ SELECT {$foreign_table_name}.*
         );
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
-        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
-        return $this->db_connector->dbFetchCol($sql, $params_2_bind_2_sql);
+        return $this->db_connector->dbFetchCol($sql, $params_2_bind_2_sql, $this);
     }
 
     /**
@@ -2019,10 +2004,9 @@ SELECT {$foreign_table_name}.*
 
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
-        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
         /** @psalm-suppress MixedAssignment */
-        $result = $this->db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
+        $result = $this->db_connector->dbFetchOne($sql, $params_2_bind_2_sql, $this);
 
         if( $result !== false && is_array($result) && $result !== [] ) {
 
@@ -2073,9 +2057,8 @@ SELECT {$foreign_table_name}.*
         );
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
-        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
-        return $this->db_connector->dbFetchPairs($sql, $params_2_bind_2_sql);
+        return $this->db_connector->dbFetchPairs($sql, $params_2_bind_2_sql, $this);
     }
 
     /**
@@ -2093,10 +2076,9 @@ SELECT {$foreign_table_name}.*
 
         $sql = $query_obj->__toString();
         $params_2_bind_2_sql = $query_obj->getBindValues();
-        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
         /** @psalm-suppress MixedAssignment */
-        $result = $this->db_connector->dbFetchValue($sql, $params_2_bind_2_sql);
+        $result = $this->db_connector->dbFetchValue($sql, $params_2_bind_2_sql, $this);
 
         // need to issue a second query to get the number of matching rows
         // clear the cols part of the query above while preserving all the
@@ -2106,10 +2088,9 @@ SELECT {$foreign_table_name}.*
 
         $sql = $query_obj_4_num_matching_rows->__toString();
         $params_2_bind_2_sql = $query_obj_4_num_matching_rows->getBindValues();
-        $this->logQuery($sql, $params_2_bind_2_sql, __METHOD__, '' . __LINE__);
 
         /** @psalm-suppress MixedAssignment */
-        $num_matching_rows = $this->db_connector->dbFetchOne($sql, $params_2_bind_2_sql);
+        $num_matching_rows = $this->db_connector->dbFetchOne($sql, $params_2_bind_2_sql, $this);
 
         //return null if there wasn't any matching row
         /** @psalm-suppress MixedArrayAccess */
@@ -2321,9 +2302,8 @@ SELECT {$foreign_table_name}.*
 
                 $insrt_qry_sql = $insrt_qry_obj->__toString();
                 $insrt_qry_params = $insrt_qry_obj->getBindValues();
-                $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
 
-                if( $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params) ) {
+                if( $this->db_connector->runQuery($insrt_qry_sql, $insrt_qry_params, $this)->pdo_statement_execute_result ) {
 
                     // insert was successful, we are now going to try to 
                     // fetch the inserted record from the db to get and 
@@ -2425,8 +2405,9 @@ SELECT {$foreign_table_name}.*
                 $insrt_qry_sql = $insrt_qry_obj->__toString();
                 $insrt_qry_params = $insrt_qry_obj->getBindValues();
 
-                $this->logQuery($insrt_qry_sql, $insrt_qry_params, __METHOD__, '' . __LINE__);
-                $result = (bool) $this->db_connector->executeQuery($insrt_qry_sql, $insrt_qry_params);
+                $result = $this->db_connector
+                               ->runQuery($insrt_qry_sql, $insrt_qry_params, $this)
+                               ->pdo_statement_execute_result;
 
             } // if(count($rows_of_data_2_insert) > 0)
         } // if ($rows_of_data_2_insert !== [])
@@ -2593,9 +2574,7 @@ SELECT {$foreign_table_name}.*
                 ) {
                     $updt_qry = $update_qry_obj->__toString();
                     $updt_qry_params = $update_qry_obj->getBindValues();
-                    $this->logQuery($updt_qry, $updt_qry_params, __METHOD__, '' . __LINE__);
-
-                    $this->db_connector->executeQuery($updt_qry, $updt_qry_params, true);
+                    $this->db_connector->runQuery($updt_qry, $updt_qry_params, $this);
                 }
 
             } // if($col_names_n_vals_2_save !== [])
@@ -2784,7 +2763,7 @@ SELECT {$foreign_table_name}.*
      */
     public function clearQueryLog(): static {
 
-        $this->query_log = [];
+        DBConnector::clearQueryLog($this->getDbConnector()->getConnectionName(), $this);
         
         return $this;
     }
@@ -2795,12 +2774,18 @@ SELECT {$foreign_table_name}.*
      */
     public function getQueryLog(): array {
 
-        return $this->query_log;
+        return DBConnector::getQueryLog(
+            $this->getDbConnector()->getConnectionName(),
+            $this
+        );
     }
 
     /**
-     * To get the log for all existing instances of this class & its subclasses,
-     * call this method with no args or with null.
+     * To get the log for all existing instances of this class & its subclasses
+     * that have the same connection name registered in DBConnector,
+     * call this method with only the first arg which can be gotten from
+     * $this->getDbConnector()->getConnectionName() ($this should be substituted 
+     * with an instance of this class)
      * 
      * To get the log for instances of a specific class (this class or a
      * particular sub-class of this class), you must call this method with 
@@ -2809,70 +2794,33 @@ SELECT {$foreign_table_name}.*
      * @return mixed[]
      * @psalm-suppress PossiblyUnusedMethod
      */
-    public static function getQueryLogForAllInstances(?\GDAO\Model $obj=null): array {
-        
-        $key = ($obj instanceof \GDAO\Model) ? static::createLoggingKey($obj) : '';
-        
-        return ($obj instanceof \GDAO\Model)
-                ?
-                (
-                    array_key_exists($key, static::$all_instances_query_log) 
-                    ? static::$all_instances_query_log[$key] : [] 
-                )
-                : static::$all_instances_query_log 
-                ;
+    public static function getQueryLogForAllInstances(
+        string $dbconnector_connection_name,
+        ?\GDAO\Model $obj=null
+    ): array {
+
+        return DBConnector::getQueryLog($dbconnector_connection_name, $obj);
     }
     
     /**
+     * To clear the log for all existing instances of this class & its subclasses
+     * that have the same connection name registered in DBConnector,
+     * call this method with only the first arg which can be gotten from
+     * $this->getDbConnector()->getConnectionName() ($this should be substituted 
+     * with an instance of this class)
+     * 
+     * To clear the log for instances of a specific class (this class or a
+     * particular sub-class of this class), you must call this method with 
+     * an instance of the class whose log you want to clear.
+     * 
      * @psalm-suppress PossiblyUnusedMethod
      */
-    public static function clearQueryLogForAllInstances(): void {
+    public static function clearQueryLogForAllInstances(
+        string $dbconnector_connection_name,
+        ?\GDAO\Model $obj=null
+    ): void {
         
-        static::$all_instances_query_log = [];
-    }
-
-    protected static function createLoggingKey(\GDAO\Model $obj): string {
-        
-        return "{$obj->getDsn()}::" . $obj::class;
-    }
-    
-    protected function logQuery(string $sql, array $bind_params, string $calling_method='', string $calling_line=''): static {
-
-        if( $this->can_log_queries ) {
-
-            $key = static::createLoggingKey($this);
-            
-            if(!array_key_exists($key, static::$all_instances_query_log)) {
-
-                static::$all_instances_query_log[$key] = [];
-            }
-
-            $log_record = [
-                'sql' => $sql,
-                'bind_params' => $bind_params,
-                'date_executed' => date('Y-m-d H:i:s'),
-                'class_method' => $calling_method,
-                'line_of_execution' => $calling_line,
-            ];
-            
-            /** @psalm-suppress InvalidPropertyAssignmentValue */
-            $this->query_log[] = $log_record;
-            static::$all_instances_query_log[$key][] = $log_record;
-
-            if($this->logger instanceof \Psr\Log\LoggerInterface) {
-
-                $this->logger->info(
-                    PHP_EOL . PHP_EOL .
-                    'SQL:' . PHP_EOL . "{$sql}" . PHP_EOL . PHP_EOL . PHP_EOL .
-                    'BIND PARAMS:' . PHP_EOL . var_export($bind_params, true) .
-                    PHP_EOL . "Calling Method: `{$calling_method}`" . PHP_EOL .
-                    "Line of Execution: `{$calling_line}`" . PHP_EOL .
-                     PHP_EOL . PHP_EOL . PHP_EOL
-                );
-            }                    
-        }
-
-        return $this;
+        DBConnector::clearQueryLog($dbconnector_connection_name, $obj);
     }
 
     /**
