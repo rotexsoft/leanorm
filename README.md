@@ -21,9 +21,9 @@
 
 ## Installation Requirements
 
-PHP 8.2+ for version 6.x.
+PHP 8.2+ for version 6.x & 7.x
 
-PHP 8.1+ for versions 4.x & 5.x.
+PHP 8.1+ for versions 4.x & 5.x
 
 PHP 7.4+ for versions 2.x & 3.x
 
@@ -38,7 +38,7 @@ Version 4.x & 5.x have been rigorously tested against:
 - PostgreSQL 12.18+, 13.14+, 14.11+, 15.6+ & 16.2+
 - See [run-tests-against-multiple-db-versions.php](./run-tests-against-multiple-db-versions.php)
 
-Version 6.x has been rigorously tested against:
+Version 6.x & 7.x have been rigorously tested against:
 - Sqlite 3.46.1
 - MariaDB 10.4.34, 10.5.29, 10.6.25, 10.11.16, 11.4.10, 11.8.6 & 12.2.2
 - MySQL 5.6.51, 5.7.44, 8.0.45, 8.4.8 & 9.6.0
@@ -60,6 +60,8 @@ Versions 2.x & 3.x mainly differ in the versions of **aura/sqlquery** their **Mo
 3.x has a few newer features like **Model::fetchOneByPkey($id, array $relations_to_include = []): ?\GDAO\Model\RecordInterface**.
 
 > Deprecated **Utils::search2D(...)** in 2.x has been removed in 3.x
+
+Version 6.x is not backwards compatible with 7.x.
 
 Version 5.x is not backwards compatible with 4.x.
 
@@ -123,7 +125,9 @@ Documentation for version 4.1.x+ can be found [here](https://github.com/rotexsof
 
 Documentation for version 5.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/5.x/docs/index.md).
 
-Documentation for version 6.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/master/docs/index.md).
+Documentation for version 6.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/6.x/docs/index.md).
+
+Documentation for version 7.x+ can be found [here](https://github.com/rotexsoft/leanorm/blob/master/docs/index.md).
 
 Please submit an issue (preferably with a pull request) to address mistakes or omissions in the documentation or to propose improvements to the documentation. 
 
@@ -141,7 +145,8 @@ New Test files must be manually added to the phpunit.xml.dist file in order for 
 
 These are the branches in this repository:
 
-- **master:** contains code for the latest major version (6.x) of this package.
+- **master:** contains code for the latest major version (7.x) of this package.
+- **6.x:** contains code for the 6.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **5.x:** contains code for the 5.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **4.1.x:** contains code for the 4.1.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
 - **4.0.x:** contains code for the 4.0.x versions of this package. Only bug fixes should be added to this branch. This branch is feature complete.
