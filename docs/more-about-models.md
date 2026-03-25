@@ -1,5 +1,6 @@
 # More about Models
 
+- [Introduction](#introduction)
 - [Methods for Fetching data from the Database](#methods-for-fetching-data-from-the-database)
     - [Fetching data from the Database via fetchCol](#fetching-data-from-the-database-via-fetchcol)
     - [Fetching data from the Database via fetchOneRecord](#fetching-data-from-the-database-via-fetchonerecord)
@@ -26,6 +27,8 @@
     - [Accessing Related Data Code Samples](#accessing-related-data-code-samples)
 - [Query Logging](#query-logging)
 
+## Introduction
+
 The Model class generates all the SQL for accessing and manipulating data in the database; it uses the DBConnector class to execute the SQL statements. The Model class together with the DBConnector class act as a Table Data Gateway.
 
 The Model class also acts as a Data Mapper by being able to map:
@@ -51,7 +54,7 @@ are being cached:
 
 Other methods that could gain performance improvements will be added and documented as time goes on.
 
-### Methods for Fetching data from the Database
+## Methods for Fetching data from the Database
 
 > **WARNING:** When fetching data & trying to eager load related data, make sure the column on which the relationship is defined is amongst the columns you have specified to be selected in the fetch query (if you have chosen to explicitly specify columns to be returned by the fetch* method) because values from that column would be needed to fetch related data. If you don't specify any columns, then all columns (including the column on which the relationship is defined) in the table/view are returned.
 
@@ -142,7 +145,7 @@ public function fetchRowsIntoArrayKeyedOnPkVal(
 ```
 > Works exactly like **fetchRowsIntoArray**, except that each row in the returned array has a key whose value is the value of the row's primary key field, as opposed to the sequential 0 to N-1 keys which are present in the array returned by **fetchRowsIntoArray**
 
-#### Fetching data from the Database via fetchCol
+### Fetching data from the Database via fetchCol
 
 If you want to grab all the values for a specific database column in a database table, use the fetchCol method. Below are a few examples of how to use this method:
 
@@ -164,7 +167,7 @@ $colVals = $authorsModel->fetchCol(
             );
 ```
 
-#### Fetching data from the Database via fetchOneRecord
+### Fetching data from the Database via fetchOneRecord
 
 If you want to fetch just one row of data from a database table into a record object, use the fetchOneRecord method. This method returns null if the table or view is empty or the query doesn't match any record. Below are a few examples of how to use this method:
 
@@ -197,7 +200,7 @@ $record = $authorsModel->fetchOneRecord(
         );
 ```
 
-#### Fetching data from the Database via fetchOneByPkey
+### Fetching data from the Database via fetchOneByPkey
 
 If you want to fetch just one row of data from a database table into a record object and you know the primary key value of the row of data you want to fetch, use the fetchOneByPkey method. This method returns null if the table or view is empty or the specified primary key value doesn't match any record. Below are a few examples of how to use this method:
 
@@ -220,7 +223,7 @@ $record = $authorsModel->fetchOneByPkey(
         );
 ```
 
-#### Fetching data from the Database via fetchPairs
+### Fetching data from the Database via fetchPairs
 
 If you want to fetch key value pairs from two columns in a database table, use the fetchPairs method. A good example of when to use this method is when you want to generate a drop-down list of authors in your application where the author_id will be the value of each select option item and the author's name will be the display text for each select option item. Below are a few examples of how to use this method:
 
@@ -255,7 +258,7 @@ $keyValPairs = $authorsModel->fetchPairs(
             );
 ```
 
-#### Fetching data from the Database via fetchRecordsIntoArray
+### Fetching data from the Database via fetchRecordsIntoArray
 
 If you want to fetch rows of data from a database table as record objects stored in an array whose keys start from 0 and end at N-1, then use the fetchRecordsIntoArray method. 
 
@@ -291,7 +294,7 @@ $records = $authorsModel->fetchRecordsIntoArray(
         );
 ```
 
-#### Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal
+### Fetching data from the Database via fetchRecordsIntoArrayKeyedOnPkVal
 
 If you want to fetch rows of data from a database table as record objects stored in an array whose keys are the primary key values of the matching rows of data in the database table, then use the fetchRecordsIntoArrayKeyedOnPkVal method.
 
@@ -299,7 +302,7 @@ This method works exactly like [fetchRecordsIntoArray](#fetching-data-from-the-d
 
 > **NOTE:** This method is implemented in **\LeanOrm\Model** & not a part of **\GDAO\Model**. Sub-classes of **\GDAO\Model** that are not also sub-classes of **\LeanOrm\Model** are not guaranteed to implement it.
 
-#### Fetching data from the Database via fetchRecordsIntoCollection
+### Fetching data from the Database via fetchRecordsIntoCollection
 
 If you want to fetch rows of data from a database table as record objects stored in a collection whose keys start from 0 and end at N-1, then use the fetchRecordsIntoCollection method. 
 
@@ -335,7 +338,7 @@ $records = $authorsModel->fetchRecordsIntoCollection(
         );
 ```
 
-#### Fetching data from the Database via fetchRecordsIntoCollectionKeyedOnPkVal
+### Fetching data from the Database via fetchRecordsIntoCollectionKeyedOnPkVal
 
 If you want to fetch rows of data from a database table as record objects stored in a collection object whose keys are the primary key values of the matching rows of data in the database table, then use the fetchRecordsIntoCollectionKeyedOnPkVal method. 
 
@@ -345,7 +348,7 @@ This method works exactly like [fetchRecordsIntoCollection](#fetching-data-from-
 
 > **NOTE:** This method is implemented in **\LeanOrm\Model** & not a part of **\GDAO\Model**. Sub-classes of **\GDAO\Model** that are not also sub-classes of **\LeanOrm\Model** are not guaranteed to implement it.
 
-#### Fetching data from the Database via fetchRowsIntoArray
+### Fetching data from the Database via fetchRowsIntoArray
 
 If you want to fetch rows of data from a database table as associative arrays stored in an array whose keys start from 0 and end at N-1, then use the fetchRowsIntoArray method. 
 
@@ -381,7 +384,7 @@ $records = $authorsModel->fetchRowsIntoArray(
         );
 ```
 
-#### Fetching data from the Database via fetchRowsIntoArrayKeyedOnPkVal
+### Fetching data from the Database via fetchRowsIntoArrayKeyedOnPkVal
 
 If you want to fetch rows of data from a database table as associative arrays stored in an array whose keys are the primary key values of the matching rows of data in the database table, then use the fetchRowsIntoArrayKeyedOnPkVal method. 
 
@@ -389,7 +392,7 @@ This method works exactly like [fetchRowsIntoArray](#fetching-data-from-the-data
 
 > **NOTE:** This method is implemented in **\LeanOrm\Model** & not a part of **\GDAO\Model**. Sub-classes of **\GDAO\Model** that are not also sub-classes of **\LeanOrm\Model** are not guaranteed to implement it.
 
-#### Fetching data from the Database via fetchValue
+### Fetching data from the Database via fetchValue
 
 If you want to fetch a single value from a single column of a single row of data from a database table or a computed value from a database table, then use the fetchValue method. Below are a few examples of how to use this method:
 
@@ -428,7 +431,7 @@ $value = $authorsModel->fetchValue(
 //       data, then fetchValue will return NULL
 ```
 
-#### Fetching data from the Database via fetch
+### Fetching data from the Database via fetch
 
 The fetch method is a convenience method that you can use when you know the primary key values of the records you want to fetch from a database table. You just supply the primary key values (in an array) of the records you want to fetch, as its first argument. You can also inject a query object to further customize the query that's used to fetch the desired data under the hood. It calls one of the following methods below depending on the other arguments supplied to it when it's called:
 - [**fetchRecordsIntoCollection**](#fetching-data-from-the-database-via-fetchrecordsintocollection)
@@ -443,7 +446,7 @@ See source code documentation for **\LeanOrm\Model::fetch** to understand how to
 > **NOTE:** This method is implemented in **\LeanOrm\Model** & not a part of **\GDAO\Model**. Sub-classes of **\GDAO\Model** that are not also sub-classes of **\LeanOrm\Model** are not guaranteed to implement it.
 
 
-### Deleting Data
+## Deleting Data
 
 There are four ways of deleting data from the database:
 
@@ -544,7 +547,7 @@ $data = ['start'=> '2022-12-31 21:10:20', 'end' => '2022-12-31 21:08:20'];
 $sql = "DELETE FROM authors WHERE date_created < :start AND m_timestamp < :end";
 $pdo->prepare($sql)->execute($data);
 ```
-### Updating Data
+## Updating Data
 
 These are the ways of updating data in the database:
 
@@ -639,7 +642,7 @@ $sql = "UPDATE authors SET name = CONCAT(author_id, '-', name) WHERE date_creat
 $pdo->prepare($sql)->execute($data);
 ```
 
-### Defining Relationships between Models and Working with Related Data
+## Defining Relationships between Models and Working with Related Data
 
 LeanOrm allows you to define relationships between Model classes. These relationships usually mirror the foreign key relationships between the underlying database tables associated with the models. You can also define relationships between Model classes that represent database views, even though views don't have foreign key definitions at the database levels.
 
@@ -653,20 +656,20 @@ The schema below will be used in the examples to demonstrate how to define relat
 
 Four types of relationships are supported:
 
-#### Belongs-To
+### Belongs-To
 Each row of data in a database table / view belongs to only one row of data in another database table / view. For example, if you have two tables, authors and posts, an author record would belong to a post if there is a post_id field in the authors table. If the authors table doesn't have a post_id field (which is the case in the schema diagram above) and instead the posts table has an author_id field (which is also the case in the schema diagram above), then a post record would belong to an author. Where the foreign key column is located is what determines which entity belongs to the other.
 
 
-#### Has-One 
+### Has-One 
 Each row of data in a database table / view has zero or only one row of data in another database table / view. For example, if you have two tables, posts and summaries, a summary record has one post if there is a summary_id field in the posts table. If the posts table doesn't have a summary_id field (which is the case in the schema diagram above) and instead the summaries table has a post_id field (which is also the case in the schema diagram above), this means that a post record has zero or one summary. Where the foreign key column is located is what determines which entity owns the other. This type of relationship is also a variant of **Has-Many**, in which the many is just one and only one record.
 
-#### Has-Many
+### Has-Many
 Each row in a Table A, is related to zero or more rows in another Table B. Each row in table B is related to only one row in Table A.
 - Each row in Table A is related to zero or many (has many) rows in Table B 
 - Each row in Table B, belongs to exactly one row in Table A
 - In the sample schema above, an author can have zero or many posts, while each post always only belongs to an author
 
-#### Has-Many-Through a.k.a Many to Many) 
+### Has-Many-Through a.k.a Many to Many) 
 This type of relationship requires at least three tables. Basically many records in Table A can be associated with many records in another Table C. Similarly many records in Table C can be associated with many records in Table A. The associations are defined in an intermediary Table B. 
 - In the sample schema above, a **post** record can have many **tags** and a **tag** record can have many **posts** and these relationships are defined in the **posts_tags** table (also known as a join table).
 
@@ -689,12 +692,12 @@ There a two recommended ways of defining relationships between Models.
     > With this option, you only need to define the relationships once in each Model class's constructor & every instance of each Model class will already have those relationships defined immediately after instantiation.
 
 
-#### Relationship Definition Code Samples
+### Relationship Definition Code Samples
 
 
 We will demonstrate via code samples the various ways to define Model relationships using the schema shown earlier in this section for concrete examples.
 
-##### Option 1: define the relationships for each instance after creating each instance.
+#### Option 1: define the relationships for each instance after creating each instance.
 
 An Author can have many Posts. Here's how to model that relationship on a Model instance associated with the **authors** table:
 
@@ -961,7 +964,7 @@ $postsModel->hasOne(
 ```
 
 
-##### Option 2: define the relationships inside the constructor of each Model Class. 
+#### Option 2: define the relationships inside the constructor of each Model Class. 
 
 
 It is assumed that you have generated a Model class for each database table  / view you want your application to access.
@@ -1168,7 +1171,7 @@ $authorsModel->hasMany(
 
 > Take a look at the relationship definition methods (belongsTo, hasOne, hasMany & hasManyThrough) in **\LeanOrm\Model** to see all the arguments each method accepts to get ideas on how to further configure your Model relationship definitions in your applications.
 
-#### Accessing Related Data Code Samples
+### Accessing Related Data Code Samples
 
 The code samples in this section build on the code samples in the [Relationship Definition Code Samples](#relationship-definition-code-samples) section above.
 
@@ -1531,7 +1534,7 @@ echo PHP_EOL;
 
 ```
 
-### Query Logging
+## Query Logging
 
 All the Query Logging functionality described in this section are only implemented in the **\LeanOrm\Model** class and not its parent class **\GDAO\Model**. Other non-**\LeanOrm\Model** sub-classes of **\GDAO\Model** are not required or guaranteed to implement the Query Logging functionality described in this section.
 
