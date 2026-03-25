@@ -242,7 +242,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         ];
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $authorsModel->enableQueryLogging();
         /** @var \LeanOrm\TestObjects\AuthorRecord $authorWithRelatedData */
         $authorWithRelatedData = $authorsModel->fetchOneByPkey(
@@ -260,7 +260,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         );
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $this->tearDownNestedEagerFetchData(
             $testData['author1'], $testData['author2']
         );
@@ -281,7 +281,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         ];
         
         $summariesModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName());
         $summariesModel->enableQueryLogging();
         /** @var \LeanOrm\TestObjects\SummaryRecord $summaryWithRelatedData */
         $summaryWithRelatedData = $summariesModel->fetch(
@@ -305,9 +305,9 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         // 
         // 3. in the PostsTagsModel class
         //      1. To select tag belonging to the each post_tag
-        self::assertCount(3, LeanOrmModel::getQueryLogForAllInstances());
+        self::assertCount(3, LeanOrmModel::getQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName()));
 
-        foreach(LeanOrmModel::getQueryLogForAllInstances() as $logKey => $logEntries) {
+        foreach(LeanOrmModel::getQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName()) as $logKey => $logEntries) {
             
             if(\str_ends_with($logKey, SummariesModel::class)) {
                 
@@ -370,7 +370,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         }
         
         $summariesModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName());
         $this->tearDownNestedEagerFetchData(
             $testData['author1'], $testData['author2']
         );
@@ -393,7 +393,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         ];
         
         $summariesModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName());
         $summariesModel->enableQueryLogging();
         $summariesWithRelatedData = $summariesModel->fetchRowsIntoArray(
             null, $relationsToLoad
@@ -423,9 +423,9 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         //      
         // Data for the nested relationships in the sub-array whose key is `post`
         // should not be loaded.
-        self::assertCount(1, LeanOrmModel::getQueryLogForAllInstances());
+        self::assertCount(1, LeanOrmModel::getQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName()));
 
-        foreach(LeanOrmModel::getQueryLogForAllInstances() as $logKey => $logEntries) {
+        foreach(LeanOrmModel::getQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName()) as $logKey => $logEntries) {
             
             if(\str_ends_with($logKey, SummariesModel::class)) {
                 
@@ -445,7 +445,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         }
         
         $summariesModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName());
         $this->tearDownNestedEagerFetchData(
             $testData['author1'], $testData['author2']
         );
@@ -468,7 +468,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         ];
         
         $summariesModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName());
         $summariesModel->enableQueryLogging();
         $summariesWithRelatedData = $summariesModel->fetchRowsIntoArrayKeyedOnPkVal(
             null, $relationsToLoad
@@ -498,9 +498,9 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         //      
         // Data for the nested relationships in the sub-array whose key is `post`
         // should not be loaded.
-        self::assertCount(1, LeanOrmModel::getQueryLogForAllInstances());
+        self::assertCount(1, LeanOrmModel::getQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName()));
 
-        foreach(LeanOrmModel::getQueryLogForAllInstances() as $logKey => $logEntries) {
+        foreach(LeanOrmModel::getQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName()) as $logKey => $logEntries) {
             
             if(\str_ends_with($logKey, SummariesModel::class)) {
                 
@@ -520,7 +520,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         }
         
         $summariesModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName());
         $this->tearDownNestedEagerFetchData(
             $testData['author1'], $testData['author2']
         );
@@ -541,7 +541,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         ];
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $authorsModel->enableQueryLogging();
         $authors = $authorsModel->fetchRecordsIntoArray(
             null, $relationsToLoad
@@ -564,7 +564,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         );
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $this->tearDownNestedEagerFetchData(
             $testData['author1'], $testData['author2']
         );
@@ -585,7 +585,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         ];
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $authorsModel->enableQueryLogging();
         $authors = $authorsModel->fetchRecordsIntoArrayKeyedOnPkVal(
             null, $relationsToLoad
@@ -608,7 +608,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         );
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $this->tearDownNestedEagerFetchData(
             $testData['author1'], $testData['author2']
         );
@@ -629,7 +629,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         ];
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $authorsModel->enableQueryLogging();
         $authors = $authorsModel->fetchRecordsIntoCollection(
             null, $relationsToLoad
@@ -652,7 +652,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         );
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $this->tearDownNestedEagerFetchData(
             $testData['author1'], $testData['author2']
         );
@@ -673,7 +673,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         ];
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $authorsModel->enableQueryLogging();
         $authors = $authorsModel->fetchRecordsIntoCollectionKeyedOnPkVal(
             null, $relationsToLoad
@@ -696,7 +696,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         );
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $this->tearDownNestedEagerFetchData(
             $testData['author1'], $testData['author2']
         );
@@ -716,7 +716,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
             ]
         ];
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         
         $authorsModel->enableQueryLogging();
         /** @var \LeanOrmModel\Collection $authors */
@@ -758,7 +758,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         );
         
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $this->tearDownNestedEagerFetchData(
             $testData['author1'], $testData['author2']
         );
@@ -970,7 +970,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         } // foreach($authorsAsArray2[0]['posts'] as $post)
 
         $authorsModel->clearQueryLog();
-        LeanOrmModel::clearQueryLogForAllInstances();
+        LeanOrmModel::clearQueryLogForAllInstances($authorsModel->getDbConnector()->getConnectionName());
         $this->tearDownNestedEagerFetchData(
             $testData['author1'], $testData['author2']
         );
@@ -1096,7 +1096,7 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         
         // Finally check that the number of queries in the query log is
         // 1 + number of eager relation names in the array of relations
-        foreach(LeanOrmModel::getQueryLogForAllInstances() as $logKey => $logEntries) {
+        foreach(LeanOrmModel::getQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName()) as $logKey => $logEntries) {
             
             if(\str_ends_with($logKey, AuthorsModel::class)) {
                 

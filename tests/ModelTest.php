@@ -1,5 +1,6 @@
 <?php
 use VersatileCollections\GenericCollection;
+use LeanOrm\DBConnector;
 
 /**
  * Description of ModelTest
@@ -3172,16 +3173,26 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $postsModel->fetchValue();
         $postsModel->fetchRecordsIntoCollection();
         
-        foreach($commentsModel->getQueryLog() as $commentQueryLogEntry){
+        $logEntryKeysToCheck = [
+            DBConnector::LOG_ENTRY_SQL_KEY,
+            DBConnector::LOG_ENTRY_BIND_PARAMS_KEY,
+            DBConnector::LOG_ENTRY_DATE_EXECUTED_KEY,
+            DBConnector::LOG_ENTRY_EXEC_TIME_KEY,
+            DBConnector::LOG_ENTRY_CALL_STACK_KEY,
+            DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH,
+        ];
+
+        foreach($commentsModel->getQueryLog() as $connName => $classNameToLogEntries){
             
-            self::assertArrayHasAllKeys(
-                $commentQueryLogEntry, 
-                ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
-            );
+            foreach($classNameToLogEntries[$commentsModel::class] as $commentQueryLogEntry) {
+                self::assertArrayHasAllKeys($commentQueryLogEntry, $logEntryKeysToCheck);
+            }
         }
-        
+
         self::assertEquals([], $postsModel->getQueryLog());
-        $this->modelClass::clearQueryLogForAllInstances();
+        $this->modelClass::clearQueryLogForAllInstances(
+            $postsModel->getDbConnector()->getConnectionName()
+        );
     }
     
     public function testThatClearQueryLogWorksAsExpected() {
@@ -3195,10 +3206,18 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $commentsModel->fetchValue();
         $commentsModel->fetchRecordsIntoCollection();
         
-        self::assertNotEquals([], $commentsModel->getQueryLog());
+        $connName = $commentsModel->getDbConnector()->getConnectionName();
+        
+        self::assertNotEquals(
+            [], 
+            $commentsModel->getQueryLog()[$connName][$commentsModel::class]
+        );
         self::assertSame($commentsModel, $commentsModel->clearQueryLog());
-        self::assertEquals([], $commentsModel->getQueryLog());
-        $this->modelClass::clearQueryLogForAllInstances();
+        self::assertEquals(
+            [], 
+            $commentsModel->getQueryLog()
+        );
+        $this->modelClass::clearQueryLogForAllInstances($connName);
     }
     
     public function testThatGetQueryLogForAllInstancesWorksAsExpected() {
@@ -3222,51 +3241,70 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $tagsModel->fetchRecordsIntoCollection();
         
         ////////////////////////////////////////////////////////////////////////
-        $logForAllInstances = $this->modelClass::getQueryLogForAllInstances();
-        $keysToCheck = [
-            $commentsModel->getDsn() . '::' . get_class($commentsModel),
-            $postsModel->getDsn() . '::' . get_class($postsModel),
-        ];
+        $logForAllInstances = $this->modelClass::getQueryLogForAllInstances(
+            $commentsModel->getDbConnector()->getConnectionName()
+        );
+        $keysToCheck = [$commentsModel::class, $postsModel::class,];
         self::assertArrayHasAllKeys($logForAllInstances, $keysToCheck);
-        self::assertArrayNotHasKey(static::$dsn . '::' . get_class($tagsModel), $logForAllInstances);
+        self::assertArrayNotHasKey($tagsModel::class, $logForAllInstances);
+        
+        $logEntryKeysToCheck = [
+            DBConnector::LOG_ENTRY_SQL_KEY,
+            DBConnector::LOG_ENTRY_BIND_PARAMS_KEY,
+            DBConnector::LOG_ENTRY_DATE_EXECUTED_KEY,
+            DBConnector::LOG_ENTRY_EXEC_TIME_KEY,
+            DBConnector::LOG_ENTRY_CALL_STACK_KEY,
+            DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH,
+        ];
         
         foreach($logForAllInstances as $queryLogEntriesForDsnAndModelName){
             
             foreach($queryLogEntriesForDsnAndModelName as $queryLogEntry) {
-                self::assertArrayHasAllKeys(
-                    $queryLogEntry,
-                    ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
-                );
+                self::assertArrayHasAllKeys($queryLogEntry, $logEntryKeysToCheck);
             } // foreach($queryLogEntriesForDsnAndModelName as $queryLogEntry)
         } // foreach($logForAllInstances as $queryLogEntriesForDsnAndModelName)
         
         ////////////////////////////////////////////////////////////////////////
         $logForCommentsModel = 
-            $this->modelClass::getQueryLogForAllInstances($commentsModel);
-        
-        foreach($logForCommentsModel as $queryLogEntry) {
-            self::assertArrayHasAllKeys(
-                $queryLogEntry,
-                ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
+            $this->modelClass::getQueryLogForAllInstances(
+                $commentsModel->getDbConnector()->getConnectionName(),
+                $commentsModel
             );
+
+        foreach($logForCommentsModel as $connName => $classToQueryLogEntry) {
+            
+            foreach($classToQueryLogEntry[$commentsModel::class] as $queryLogEntry) {
+                self::assertArrayHasAllKeys($queryLogEntry, $logEntryKeysToCheck);
+            }
         } // foreach($logForCommentsModel as $queryLogEntry)
         
         ////////////////////////////////////////////////////////////////////////
         $logForPostsModel = 
-            $this->modelClass::getQueryLogForAllInstances($postsModel);
-        
-        foreach($logForPostsModel as $queryLogEntry) {
-            self::assertArrayHasAllKeys(
-                $queryLogEntry,
-                ['sql', 'bind_params', 'date_executed', 'class_method', 'line_of_execution']
+            $this->modelClass::getQueryLogForAllInstances(
+                $postsModel->getDbConnector()->getConnectionName(),
+                $postsModel
             );
+        
+        foreach($logForPostsModel as $connName=>$classToQueryLogEntry) {
+            
+            foreach($classToQueryLogEntry[$postsModel::class] as $queryLogEntry) {
+                self::assertArrayHasAllKeys($queryLogEntry, $logEntryKeysToCheck);
+            }
         } // foreach($logForPostsModel as $queryLogEntry)
         
         ////////////////////////////////////////////////////////////////////////
-        self::assertEquals([], $this->modelClass::getQueryLogForAllInstances($tagsModel));
+        self::assertEquals(
+            [],
+            $this->modelClass::getQueryLogForAllInstances(
+                $tagsModel->getDbConnector()->getConnectionName(),
+                $tagsModel
+            )
+        );
 
         ////////////////////////////////////////////////////////////////////////
-        $this->modelClass::clearQueryLogForAllInstances();
+        $this->modelClass::clearQueryLogForAllInstances(
+            $commentsModel->getDbConnector()->getConnectionName()
+        );
     }
     
     public function testThatClearQueryLogForAllInstancesWorksAsExpected() {
@@ -3289,12 +3327,21 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $tagsModel->fetchRecordsIntoCollection();
         
         ////////////////////////////////////////////////////////////////////////
-        $logForAllInstances = $this->modelClass::getQueryLogForAllInstances();
+        $logForAllInstances = $this->modelClass::getQueryLogForAllInstances(
+            $commentsModel->getDbConnector()->getConnectionName()
+        );
         self::assertCount(2, $logForAllInstances);
         
         ////////////////////////////////////////////////////////////////////////
-        $this->modelClass::clearQueryLogForAllInstances();
-        self::assertCount(0, $this->modelClass::getQueryLogForAllInstances());
+        $this->modelClass::clearQueryLogForAllInstances(
+            $commentsModel->getDbConnector()->getConnectionName()
+        );
+        self::assertCount(
+            0, 
+            $this->modelClass::getQueryLogForAllInstances(
+                $commentsModel->getDbConnector()->getConnectionName()
+            )
+        );
     }
     
     public function testThatsetLoggerWorksAsExpected() {
