@@ -5,6 +5,8 @@
     - [Defining and Creating Model Objects](#defining-and-creating-model-objects)
         - [Using a Factory Function to Instantiate & Retrieve Models](#using-a-factory-function-to-instantiate-and-retrieve-models)
     - [Creating Records & Inserting Data into the Database](#creating-records--inserting-data-into-the-database)
+    - [Deleting Data](#deleting-data)
+    - [Updating Data](#updating-data)
 
 
 ## Design Considerations
@@ -386,6 +388,218 @@ $allSuccessfullyInserted = $authorsModel->insertMany(
 //      save the new records by calling \LeanOrm\Model\Collection::saveAll(true). 
 //      See the documentation for Collections for more details.
 ////////////////////////////////////////////////////////////////////////////////
+```
+
+## Deleting Data
+
+There are four ways of deleting data from the database:
+
+1. By fetching one or more existing records from the database into record objects and then calling the **delete** method on each Record object (NOTE: the data is deleted from the database but the Record object still contains the data and is automatically marked as new. To make sure the data is both deleted from the database and cleared out of the Record object the **delete** method on the Record object must be called with a boolean value of **true** as its first parameter). 
+
+2. By fetching one or more existing records from the database into record objects stored in a Collection object, and then calling the **deleteAll** method on the Collection object. This will cause all the records in the collection to be deleted from the database, but the Record objects will still be in the Collection object with their data intact. **removeAll** should additionally be called on the Collection object to remove the Record objects from the Collection object.
+
+3. By calling the **deleteMatchingDbTableRows** method on a Model object. This method does not involve the retrieval of Record objects, rather only the conditions for matching the rows of data in the database table to be deleted needs to be supplied to **deleteMatchingDbTableRows**. It accepts an associative array whose keys should be the names of the database table column names & whose values are the values to use in an equality test to match against the corresponding database column names. If you need more fine grained criteria other than an equality test to match records that need to be deleted, you should consider the fourth option below.
+
+    >Note: there is also a **deleteSpecifiedRecord** method in the Model class which accepts a Record object as parameter and deletes the database row associated with the Record object, sets the primary key value of the Record object to null if the primary key field is auto-incrementing and also sets the **is_new** property of the Record object to the boolean value of true (NOTE: it does not clear all the other data in the Record object). The **deleteSpecifiedRecord** method does not really need to be called, since the delete method in the Record class calls it internally when **delete** is called on a Record object that needs to be deleted.
+
+4. By using the **PDO** object returned by the **getPDO** method of the Model class to execute a **DELETE** SQL query directly on the database or using the **runQuery** method of the instance of **\LeanOrm\DBConnector** returned by the **getDbConnector** method of the Model class. You need to be very careful to make sure your deletion query targets the exact records you want to delete so that you don't accidentally delete data that should not be deleted.
+
+> **NOTE:** You can use the Record class' **delete** method & the Collection class' **deleteAll** & **removeAll** methods to also delete fetched related data. 
+
+Below are some code samples demonstrating how to delete data:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+// first insert 6 records into the authors table
+ $authorsModel->insertMany(
+    [
+        ['name' => 'Joe Blow'],
+        ['name' => 'Jill Blow'],
+        ['name' => 'Jack Doe'],
+        ['name' => 'Jane Doe'],
+        ['name' => 'Jack Bauer'],
+        ['name' => 'Jane Bauer'],
+    ]
+);
+ 
+///////////////////////////////////////////////////////////////////
+$joeBlowRecord = $authorsModel->fetchOneRecord(
+                    $authorsModel->getSelect()
+                                 ->where(' name = :name_val ', [ 'name_val' => 'Joe Blow'])
+                );
+// - Deletes record from the database table 
+// - Flags the record object as new
+// - Clears related data associated with the record object 
+//      - (does not delete them from the database)
+// - Removes the primary key field from the record object, 
+//      - if it's an auto-incrementing field in the database table
+// - Other remaining data in the record remains 
+$joeBlowRecord->delete(false);
+
+///////////////////////////////////////////////////////////////////
+$jillBlowRecord = $authorsModel->fetchOneRecord(
+                    $authorsModel->getSelect()
+                                 ->where(' name = :name_val ', [ 'name_val' => 'Jill Blow'])
+                );
+// - Deletes record from the database table 
+// - Flags the record object as new
+// - Clears all data associated with the record object
+$jillBlowRecord->delete(true);
+
+///////////////////////////////////////////////////////////////////
+$jackAndJaneDoe = $authorsModel->fetchRecordsIntoCollection(
+                    $authorsModel->getSelect()
+                                 ->where(
+                                        ' name IN (:bar) ', // named paceholder for WHERE IN
+                                        [ 'bar' => [ 'Jack Doe', 'Jane Doe' ]]
+                                    )
+                );
+
+// - Delete records from the database 
+// - Flags each record object as new
+// - Clears related data associated with each record object 
+//      - (does not delete them from the database)
+// - Removes the primary key field from each record object, 
+//      - if it's an auto-incrementing field in the database table
+// - Other remaining data in each record remains 
+// - Record objects remain in the collection
+$jackAndJaneDoe->deleteAll();
+
+// Removes all the record objects from the collection object
+// If those record objects are not referenced via any other variable,
+// they will be garbage collected when next PHP's garbage collection
+// mechanism kicks in.
+$jackAndJaneDoe->removeAll();
+
+///////////////////////////////////////////////////////////////////
+
+// Generates and executes the sql query below:
+//  DELETE from authors where name in ('Jack Bauer', 'Jane Bauer');
+$authorsModel->deleteMatchingDbTableRows(
+                [
+                    'name' => ['Jack Bauer', 'Jane Bauer']
+                ]
+            );
+
+///////////////////////////////////////////////////////////////////
+
+// For more complicated DELETE queries, use the PDO object
+$pdo = $authorsModel->getPDO();
+$data = ['start'=> '2022-12-31 21:10:20', 'end' => '2022-12-31 21:08:20'];
+$sql = "DELETE FROM authors WHERE date_created < :start AND m_timestamp < :end";
+$pdo->prepare($sql)->execute($data);
+
+///////////////////////////////////////////////////////////////////
+// The code below does the exact same thing as the PDO code above
+$dbConnector = $authorsModel->getDbConnector();
+// passing $authorsModel as the last argument is optional and only
+// useful if you have query logging enabled and you want this query
+// to be added to the query log entries for $authorsModel
+$dbConnector->runQuery($sql, $data, $authorsModel);
+```
+## Updating Data
+
+These are the ways of updating data in the database:
+
+1. By fetching one or more existing records, modifying them & calling either the **save** or **saveInTransaction** method on each record.
+
+2. By fetching one or more records into a Collection object, modifying those record objects contained in the collection & then calling the **saveAll** method on the collection object.
+
+3. By fetching one or more records & calling the Model class' **updateSpecifiedRecord** method on each record. The Record class' **save** methods actually use **updateSpecifiedRecord** under the hood to save existing records, so you really should not need to be using the Model class' **updateSpecifiedRecord** method to update existing records.
+
+4. By calling the Model class' **updateMatchingDbTableRows** method on any instance of the Model class. This method does not retrieve existing records from the database, it only generates & executes a SQL UPDATE statement with some equality criteria (e.g. WHERE colname = someval or colname in (val1,...,valN) or colname IS NULL) based on the arguments supplied to the method.
+
+5. By using the **PDO** object returned by the **getPDO** method of the Model class to execute an **UPDATE** SQL query directly on the database or using the **runQuery** method of the instance of **\LeanOrm\DBConnector** returned by the **getDbConnector** method of the Model class. You need to be very careful to make sure your **UPDATE** query targets the exact records you want to update so that you don't accidentally update data that should not be updated.
+
+Below are some code samples demonstrating how to update data:
+
+```php
+<?php
+$authorsModel = new AuthorsModel('mysql:host=hostname;dbname=blog', 'user', 'pwd');
+
+
+// first insert 6 records into the authors table
+ $authorsModel->insertMany(
+    [
+        ['name' => 'Joe Blow'],
+        ['name' => 'Jill Blow'],
+        ['name' => 'Jack Doe'],
+        ['name' => 'Jane Doe'],
+        ['name' => 'Jack Bauer'],
+        ['name' => 'Jane Bauer'],
+    ]
+);
+ 
+///////////////////////////////////////////////////////////////////
+$joeBlowRecord = $authorsModel->fetchOneRecord(
+                    $authorsModel->getSelect()
+                                 ->where(' name = :name_val ', ['name_val' => 'Joe Blow'])
+                );
+
+// Prepend a title to Joe Blow's name
+$joeBlowRecord->name = 'Mr. ' . $joeBlowRecord->name;
+$joeBlowRecord->save(); // update the record
+
+///////////////////////////////////////////////////////////////////
+$jackAndJaneDoe = $authorsModel->fetchRecordsIntoCollection(
+                    $authorsModel->getSelect()
+                                 ->where(
+                                        ' name IN (:bar) ', 
+                                        [ 'bar' => ['Jack Doe', 'Jane Doe'] ]
+                                    )
+                );
+
+foreach ($jackAndJaneDoe as $record){
+
+    // reverse the name of each record
+    $record->name = strrev($record->name); 
+}
+
+// update all the modified records in the collection
+$jackAndJaneDoe->saveAll();
+
+///////////////////////////////////////////////////////////////////
+$jillBlowRecord = $authorsModel->fetchOneRecord(
+                    $authorsModel->getSelect()
+                                 ->where(' name = :name_val ', ['name_val' => 'Jill Blow'])
+                );
+
+// reverse the name for this record
+$jillBlowRecord->name = strrev($jillBlowRecord->name);
+
+// update the record
+$authorsModel->updateSpecifiedRecord($jillBlowRecord);
+
+///////////////////////////////////////////////////////////////////
+
+// Generates and executes the sql query below:
+//  UPDATE authors set date_created = '20 minutes before now' where name in ('Jack Bauer', 'Jane Bauer');
+$authorsModel->updateMatchingDbTableRows(
+                [ 
+                    'date_created' => date('Y-m-d H:i:s', strtotime("-20 minutes")) 
+                ],
+                [
+                    'name' => ['Jack Bauer', 'Jane Bauer']
+                ]
+            );
+
+///////////////////////////////////////////////////////////////////
+
+// For more complicated UPDATE queries, use the PDO object
+$pdo = $authorsModel->getPDO();
+$data = ['start'=> '2022-12-31 21:10:20', 'end' => '2022-12-31 21:08:20'];
+$sql = "UPDATE authors SET name = CONCAT(author_id, '-', name) WHERE date_created < :start AND m_timestamp < :end";
+$pdo->prepare($sql)->execute($data);
+
+///////////////////////////////////////////////////////////////////
+// The code below does the exact same thing as the PDO code above
+$dbConnector = $authorsModel->getDbConnector();
+// passing $authorsModel as the last argument is optional and only
+// useful if you have query logging enabled and you want this query
+// to be added to the query log entries for $authorsModel
+$dbConnector->runQuery($sql, $data, $authorsModel);
 ```
 
 
