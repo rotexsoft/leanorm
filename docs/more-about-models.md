@@ -81,7 +81,7 @@ Each row in a Table A, is related to zero or more rows in another Table B. Each 
 - Each row in Table B, belongs to exactly one row in Table A
 - In the sample schema above, an author can have zero or many posts, while each post always only belongs to an author
 
-### Has-Many-Through a.k.a Many to Many) 
+### Has-Many-Through (a.k.a Many to Many) 
 This type of relationship requires at least three tables. Basically many records in Table A can be associated with many records in another Table C. Similarly many records in Table C can be associated with many records in Table A. The associations are defined in an intermediary Table B. 
 - In the sample schema above, a **post** record can have many **tags** and a **tag** record can have many **posts** and these relationships are defined in the **posts_tags** table (also known as a join table).
 
