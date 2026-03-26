@@ -670,8 +670,6 @@ $authorsModel->hasMany(
 
 ### Accessing Related Data Code Samples
 
-The code samples in this section build on the code samples in the [Relationship Definition Code Samples](#relationship-definition-code-samples) section above.
-
 In order to access related data, you must call one of the **fetch*** methods that return any one of these:
 - a single record ([**fetchOneByPkey**](#fetching-data-from-the-database-via-fetchonebypkey)),
 - a single record ([**fetchOneRecord**](#fetching-data-from-the-database-via-fetchonerecord)), 
