@@ -141,6 +141,8 @@ its tests need to be run first before other Test Classes.
 
 New Test files must be manually added to the phpunit.xml.dist file in order for those new tests to run.
 
+Class properties and method parameters and variables are all in snake case (e.g. $some_property_name).
+
 ### Branching
 
 These are the branches in this repository:

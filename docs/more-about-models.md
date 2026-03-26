@@ -27,7 +27,9 @@
 
 ## Introduction
 
-The Model class generates all the SQL for accessing and manipulating data in the database; it uses the DBConnector class to execute the SQL statements. The Model class together with the DBConnector class act as a Table Data Gateway.
+The Model class (**\LeanOrm\Model**) generates all the SQL for accessing and manipulating data in the database; it uses the DBConnector class to execute the SQL statements. The Model class together with the DBConnector class act as a Table Data Gateway.
+
+**\LeanOrm\Model** extends the abstract **\GDAO\Model**. Look at corresponding **\GDAO\Model** method DocBlocks for method documentation for methods where **{@inheritdoc}** is present in their DocBlock in **\LeanOrm\Model**.
 
 The Model class also acts as a Data Mapper by being able to map:
 
@@ -776,7 +778,12 @@ We will define:
 1. An author has many posts relationship inside the AuthorsModel class
 2. A post belongs to an author relationship inside the PostsModel class
 3. A post has many tags through the posts_tags join table relationship inside the PostsModel class
-4. A post has one summary relationship inside the PostsModel class
+4. A post has many posts_tags relationship inside the PostsModel class
+5. A post has one summary relationship inside the PostsModel class
+6. A post has many comments relationship inside the PostsModel class
+7. A comment belongs to a post relationship inside the CommentsModel class
+8. A post_tag belongs to a tag relationship inside the PostsTagsModel class
+9. A post_tag belongs to a post relationship inside the PostsTagsModel class
 
 ```php
 class AuthorsCollection extends \LeanOrm\Model\Collection { }
@@ -853,6 +860,87 @@ class PostsModel extends \LeanOrm\Model {
             col_in_foreign_table_linked_to_join_table: 'tag_id',
             foreign_models_class_name: TagsModel::class
         ); // Post has many Tags through the posts_tags join table
+
+        $this->hasMany(
+            relation_name: 'posts_tags',
+            relationship_col_in_my_table: 'post_id',
+            relationship_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: PostsTagsModel::class
+        ); // Post has many posts_tags
+
+        $this->hasMany(
+            relation_name: 'comments',
+            relationship_col_in_my_table: 'post_id',
+            relationship_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: CommentsModel::class
+        ); // Post has many comments
+    }
+}
+
+class PostsTagsCollection extends \LeanOrm\Model\Collection { }
+
+class PostTagRecord extends \LeanOrm\Model\Record { }
+
+class PostsTagsModel extends \LeanOrm\Model {
+    
+    protected ?string $collection_class_name = PostsTagsCollection::class;
+    protected ?string $record_class_name = PostTagRecord::class;
+    protected string $primary_col = 'posts_tags_id';
+    protected string $table_name = 'posts_tags';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+
+        $this->belongsTo(
+            relation_name: 'post', 
+            relationship_col_in_my_table: 'post_id', 
+            relationship_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: PostsModel::class
+        ); // PostTag belongs to a Post
+
+        $this->belongsTo(
+            relation_name: 'tag', 
+            relationship_col_in_my_table: 'tag_id', 
+            relationship_col_in_foreign_table: 'tag_id',
+            foreign_models_class_name: TagsModel::class
+        ); // PostTag belongs to a Tag
+    }
+}
+
+class CommentsCollection extends \LeanOrm\Model\Collection { }
+
+class CommentRecord extends \LeanOrm\Model\Record { }
+
+class CommentsModel extends \LeanOrm\Model {
+    
+    protected ?string $collection_class_name = CommentsCollection::class;
+    protected ?string $record_class_name = CommentRecord::class;
+    protected string $primary_col = 'comment_id';
+    protected string $table_name = 'comments';
+
+    public function __construct(
+        string $dsn = '', 
+        string $username = '', 
+        string $passwd = '', 
+        array $pdo_driver_opts = [], 
+        string $primary_col_name = '', 
+        string $table_name = ''
+    ) { 
+        parent::__construct($dsn, $username, $passwd, $pdo_driver_opts, $primary_col_name, $table_name);
+
+        $this->belongsTo(
+            relation_name: 'post',
+            relationship_col_in_my_table: 'post_id',
+            relationship_col_in_foreign_table: 'post_id',
+            foreign_models_class_name: PostsModel::class
+        ); // Comment belongs to a Post
     }
 }
 
@@ -910,20 +998,19 @@ $authorsModel = new AuthorsModel(
     "username", // username
     "password", // password
     [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'], //pdo options
-    'author_id', // primary key column name
-    'authors' // table name
+    'author_id', // primary key column name (can be ommitted if the primary_col property is already set in AuthorsModel)
+    'authors' // table name (can be ommitted if the table_name property is already set in AuthorsModel)
 );
 $authorsWithPosts = 
     $authorsModel->fetchRowsIntoArray(null, ['posts']);
-
 
 $postsModel = new PostsModel(
     "mysql:host=localhost;dbname=blog", // dsn string
     "username", // username
     "password", // password
     [PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'], //pdo options
-    'post_id', // primary key column name
-    'posts' // table name
+    'post_id', // primary key column name (can be ommitted if the primary_col property is already set in PostsModel)
+    'posts' // table name (can be ommitted if the table_name property is already set in PostsModel)
 );
 $postsWithAuthorSummaryAndTags = 
     $postsModel->fetchRowsIntoArray(null, ['author', 'summary', 'tags']);
