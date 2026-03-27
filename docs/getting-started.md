@@ -602,5 +602,7 @@ $dbConnector = $authorsModel->getDbConnector();
 $dbConnector->runQuery($sql, $data, $authorsModel);
 ```
 
+ ### The various methods for fetching data from the database can be found [here](#methods-for-fetching-data-from-the-database)
+
 
 [<<< Previous](./indtroduction.md) | [Next >>>](./more-about-models.md)

@@ -29,7 +29,7 @@
 
 The Model class (**\LeanOrm\Model**) generates all the SQL for accessing and manipulating data in the database; it uses the DBConnector class to execute the SQL statements. The Model class together with the DBConnector class act as a Table Data Gateway.
 
-**\LeanOrm\Model** extends the abstract **\GDAO\Model**. Look at corresponding **\GDAO\Model** method DocBlocks for method documentation for methods where **{@inheritdoc}** is present in their DocBlock in **\LeanOrm\Model**.
+> **\LeanOrm\Model** extends the abstract **\GDAO\Model**. Look at corresponding **\GDAO\Model** method DocBlocks for method documentation for methods where **{@inheritdoc}** is present in their DocBlock in **\LeanOrm\Model**.
 
 The Model class also acts as a Data Mapper by being able to map:
 
@@ -48,11 +48,11 @@ via command line or a webserver) where possible to improve performance. You can 
 execution of your php script(s).
 
 As at of the writing of this documentation, there are only two protected methods whose results
-are being cached:
+are being cached by **\LeanOrm\CachingModel**:
 * **fetchTableListFromDB(): array**
 * **fetchTableColsFromDB(string $table_name): array**
 
-Other methods that could gain performance improvements will be added and documented as time goes on.
+Other methods that could gain performance improvements will be added to **\LeanOrm\CachingModel** and documented as time goes on.
 
 ## Defining Relationships between Models and Working with Related Data
 
