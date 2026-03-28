@@ -26,7 +26,8 @@
         "vimeo/psalm": "^6.16",
         "rector/rector": "^2.3.9",
         "atlas/pdo": "^2.0.0",
-        "rotexsoft/versatile-collections": "^7.0"
+        "rotexsoft/versatile-collections": "^7.0",
+        "symfony/polyfill-php85": "^1.33"
     },
     "autoload": {
         "classmap": ["src/"]

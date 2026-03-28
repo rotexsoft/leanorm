@@ -305,7 +305,12 @@ class ModelNestedEagerFetchingTest extends \PHPUnit\Framework\TestCase {
         // 
         // 3. in the PostsTagsModel class
         //      1. To select tag belonging to the each post_tag
-        self::assertCount(3, LeanOrmModel::getQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName()));
+        self::assertCount(
+            3, 
+            LeanOrmModel::getQueryLogForAllInstances(
+                $summariesModel->getDbConnector()->getConnectionName()
+            )[$summariesModel->getDbConnector()->getConnectionName()]
+        );
 
         foreach(LeanOrmModel::getQueryLogForAllInstances($summariesModel->getDbConnector()->getConnectionName()) as $logKey => $logEntries) {
             

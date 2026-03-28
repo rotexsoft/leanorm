@@ -120,7 +120,11 @@ class DBConnector {
     // ---------------------- //
     
     /**
-     * @param string $connection_name the name of a connection used to create an instance of this class. Will fallback to self::DEFAULT_CONNECTION
+     * @param string $connection_name The name of a connection 
+     *                                (registered via \LeanOrm\DBConnector::configure($key, $value, $connection_name) 
+     *                                 or \LeanOrm\DBConnector::create($connection_name)) 
+     *                                whose log entries are to be cleared. 
+     *                                Null means clear log for all connections.
      *
      * @param null|object $object_to_match an object that triggered calling of methods of this class that executed queries in this class.
      *                                     Only queries associated with $object_to_match will be cleared from the queries logged for
@@ -129,41 +133,55 @@ class DBConnector {
      * @return void
      */
     public static function clearQueryLog(
-             string $connection_name = self::DEFAULT_CONNECTION,
+        null|string $connection_name = null,
         null|object $object_to_match = null
     ): void {
 
-        if($object_to_match === null) {
-
-            static::$query_log[$connection_name] = [];
+        if($connection_name === null) {
             
-        } else { // $object_to_match !== null
+            // clear all log entires across all connections
+            static::$query_log = [];
             
-            $object_class_name = $object_to_match::class;
-            
-            if(
-                isset(static::$query_log[$connection_name])
-                && \is_array(static::$query_log[$connection_name])
-                && \array_key_exists($object_class_name, static::$query_log[$connection_name])
-            ) {
+        } else {
 
-                $object_hash = \spl_object_hash($object_to_match);
-                
-                foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry) {
+            if($object_to_match === null) {
 
-                    if($object_hash === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_HASH]) {
+                // clear all log entires across for specified connection
+                static::$query_log[$connection_name] = [];
 
-                        unset(static::$query_log[$connection_name][$object_class_name][$curr_key]);
+            } else { // $object_to_match !== null
 
-                    } // if($object_to_match === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_KEY])
-                } // foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry)
-                    
-            } // if(isset(static::$query_log[$connection_name]) &&  \is_array(static::$query_log[$connection_name]) ...
-        } // if($object_to_match === null) {} else {}
+                $object_class_name = $object_to_match::class;
+
+                if(
+                    isset(static::$query_log[$connection_name])
+                    && \is_array(static::$query_log[$connection_name])
+                    && \array_key_exists($object_class_name, static::$query_log[$connection_name])
+                ) {
+
+                    $object_hash = \spl_object_hash($object_to_match);
+
+                    foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry) {
+
+                        if($object_hash === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_HASH]) {
+
+                            // clear all log entires across for specified connection and only for the specified object
+                            unset(static::$query_log[$connection_name][$object_class_name][$curr_key]);
+
+                        } // if($object_to_match === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_KEY])
+                    } // foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry)
+
+                } // if(isset(static::$query_log[$connection_name]) &&  \is_array(static::$query_log[$connection_name]) ...
+            } // if($object_to_match === null) {} else {}
+        } // if($connection_name === null){ ... } else { ... }
     }
     
     /**
-     * @param string $connection_name the name of a connection used to create an instance of this class. Will fallback to self::DEFAULT_CONNECTION
+     * @param string $connection_name The name of a connection 
+     *                                (registered via \LeanOrm\DBConnector::configure($key, $value, $connection_name) 
+     *                                 or \LeanOrm\DBConnector::create($connection_name)) 
+     *                                whose log entries are to be retrieved. 
+     *                                Null means retrieve log entries for all connections.
      *
      * @param null|object $object_to_match an object that triggered calling of methods of this class that executed queries in this class.
      *                                     Only queries associated with $object_to_match will be returned from the queries logged for
@@ -172,46 +190,53 @@ class DBConnector {
      * @return void
      */
     public static function getQueryLog(
-             string $connection_name = self::DEFAULT_CONNECTION,
+        null|string $connection_name = null,
         null|object $object_to_match = null
     ): array {
         
         $log_entries = [];
 
-        if($object_to_match === null) {
+        if($connection_name === null) {
             
-            if(isset(static::$query_log[$connection_name])) {
+            $log_entries = static::$query_log;
+            
+        } else {
+            
+            if($object_to_match === null) {
 
-                $log_entries = static::$query_log[$connection_name];
-            }
-            
-        } else { // $object_to_match !== null
-            
-            $object_class_name = $object_to_match::class;
-            
-            if(
-                isset(static::$query_log[$connection_name])
-                && \is_array(static::$query_log[$connection_name])
-                && \array_key_exists($object_class_name, static::$query_log[$connection_name])
-            ) {
-                $object_hash = \spl_object_hash($object_to_match);
-                
-                foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry) {
+                if(isset(static::$query_log[$connection_name])) {
 
-                    if($object_hash === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_HASH]) {
-                        
-                        if(!isset($log_entries[$connection_name])) {
-                            
-                            $log_entries[$connection_name] = [$object_class_name=>[]];
-                        }
-                        
-                        $log_entries[$connection_name][$object_class_name][$curr_key] = $curr_entry;
+                    $log_entries[$connection_name] = static::$query_log[$connection_name];
+                }
 
-                    } // if($object_to_match === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_KEY])
-                } // foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry)
-                    
-            } // if(isset(static::$query_log[$connection_name]) &&  \is_array(static::$query_log[$connection_name]) ...
-        } // if($object_to_match === null) {} else {}
+            } else { // $object_to_match !== null
+
+                $object_class_name = $object_to_match::class;
+
+                if(
+                    isset(static::$query_log[$connection_name])
+                    && \is_array(static::$query_log[$connection_name])
+                    && \array_key_exists($object_class_name, static::$query_log[$connection_name])
+                ) {
+                    $object_hash = \spl_object_hash($object_to_match);
+
+                    foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry) {
+
+                        if($object_hash === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_HASH]) {
+
+                            if(!isset($log_entries[$connection_name])) {
+
+                                $log_entries[$connection_name] = [$object_class_name=>[]];
+                            }
+
+                            $log_entries[$connection_name][$object_class_name][$curr_key] = $curr_entry;
+
+                        } // if($object_to_match === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_KEY])
+                    } // foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry)
+
+                } // if(isset(static::$query_log[$connection_name]) &&  \is_array(static::$query_log[$connection_name]) ...
+            } // if($object_to_match === null) {} else {}
+        } // if($connection_name === null) { ... } else { ... }
         
         return $log_entries;
     }

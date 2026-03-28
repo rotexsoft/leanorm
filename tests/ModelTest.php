@@ -3245,7 +3245,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             $commentsModel->getDbConnector()->getConnectionName()
         );
         $keysToCheck = [$commentsModel::class, $postsModel::class,];
-        self::assertArrayHasAllKeys($logForAllInstances, $keysToCheck);
+        self::assertArrayHasAllKeys($logForAllInstances[$commentsModel->getDbConnector()->getConnectionName()], $keysToCheck);
         self::assertArrayNotHasKey($tagsModel::class, $logForAllInstances);
         
         $logEntryKeysToCheck = [
@@ -3257,7 +3257,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH,
         ];
         
-        foreach($logForAllInstances as $queryLogEntriesForDsnAndModelName){
+        foreach($logForAllInstances[$commentsModel->getDbConnector()->getConnectionName()] as $queryLogEntriesForDsnAndModelName){
             
             foreach($queryLogEntriesForDsnAndModelName as $queryLogEntry) {
                 self::assertArrayHasAllKeys($queryLogEntry, $logEntryKeysToCheck);
@@ -3330,7 +3330,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
         $logForAllInstances = $this->modelClass::getQueryLogForAllInstances(
             $commentsModel->getDbConnector()->getConnectionName()
         );
-        self::assertCount(2, $logForAllInstances);
+        self::assertCount(2, $logForAllInstances[$commentsModel->getDbConnector()->getConnectionName()]);
         
         ////////////////////////////////////////////////////////////////////////
         $this->modelClass::clearQueryLogForAllInstances(
@@ -3340,7 +3340,7 @@ class ModelTest extends \PHPUnit\Framework\TestCase {
             0, 
             $this->modelClass::getQueryLogForAllInstances(
                 $commentsModel->getDbConnector()->getConnectionName()
-            )
+            )[$commentsModel->getDbConnector()->getConnectionName()]
         );
     }
     
