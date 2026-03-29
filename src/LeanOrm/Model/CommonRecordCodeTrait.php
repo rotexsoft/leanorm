@@ -110,28 +110,6 @@ trait CommonRecordCodeTrait {
                     /** @psalm-suppress MixedArrayOffset */
                     $data[$relation] = $this->related_data[$relation]->getDataAndRelatedData();
 
-                } elseif(\is_array($this->related_data[$relation])) {
-
-                    /** @psalm-suppress MixedArrayOffset */
-                    $data[$relation] = [];
-
-                    foreach ($this->related_data[$relation] as $record) {
-
-                        if(
-                            $record instanceof Record
-                            || $record  instanceof ReadOnlyRecord
-                        ) {
-                            // definitely an array of records
-                            /** @psalm-suppress MixedArrayOffset */
-                            $data[$relation][] = $record->getDataAndRelatedData();
-
-                        } else {
-
-                            /** @psalm-suppress MixedArrayOffset */
-                            $data[$relation][] = $record;
-                        }
-                    }
-
                 } else {
 
                     /** @psalm-suppress MixedArrayOffset */
