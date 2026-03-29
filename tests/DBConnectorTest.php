@@ -96,6 +96,154 @@ class DBConnectorTest extends \PHPUnit\Framework\TestCase {
         );
     }
 
+    public function testThatClearQueryLogWorksAsExpected() {
+        
+        ////////////////////////////////////////////////////////////////////////
+        // create first and second connection with same dsn
+        ////////////////////////////////////////////////////////////////////////
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        ); // model whose DBConnector instance would be used for testing
+        $db_connector = $model->getDbConnector();
+        
+        $model2 = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'post_id', 'posts'
+        ); // model whose DBConnector instance would be used for testing
+        $db_connector2 = $model2->getDbConnector();
+        ////////////////////////////////////////////////////////////////////////
+        // End: create first and second connection with same dsn
+        ////////////////////////////////////////////////////////////////////////
+        
+        ////////////////////////////////////////////////////////////////////////
+        // create third connection with different dsn
+        ////////////////////////////////////////////////////////////////////////
+        $sqliteFile = __DIR__.DIRECTORY_SEPARATOR .'DbFiles'.DIRECTORY_SEPARATOR .'blog2.sqlite';
+        //create sqlite file & create $dsn connection for it
+        $dsn = "sqlite:" . $sqliteFile;
+        
+        $pdo = new \PDO($dsn);
+        $sql = <<<EOF
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                full_name VARCHAR,
+                description TEXT
+            );
+EOF;
+        // Execute the query
+        $pdo->exec($sql);
+        $model3 = new \LeanOrm\Model(
+            $dsn, static::$username ?? "", static::$password ?? "", [],
+            'id', 'users'
+        );  // third model whose DBConnector instance would be used for testing
+        $db_connector3 = $model3->getDbConnector();
+        ////////////////////////////////////////////////////////////////////////
+        // End: create third connection with different dsn
+        ////////////////////////////////////////////////////////////////////////
+        $connector1_query1 = 'Select * from authors';
+        $connector2_query1 = 'Select * from posts';
+        $connector2_query2 = 'Select * from posts order by post_id desc';
+        $connector3_query1 = 'Select * from users';
+        
+        $db_connector->runQuery($connector1_query1);
+        $db_connector2->runQuery($connector2_query1);
+        $db_connector2->runQuery($connector2_query2);
+        $db_connector3->runQuery($connector3_query1);
+        
+        // logging is disabled by default, queries above should not be logged
+        self::assertEquals([], DBConnector::getQueryLog(null));
+        DBConnector::clearQueryLog(null, null);
+        self::assertEquals([], DBConnector::getQueryLog(null));
+        
+        // enable logging and re-issue queries
+        $db_connector->enableQueryLogging();
+        $db_connector2->enableQueryLogging();
+        $db_connector3->enableQueryLogging();
+        
+        $db_connector->runQuery($connector1_query1);
+        $db_connector2->runQuery($connector2_query1);
+        $db_connector2->runQuery($connector2_query2);
+        $db_connector3->runQuery($connector3_query1);
+        
+        $all_queries_log = DBConnector::getQueryLog(null);
+
+        self::assertNotEquals([], $all_queries_log);
+        self::assertCount(
+            3, // 1 query by $db_connector & 2 queries by $db_connector2 both with same connection name
+            $all_queries_log[$db_connector->getConnectionName()][DBConnector::class]
+        );
+        self::assertCount(
+            3, // 1 query by $db_connector & 2 queries by $db_connector2 both with same connection name
+            $all_queries_log[$db_connector2->getConnectionName()][DBConnector::class]
+        );
+        self::assertCount(
+            1, // 1 query by $db_connector3 with a different connection name
+            $all_queries_log[$db_connector3->getConnectionName()][DBConnector::class]
+        );
+        
+        // clear query log for $db_connector
+        DBConnector::clearQueryLog($db_connector->getConnectionName(), $db_connector);
+        $log_after_clearing_db_connector1_entires = DBConnector::getQueryLog(null);
+
+        foreach ($log_after_clearing_db_connector1_entires[$db_connector->getConnectionName()] as $class_name => $log_entries) {
+            
+            $queries_for_entries = \array_column($log_entries, DBConnector::LOG_ENTRY_SQL_KEY);
+            self::assertNotContains($connector1_query1, $queries_for_entries);
+            self::assertNotContains($connector3_query1, $queries_for_entries);
+            self::assertContains($connector2_query1, $queries_for_entries);
+            self::assertContains($connector2_query2, $queries_for_entries);
+        }
+        
+        // clear query log for $db_connector->getConnectionName() which is the
+        // same as $db_connector2->getConnectionName()
+        DBConnector::clearQueryLog($db_connector2->getConnectionName(), null);
+        $log_after_clearing_entires_for_first_conn = DBConnector::getQueryLog(null);
+        self::assertEquals(
+            [],
+            $log_after_clearing_entires_for_first_conn[$db_connector2->getConnectionName()]
+        );
+        
+        foreach ($log_after_clearing_entires_for_first_conn[$db_connector3->getConnectionName()] as $class_name => $log_entries) {
+            
+            $queries_for_entries = \array_column($log_entries, DBConnector::LOG_ENTRY_SQL_KEY);
+            self::assertNotContains($connector1_query1, $queries_for_entries);
+            self::assertNotContains($connector2_query1, $queries_for_entries);
+            self::assertNotContains($connector2_query2, $queries_for_entries);
+            self::assertContains($connector3_query1, $queries_for_entries);
+        }
+        
+        // clear entire query log
+        DBConnector::clearQueryLog(null, $db_connector3); // second parameter doesn't matter
+        self::assertEquals([], DBConnector::getQueryLog(null));
+        
+        // re-populate query log
+        $db_connector->runQuery($connector1_query1);
+        $db_connector2->runQuery($connector2_query1);
+        $db_connector2->runQuery($connector2_query2);
+        $db_connector3->runQuery($connector3_query1);
+        self::assertNotEquals([], DBConnector::getQueryLog(null));
+        self::assertCount(2, DBConnector::getQueryLog(null));
+        self::assertArrayHasAllKeys(
+            DBConnector::getQueryLog(null),
+            [
+                $db_connector->getConnectionName(),     // same as $db_connector2->getConnectionName()
+                $db_connector2->getConnectionName(),    // same as $db_connector->getConnectionName()
+                $db_connector3->getConnectionName(),
+            ]
+        );
+        
+        // clear it again
+        DBConnector::clearQueryLog(null);
+        self::assertEquals([], DBConnector::getQueryLog(null));
+
+        ////////////////////////////////////////////////////////////////////////
+        // cleanup 
+        \unlink($sqliteFile);
+        \LeanOrm\DBConnector::clearQueryLog(null); // empty the whole log
+        ////////////////////////////////////////////////////////////////////////
+    }
+    
     public function testThatGetQueryLogWorksAsExpected() {
         
         $log_entry_keys_to_check = [
@@ -107,30 +255,35 @@ class DBConnectorTest extends \PHPUnit\Framework\TestCase {
             DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH,
         ];
         $model = new \LeanOrm\Model(
-            static::$dsn, 
-            static::$username ?? "", 
-            static::$password ?? "", 
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
             [], 'author_id', 'authors'
-        );
+        ); // model whose DBConnector instance would be used for testing
         
         \LeanOrm\DBConnector::clearQueryLog(null); // empty the whole log first
         self::assertEquals([], DBConnector::getQueryLog(null));
         
         $db_connector = $model->getDbConnector();
         $db_connector->runQuery('Select * from posts');
-        // logging is disabled by default
+        // logging is disabled by default, query above should not be logged
         self::assertEquals([], DBConnector::getQueryLog(null));
 
         // now enable logging
         $db_connector->enableQueryLogging();
         $query1 = 'Select * from posts';
         $db_connector->runQuery($query1);
+        // now that logging is enabled, query above will be logged
         $all_log_entries = DBConnector::getQueryLog(null);
+        $all_log_entries_b = DBConnector::getQueryLog(null, $db_connector);
+        
+        // Calling with a null first parameter should always return the whole
+        // log regardless if other parameter(s) are non-null
+        self::assertEquals($all_log_entries_b, $all_log_entries);
 
         // Only one entry for the connection name of $db_connector 
         // should be in the log query array at this point
         self::assertCount(1, $all_log_entries);
-        // Connection name of $db_connector should be the root key
+
+        // Connection name of $db_connector should be the only root key
         // in the log query array at this point
         self::assertArrayHasKey($db_connector->getConnectionName(), $all_log_entries);
         
@@ -153,13 +306,11 @@ class DBConnectorTest extends \PHPUnit\Framework\TestCase {
         ////////////////////////////////////////////////////////////////////////
         // Execute a second query
         ////////////////////////////////////////////////////////////////////////
+        $query2 = 'Select * from authors where author_id in (?, ?, ?, ?, ?, ?) ';
         $query2_params = (static::$driverName === 'pgsql')
                             ? [1, 5, 10, null, 0, 1]
                             : [1, 5, 10, null, true, false];
-        $db_connector->runQuery(
-            'Select * from authors where author_id in (?, ?, ?, ?, ?, ?) ', 
-            $query2_params
-        );
+        $db_connector->runQuery($query2, $query2_params);
         
         // Get latest content of the query log after second query above
         $all_log_entries_after_second_query = DBConnector::getQueryLog(null);
@@ -167,7 +318,8 @@ class DBConnectorTest extends \PHPUnit\Framework\TestCase {
         // Only one entry for the connection name of $db_connector 
         // should still be in the log query array at this point
         self::assertCount(1, $all_log_entries_after_second_query);
-        // Connection name of $db_connector should be the root key
+
+        // Connection name of $db_connector should still be the root key
         // in the log query array at this point
         self::assertArrayHasKey($db_connector->getConnectionName(), $all_log_entries_after_second_query);
         
@@ -178,28 +330,33 @@ class DBConnectorTest extends \PHPUnit\Framework\TestCase {
         
         // $all_log_entries_after_second_query[$db_connector->getConnectionName()][$db_connector::class]
         // should contain all query log entires for queries executed via $db_connector
-        $log_entries_for_db_connector =
+        $log_entries_for_db_connector2 =
             $all_log_entries_after_second_query[$db_connector->getConnectionName()][$db_connector::class];
-         self::assertCount(2, $log_entries_for_db_connector);
         
-        foreach($log_entries_for_db_connector as $log_entry) {
+        // There should be two log entires for the two queries above inside
+        // $all_log_entries_after_second_query[$db_connector->getConnectionName()][$db_connector::class]
+        self::assertCount(2, $log_entries_for_db_connector2);
+        
+        foreach($log_entries_for_db_connector2 as $log_entry) {
             
             self::assertArrayHasAllKeys($log_entry, $log_entry_keys_to_check);
             
             if($log_entry[DBConnector::LOG_ENTRY_SQL_KEY] === $query1) {
 
                 // log entry for first query
+                self::assertEquals($query1, $log_entry[DBConnector::LOG_ENTRY_SQL_KEY]);
                 self::assertEquals([], $log_entry[DBConnector::LOG_ENTRY_BIND_PARAMS_KEY]);
 
             } else {
 
                 // log entry for second query
+                self::assertEquals($query2, $log_entry[DBConnector::LOG_ENTRY_SQL_KEY]);
                 self::assertEquals($query2_params, $log_entry[DBConnector::LOG_ENTRY_BIND_PARAMS_KEY]);
             }
         }
         
         ////////////////////////////////////////////////////////////////////////
-        // Call with only conection name
+        // Call with only connection name
         ////////////////////////////////////////////////////////////////////////
         $log_entries_for_non_existent_connection_name = DBConnector::getQueryLog('non-existent-connection');
         self::assertEquals([], $log_entries_for_non_existent_connection_name);
@@ -253,12 +410,14 @@ EOF;
         $model2 = new \LeanOrm\Model(
             $dsn, static::$username ?? "", static::$password ?? "", [],
             'id', 'users'
-        );
+        );  // second model whose DBConnector instance would be used for testing
         
         $query1_conn2 = 'Select * from users';
         $db_connector2 = $model2->getDbConnector();
         $db_connector2->runQuery($query1_conn2);
-        // logging is disabled by default for $db_connector2
+
+        // Logging is disabled by default for $db_connector2, query above should
+        // not be logged
         self::assertEquals([], DBConnector::getQueryLog($db_connector2->getConnectionName()));
         self::assertArrayHasKey($db_connector->getConnectionName(), DBConnector::getQueryLog(null));
         
@@ -275,8 +434,6 @@ EOF;
                 $db_connector2->getConnectionName()
             ]
         );
-        
-        DBConnector::getQueryLog($db_connector2->getConnectionName(), $db_connector2);
         
         self::assertEquals(
             DBConnector::getQueryLog(null)[$db_connector2->getConnectionName()],
@@ -300,6 +457,7 @@ EOF;
         
         // cleanup 
         \unlink($sqliteFile);
+        \LeanOrm\DBConnector::clearQueryLog(null); // empty the whole log
     }
 
     public function testThatConfigureWorksAsExpected() {
@@ -384,19 +542,10 @@ EOF;
 
     public function testThatExecuteQueryWorksAsExpected() {
         
-        $model = new class(
-                    static::$dsn, 
-                    static::$username ?? "", 
-                    static::$password ?? "", 
-                    [], 'author_id', 'authors'
-                ) extends \LeanOrm\Model {
-            
-                public function getDbConnector(): \LeanOrm\DBConnector {
-                    
-                    return $this->db_connector;
-                }
-            };
-        
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
         $dbConnector = $model->getDbConnector();
             
         self::assertTrue(
@@ -453,18 +602,10 @@ EOF;
 
     public function testThatDbFetchOneWorksAsExpected() {
         
-        $model = new class(
-                    static::$dsn, 
-                    static::$username ?? "", 
-                    static::$password ?? "", 
-                    [], 'author_id', 'authors'
-                ) extends \LeanOrm\Model {
-            
-                public function getDbConnector(): \LeanOrm\DBConnector {
-                    
-                    return $this->db_connector;
-                }
-            };
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
         $dbConnector = $model->getDbConnector();
 
         $result = $dbConnector->dbFetchOne('select * from authors');
@@ -482,18 +623,10 @@ EOF;
 
     public function testThatDbFetchAllWorksAsExpected() {
         
-        $model = new class(
-                    static::$dsn, 
-                    static::$username ?? "", 
-                    static::$password ?? "", 
-                    [], 'author_id', 'authors'
-                ) extends \LeanOrm\Model {
-            
-                public function getDbConnector(): \LeanOrm\DBConnector {
-                    
-                    return $this->db_connector;
-                }
-            };
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
         $dbConnector = $model->getDbConnector();
 
         $result = $dbConnector->dbFetchAll('select * from authors order by author_id asc');
@@ -525,18 +658,10 @@ EOF;
 
     public function testThatDbFetchColWorksAsExpected() {
         
-        $model = new class(
-                    static::$dsn, 
-                    static::$username ?? "", 
-                    static::$password ?? "", 
-                    [], 'author_id', 'authors'
-                ) extends \LeanOrm\Model {
-            
-                public function getDbConnector(): \LeanOrm\DBConnector {
-                    
-                    return $this->db_connector;
-                }
-            };
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
         $dbConnector = $model->getDbConnector();
 
         // fetches the first column in the table, ie. author_id
@@ -564,18 +689,10 @@ EOF;
 
     public function testThatDbFetchPairsWorksAsExpected() {
         
-        $model = new class(
-                    static::$dsn, 
-                    static::$username ?? "", 
-                    static::$password ?? "", 
-                    [], 'author_id', 'authors'
-                ) extends \LeanOrm\Model {
-            
-                public function getDbConnector(): \LeanOrm\DBConnector {
-                    
-                    return $this->db_connector;
-                }
-            };
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
         $dbConnector = $model->getDbConnector();
 
         // fetches the first 2 columns in the table, ie. author_id , name
@@ -605,18 +722,10 @@ EOF;
 
     public function testThatDbFetchValueWorksAsExpected() {
         
-        $model = new class(
-                    static::$dsn, 
-                    static::$username ?? "", 
-                    static::$password ?? "", 
-                    [], 'author_id', 'authors'
-                ) extends \LeanOrm\Model {
-            
-                public function getDbConnector(): \LeanOrm\DBConnector {
-                    
-                    return $this->db_connector;
-                }
-            };
+        $model = new \LeanOrm\Model(
+            static::$dsn, static::$username ?? "", static::$password ?? "", 
+            [], 'author_id', 'authors'
+        );
         $dbConnector = $model->getDbConnector();
 
         // fetch first value from the first column of the query result, 

@@ -177,6 +177,67 @@ class DBConnector {
     }
     
     /**
+     * The array returned if log is not empty based on supplied arguments to
+     * this method looks like this (NOTE: an empty array is returned if log
+     * is empty based on supplied arguments to this method):
+     * 
+     *   array{
+     *           $a_connection_name => array {
+     *
+     *                   $calling_object::class => array {
+     *
+     *                           0 => array {
+     *                                   DBConnector::LOG_ENTRY_SQL_KEY => $sql_query1_string,
+     *                                   DBConnector::LOG_ENTRY_BIND_PARAMS_KEY => $bind_parameters_array_for_sql_query1,
+     *                                   DBConnector::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
+     *                                   DBConnector::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds_for_sql_query1,
+     *                                   DBConnector::LOG_ENTRY_CALL_STACK_KEY => \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT),
+     *                                   DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($an_instance_of_calling_object),
+     *                           },
+     *                           ...,
+     *                           ...,
+     *                           (N-1) => array {
+     *                                   DBConnector::LOG_ENTRY_SQL_KEY => $sql_queryN_string,
+     *                                   DBConnector::LOG_ENTRY_BIND_PARAMS_KEY => $bind_parameters_array_for_sql_queryN,
+     *                                   DBConnector::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
+     *                                   DBConnector::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds_for_sql_queryN,
+     *                                   DBConnector::LOG_ENTRY_CALL_STACK_KEY => \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT),
+     *                                   DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($an_instance_of_calling_object),
+     *                           },
+     *                   },
+     *                   ...,
+     *                   ...,
+     *                   $last_calling_object::class => array {
+     *
+     *                           0 => array {
+     *                                   DBConnector::LOG_ENTRY_SQL_KEY => $sql_query1_string,
+     *                                   DBConnector::LOG_ENTRY_BIND_PARAMS_KEY => $bind_parameters_array_for_sql_query1,
+     *                                   DBConnector::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
+     *                                   DBConnector::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds_for_sql_query1,
+     *                                   DBConnector::LOG_ENTRY_CALL_STACK_KEY => \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT),
+     *                                   DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($an_instance_of_last_calling_object),
+     *                           },
+     *                           ...,
+     *                           ...,
+     *                           (N-1) => array {
+     *                                   DBConnector::LOG_ENTRY_SQL_KEY => $sql_queryN_string,
+     *                                   DBConnector::LOG_ENTRY_BIND_PARAMS_KEY => $total_execution_time_in_seconds_for_sql_queryN,
+     *                                   DBConnector::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
+     *                                   DBConnector::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds_for_sql_queryN,
+     *                                   DBConnector::LOG_ENTRY_CALL_STACK_KEY => \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT),
+     *                                   DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($instance_of_last_calling_object),
+     *                           },
+     *                   },
+     *           },
+     *           ...,
+     *           ...,
+     *           $another_connection_name => array {
+     *                   ....,
+     *                   ....,
+     *           }
+     *   }
+     * 
+     * 
      * @param string $connection_name The name of a connection 
      *                                (registered via \LeanOrm\DBConnector::configure($key, $value, $connection_name) 
      *                                 or \LeanOrm\DBConnector::create($connection_name)) 
