@@ -163,12 +163,12 @@ class DBConnector {
 
                     foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry) {
 
-                        if($object_hash === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_HASH]) {
+                        if($object_hash === $curr_entry[static::LOG_ENTRY_CALLING_OBJECT_HASH]) {
 
                             // clear all log entires across for specified connection and only for the specified object
                             unset(static::$query_log[$connection_name][$object_class_name][$curr_key]);
 
-                        } // if($object_to_match === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_KEY])
+                        } // if($object_to_match === $curr_entry[static::LOG_ENTRY_CALLING_OBJECT_KEY])
                     } // foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry)
 
                 } // if(isset(static::$query_log[$connection_name]) &&  \is_array(static::$query_log[$connection_name]) ...
@@ -283,7 +283,7 @@ class DBConnector {
 
                     foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry) {
 
-                        if($object_hash === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_HASH]) {
+                        if($object_hash === $curr_entry[static::LOG_ENTRY_CALLING_OBJECT_HASH]) {
 
                             if(!isset($log_entries[$connection_name])) {
 
@@ -292,7 +292,7 @@ class DBConnector {
 
                             $log_entries[$connection_name][$object_class_name][$curr_key] = $curr_entry;
 
-                        } // if($object_to_match === $curr_entry[self::LOG_ENTRY_CALLING_OBJECT_KEY])
+                        } // if($object_to_match === $curr_entry[static::LOG_ENTRY_CALLING_OBJECT_KEY])
                     } // foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry)
 
                 } // if(isset(static::$query_log[$connection_name]) &&  \is_array(static::$query_log[$connection_name]) ...
@@ -339,7 +339,7 @@ class DBConnector {
                 // Shortcut: If only one string argument is passed, 
                 // assume it's a connection string
                 $value = $key_or_settings;
-                $key_or_settings = self::CONFIG_KEY_CONNECTION_STR;
+                $key_or_settings = static::CONFIG_KEY_CONNECTION_STR;
             }
 
             static::$config[$connection_name][$key_or_settings] = $value;
@@ -352,10 +352,10 @@ class DBConnector {
      * @param string $connection_name Which connection to use
      */
     //rename to factory
-    public static function create(string $connection_name = self::DEFAULT_CONNECTION): \LeanOrm\DBConnector {
+    public static function create(string $connection_name = self::DEFAULT_CONNECTION): static {
 
         static::_setupDb($connection_name);
-        return new self($connection_name);
+        return new static($connection_name);
     }
 
     /**
@@ -374,13 +374,13 @@ class DBConnector {
             static::_initDbConfigWithDefaultVals($connection_name);
 
             $db = new \PDO(
-                static::$config[$connection_name][self::CONFIG_KEY_CONNECTION_STR],
-                static::$config[$connection_name][self::CONFIG_KEY_USERNAME],
-                static::$config[$connection_name][self::CONFIG_KEY_PASSWORD],
-                static::$config[$connection_name][self::CONFIG_KEY_DRIVER_OPTS]
+                static::$config[$connection_name][static::CONFIG_KEY_CONNECTION_STR],
+                static::$config[$connection_name][static::CONFIG_KEY_USERNAME],
+                static::$config[$connection_name][static::CONFIG_KEY_PASSWORD],
+                static::$config[$connection_name][static::CONFIG_KEY_DRIVER_OPTS]
             );
 
-            $db->setAttribute(\PDO::ATTR_ERRMODE, static::$config[$connection_name][self::CONFIG_KEY_ERR_MODE]);
+            $db->setAttribute(\PDO::ATTR_ERRMODE, static::$config[$connection_name][static::CONFIG_KEY_ERR_MODE]);
             static::setDb($db, $connection_name);
         }
     }
@@ -459,7 +459,7 @@ class DBConnector {
         $start_time = \hrtime(true); // start timing
         $result = $statement->execute();
         $end_time = \hrtime(true); // stop timing
-        $total_execution_time_in_seconds = (($end_time - $start_time) / self::NANO_SECOND_TO_SECOND_DIVISOR);
+        $total_execution_time_in_seconds = (($end_time - $start_time) / static::NANO_SECOND_TO_SECOND_DIVISOR);
 
         if( $return_pdo_stmt_and_exec_time ) {
 
@@ -546,7 +546,12 @@ class DBConnector {
     * @param string $query Sql query to execute
     * @param  array $parameters An array of parameters to be bound in to the query
     * @param string $connection_name Which connection to use
-    * @param null|object $calling_object object that called a method which triggered the calling of this method. To be used for logging queries in version 7.0
+    * @param null|object $calling_object object that called a method which triggered
+    *                                    the calling of this method. A hash of this 
+    *                                    object is added to each query log entry. 
+    *                                    If null, it will be set to the instance
+    *                                    of this class this being method is being
+    *                                    called with
     */
     protected function execute(
         string $query,
@@ -581,7 +586,7 @@ class DBConnector {
         $start_time = \hrtime(true); // start timing
         $result = $statement->execute();
         $end_time = \hrtime(true); // stop timing
-        $total_execution_time_in_seconds = (($end_time - $start_time) / self::NANO_SECOND_TO_SECOND_DIVISOR);
+        $total_execution_time_in_seconds = (($end_time - $start_time) / static::NANO_SECOND_TO_SECOND_DIVISOR);
 
         if($this->canLogQueries()) {
             
