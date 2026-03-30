@@ -55,10 +55,10 @@ class DBConnectorTest extends \PHPUnit\Framework\TestCase {
     public function testThat_executeWorksAsExpected() {
         
         self::assertTrue(
-            DbConnectorSubclass::executePublic('Select * from posts', [], false, static::$dsn)
+            DbConnectorSubclass::oldExecutePublic('Select * from posts', [], false, static::$dsn)
         );
         
-        $execResult = DbConnectorSubclass::executePublic(
+        $execResult = DbConnectorSubclass::oldExecutePublic(
             'Select * from authors where author_id in (?, ?, ?, ?, ?, ?) and name like ? ', 
             (static::$driverName === 'pgsql')
                 ? [1, 5, 10, null, 0, 1, 'user_1%']
@@ -86,6 +86,126 @@ class DBConnectorTest extends \PHPUnit\Framework\TestCase {
         self::assertEquals(
             (static::$driverName === 'pgsql')
                 ? [1, 10] // postgres driver correctly returns ints, why mysql & sqlite return ints in a string
+                : ['1', '10'], 
+            array_column($records, "author_id")
+        );
+        
+        self::assertEquals(
+            ['user_1', 'user_10'], 
+            array_column($records, "name")
+        );
+    }
+
+    public function testThatExecuteWorksAsExpected() {
+        
+        ////////////////////////////////////////////////////////////////////////
+        // create first and second connection with same dsn
+        ////////////////////////////////////////////////////////////////////////
+        $pdo_driver_opts = 
+            (static::$driverName === 'mysql') 
+                ? [ \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8', ] : [];
+        DbConnectorSubclass::configure(static::$dsn, null, static::$dsn);//use $dsn as connection name in 3rd parameter
+        DbConnectorSubclass::configure(DbConnectorSubclass::CONFIG_KEY_USERNAME, static::$username ?? "", static::$dsn);//use $dsn as connection name in 3rd parameter
+        DbConnectorSubclass::configure(DbConnectorSubclass::CONFIG_KEY_PASSWORD, static::$password ?? "", static::$dsn);//use $dsn as connection name in 3rd parameter
+
+        if( $pdo_driver_opts !== [] ) {
+
+            DBConnector::configure(DbConnectorSubclass::CONFIG_KEY_DRIVER_OPTS, $pdo_driver_opts, static::$dsn);//use $dsn as connection name in 3rd parameter
+        }
+
+        /** @var DbConnectorSubclass $db_connector */
+        $db_connector = DbConnectorSubclass::create(static::$dsn);//use $dsn as connection name
+        ////////////////////////////////////////////////////////////////////////
+        // End: create first and second connection with same dsn
+        ////////////////////////////////////////////////////////////////////////
+        
+        self::assertTrue(
+            $db_connector->executePublic('Select * from posts', [], static::$dsn)->pdo_statement_execute_result
+        );
+        
+        $execResult = $db_connector->executePublic(
+            'Select * from authors where author_id in (?, ?, ?, ?, ?, ?) and name like ? ', 
+            (static::$driverName === 'pgsql')
+                ? [1, 5, 10, null, 0, 1, 'user_1%']
+                : [1, 5, 10, null, true, false, 'user_1%']
+            , 
+            static::$dsn
+        );
+        
+        self::assertInstanceOf(\PDOStatement::class, $execResult->pdo_statement);
+        
+        // lets loop through the query results & assert the rows we are expecting
+        $records = $execResult->pdo_statement->fetchAll(\PDO::FETCH_ASSOC) ?? [];
+        
+        self::assertCount(2, $records);
+        
+        foreach($records as $record) {
+            
+            self::assertArrayHasAllKeys($record, ["author_id", "name", "m_timestamp", "date_created"]);
+        }
+        
+        self::assertEquals(
+            (static::$driverName === 'pgsql')
+                ? [1, 10] // postgres driver correctly returns ints, while mysql & sqlite return ints in a string
+                : ['1', '10'], 
+            array_column($records, "author_id")
+        );
+        
+        self::assertEquals(
+            ['user_1', 'user_10'], 
+            array_column($records, "name")
+        );
+    }
+
+    public function testThatRunQueryWorksAsExpected() {
+        
+        ////////////////////////////////////////////////////////////////////////
+        // create first and second connection with same dsn
+        ////////////////////////////////////////////////////////////////////////
+        $pdo_driver_opts = 
+            (static::$driverName === 'mysql') 
+                ? [ \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8', ] : [];
+        DbConnectorSubclass::configure(static::$dsn, null, static::$dsn);//use $dsn as connection name in 3rd parameter
+        DbConnectorSubclass::configure(DbConnectorSubclass::CONFIG_KEY_USERNAME, static::$username ?? "", static::$dsn);//use $dsn as connection name in 3rd parameter
+        DbConnectorSubclass::configure(DbConnectorSubclass::CONFIG_KEY_PASSWORD, static::$password ?? "", static::$dsn);//use $dsn as connection name in 3rd parameter
+
+        if( $pdo_driver_opts !== [] ) {
+
+            DBConnector::configure(DbConnectorSubclass::CONFIG_KEY_DRIVER_OPTS, $pdo_driver_opts, static::$dsn);//use $dsn as connection name in 3rd parameter
+        }
+
+        /** @var DbConnectorSubclass $db_connector */
+        $db_connector = DbConnectorSubclass::create(static::$dsn);//use $dsn as connection name
+        ////////////////////////////////////////////////////////////////////////
+        // End: create first and second connection with same dsn
+        ////////////////////////////////////////////////////////////////////////
+        
+        self::assertTrue(
+            $db_connector->runQuery('Select * from posts', [])->pdo_statement_execute_result
+        );
+        
+        $execResult = $db_connector->runQuery(
+            'Select * from authors where author_id in (?, ?, ?, ?, ?, ?) and name like ? ', 
+            (static::$driverName === 'pgsql')
+                ? [1, 5, 10, null, 0, 1, 'user_1%']
+                : [1, 5, 10, null, true, false, 'user_1%']
+        );
+        
+        self::assertInstanceOf(\PDOStatement::class, $execResult->pdo_statement);
+        
+        // lets loop through the query results & assert the rows we are expecting
+        $records = $execResult->pdo_statement->fetchAll(\PDO::FETCH_ASSOC) ?? [];
+        
+        self::assertCount(2, $records);
+        
+        foreach($records as $record) {
+            
+            self::assertArrayHasAllKeys($record, ["author_id", "name", "m_timestamp", "date_created"]);
+        }
+        
+        self::assertEquals(
+            (static::$driverName === 'pgsql')
+                ? [1, 10] // postgres driver correctly returns ints, while mysql & sqlite return ints in a string
                 : ['1', '10'], 
             array_column($records, "author_id")
         );
