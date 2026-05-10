@@ -184,13 +184,17 @@ If you have an instance of **\LeanOrm\DBConnector** already, just call the **get
 
 The methods below are convenience methods for executing SQL SELECT queries and getting the result back in the expected data type:
 
+> **NOTE:** The **$calling_object** optional argument to all the querying methods below (in this section) is only used for query logging purposes. It is set to the instance of **\LeanOrm\DBConnector** each query method is called on if it's left as null default value. It can be used to filter out query log entries associated with an instance of **\LeanOrm\DBConnector** or an instance of another object passed as the argument to the querying methods below. 
+
+> This argument has NO IMPACT on your query. You can ignore it if you are not using the query logging feature which is explained later below.
+
 ```php
     /////////////////////////////////////////////////////////////
-    // Use this to fetch one row from a database table
+    // Use this to fetch the first row returned by the select 
+    // query as an associative array where the keys are the 
+    // column names
     //
-    // - If the row exists, it is returned as an associative array
-    //
-    // - If it doesn't exist, false is returned
+    // - If the query returns no rows, false is returned
     /////////////////////////////////////////////////////////////
     public function dbFetchOne(
         string $select_query,
@@ -199,12 +203,12 @@ The methods below are convenience methods for executing SQL SELECT queries and g
     ): mixed
 
     /////////////////////////////////////////////////////////////
-    // Use this to fetch one or more rows from a database table
+    // Use this to fetch a sequential array of all rows returned
+    // by the select query ( where each row is an associative 
+    // array where the keys are the column names)
     //
-    // - If the query matches one or more rows, an array of 
-    // associative arrays is returned
-    //
-    // - An empty array is returned if no row(s) are / is matched
+    // - An empty array is returned if no row is returned by 
+    //   the query
     /////////////////////////////////////////////////////////////
     public function dbFetchAll(
         string $select_query,
@@ -212,24 +216,116 @@ The methods below are convenience methods for executing SQL SELECT queries and g
         ?object $calling_object=null
     ): array
 
+    /////////////////////////////////////////////////////////////
+    // Use this to fetch a sequential array of the first column
+    // from all rows returned by the select query
+    //
+    // - An empty array is returned if no row is returned by 
+    //   the query
+    /////////////////////////////////////////////////////////////
     public function dbFetchCol(
         string $select_query,
         array $parameters = [],
         ?object $calling_object=null
     ): array 
 
+    /////////////////////////////////////////////////////////////
+    // Use this to fetch an associative array where keys are 
+    // made up of values from the first specified database
+    // table column and the values are from the second
+    // specified database column in the select query.
+    //
+    // - An empty array is returned if no row is returned by 
+    //   the query
+    /////////////////////////////////////////////////////////////
     public function dbFetchPairs(
         string $select_query,
         array $parameters = [],
         ?object $calling_object=null
     ): array
 
+    /////////////////////////////////////////////////////////////
+    // Use this to fetch the value of the first row in the 
+    // first column returned by the select query.
+    //
+    // - Null is returned if the query returns no rows
+    /////////////////////////////////////////////////////////////
     public function dbFetchValue(
         string $select_query,
         array $parameters = [],
         ?object $calling_object=null
     ): mixed
 ```
+
+Here are some actual examples of how to use the methods above:
+
+```php
+
+///////////////////////////////////////////////////
+// get the first row returned from the query below
+$firstPost = $dbConnector->dbFetchOne('select * from posts');
+
+// get the first row returned from the query below
+$firstPostWithIdGt1 = $dbConnector->dbFetchOne(
+    'select * from posts where post_id > :id', 
+    ['id'=>1]
+);
+
+///////////////////////////////////////////////////
+// get all rows returned from the query below
+$allPosts = $dbConnector->dbFetchAll('select * from posts');
+
+// get all rows returned from the query below
+$allPostsWithIdGt1 = $dbConnector->dbFetchAll(
+    'select * from posts where post_id > :id',
+    ['id'=>1]
+);
+
+///////////////////////////////////////////////////
+// get an array of values for the first column (post_id) 
+// from the rows returned from the query below
+$allPostIds = $dbConnector->dbFetchCol(
+    'select post_id, title from posts'
+);
+
+// get an array of values for the first column (post_id) 
+// from the rows returned from the query below
+$allPostIdsWithIdGt1 = $dbConnector->dbFetchCol(
+    'select post_id, title from posts where post_id > :id',
+    ['id'=>1]
+);
+
+///////////////////////////////////////////////////
+// get an array whose keys are the values for the 
+// first column (post_id) and whose values are
+// from the second column (title) from the rows
+// returned from the query below
+$allPostIdAndTitlePairs = $dbConnector->dbFetchPairs(
+    'select post_id, title from posts'
+);
+
+// get an array whose keys are the values for the 
+// first column (post_id) and whose values are
+// from the second column (title) from the rows
+// returned from the query below
+$allPostIdAndTitlePairsWithIdGt1 = $dbConnector->dbFetchPairs(
+    'select post_id, title from posts where post_id > :id',
+    ['id'=>1]
+);
+
+///////////////////////////////////////////////////
+// get the value returned by the query below
+$maxViewCount = $dbConnector->dbFetchValue(
+    'select MAX(view_count) from summaries'
+);
+
+// get the value returned by the query below
+$maxViewCountOfCountsLt4 = $dbConnector->dbFetchValue(
+    'select MAX(view_count) from summaries where view_count < :count',
+    ['count'=>4]
+);
+```
+
 
 For queries that the **dbFetch\*** methods above can't handle, you can use the **runQuery** method. For example, delete, insert, complex select queries, update and other types of queries.
 
@@ -238,6 +334,7 @@ For queries that the **dbFetch\*** methods above can't handle, you can use the *
         array $parameters=[], 
         ?object $calling_object=null
     ): DBExceuteQueryResult
+
 
 ## Query logging
 
