@@ -182,12 +182,24 @@ If you have an instance of **\LeanOrm\DBConnector** already, just call the **get
 
 ## Executing Queries
 
+The methods below are convenience methods for executing SQL SELECT queries and getting the result back in the expected data type:
+
+```php
+    /////////////////////////////////////////////////////////////
+    // Use this to fetch one row from a database table
+    // - If the row exists, it is returned as an associative array
+    // - If it doesn't exist, false is returned
     public function dbFetchOne(
         string $select_query,
         array $parameters = [],
         ?object $calling_object=null
     ): mixed
 
+    /////////////////////////////////////////////////////////////
+    // Use this to fetch one or more rows from a database table
+    // - If the query matches one or more rows, an array of 
+    // associative arrays is returned
+    // - An empty array is returned if no row(s) are matched
     public function dbFetchAll(
         string $select_query,
         array $parameters = [],
@@ -211,7 +223,7 @@ If you have an instance of **\LeanOrm\DBConnector** already, just call the **get
         array $parameters = [],
         ?object $calling_object=null
     ): mixed
-
+```
 
 For queries that the **dbFetch\*** methods above can't handle, you can use the **runQuery** method. For example, delete, insert, complex select queries, update and other types of queries.
 

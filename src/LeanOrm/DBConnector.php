@@ -728,7 +728,7 @@ class DBConnector {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
-        return ($result->pdo_statement instanceof \PDOStatement) ? $result->pdo_statement->fetch(\PDO::FETCH_ASSOC) : null;
+        return ($result->pdo_statement instanceof \PDOStatement) ? $result->pdo_statement->fetch(\PDO::FETCH_ASSOC) : false;
     }
 
     /**
