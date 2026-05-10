@@ -383,26 +383,6 @@ If you also set an instance of **\Psr\Log\LoggerInterface** on the instance(s) o
 public function canLogQueries(): bool;
 
 //////////////////////////////////////////////////////////////
-// Clears query log entries.
-//
-// If $connection_name === null clears the whole query log
-//      It doesn't matter what value is contained in 
-//      $object_to_match
-//
-// If $connection_name !== null and $object_to_match === null
-//      clears the query log associated with the specified
-//      connection name
-//
-// If $connection_name !== null and $object_to_match !== null
-//      clears the query log associated with the specified
-//      connection name and object instance contained in
-//      $object_to_match
-public static function clearQueryLog(
-    null|string $connection_name = null,
-    null|object $object_to_match = null
-): void;
-
-//////////////////////////////////////////////////////////////
 // Disables query logging for an instance of 
 // \LeanOrm\DBConnector 
 public function disableQueryLogging(): static;
@@ -422,6 +402,26 @@ public function getLogger(): ?LoggerInterface;
 // Sets an instance of \Psr\Log\LoggerInterface or null as
 // the logger object for an instance of \LeanOrm\DBConnector
 public function setLogger(?LoggerInterface $logger): static;
+
+//////////////////////////////////////////////////////////////
+// Clears query log entries.
+//
+// If $connection_name === null clears the whole query log
+//      It doesn't matter what value is contained in 
+//      $object_to_match
+//
+// If $connection_name !== null and $object_to_match === null
+//      clears the query log associated with the specified
+//      connection name
+//
+// If $connection_name !== null and $object_to_match !== null
+//      clears the query log associated with the specified
+//      connection name and object instance contained in
+//      $object_to_match
+public static function clearQueryLog(
+    null|string $connection_name = null,
+    null|object $object_to_match = null
+): void;
 
 //////////////////////////////////////////////////////////////
 // Return query log entries from the in-memory associative 
