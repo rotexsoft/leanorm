@@ -370,7 +370,7 @@ $queryResult1 = $dbConnector->runQuery(
 
 ## Query logging
 
-Queries executed via any of the methods in [Executing Queries](./db-connector-class.md#executing-queries) section above are stored in an in-memory associative array if query logging is enable on the instance(s) of **\LeanOrm\DBConnector** you are working with. These queries are only available while your script is running.
+Queries executed via any of the methods in the [Executing Queries](./db-connector-class.md#executing-queries) section above are stored in an in-memory associative array if query logging is enabled on the instance(s) of **\LeanOrm\DBConnector** you are working with. These stored query log entries are only available while your script is running.
 
 If you also set an instance of **\Psr\Log\LoggerInterface** on the instance(s) of **\LeanOrm\DBConnector** you are working with, the queries will also be logged to whatever destination the logger logs to. This allows you to be able to inspect the logged queries after your script finishes execution, if the destination the logger logs to is something like a database, file, or some other permanent location.
 
@@ -504,11 +504,5 @@ public static function getQueryLog(
 // }
 
 ```
-
-
-
-
-
-
 
 [<<< Previous](./more-about-collections.md)
