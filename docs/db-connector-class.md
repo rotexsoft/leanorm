@@ -187,8 +187,11 @@ The methods below are convenience methods for executing SQL SELECT queries and g
 ```php
     /////////////////////////////////////////////////////////////
     // Use this to fetch one row from a database table
+    //
     // - If the row exists, it is returned as an associative array
+    //
     // - If it doesn't exist, false is returned
+    /////////////////////////////////////////////////////////////
     public function dbFetchOne(
         string $select_query,
         array $parameters = [],
@@ -197,9 +200,12 @@ The methods below are convenience methods for executing SQL SELECT queries and g
 
     /////////////////////////////////////////////////////////////
     // Use this to fetch one or more rows from a database table
+    //
     // - If the query matches one or more rows, an array of 
     // associative arrays is returned
-    // - An empty array is returned if no row(s) are matched
+    //
+    // - An empty array is returned if no row(s) are / is matched
+    /////////////////////////////////////////////////////////////
     public function dbFetchAll(
         string $select_query,
         array $parameters = [],
