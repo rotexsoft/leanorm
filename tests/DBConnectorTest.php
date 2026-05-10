@@ -625,6 +625,16 @@ EOF;
         self::assertEquals($connectionName, $dbConnector2->getConnectionName());
     }
 
+    public function testThatGetMyPdoInstanceWorksAsExpected() {
+        
+        $dbConnector = DbConnectorSubclass::getInstance(DbConnectorSubclass::DEFAULT_CONNECTION);
+        self::assertSame(DbConnectorSubclass::getPdo(DbConnectorSubclass::DEFAULT_CONNECTION), $dbConnector->getMyPdo());
+        
+        $connectionName = 'connection-777';
+        $dbConnector2 = DbConnectorSubclass::getInstance($connectionName);
+        self::assertSame(DbConnectorSubclass::getPdo($connectionName), $dbConnector2->getMyPdo());
+    }
+
     public function testThatSetDbWorksAsExpected() {
         
         $pdo = new \PDO('sqlite::memory:');
@@ -640,7 +650,7 @@ EOF;
         self::assertSame($pdo2, DbConnectorSubclass::getPdo($connectionName));
     }
 
-    public function testThatGetDbWorksAsExpected() {
+    public function testThatGetPdoWorksAsExpected() {
         
         self::assertSame(
             DbConnectorSubclass::getPdo(),

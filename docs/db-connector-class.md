@@ -213,7 +213,7 @@ If you have an instance of **\LeanOrm\DBConnector** already, just call the **get
     ): mixed
 
 
-Recommended for queries that the **dbFetch\*** methods above can't handle. For example, delete, insert, complex select queries, update and other types of queries.
+For queries that the **dbFetch\*** methods above can't handle, you can use the **runQuery** method. For example, delete, insert, complex select queries, update and other types of queries.
 
     public function runQuery(
         string $query, 
