@@ -4,6 +4,13 @@ This class serves as both a [PDO](https://www.php.net/manual/en/class.pdo.php) c
 
 If you already have an instance of **\LeanOrm\Model** (or any of its sub-classes), you can get the instance of **\LeanOrm\DBConnector** associated with that Model class instance by calling the **getDbConnector()** method on the Model class instance and use the **\LeanOrm\DBConnector** instance returned to directly interact with the database.
 
+1. [Configuration and Creation](./db-connector-class.md#configuration-and-creation)
+    - [Method 1 (Injecting an existing PDO instance & creating an instance of \LeanOrm\DBConnector)](./db-connector-class.md#method-1-injecting-an-existing-pdo-instance--creating-an-instance-of-leanormdbconnector)
+    - [Method 2 (Configuring settings needed to setup a PDO instance & creating an instance of \LeanOrm\DBConnector)](./db-connector-class.md#method-2-configuring-settings-needed-to-setup-a-pdo-instance--creating-an-instance-of-leanormdbconnector)
+2. [Accessing PDO Instance(s)](./db-connector-class.md#accessing-pdo-instances)
+3. [Executing Queries](./db-connector-class.md#executing-queries)
+4. [Query Logging](./db-connector-class.md#query-logging)
+
 ## Configuration and Creation
 
 You can 
