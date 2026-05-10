@@ -189,72 +189,72 @@ The methods below are convenience methods for executing SQL SELECT queries and g
 > This argument has NO IMPACT on your query. You can ignore it if you are not using the query logging feature which is explained later below.
 
 ```php
-    /////////////////////////////////////////////////////////////
-    // Use this to fetch the first row returned by the select 
-    // query as an associative array where the keys are the 
-    // column names
-    //
-    // - If the query returns no rows, false is returned
-    /////////////////////////////////////////////////////////////
-    public function dbFetchOne(
-        string $select_query,
-        array $parameters = [],
-        ?object $calling_object=null
-    ): mixed
+/////////////////////////////////////////////////////////////
+// Use this to fetch the first row returned by the select 
+// query as an associative array where the keys are the 
+// column names
+//
+// - If the query returns no rows, false is returned
+/////////////////////////////////////////////////////////////
+public function dbFetchOne(
+    string $select_query,
+    array $parameters = [],
+    ?object $calling_object=null
+): mixed
 
-    /////////////////////////////////////////////////////////////
-    // Use this to fetch a sequential array of all rows returned
-    // by the select query ( where each row is an associative 
-    // array where the keys are the column names)
-    //
-    // - An empty array is returned if no row is returned by 
-    //   the query
-    /////////////////////////////////////////////////////////////
-    public function dbFetchAll(
-        string $select_query,
-        array $parameters = [],
-        ?object $calling_object=null
-    ): array
+/////////////////////////////////////////////////////////////
+// Use this to fetch a sequential array of all rows returned
+// by the select query ( where each row is an associative 
+// array where the keys are the column names)
+//
+// - An empty array is returned if no row is returned by 
+//   the query
+/////////////////////////////////////////////////////////////
+public function dbFetchAll(
+    string $select_query,
+    array $parameters = [],
+    ?object $calling_object=null
+): array
 
-    /////////////////////////////////////////////////////////////
-    // Use this to fetch a sequential array of the first column
-    // from all rows returned by the select query
-    //
-    // - An empty array is returned if no row is returned by 
-    //   the query
-    /////////////////////////////////////////////////////////////
-    public function dbFetchCol(
-        string $select_query,
-        array $parameters = [],
-        ?object $calling_object=null
-    ): array 
+/////////////////////////////////////////////////////////////
+// Use this to fetch a sequential array of the first column
+// from all rows returned by the select query
+//
+// - An empty array is returned if no row is returned by 
+//   the query
+/////////////////////////////////////////////////////////////
+public function dbFetchCol(
+    string $select_query,
+    array $parameters = [],
+    ?object $calling_object=null
+): array 
 
-    /////////////////////////////////////////////////////////////
-    // Use this to fetch an associative array where keys are 
-    // made up of values from the first specified database
-    // table column and the values are from the second
-    // specified database column in the select query.
-    //
-    // - An empty array is returned if no row is returned by 
-    //   the query
-    /////////////////////////////////////////////////////////////
-    public function dbFetchPairs(
-        string $select_query,
-        array $parameters = [],
-        ?object $calling_object=null
-    ): array
+/////////////////////////////////////////////////////////////
+// Use this to fetch an associative array where keys are 
+// made up of values from the first specified database
+// table column and the values are from the second
+// specified database column in the select query.
+//
+// - An empty array is returned if no row is returned by 
+//   the query
+/////////////////////////////////////////////////////////////
+public function dbFetchPairs(
+    string $select_query,
+    array $parameters = [],
+    ?object $calling_object=null
+): array
 
-    /////////////////////////////////////////////////////////////
-    // Use this to fetch the value of the first row in the 
-    // first column returned by the select query.
-    //
-    // - Null is returned if the query returns no rows
-    /////////////////////////////////////////////////////////////
-    public function dbFetchValue(
-        string $select_query,
-        array $parameters = [],
-        ?object $calling_object=null
-    ): mixed
+/////////////////////////////////////////////////////////////
+// Use this to fetch the value of the first row in the 
+// first column returned by the select query.
+//
+// - Null is returned if the query returns no rows
+/////////////////////////////////////////////////////////////
+public function dbFetchValue(
+    string $select_query,
+    array $parameters = [],
+    ?object $calling_object=null
+): mixed
 ```
 
 Here are some actual examples of how to use the methods above:
@@ -330,17 +330,17 @@ $maxViewCountOfCountsLt4 = $dbConnector->dbFetchValue(
 For queries that the **dbFetch\*** methods above can't handle, you can use the **runQuery** method. For example, delete, insert, complex select queries, update and other types of queries.
 
 ```php
-    /////////////////////////////////////////////////////////////
-    // Runs a query and returns the result as an instance of 
-    // \LeanOrm\DBExceuteQueryResult
-    /////////////////////////////////////////////////////////////
-    public function runQuery(
-        string $query, 
-        array $parameters=[], 
-        ?object $calling_object=null
-    ): \LeanOrm\DBExceuteQueryResult
+/////////////////////////////////////////////////////////////
+// Runs a query and returns the result as an instance of 
+// \LeanOrm\DBExceuteQueryResult
+/////////////////////////////////////////////////////////////
+public function runQuery(
+    string $query, 
+    array $parameters=[], 
+    ?object $calling_object=null
+): \LeanOrm\DBExceuteQueryResult
 ```
-Here are some actual examples of how to use **runQuery**:
+Here is an actual example of how to use **runQuery**:
 
 ```php
 $queryResult1 = $dbConnector->runQuery(
