@@ -41,8 +41,8 @@ class DbConnectorSubclass extends \LeanOrm\DBConnector {
         return static::$default_config;
     }
     
-    public static function getDbObj() {
+    public static function getPdoObjects() {
         
-        return static::$db;
+        return static::$pdo_connections;
     }
 }

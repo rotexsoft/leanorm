@@ -51,10 +51,7 @@ class Model extends \GDAO\Model implements \Stringable {
      *  An object for interacting with the db
      */
     protected \LeanOrm\DBConnector $db_connector;
-    
-    /**
-     * @psalm-suppress PossiblyUnusedMethod
-     */
+
     public function getDbConnector(): \LeanOrm\DBConnector { return $this->db_connector; }
     
     // Query Logging related properties
@@ -955,6 +952,7 @@ SELECT {$foreign_table_name}.*,
  WHERE {$join_table_name}.{$col_in_join_table_linked_to_my_models_table} = {$parent_data->$fkey_col_in_my_table}
 */
             //GRAB DA RELATED DATA
+            /** @psalm-suppress MixedArgument */
             $related_data = 
                 $this->db_connector
                      ->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql, $this);
@@ -1344,6 +1342,7 @@ SELECT {$foreign_table_name}.*
         /** @psalm-suppress MixedAssignment */
         $sql_2_get_related_data = $query_obj->__toString();
         
+        /** @psalm-suppress MixedArgument */
         return [
             $fkey_col_in_foreign_table, $fkey_col_in_my_table, $foreign_model_obj,
             $this->db_connector->dbFetchAll($sql_2_get_related_data, $params_2_bind_2_sql, $this) // fetch the related data
@@ -1799,7 +1798,7 @@ SELECT {$foreign_table_name}.*
     public function getPDO(): \PDO {
 
         //return pdo object associated with the current dsn
-        return DBConnector::getDb($this->dsn); 
+        return DBConnector::getPdo($this->db_connector->getConnectionName()); 
     }
 
     /**

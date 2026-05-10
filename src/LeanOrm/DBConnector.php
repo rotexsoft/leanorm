@@ -59,29 +59,34 @@ class DBConnector {
      * @var int
      */
     final public const NANO_SECOND_TO_SECOND_DIVISOR = 1_000_000_000;
-    
+
     final public const CONFIG_KEY_USERNAME = 'username';
-    
+
     final public const CONFIG_KEY_PASSWORD = 'password';
-    
+
     final public const CONFIG_KEY_ERR_MODE = 'error_mode';
-    
+
     final public const CONFIG_KEY_DRIVER_OPTS = 'driver_options';
-    
+
     final public const CONFIG_KEY_CONNECTION_STR = 'connection_string';
-    
+
     final public const LOG_ENTRY_SQL_KEY = 'sql';
+
     final public const LOG_ENTRY_BIND_PARAMS_KEY = 'bind_params';
+
     final public const LOG_ENTRY_DATE_EXECUTED_KEY = 'date_executed';
+
     final public const LOG_ENTRY_CALL_STACK_KEY = 'call_stack';
+
     final public const LOG_ENTRY_CALLING_OBJECT_HASH = 'calling_object';
+
     final public const LOG_ENTRY_EXEC_TIME_KEY = 'query_execution_time_in_seconds';
-    
 
 ////////////////////////////////////////////////////////////////////////////////        
 //////////// -------------------------------- //////////////////////////////////
 //////////// --- CLASS PROPERTIES TO KEEP --- //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
     // Class configuration
     protected static array $default_config = [
         self::CONFIG_KEY_CONNECTION_STR => 'sqlite::memory:',
@@ -94,43 +99,54 @@ class DBConnector {
     // Map of configuration settings
     protected static array $config = [];
 
-    // Map of database connections, instances of the PDO class
     /**
+     * Map of instances of this class keyed on connection name
+     * 
+     * @var array<string, \LeanOrm\DBConnector>
+     */
+    protected static array $db_connector_instances = [];
+
+    /**
+     * Map of database connections, instances of the PDO class
+     * 
      * @var array<string, \PDO>
      */
-    protected static array $db = [];
-    
+    protected static array $pdo_connections = [];
+
     /**
      * An array containing a log of all queries executed by all instances of this class
      * 
-     * @var array
+     * @var array<string, array>
      */
-    protected static $query_log = [];
-    
+    protected static array $query_log = [];
+
     protected bool $can_log_queries = false;
-    
+
     protected null|LoggerInterface $logger = null;
-    
+
     //////////// ------------------------------------ //////////////////////////////
     //////////// --- END CLASS PROPERTIES TO KEEP --- //////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
-    
+
     // ---------------------- //
     // --- STATIC METHODS --- //
     // ---------------------- //
-    
+
     /**
-     * @param string $connection_name The name of a connection 
-     *                                (registered via \LeanOrm\DBConnector::configure($key, $value, $connection_name) 
-     *                                 or \LeanOrm\DBConnector::create($connection_name)) 
-     *                                whose log entries are to be cleared. 
+     * @param string $connection_name The name of a connection
+     *                                (registered via \LeanOrm\DBConnector::configure($key, $value, $connection_name)
+     *                                 or \LeanOrm\DBConnector::create($connection_name))
+     *                                whose log entries are to be cleared.
      *                                Null means clear log for all connections.
      *
      * @param null|object $object_to_match an object that triggered calling of methods of this class that executed queries in this class.
      *                                     Only queries associated with $object_to_match will be cleared from the queries logged for
      *                                     $connection_name. If $object_to_match is null then all logged queries for $connection_name
      *                                     will be cleared
-     * @return void
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedArrayAccess
+     * @psalm-suppress MixedArrayOffset
+     * @psalm-suppress RedundantConditionGivenDocblockType
      */
     public static function clearQueryLog(
         null|string $connection_name = null,
@@ -138,10 +154,10 @@ class DBConnector {
     ): void {
 
         if($connection_name === null) {
-            
+
             // clear all log entires across all connections
             static::$query_log = [];
-            
+
         } else {
 
             if($object_to_match === null) {
@@ -170,7 +186,6 @@ class DBConnector {
 
                         } // if($object_to_match === $curr_entry[static::LOG_ENTRY_CALLING_OBJECT_KEY])
                     } // foreach (static::$query_log[$connection_name][$object_class_name] as $curr_key => $curr_entry)
-
                 } // if(isset(static::$query_log[$connection_name]) &&  \is_array(static::$query_log[$connection_name]) ...
             } // if($object_to_match === null) {} else {}
         } // if($connection_name === null){ ... } else { ... }
@@ -180,7 +195,7 @@ class DBConnector {
      * The array returned if log is not empty based on supplied arguments to
      * this method looks like this (NOTE: an empty array is returned if log
      * is empty based on supplied arguments to this method):
-     * 
+     *
      *   array{
      *           $a_connection_name => array {
      *
@@ -236,19 +251,22 @@ class DBConnector {
      *                   ....,
      *           }
      *   }
-     * 
-     * 
-     * @param string $connection_name The name of a connection 
-     *                                (registered via \LeanOrm\DBConnector::configure($key, $value, $connection_name) 
-     *                                 or \LeanOrm\DBConnector::create($connection_name)) 
-     *                                whose log entries are to be retrieved. 
+     *
+     *
+     * @param string $connection_name The name of a connection
+     *                                (registered via \LeanOrm\DBConnector::configure($key, $value, $connection_name)
+     *                                 or \LeanOrm\DBConnector::create($connection_name))
+     *                                whose log entries are to be retrieved.
      *                                Null means retrieve log entries for all connections.
      *
      * @param null|object $object_to_match an object that triggered calling of methods of this class that executed queries in this class.
      *                                     Only queries associated with $object_to_match will be returned from the queries logged for
      *                                     $connection_name. If $object_to_match is null then all logged queries for $connection_name
      *                                     will be returned
-     * @return void
+     * @psalm-suppress MixedAssignment
+     * @psalm-suppress MixedArrayAccess
+     * @psalm-suppress MixedArrayOffset
+     * @psalm-suppress RedundantConditionGivenDocblockType
      */
     public static function getQueryLog(
         null|string $connection_name = null,
@@ -262,7 +280,7 @@ class DBConnector {
             $log_entries = static::$query_log;
             
         } else {
-            
+
             if($object_to_match === null) {
 
                 if(isset(static::$query_log[$connection_name])) {
@@ -320,7 +338,11 @@ class DBConnector {
      * @psalm-suppress MixedArrayAssignment
      * @psalm-suppress PossiblyInvalidArgument
      */
-    public static function configure(array|string $key_or_settings, mixed $value = null, string $connection_name = self::DEFAULT_CONNECTION): void {
+    public static function configure(
+        array|string $key_or_settings,
+        mixed $value = null,
+        string $connection_name = self::DEFAULT_CONNECTION
+    ): void {
 
         static::_initDbConfigWithDefaultVals($connection_name); //ensures at least default config is set
 
@@ -350,12 +372,35 @@ class DBConnector {
      * This is the factory method used to acquire instances of the class.
      * 
      * @param string $connection_name Which connection to use
+     * @psalm-suppress UnsafeInstantiation
      */
     //rename to factory
     public static function create(string $connection_name = self::DEFAULT_CONNECTION): static {
 
         static::_setupDb($connection_name);
         return new static($connection_name);
+    }
+
+    /**
+     * Returns an instance of this class associated with the specified connection name
+     * If no instance exists that's associated with the specified connection name, an
+     * instance of this class is created, associated with the connection name and returned.
+     * Use this method if you only want one instance of this class per connection name.
+     *
+     * @param string $connection_name name of a connection an instance of this class is associated with
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public static function getInstance(string $connection_name = self::DEFAULT_CONNECTION): static {
+
+        if(
+            !isset(static::$db_connector_instances[$connection_name])
+            || !(static::$db_connector_instances[$connection_name] instanceof DBConnector)
+        ) {
+            static::$db_connector_instances[$connection_name] =
+                                            static::create($connection_name);
+        }
+        
+        return static::$db_connector_instances[$connection_name];
     }
 
     /**
@@ -367,8 +412,8 @@ class DBConnector {
     protected static function _setupDb(string $connection_name = self::DEFAULT_CONNECTION): void {
 
         if (
-            !array_key_exists($connection_name, static::$db) ||
-            !(static::$db[$connection_name] instanceof \PDO)
+            !array_key_exists($connection_name, static::$pdo_connections) ||
+            !(static::$pdo_connections[$connection_name] instanceof \PDO)
         ) {
 
             static::_initDbConfigWithDefaultVals($connection_name);
@@ -381,7 +426,7 @@ class DBConnector {
             );
 
             $db->setAttribute(\PDO::ATTR_ERRMODE, static::$config[$connection_name][static::CONFIG_KEY_ERR_MODE]);
-            static::setDb($db, $connection_name);
+            static::setPdo($db, $connection_name);
         }
     }
 
@@ -404,10 +449,10 @@ class DBConnector {
      * to identify the connection if multiple connections are used.
      * @param string $connection_name Which connection to use
      */
-    public static function setDb(\PDO $db, string $connection_name = self::DEFAULT_CONNECTION): void {
+    public static function setPdo(\PDO $db, string $connection_name = self::DEFAULT_CONNECTION): void {
 
         static::_initDbConfigWithDefaultVals($connection_name);
-        static::$db[$connection_name] = $db;
+        static::$pdo_connections[$connection_name] = $db;
     }
 
     /**
@@ -417,10 +462,18 @@ class DBConnector {
      * accepts an optional key name for the connection.
      * @param string $connection_name Which connection to use
      */
-    public static function getDb(string $connection_name = self::DEFAULT_CONNECTION): \PDO {
+    public static function getPdo(string $connection_name = self::DEFAULT_CONNECTION): \PDO {
 
         static::_setupDb($connection_name); // required in case this is called before DBConnector is instantiated
-        return static::$db[$connection_name];
+        return static::$pdo_connections[$connection_name];
+    }
+    
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public function getMyPdo(): \PDO {
+        
+        return static::getPdo($this->getConnectionName());
     }
 
    /**
@@ -435,7 +488,7 @@ class DBConnector {
     */
     protected static function _execute(string $query, array $parameters = [], bool $return_pdo_stmt_and_exec_time=false, string $connection_name = self::DEFAULT_CONNECTION): bool|array {
 
-        $statement = static::getDb($connection_name)->prepare($query);
+        $statement = static::getPdo($connection_name)->prepare($query);
         
         /** @psalm-suppress MixedAssignment */
         foreach ($parameters as $key => &$param) {
@@ -500,23 +553,19 @@ class DBConnector {
         
         return $this->can_log_queries;
     }
-    
-    /** @psalm-suppress PossiblyUnusedMethod */
+
     public function enableQueryLogging(): static {
 
         $this->can_log_queries = true;
         return $this;
     }
     
-    /** @psalm-suppress PossiblyUnusedMethod */
     public function disableQueryLogging(): static {
 
         $this->can_log_queries = false;
         return $this;
     }
-    
 
-    /** @psalm-suppress PossiblyUnusedMethod */
     public function setLogger(?LoggerInterface $logger): static {
         
         $this->logger = $logger;
@@ -534,8 +583,14 @@ class DBConnector {
      * 
      * @return bool|array{query_result: mixed, pdo_statement: \PDOStatement, exec_time_in_seconds: float} bool Response of \PDOStatement::execute() if $return_pdo_statement === false or array(bool Response of \PDOStatement::execute(), \PDOStatement the PDOStatement object)
      * @deprecated since 7.0, use runQuery() instead. Will be removed in 8.0.
+     * @psalm-suppress PossiblyUnusedMethod
+     * @psalm-suppress DeprecatedMethod
      */
-    public function executeQuery(string $query, array $parameters=[], bool $return_pdo_stmt_and_exec_time=false): bool|array {
+    public function executeQuery(
+        string $query,
+        array $parameters=[],
+        bool $return_pdo_stmt_and_exec_time=false
+    ): bool|array {
 
         return static::_execute($query, $parameters, $return_pdo_stmt_and_exec_time, $this->connection_name);
     }
@@ -552,6 +607,8 @@ class DBConnector {
     *                                    If null, it will be set to the instance
     *                                    of this class this being method is being
     *                                    called with
+    * @psalm-suppress MixedArrayAssignment
+    * @psalm-suppress PossiblyNullReference
     */
     protected function execute(
         string $query,
@@ -562,72 +619,77 @@ class DBConnector {
 
         if($calling_object === null) { $calling_object = $this; }
         
-        $statement = static::getDb($connection_name)->prepare($query);
+        $result = false;
+        $total_execution_time_in_seconds = 0;
+        $statement = static::getPdo($connection_name)->prepare($query);
         
-        /** @psalm-suppress MixedAssignment */
-        foreach ($parameters as $key => &$param) {
+        if($statement instanceof \PDOStatement) {
 
-            if (is_null($param)) {
+            /** @psalm-suppress MixedAssignment */
+            foreach ($parameters as $key => &$param) {
 
-                $type = \PDO::PARAM_NULL;
+                if (is_null($param)) {
 
-            } else if (is_bool($param)) {
+                    $type = \PDO::PARAM_NULL;
 
-                $type = \PDO::PARAM_BOOL;
+                } else if (is_bool($param)) {
 
-            } else {
+                    $type = \PDO::PARAM_BOOL;
 
-                $type = is_int($param) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
+                } else {
+
+                    $type = is_int($param) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
+                }
+
+                $statement->bindParam((is_int($key) ? ++$key : $key), $param, $type);
             }
 
-            $statement->bindParam((is_int($key) ? ++$key : $key), $param, $type);
-        }
-        
-        $start_time = \hrtime(true); // start timing
-        $result = $statement->execute();
-        $end_time = \hrtime(true); // stop timing
-        $total_execution_time_in_seconds = (($end_time - $start_time) / static::NANO_SECOND_TO_SECOND_DIVISOR);
+            $start_time = \hrtime(true); // start timing
+            $result = $statement->execute();
+            $end_time = \hrtime(true); // stop timing
+            $total_execution_time_in_seconds = (($end_time - $start_time) / static::NANO_SECOND_TO_SECOND_DIVISOR);
 
-        if($this->canLogQueries()) {
-            
-            $call_trace = \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
-            
-            if(!array_key_exists($connection_name, static::$query_log)) {
-                
-                static::$query_log[$connection_name] = [];
-            }
-            
-            if(!array_key_exists($calling_object::class, static::$query_log[$connection_name])) {
-                
-                static::$query_log[$connection_name][$calling_object::class] = [];
-            }
-            
-            $log_entry = [
-                static::LOG_ENTRY_SQL_KEY => $query,
-                static::LOG_ENTRY_BIND_PARAMS_KEY => $parameters,
-                static::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
-                static::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds,
-                static::LOG_ENTRY_CALL_STACK_KEY => $call_trace,
-                static::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($calling_object),
-            ];
-            static::$query_log[$connection_name][$calling_object::class][] = $log_entry;
-            
-            if($this->getLogger() instanceof \Psr\Log\LoggerInterface) {
+            if($this->canLogQueries()) {
 
-                $this->getLogger()->info(
-                    PHP_EOL . PHP_EOL
-                    . '<<<=============================================>>>' . PHP_EOL
-                    . 'SQL:' . PHP_EOL . "{$query}" . PHP_EOL . PHP_EOL
-                    . 'BIND PARAMS:' . PHP_EOL . var_export($parameters, true)
-                    . PHP_EOL . "Call Backtrace: "  . var_export($call_trace, true)
-                    . '[[[=============================================]]]' . PHP_EOL
-                    . PHP_EOL . PHP_EOL . PHP_EOL
-                );
+                $call_trace = \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS);
+
+                if(!array_key_exists($connection_name, static::$query_log)) {
+
+                    static::$query_log[$connection_name] = [];
+                }
+
+                if(!array_key_exists($calling_object::class, static::$query_log[$connection_name])) {
+
+                    static::$query_log[$connection_name][$calling_object::class] = [];
+                }
+
+                $log_entry = [
+                    static::LOG_ENTRY_SQL_KEY => $query,
+                    static::LOG_ENTRY_BIND_PARAMS_KEY => $parameters,
+                    static::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
+                    static::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds,
+                    static::LOG_ENTRY_CALL_STACK_KEY => $call_trace,
+                    static::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($calling_object),
+                ];
+                static::$query_log[$connection_name][$calling_object::class][] = $log_entry;
+
+                if($this->getLogger() instanceof \Psr\Log\LoggerInterface) {
+
+                    $this->getLogger()->info(
+                        PHP_EOL . PHP_EOL
+                        . '<<<=============================================>>>' . PHP_EOL
+                        . 'SQL:' . PHP_EOL . "{$query}" . PHP_EOL . PHP_EOL
+                        . 'BIND PARAMS:' . PHP_EOL . var_export($parameters, true)
+                        . PHP_EOL . "Call Backtrace: "  . var_export($call_trace, true)
+                        . '[[[=============================================]]]' . PHP_EOL
+                        . PHP_EOL . PHP_EOL . PHP_EOL
+                    );
+                }
             }
-        }
+        } // if($statement instanceof \PDOStatement)
         
         return new DBExceuteQueryResult(
-            pdo_statement: ($statement === false) ? null : $statement,
+            pdo_statement: ($statement instanceof \PDOStatement) ? $statement : null,
             pdo_statement_execute_result: $result,
             query_execution_time_in_seconds: $total_execution_time_in_seconds
         );
@@ -640,7 +702,11 @@ class DBConnector {
      * @param array  $parameters Optional bound parameters
      * @param null|object $calling_object object that called this method
      */
-    public function runQuery(string $query, array $parameters=[], ?object $calling_object=null): DBExceuteQueryResult {
+    public function runQuery(
+        string $query, 
+        array $parameters=[], 
+        ?object $calling_object=null
+    ): DBExceuteQueryResult {
 
         return $this->execute($query, $parameters, $this->connection_name, $calling_object);
     }
@@ -654,11 +720,15 @@ class DBConnector {
      * 
      * @return mixed result of the query or false on failure or if there are no rows
      */
-    public function dbFetchOne(string $select_query, array $parameters = [], ?object $calling_object=null): mixed {
+    public function dbFetchOne(
+        string $select_query,
+        array $parameters = [],
+        ?object $calling_object=null
+    ): mixed {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
-        return ($result->pdo_statement === null) ? null : $result->pdo_statement->fetch(\PDO::FETCH_ASSOC);
+        return ($result->pdo_statement instanceof \PDOStatement) ? $result->pdo_statement->fetch(\PDO::FETCH_ASSOC) : null;
     }
 
     /**
@@ -670,12 +740,16 @@ class DBConnector {
      * 
      * @return mixed[]
      */
-    public function dbFetchAll(string $select_query, array $parameters = [], ?object $calling_object=null): array {
+    public function dbFetchAll(
+        string $select_query,
+        array $parameters = [],
+        ?object $calling_object=null
+    ): array {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
-        return ($result->pdo_statement === null) 
-                    ? [] : $result->pdo_statement->fetchAll(\PDO::FETCH_ASSOC);
+        return ($result->pdo_statement instanceof \PDOStatement) 
+                ? $result->pdo_statement->fetchAll(\PDO::FETCH_ASSOC) : [];
     }
 
     /**
@@ -687,12 +761,16 @@ class DBConnector {
      * 
      * @return mixed[]
      */
-    public function dbFetchCol(string $select_query, array $parameters = [], ?object $calling_object=null): array {
+    public function dbFetchCol(
+        string $select_query,
+        array $parameters = [],
+        ?object $calling_object=null
+    ): array {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
-        return ($result->pdo_statement === null) 
-                    ? [] : $result->pdo_statement->fetchAll(\PDO::FETCH_COLUMN, 0);
+        return ($result->pdo_statement instanceof \PDOStatement) 
+                ? $result->pdo_statement->fetchAll(\PDO::FETCH_COLUMN, 0) : [];
     }
 
     /**
@@ -721,12 +799,16 @@ class DBConnector {
      * @psalm-suppress MixedArrayOffset
      * @psalm-suppress MixedArrayAccess
      */
-    public function dbFetchPairs(string $select_query, array $parameters = [], ?object $calling_object=null): array {
+    public function dbFetchPairs(
+        string $select_query,
+        array $parameters = [],
+        ?object $calling_object=null
+    ): array {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
         $data = [];
         
-        if($result->pdo_statement !== null) {
+        if($result->pdo_statement instanceof \PDOStatement) {
 
             while ($row = $result->pdo_statement->fetch(\PDO::FETCH_NUM)) {
 
@@ -744,11 +826,15 @@ class DBConnector {
      * @param array  $parameters Parameters that can be bound to $select_query via \PDOStatement->bindParam(..)
      * @param null|object $calling_object object that called this method
      */
-    public function dbFetchValue(string $select_query, array $parameters = [], ?object $calling_object=null): mixed {
+    public function dbFetchValue(
+        string $select_query,
+        array $parameters = [],
+        ?object $calling_object=null
+    ): mixed {
 
         $result = $this->execute($select_query, $parameters, $this->connection_name, $calling_object);
 
-        return ($result->pdo_statement === null) 
-                    ? null : $result->pdo_statement->fetchColumn(0);
+        return ($result->pdo_statement instanceof \PDOStatement) 
+                ? $result->pdo_statement->fetchColumn(0) : null;
     }
 }

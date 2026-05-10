@@ -33,20 +33,20 @@ class DBConnectorTest extends \PHPUnit\Framework\TestCase {
 
     public function testThat_setupDbWorksAsExpected() {
         
-        self::assertCount(1, DbConnectorSubclass::getDbObj()); // contains only the PDO object for LeanOrm set in CommonPropertiesAndMethodsTrait
+        self::assertCount(1, DbConnectorSubclass::getPdoObjects()); // contains only the PDO object for LeanOrm set in CommonPropertiesAndMethodsTrait
         DbConnectorSubclass::setupDbPublic('another_connection');
-        self::assertCount(2, DbConnectorSubclass::getDbObj());
+        self::assertCount(2, DbConnectorSubclass::getPdoObjects());
         
-        foreach (DbConnectorSubclass::getDbObj() as $dbObj) {
+        foreach (DbConnectorSubclass::getPdoObjects() as $dbObj) {
             
             self::assertInstanceOf(\PDO::class, $dbObj);
         } // foreach (DbConnectorSubclass::getDbObj() as $dbObj)
         
         // Repeat
         DbConnectorSubclass::setupDbPublic('another_connection');
-        self::assertCount(2, DbConnectorSubclass::getDbObj());
+        self::assertCount(2, DbConnectorSubclass::getPdoObjects());
         
-        foreach (DbConnectorSubclass::getDbObj() as $dbObj) {
+        foreach (DbConnectorSubclass::getPdoObjects() as $dbObj) {
             
             self::assertInstanceOf(\PDO::class, $dbObj);
         } // foreach (DbConnectorSubclass::getDbObj() as $dbObj)
@@ -110,7 +110,7 @@ class DBConnectorTest extends \PHPUnit\Framework\TestCase {
 
         if( $pdo_driver_opts !== [] ) {
 
-            DBConnector::configure(DbConnectorSubclass::CONFIG_KEY_DRIVER_OPTS, $pdo_driver_opts, static::$dsn);//use $dsn as connection name in 3rd parameter
+            DbConnectorSubclass::configure(DbConnectorSubclass::CONFIG_KEY_DRIVER_OPTS, $pdo_driver_opts, static::$dsn);//use $dsn as connection name in 3rd parameter
         }
 
         /** @var DbConnectorSubclass $db_connector */
@@ -171,7 +171,7 @@ class DBConnectorTest extends \PHPUnit\Framework\TestCase {
 
         if( $pdo_driver_opts !== [] ) {
 
-            DBConnector::configure(DbConnectorSubclass::CONFIG_KEY_DRIVER_OPTS, $pdo_driver_opts, static::$dsn);//use $dsn as connection name in 3rd parameter
+            DbConnectorSubclass::configure(DbConnectorSubclass::CONFIG_KEY_DRIVER_OPTS, $pdo_driver_opts, static::$dsn);//use $dsn as connection name in 3rd parameter
         }
 
         /** @var DbConnectorSubclass $db_connector */
@@ -615,49 +615,49 @@ EOF;
         self::assertEquals($expectedConfig3, DbConnectorSubclass::getConfig()[$connectionName]);
     }
 
-    public function testThatCreateWorksAsExpected() {
+    public function testThatGetInstanceWorksAsExpected() {
         
-        $dbConnector = DbConnectorSubclass::create();
+        $dbConnector = DbConnectorSubclass::getInstance();
         self::assertEquals(DbConnectorSubclass::DEFAULT_CONNECTION, $dbConnector->getConnectionName());
         
         $connectionName = 'connection-1b';
-        $dbConnector2 = DbConnectorSubclass::create($connectionName);
+        $dbConnector2 = DbConnectorSubclass::getInstance($connectionName);
         self::assertEquals($connectionName, $dbConnector2->getConnectionName());
     }
 
     public function testThatSetDbWorksAsExpected() {
         
         $pdo = new \PDO('sqlite::memory:');
-        DbConnectorSubclass::setDb($pdo);
-        self::assertSame($pdo, DbConnectorSubclass::getDb());
+        DbConnectorSubclass::setPdo($pdo);
+        self::assertSame($pdo, DbConnectorSubclass::getPdo());
         
         $connectionName = 'connection-1';
         $pdo2 = new \PDO('sqlite::memory:');
-        DbConnectorSubclass::setDb($pdo2, $connectionName);
-        self::assertSame($pdo2, DbConnectorSubclass::getDb($connectionName));
+        DbConnectorSubclass::setPdo($pdo2, $connectionName);
+        self::assertSame($pdo2, DbConnectorSubclass::getPdo($connectionName));
         
-        self::assertSame($pdo, DbConnectorSubclass::getDb());
-        self::assertSame($pdo2, DbConnectorSubclass::getDb($connectionName));
+        self::assertSame($pdo, DbConnectorSubclass::getPdo());
+        self::assertSame($pdo2, DbConnectorSubclass::getPdo($connectionName));
     }
 
     public function testThatGetDbWorksAsExpected() {
         
         self::assertSame(
-            DbConnectorSubclass::getDb(),
-            DbConnectorSubclass::getDb()
+            DbConnectorSubclass::getPdo(),
+            DbConnectorSubclass::getPdo()
         );
         
         $pdo = new \PDO('sqlite::memory:');
-        DbConnectorSubclass::setDb($pdo);
-        self::assertSame($pdo, DbConnectorSubclass::getDb());
+        DbConnectorSubclass::setPdo($pdo);
+        self::assertSame($pdo, DbConnectorSubclass::getPdo());
         
         $connectionName = 'connection-1';
         $pdo2 = new \PDO('sqlite::memory:');
-        DbConnectorSubclass::setDb($pdo2, $connectionName);
-        self::assertSame($pdo2, DbConnectorSubclass::getDb($connectionName));
+        DbConnectorSubclass::setPdo($pdo2, $connectionName);
+        self::assertSame($pdo2, DbConnectorSubclass::getPdo($connectionName));
         
-        self::assertSame($pdo, DbConnectorSubclass::getDb());
-        self::assertSame($pdo2, DbConnectorSubclass::getDb($connectionName));
+        self::assertSame($pdo, DbConnectorSubclass::getPdo());
+        self::assertSame($pdo2, DbConnectorSubclass::getPdo($connectionName));
     }
 
     public function testThatExecuteQueryWorksAsExpected() {

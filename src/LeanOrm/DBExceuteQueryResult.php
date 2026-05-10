@@ -7,6 +7,8 @@ namespace LeanOrm;
  * A Value object representing the return value of DBConnector->executeQuery(...)
  *
  * @author rotimi
+ * @psalm-suppress ClassMustBeFinal
+ * @psalm-suppress PossiblyUnusedProperty
  */
 class DBExceuteQueryResult {
 
