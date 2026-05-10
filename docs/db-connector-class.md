@@ -207,7 +207,7 @@ public function dbFetchOne(
     string $select_query,
     array $parameters = [],
     ?object $calling_object=null
-): mixed
+): mixed;
 
 /////////////////////////////////////////////////////////////
 // Use this to fetch a sequential array of all rows returned
@@ -221,7 +221,7 @@ public function dbFetchAll(
     string $select_query,
     array $parameters = [],
     ?object $calling_object=null
-): array
+): array;
 
 /////////////////////////////////////////////////////////////
 // Use this to fetch a sequential array of the first column
@@ -234,7 +234,7 @@ public function dbFetchCol(
     string $select_query,
     array $parameters = [],
     ?object $calling_object=null
-): array 
+): array;
 
 /////////////////////////////////////////////////////////////
 // Use this to fetch an associative array where keys are 
@@ -249,7 +249,7 @@ public function dbFetchPairs(
     string $select_query,
     array $parameters = [],
     ?object $calling_object=null
-): array
+): array;
 
 /////////////////////////////////////////////////////////////
 // Use this to fetch the value of the first row in the 
@@ -261,7 +261,7 @@ public function dbFetchValue(
     string $select_query,
     array $parameters = [],
     ?object $calling_object=null
-): mixed
+): mixed;
 ```
 
 Here are some actual examples of how to use the methods above:
@@ -345,7 +345,7 @@ public function runQuery(
     string $query, 
     array $parameters=[], 
     ?object $calling_object=null
-): \LeanOrm\DBExceuteQueryResult
+): \LeanOrm\DBExceuteQueryResult;
 ```
 Here is an actual example of how to use **runQuery**:
 
@@ -370,26 +370,140 @@ $queryResult1 = $dbConnector->runQuery(
 
 ## Query logging
 
-    public function canLogQueries(): bool
+Queries executed via any of the methods in [Executing Queries](./db-connector-class.md#executing-queries) section above are stored in an in-memory associative array if query logging is enable on the instance(s) of **\LeanOrm\DBConnector** you are working with. These queries are only available while your script is running.
 
-    public static function clearQueryLog(
-        null|string $connection_name = null,
-        null|object $object_to_match = null
-    ): void
+If you also set an instance of **\Psr\Log\LoggerInterface** on the instance(s) of **\LeanOrm\DBConnector** you are working with, the queries will also be logged to whatever destination the logger logs to. This allows you to be able to inspect the logged queries after your script finishes execution, if the destination the logger logs to is something like a database, file, or some other permanent location.
 
-    public function disableQueryLogging(): static
+> **NOTE:** Queries you run directly via the PDO object(s) managed by **\LeanOrm\DBConnector** will not get stored in the in-memory associative array and will not get logged by the registered **\Psr\Log\LoggerInterface** logger(s) on the instance(s) of **\LeanOrm\DBConnector** you are working with.
 
-    public function enableQueryLogging(): static
+```php
+//////////////////////////////////////////////////////////////
+// Returns true if query logging is enabled on an instance of
+// \LeanOrm\DBConnector or false if not.
+public function canLogQueries(): bool;
 
-    public function getLogger(): ?LoggerInterface
+//////////////////////////////////////////////////////////////
+// Clears query log entries.
+//
+// If $connection_name === null clears the whole query log
+//      It doesn't matter what value is contained in 
+//      $object_to_match
+//
+// If $connection_name !== null and $object_to_match === null
+//      clears the query log associated with the specified
+//      connection name
+//
+// If $connection_name !== null and $object_to_match !== null
+//      clears the query log associated with the specified
+//      connection name and object instance contained in
+//      $object_to_match
+public static function clearQueryLog(
+    null|string $connection_name = null,
+    null|object $object_to_match = null
+): void;
 
-    public static function getQueryLog(
-        null|string $connection_name = null,
-        null|object $object_to_match = null
-    ): array
+//////////////////////////////////////////////////////////////
+// Disables query logging for an instance of 
+// \LeanOrm\DBConnector 
+public function disableQueryLogging(): static;
 
-    public function setLogger(?LoggerInterface $logger): static
+//////////////////////////////////////////////////////////////
+// Enables query logging for an instance of 
+// \LeanOrm\DBConnector 
+public function enableQueryLogging(): static;
 
+//////////////////////////////////////////////////////////////
+// Returns the instance of \Psr\Log\LoggerInterface
+// associated with an instance of \LeanOrm\DBConnector
+// or null if not set.
+public function getLogger(): ?LoggerInterface;
+
+//////////////////////////////////////////////////////////////
+// Sets an instance of \Psr\Log\LoggerInterface or null as
+// the logger object for an instance of \LeanOrm\DBConnector
+public function setLogger(?LoggerInterface $logger): static;
+
+//////////////////////////////////////////////////////////////
+// Return query log entries from the in-memory associative 
+// array.
+//
+// If $connection_name === null returns the whole query log
+//      It doesn't matter what value is contained in 
+//      $object_to_match
+//
+// If $connection_name !== null and $object_to_match === null
+//      returns the query log entries associated with the
+//      specified connection name if any or an empty array
+//      if none
+//
+// If $connection_name !== null and $object_to_match !== null
+//      returns the query log entries associated with the 
+//      specified connection name and object instance 
+//      contained in $object_to_match
+public static function getQueryLog(
+    null|string $connection_name = null,
+    null|object $object_to_match = null
+): array;
+
+///////////////////////////////////////////////////////////////////
+// Below is what the array returned by getQueryLog looks like
+// array{
+//         $a_connection_name => array {
+//
+//                 $calling_object::class => array {
+//
+//                         0 => array {
+//                                 DBConnector::LOG_ENTRY_SQL_KEY => $sql_query1_string,
+//                                 DBConnector::LOG_ENTRY_BIND_PARAMS_KEY => $bind_parameters_array_for_sql_query1,
+//                                 DBConnector::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
+//                                 DBConnector::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds_for_sql_query1,
+//                                 DBConnector::LOG_ENTRY_CALL_STACK_KEY => \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT),
+//                                 DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($an_instance_of_calling_object),
+//                         },
+//                         ...,
+//                         ...,
+//                         (N-1) => array {
+//                                 DBConnector::LOG_ENTRY_SQL_KEY => $sql_queryN_string,
+//                                 DBConnector::LOG_ENTRY_BIND_PARAMS_KEY => $bind_parameters_array_for_sql_queryN,
+//                                 DBConnector::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
+//                                 DBConnector::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds_for_sql_queryN,
+//                                 DBConnector::LOG_ENTRY_CALL_STACK_KEY => \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT),
+//                                 DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($an_instance_of_calling_object),
+//                         },
+//                 },
+//                 ...,
+//                 ...,
+//                 $last_calling_object::class => array {
+//
+//                         0 => array {
+//                                 DBConnector::LOG_ENTRY_SQL_KEY => $sql_query1_string,
+//                                 DBConnector::LOG_ENTRY_BIND_PARAMS_KEY => $bind_parameters_array_for_sql_query1,
+//                                 DBConnector::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
+//                                 DBConnector::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds_for_sql_query1,
+//                                 DBConnector::LOG_ENTRY_CALL_STACK_KEY => \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT),
+//                                 DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($an_instance_of_last_calling_object),
+//                         },
+//                         ...,
+//                         ...,
+//                         (N-1) => array {
+//                                 DBConnector::LOG_ENTRY_SQL_KEY => $sql_queryN_string,
+//                                 DBConnector::LOG_ENTRY_BIND_PARAMS_KEY => $total_execution_time_in_seconds_for_sql_queryN,
+//                                 DBConnector::LOG_ENTRY_DATE_EXECUTED_KEY => \date('Y-m-d H:i:s'),
+//                                 DBConnector::LOG_ENTRY_EXEC_TIME_KEY => $total_execution_time_in_seconds_for_sql_queryN,
+//                                 DBConnector::LOG_ENTRY_CALL_STACK_KEY => \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT),
+//                                 DBConnector::LOG_ENTRY_CALLING_OBJECT_HASH => \spl_object_hash($instance_of_last_calling_object),
+//                         },
+//                 },
+//         },
+//         ...,
+//         ...,
+//         $another_connection_name => array {
+//                 ....,
+//                 ....,
+//         }
+// }
+
+```
 
 
 
