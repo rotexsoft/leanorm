@@ -376,6 +376,8 @@ If you also set an instance of **\Psr\Log\LoggerInterface** on the instance(s) o
 
 > **NOTE:** Queries you run directly via the PDO object(s) managed by **\LeanOrm\DBConnector** will not get stored in the in-memory associative array and will not get logged by the registered **\Psr\Log\LoggerInterface** logger(s) on the instance(s) of **\LeanOrm\DBConnector** you are working with.
 
+The methods below are the methods you can use to manage query logging for instances of **\LeanOrm\DBConnector:** 
+
 ```php
 //////////////////////////////////////////////////////////////
 // Returns true if query logging is enabled on an instance of
