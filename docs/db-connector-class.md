@@ -329,11 +329,36 @@ $maxViewCountOfCountsLt4 = $dbConnector->dbFetchValue(
 
 For queries that the **dbFetch\*** methods above can't handle, you can use the **runQuery** method. For example, delete, insert, complex select queries, update and other types of queries.
 
+```php
+    /////////////////////////////////////////////////////////////
+    // Runs a query and returns the result as an instance of 
+    // \LeanOrm\DBExceuteQueryResult
+    /////////////////////////////////////////////////////////////
     public function runQuery(
         string $query, 
         array $parameters=[], 
         ?object $calling_object=null
-    ): DBExceuteQueryResult
+    ): \LeanOrm\DBExceuteQueryResult
+```
+Here are some actual examples of how to use **runQuery**:
+
+```php
+$queryResult1 = $dbConnector->runQuery(
+    "update posts set m_timestamp = '2026-05-11 14:53:35' where post_id = :da_id",
+    ['da_id'=>4]
+);
+
+// $queryResult1->pdo_statement contains the instance of
+// \PDOStatement used to run the query or null if the query
+// could not be prepared successfully
+
+// $queryResult1->pdo_statement_execute_result contains the result
+// returned when execute was called on $queryResult1->pdo_statement
+// under the hood to execute the query
+
+// $queryResult1->query_execution_time_in_seconds is the time in
+// seconds it took to run the query
+```
 
 
 ## Query logging
