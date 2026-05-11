@@ -45,7 +45,7 @@ There is also **\LeanOrm\CachingModel** class that is meant to cache method retu
 all instances of **\LeanOrm\CachingModel** and its sub-classes (on each invocation of a php script
 via command line or a webserver) where possible to improve performance. You can use it instead of 
 **\LeanOrm\Model** in your applications. The cached results do not persist between different
-execution of your php script(s).
+executions of your php script(s).
 
 As at of the writing of this documentation, there are only two protected methods whose results
 are being cached by **\LeanOrm\CachingModel**:
